@@ -27,6 +27,7 @@ CONFIG = {
     "indicator": {"name": "sma_close_3", "window": 3, "initial": "null for first 2 rows"},
 }
 COLUMNS = ["instrument", "timestamp", "open", "high", "low", "close", "volume", "sma_close_3"]
+EVALUATION_COLUMNS = ["instrument", "timestamp", "open", "close", "sma_close_3"]
 SCHEMA = {"instrument": "string", "timestamp": "UTC ISO8601 bucket start",
           **{name: "finite float64" for name in COLUMNS[2:-1]},
           "sma_close_3": "nullable finite float64"}
@@ -241,6 +242,122 @@ def compare(first, second):
     return {"status": "PASS" if all(checks.values()) else "FAIL", "checks": checks}
 
 
+def _metrics(trades):
+    returns = [trade["gross_return"] for trade in trades]
+    winning_trades = sum(value > 0 for value in returns)
+    losing_trades = sum(value < 0 for value in returns)
+    return {
+        "cumulative_compounded_return": math.prod(1.0 + value for value in returns) - 1.0 if returns else 0.0,
+        "trade_count": len(returns),
+        "winning_trades": winning_trades,
+        "losing_trades": losing_trades,
+        "win_rate": winning_trades / len(returns) if returns else None,
+    }
+
+
+def _evaluation_rows(input_dir):
+    input_dir = Path(input_dir)
+    manifest = json.loads((input_dir / "manifest.json").read_bytes())
+    if manifest.get("status") != "PASS":
+        raise ValueError("Evaluation requires a PASS manifest")
+    if manifest.get("columns") != COLUMNS or manifest.get("schema") != SCHEMA:
+        raise ValueError("Dataset schema does not match the validated Phase 1 schema")
+    dataset = (input_dir / "dataset.csv").read_bytes()
+    if manifest.get("dataset_sha256") != digest(dataset):
+        raise ValueError("Dataset integrity check failed")
+    rows = []
+    with io.StringIO(dataset.decode("utf-8"), newline="") as stream:
+        reader = csv.DictReader(stream)
+        if reader.fieldnames != COLUMNS:
+            raise ValueError("Dataset columns do not match the validated schema")
+        for row in reader:
+            try:
+                values = {name: row[name] for name in EVALUATION_COLUMNS}
+                values["open"] = float(values["open"])
+                values["close"] = float(values["close"])
+                values["sma_close_3"] = (
+                    None if values["sma_close_3"] == "" else float(values["sma_close_3"])
+                )
+                datetime.fromisoformat(values["timestamp"].replace("Z", "+00:00"))
+            except (KeyError, ValueError, TypeError) as exc:
+                raise ValueError("Dataset contains an invalid evaluation row") from exc
+            rows.append(values)
+    if not rows or any(rows[index]["timestamp"] >= rows[index + 1]["timestamp"]
+                       for index in range(len(rows) - 1)):
+        raise ValueError("Dataset rows must be non-empty and strictly ordered")
+    if any(row["instrument"] != "BTC-USD" for row in rows):
+        raise ValueError("Evaluation requires the BTC-USD dataset")
+    return manifest, rows
+
+
+def evaluate(input_dir, output):
+    manifest, rows = _evaluation_rows(input_dir)
+    signals = []
+    executions = []
+    positions = []
+    trades = []
+    position = 0
+    pending = None
+    entry = None
+    for index, row in enumerate(rows):
+        if pending is not None:
+            action = pending
+            price = row["open"]
+            executions.append({"timestamp": row["timestamp"], "action": action, "price": price})
+            if action == "BUY":
+                position = 1
+                entry = {"timestamp": row["timestamp"], "price": price}
+            else:
+                position = 0
+                trades.append({
+                    "entry_timestamp": entry["timestamp"],
+                    "entry_price": entry["price"],
+                    "exit_timestamp": row["timestamp"],
+                    "exit_price": price,
+                    "gross_return": price / entry["price"] - 1.0,
+                })
+                entry = None
+            pending = None
+        indicator = row["sma_close_3"]
+        action = None
+        if indicator is not None:
+            if position == 0 and row["close"] > indicator and index + 1 < len(rows):
+                action = "BUY"
+                pending = action
+            elif position == 1 and row["close"] <= indicator and index + 1 < len(rows):
+                action = "SELL"
+                pending = action
+        signals.append({"timestamp": row["timestamp"], "signal": action})
+        positions.append({"timestamp": row["timestamp"], "position": position})
+    if position == 1:
+        last = rows[-1]
+        executions.append({"timestamp": last["timestamp"], "action": "LIQUIDATE", "price": last["close"]})
+        trades.append({
+            "entry_timestamp": entry["timestamp"],
+            "entry_price": entry["price"],
+            "exit_timestamp": last["timestamp"],
+            "exit_price": last["close"],
+            "gross_return": last["close"] / entry["price"] - 1.0,
+        })
+        positions[-1]["position"] = 0
+    payload = {
+        "strategy": {"id": "SMA3_LONG_ONLY", "instrument": "BTC-USD", "frequency_seconds": 86400,
+                     "indicator": "sma_close_3", "entry": "close[t] > sma_close_3[t]",
+                     "exit": "close[t] <= sma_close_3[t]", "execution": "open[t+1]",
+                     "costs": 0, "slippage": 0},
+        "input": {"dataset_sha256": manifest["dataset_sha256"], "manifest_status": manifest["status"],
+                  "rows": len(rows)},
+        "signals": signals,
+        "executions": executions,
+        "positions": positions,
+        "trades": trades,
+        "metrics": _metrics(trades),
+    }
+    payload["output_sha256"] = digest(encoded(payload))
+    publish(output, {"evaluation.json": encoded(payload)})
+    return payload
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -253,17 +370,22 @@ def main():
     comparison.add_argument("first")
     comparison.add_argument("second")
     comparison.add_argument("--output", required=True)
+    evaluation = commands.add_parser("evaluate")
+    evaluation.add_argument("--input", required=True)
+    evaluation.add_argument("--output", required=True)
     args = parser.parse_args()
     try:
         if args.command == "acquire":
             result = acquire(args.output)
         elif args.command == "run":
             result = run(args.input, args.output)
+        elif args.command == "evaluate":
+            result = evaluate(args.input, args.output)
         else:
             result = compare(args.first, args.second)
             publish(args.output, {"comparison.json": encoded(result)})
         print(json.dumps(result, indent=2))
-        return 0 if result["status"] != "FAIL" else 1
+        return 0 if result.get("status", "PASS") != "FAIL" else 1
     except (ValueError, OSError, KeyError) as exc:
         print(json.dumps({"status": "FAIL", "error": str(exc)}), file=sys.stderr)
         return 1

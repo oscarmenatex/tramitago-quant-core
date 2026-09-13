@@ -96,6 +96,114 @@ class ValidationTests(unittest.TestCase):
         source[0][5] = 0
         self.assertEqual(checked(source)[1]["status"], "PASS")
 
+
+class EvaluationTests(unittest.TestCase):
+    def evaluation_input(self, directory, *, status="PASS", closes=None):
+        start = p.epoch(p.CONFIG["start"])
+        closes = closes or [10, 11, 12, 11, 12, 12]
+        opens = [9, 10, 20, 8, 7, 6]
+        rows = [{
+            "instrument": "BTC-USD",
+            "timestamp": p.iso(start + index * 86400),
+            "open": float(opening),
+            "high": float(max(opening, close)),
+            "low": float(min(opening, close)),
+            "close": float(close),
+            "volume": 1.0,
+            "_source_row": index + 1,
+        } for index, (opening, close) in enumerate(zip(opens, closes))]
+        dataset = p.dataset_bytes(p.indicators(rows))
+        (directory / "dataset.csv").write_bytes(dataset)
+        (directory / "manifest.json").write_bytes(p.encoded({
+            "status": status,
+            "columns": p.COLUMNS,
+            "schema": p.SCHEMA,
+            "dataset_sha256": p.digest(dataset),
+        }))
+
+    def test_sma3_execution_position_and_final_liquidation(self):
+        with tempfile.TemporaryDirectory() as source, tempfile.TemporaryDirectory() as output:
+            source_dir = Path(source)
+            output_dir = Path(output) / "evaluation"
+            self.evaluation_input(source_dir)
+            result = p.evaluate(source_dir, output_dir)
+            self.assertEqual([item["signal"] for item in result["signals"]],
+                             [None, None, "BUY", "SELL", "BUY", None])
+            self.assertEqual(result["executions"], [
+                {"timestamp": "2024-01-04T00:00:00Z", "action": "BUY", "price": 8.0},
+                {"timestamp": "2024-01-05T00:00:00Z", "action": "SELL", "price": 7.0},
+                {"timestamp": "2024-01-06T00:00:00Z", "action": "BUY", "price": 6.0},
+                {"timestamp": "2024-01-06T00:00:00Z", "action": "LIQUIDATE", "price": 12.0},
+            ])
+            self.assertEqual([item["position"] for item in result["positions"]], [0, 0, 0, 1, 0, 0])
+            self.assertEqual(result["trades"][0]["gross_return"], -0.125)
+            self.assertEqual(result["trades"][1]["gross_return"], 1.0)
+
+    def test_evaluation_rejects_non_pass_manifest(self):
+        with tempfile.TemporaryDirectory() as source, tempfile.TemporaryDirectory() as output:
+            source_dir = Path(source)
+            self.evaluation_input(source_dir, status="FAIL")
+            with self.assertRaisesRegex(ValueError, "PASS manifest"):
+                p.evaluate(source_dir, Path(output))
+
+    def test_evaluation_is_byte_deterministic(self):
+        with tempfile.TemporaryDirectory() as source, tempfile.TemporaryDirectory() as first, tempfile.TemporaryDirectory() as second:
+            source_dir = Path(source)
+            self.evaluation_input(source_dir)
+            p.evaluate(source_dir, Path(first) / "evaluation")
+            p.evaluate(source_dir, Path(second) / "evaluation")
+            self.assertEqual((Path(first) / "evaluation" / "evaluation.json").read_bytes(),
+                             (Path(second) / "evaluation" / "evaluation.json").read_bytes())
+
+    def test_future_data_does_not_change_prior_trajectory(self):
+        with tempfile.TemporaryDirectory() as first, tempfile.TemporaryDirectory() as second:
+            first_dir = Path(first)
+            second_dir = Path(second)
+            self.evaluation_input(first_dir)
+            self.evaluation_input(second_dir, closes=[10, 11, 12, 11, 12, 30])
+            first_result = p.evaluate(first_dir, first_dir / "evaluation")
+            second_result = p.evaluate(second_dir, second_dir / "evaluation")
+            self.assertEqual(first_result["signals"][:5], second_result["signals"][:5])
+            self.assertEqual(first_result["executions"][:2], second_result["executions"][:2])
+            self.assertEqual(first_result["positions"][:5], second_result["positions"][:5])
+
+    def test_metrics_are_derived_and_persisted_without_changing_trajectory(self):
+        with tempfile.TemporaryDirectory() as source, tempfile.TemporaryDirectory() as output:
+            source_dir = Path(source)
+            result_dir = Path(output) / "evaluation"
+            self.evaluation_input(source_dir)
+            result = p.evaluate(source_dir, result_dir)
+            self.assertEqual(result["metrics"], {
+                "cumulative_compounded_return": 0.75,
+                "trade_count": 2,
+                "winning_trades": 1,
+                "losing_trades": 1,
+                "win_rate": 0.5,
+            })
+            persisted = json.loads((result_dir / "evaluation.json").read_bytes())
+            self.assertEqual(persisted["metrics"], result["metrics"])
+            self.assertEqual(persisted["signals"], result["signals"])
+            self.assertEqual(persisted["executions"], result["executions"])
+            self.assertEqual(persisted["positions"], result["positions"])
+            self.assertEqual(persisted["trades"], result["trades"])
+
+    def test_metrics_classify_zero_return_and_empty_trades(self):
+        zero_trade = [{"gross_return": 0.0}]
+        self.assertEqual(p._metrics(zero_trade), {
+            "cumulative_compounded_return": 0.0,
+            "trade_count": 1,
+            "winning_trades": 0,
+            "losing_trades": 0,
+            "win_rate": 0.0,
+        })
+        self.assertEqual(p._metrics([]), {
+            "cumulative_compounded_return": 0.0,
+            "trade_count": 0,
+            "winning_trades": 0,
+            "losing_trades": 0,
+            "win_rate": None,
+        })
+
     def test_validator_rejects_nonfinite_normalized_prices(self):
         rows, report = p.normalize(json.dumps(candles()).encode())
         rows[0]["close"] = float("nan")
