@@ -46,8 +46,10 @@ manifest PASS. Una entrada cuya huella o configuración no coincide se rechaza
 antes de producir resultados. Los hashes detectan cambios accidentales; no son
 firmas de autenticidad ante una alteración coordinada de datos y metadatos.
 
-No hay commit inicial: cada ejecución conserva una copia exacta de `pipeline.py`
-y su SHA256 como baseline ejecutable, además de versión de Python. La misma
+Durante la ejecución original del microciclo, previa al versionado, todavía no
+existía un commit inicial: cada ejecución conserva una copia exacta de
+`pipeline.py` y su SHA256 como baseline ejecutable, además de versión de Python.
+La misma
 entrada, configuración y código producen los mismos bytes. Los directorios
 existentes con bytes idénticos no se reescriben; contenidos diferentes o
 incompletos provocan un fallo sin sobrescritura. Un fallo de disco puede dejar
@@ -114,6 +116,8 @@ Resultado: 11 filas recibidas, una excluida por estar fuera del intervalo,
 10 aceptadas, cero rechazadas, cero errores. Ocho valores de SMA y dos nulos
 iniciales. Las 14 comparaciones pasaron. El CSV de ambas ejecuciones tiene SHA256
 `aa647b415a267d4a8a1d75ee5b85e8ae3fd6099863a0f450f8e3fc57d93c2e99`.
-El entregable se demostró para esta entrada y configuración concretas. No existe
-todavía un commit; no se hizo commit ni push. La evidencia detallada permanece
-local en `artifacts/microcycle-evidence.json` y los manifiestos de cada ejecución.
+El entregable se demostró para esta entrada y configuración concretas. La
+evidencia original fue producida antes del commit y del push; posteriormente, el
+MVP quedó versionado en el repositorio. La evidencia detallada permanece
+conservada localmente en `artifacts/microcycle-evidence.json` y los manifiestos
+de cada ejecución.
