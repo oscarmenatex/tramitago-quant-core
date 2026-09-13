@@ -4,6 +4,7 @@ import copy
 import csv
 import io
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 import subprocess
 import sys
@@ -76,6 +77,143 @@ class ValidationTests(unittest.TestCase):
                 self.assertEqual(report["status"], "FAIL")
                 self.assertEqual(report["accepted"], 0)
 
+class ObservationTests(unittest.TestCase):
+    def raw_candles(self, count):
+        return json.dumps(candles()[:count]).encode()
+
+    def test_identity_and_incremental_resume_are_persistent(self):
+        with tempfile.TemporaryDirectory() as root:
+            root = Path(root)
+            state = root / "state.json"
+            first = p.observe(root / "input", state, root / "first",
+                              raw=self.raw_candles(1),
+                              now=datetime(2024, 1, 3, tzinfo=timezone.utc))
+            second = p.observe(root / "input", state, root / "second",
+                               raw=self.raw_candles(2),
+                               now=datetime(2024, 1, 4, tzinfo=timezone.utc))
+            self.assertEqual(first["new_observations"][0]["identity"],
+                             "BTC-USD|86400|2024-01-01T00:00:00Z")
+            self.assertEqual(second["new_observations"][0]["timestamp"],
+                             "2024-01-02T00:00:00Z")
+            self.assertEqual(second["last_observation_timestamp"],
+                             "2024-01-02T00:00:00Z")
+            self.assertEqual(json.loads(state.read_bytes())["observations"][-1]["timestamp"],
+                             "2024-01-02T00:00:00Z")
+
+    def test_unclosed_and_duplicate_observations_are_not_accepted(self):
+        with tempfile.TemporaryDirectory() as root:
+            root = Path(root)
+            state = root / "state.json"
+            first = p.observe(root / "input", state, root / "first",
+                              raw=self.raw_candles(1),
+                              now=datetime(2024, 1, 1, 12, tzinfo=timezone.utc))
+            second = p.observe(root / "input", state, root / "second",
+                               raw=self.raw_candles(1),
+                               now=datetime(2024, 1, 3, tzinfo=timezone.utc))
+            self.assertEqual(first["new_observations"], [])
+            self.assertEqual(first["unclosed_observations"], 1)
+            self.assertEqual(second["new_observations"], [
+                {"identity": "BTC-USD|86400|2024-01-01T00:00:00Z",
+                 "instrument": "BTC-USD", "timestamp": "2024-01-01T00:00:00Z",
+                 "open": 10.0, "high": 12.0, "low": 9.0, "close": 11.0,
+                 "volume": 100.0}
+            ])
+            repeated = p.observe(root / "input", state, root / "third",
+                                 raw=self.raw_candles(1),
+                                 now=datetime(2024, 1, 3, tzinfo=timezone.utc))
+            self.assertEqual(repeated["new_observations"], [])
+            self.assertEqual(repeated["already_processed"], 1)
+
+    def test_invalid_observation_does_not_create_state(self):
+        with tempfile.TemporaryDirectory() as root:
+            root = Path(root)
+            state = root / "state.json"
+            invalid = json.loads(self.raw_candles(1))
+            invalid[0][4] = "bad"
+            with self.assertRaisesRegex(ValueError, "invalid rows"):
+                p.observe(root / "input", state, root / "output",
+                          raw=json.dumps(invalid).encode(),
+                          now=datetime(2024, 1, 3, tzinfo=timezone.utc))
+            self.assertFalse(state.exists())
+
+    def test_same_response_and_state_are_byte_deterministic(self):
+        with tempfile.TemporaryDirectory() as root:
+            root = Path(root)
+            first = p.observe(root / "input", root / "state-a.json", root / "a",
+                              raw=self.raw_candles(2),
+                              now=datetime(2024, 1, 4, tzinfo=timezone.utc))
+            second = p.observe(root / "input", root / "state-b.json", root / "b",
+                               raw=self.raw_candles(2),
+                               now=datetime(2024, 1, 4, tzinfo=timezone.utc))
+            self.assertEqual(first, second)
+            self.assertEqual((root / "a" / "observation.json").read_bytes(),
+                             (root / "b" / "observation.json").read_bytes())
+
+
+class DecisionTests(unittest.TestCase):
+    def state_with_observations(self, directory, count, closes=None):
+        start = p.epoch(p.CONFIG["start"])
+        closes = closes or [10, 11, 12, 11, 15]
+        raw = [[start + index * 86400, close - 1, close + 1, close - 0.5, close, 1]
+               for index, close in enumerate(closes[:count])]
+        return p.observe(directory / "input", directory / "state.json", directory / "observation",
+                         raw=json.dumps(raw).encode(),
+                         now=datetime(2024, 1, 10, tzinfo=timezone.utc))
+
+    def test_sma3_warmup_entry_exit_and_identity(self):
+        with tempfile.TemporaryDirectory() as root:
+            root = Path(root)
+            self.state_with_observations(root, 4)
+            result = p.decide(root / "state.json", root / "decision")
+            decisions = result["new_decisions"]
+            self.assertEqual([item["decision"] for item in decisions],
+                             ["NO_DECISION", "NO_DECISION", "ENTER", "EXIT"])
+            self.assertEqual([item["target_position"] for item in decisions], [None, None, 1, 0])
+            self.assertEqual(decisions[2]["sma_close_3"], 11.0)
+            self.assertEqual(decisions[3]["sma_close_3"], 11.333333333333334)
+            self.assertEqual(decisions[2]["observation_identity"],
+                             "BTC-USD|86400|2024-01-03T00:00:00Z")
+            self.assertTrue(all("open" not in item for item in decisions))
+
+    def test_equality_is_exit_and_replay_is_idempotent(self):
+        with tempfile.TemporaryDirectory() as root:
+            root = Path(root)
+            self.state_with_observations(root, 3, closes=[10, 11, 10.5])
+            first = p.decide(root / "state.json", root / "first")
+            repeated = p.decide(root / "state.json", root / "second")
+            self.assertEqual(first["new_decisions"][-1]["decision"], "HOLD")
+            self.assertEqual(first["new_decisions"][-1]["target_position"], 0)
+            self.assertEqual(repeated["new_decisions"], [])
+            self.assertEqual(repeated["already_decided"], 3)
+            self.assertEqual(len(json.loads((root / "state.json").read_bytes())["decisions"]), 3)
+
+    def test_future_observation_does_not_change_prior_decisions(self):
+        with tempfile.TemporaryDirectory() as root:
+            root = Path(root)
+            first = root / "first"
+            second = root / "second"
+            first.mkdir()
+            second.mkdir()
+            self.state_with_observations(first, 3, closes=[10, 11, 12])
+            self.state_with_observations(second, 4, closes=[10, 11, 12, 100])
+            first_result = p.decide(first / "state.json", first / "decision")
+            second_result = p.decide(second / "state.json", second / "decision")
+            self.assertEqual(first_result["new_decisions"], second_result["new_decisions"][:3])
+
+    def test_same_observations_produce_identical_persisted_decisions(self):
+        with tempfile.TemporaryDirectory() as root:
+            root = Path(root)
+            first = root / "first"
+            second = root / "second"
+            first.mkdir()
+            second.mkdir()
+            self.state_with_observations(first, 4)
+            self.state_with_observations(second, 4)
+            first_result = p.decide(first / "state.json", first / "decision")
+            second_result = p.decide(second / "state.json", second / "decision")
+            self.assertEqual(first_result, second_result)
+            self.assertEqual((first / "state.json").read_bytes(), (second / "state.json").read_bytes())
+
     def test_duplicate_even_if_identical(self):
         source = candles()
         _, report = checked(source + [source[0]])
@@ -95,6 +233,113 @@ class ValidationTests(unittest.TestCase):
         source = candles()
         source[0][5] = 0
         self.assertEqual(checked(source)[1]["status"], "PASS")
+
+
+class VirtualExecutionTests(unittest.TestCase):
+    def prepare(self, root, count, closes=None):
+        DecisionTests().state_with_observations(root, count, closes=closes)
+        p.decide(root / "state.json", root / "decisions")
+        return root / "state.json"
+
+    def test_enter_and_exit_use_next_open_and_transition_binary_position(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            state = self.prepare(root, 5)
+            result = p.execute_virtual(state, root / "execution")
+            self.assertEqual([(item["action"], item["price"]) for item in result["new_executions"]],
+                             [("ENTER", 10.5), ("EXIT", 14.5)])
+            self.assertEqual([(item["virtual_position_before"], item["virtual_position_after"])
+                              for item in result["new_executions"]], [(0, 1), (1, 0)])
+            self.assertTrue(all(item["price"] != 11.0 for item in result["new_executions"]))
+            self.assertEqual(result["virtual_position"], 0)
+
+    def test_hold_and_warmup_do_not_create_pending_actions(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            state = self.prepare(root, 3, closes=[10, 11, 10.5])
+            result = p.execute_virtual(state, root / "execution")
+            self.assertEqual(result["new_executions"], [])
+            self.assertEqual(result["pending_actions"], [])
+
+    def test_missing_next_open_keeps_action_pending_and_replay_is_idempotent(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            state = self.prepare(root, 3, closes=[10, 11, 12])
+            first = p.execute_virtual(state, root / "first")
+            second = p.execute_virtual(state, root / "second")
+            self.assertEqual(first["new_executions"], [])
+            self.assertEqual(len(first["pending_actions"]), 1)
+            self.assertEqual(second["new_executions"], [])
+            self.assertEqual(len(second["pending_actions"]), 1)
+
+    def test_execution_persistence_and_determinism(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            first = root / "first"
+            second = root / "second"
+            first.mkdir()
+            second.mkdir()
+            state_a = self.prepare(first, 5)
+            state_b = self.prepare(second, 5)
+            result_a = p.execute_virtual(state_a, first / "execution")
+            result_b = p.execute_virtual(state_b, second / "execution")
+            self.assertEqual(result_a, result_b)
+            self.assertEqual(state_a.read_bytes(), state_b.read_bytes())
+            persisted = json.loads(state_a.read_bytes())
+            self.assertEqual(len(persisted["executions"]), 2)
+            self.assertEqual(len({item["identity"] for item in persisted["executions"]}), 2)
+
+    def test_open_event_is_separate_and_executes_without_full_ohlcv(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            state = self.prepare(root, 3, closes=[10, 11, 12])
+            pending = p.execute_virtual(state, root / "pending")
+            self.assertEqual(len(pending["pending_actions"]), 1)
+            event = {
+                "identity": "BTC-USD|86400|2024-01-04T00:00:00Z",
+                "instrument": "BTC-USD",
+                "frequency_seconds": 86400,
+                "timestamp": "2024-01-04T00:00:00Z",
+                "open": 25.0,
+                "closed": False,
+            }
+            captured = p.capture_open_event(state, event, root / "open-event")
+            result = p.execute_virtual(state, root / "execution")
+            self.assertEqual(captured["open_event"], event)
+            self.assertEqual(result["new_executions"][0]["price"], 25.0)
+            self.assertEqual(result["new_executions"][0]["execution_observation_identity"], event["identity"])
+            self.assertEqual(result["virtual_position"], 1)
+            persisted = json.loads(state.read_bytes())
+            self.assertEqual(persisted["observations"][-1]["timestamp"], "2024-01-03T00:00:00Z")
+            self.assertEqual(persisted["open_events"][0], event)
+
+    def test_invalid_or_repeated_open_event_does_not_duplicate_execution(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            state = self.prepare(root, 3, closes=[10, 11, 12])
+            p.execute_virtual(state, root / "pending")
+            event = {"identity": "BTC-USD|86400|2024-01-04T00:00:00Z",
+                     "instrument": "BTC-USD", "frequency_seconds": 86400,
+                     "timestamp": "2024-01-04T00:00:00Z", "open": 25.0, "closed": False}
+            p.capture_open_event(state, event, root / "open-event")
+            first = p.execute_virtual(state, root / "first")
+            second = p.execute_virtual(state, root / "second")
+            self.assertEqual(len(first["new_executions"]), 1)
+            self.assertEqual(second["new_executions"], [])
+            self.assertEqual(len(json.loads(state.read_bytes())["executions"]), 1)
+
+    def test_incompatible_open_event_is_rejected_without_state_change(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            state = self.prepare(root, 3, closes=[10, 11, 12])
+            p.execute_virtual(state, root / "pending")
+            before = state.read_bytes()
+            event = {"identity": "BTC-USD|3600|2024-01-04T00:00:00Z",
+                     "instrument": "BTC-USD", "frequency_seconds": 3600,
+                     "timestamp": "2024-01-04T00:00:00Z", "open": 25.0, "closed": False}
+            with self.assertRaisesRegex(ValueError, "incomplete or incompatible"):
+                p.capture_open_event(state, event, root / "open-event")
+            self.assertEqual(state.read_bytes(), before)
 
 
 class EvaluationTests(unittest.TestCase):
