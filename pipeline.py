@@ -549,6 +549,107 @@ def load_paper_session_warmup(state_path, output, observations):
     return result
 
 
+def _valid_operational_observation(observation, started_epoch, processed_epoch):
+    if not isinstance(observation, dict) or set(observation) != {
+            "identity", "instrument", "timestamp", "open", "high", "low",
+            "close", "volume"}:
+        return False
+    timestamp = observation.get("timestamp")
+    if not _explicit_utc(timestamp) or observation.get("instrument") != "BTC-USD" \
+            or observation.get("identity") != f"BTC-USD|86400|{timestamp}":
+        return False
+    numbers = [observation.get(name) for name in ("open", "high", "low", "close", "volume")]
+    if not all(type(value) in (int, float) and math.isfinite(value) for value in numbers):
+        return False
+    observation_epoch = epoch(timestamp)
+    return (
+        observation["volume"] >= 0
+        and observation["low"] <= min(observation["open"], observation["close"])
+        and observation["high"] >= max(observation["open"], observation["close"])
+        and observation_epoch % 86400 == 0
+        and observation_epoch > started_epoch
+        and observation_epoch + 86400 <= processed_epoch
+    )
+
+
+def _paper_session_running_position(decisions):
+    position = 0
+    for decision in decisions:
+        if decision.get("target_position") is not None:
+            position = decision["target_position"]
+    return position
+
+
+def process_paper_session_observation(state_path, output, observation, processed_at):
+    """Route one closed, post-started_at BTC-USD candle to a causal SMA3 PAPER decision."""
+    state_path = Path(state_path)
+    state = load_paper_session(state_path)
+    if not _explicit_utc(processed_at):
+        raise ValueError("An explicit UTC processing instant is required")
+    started_epoch = epoch(state["started_at"])
+    processed_epoch = epoch(processed_at)
+    if processed_epoch < started_epoch:
+        raise ValueError("Processing instant cannot precede session start")
+    if not _valid_operational_observation(observation, started_epoch, processed_epoch):
+        raise ValueError("Observation is not a valid closed post-start operational candle")
+
+    identity = observation["identity"]
+    if identity in {item["identity"] for item in state["warmup_observations"]}:
+        raise ValueError("Observation identity collides with an existing warm-up candle")
+
+    existing_processed = {item["identity"]: item for item in state["processed_observations"]}
+    if identity in existing_processed:
+        if existing_processed[identity] != observation:
+            raise ValueError("Persisted operational observation cannot be silently altered")
+        existing_decision = next(
+            (item for item in state["decisions"] if item["observation_identity"] == identity),
+            None)
+        state_bytes = state_path.read_bytes()
+        result = {"status": "PASS", "new_observation": False, "new_decision": False,
+                  "decision": existing_decision,
+                  "processed_observations": len(state["processed_observations"]),
+                  "decision_count": len(state["decisions"]),
+                  "state_sha256": digest(state_bytes)}
+        publish(output, {"paper-decision.json": encoded(result)})
+        return result
+
+    combined = sorted(state["warmup_observations"] + state["processed_observations"]
+                       + [observation], key=lambda row: row["timestamp"])
+    index = next(i for i, row in enumerate(combined) if row["identity"] == identity)
+    closes = [row["close"] for row in combined[max(0, index - 2):index + 1]]
+    sma = math.fsum(closes) / 3.0 if len(closes) == 3 else None
+    previous_position = _paper_session_running_position(state["decisions"])
+    if sma is None:
+        decision, target_position = "NO_DECISION", None
+    else:
+        target_position = 1 if observation["close"] > sma else 0
+        decision = ("ENTER" if target_position == 1 and previous_position == 0 else
+                    "EXIT" if target_position == 0 and previous_position == 1 else "HOLD")
+
+    record = {"identity": f"SMA3|{identity}", "session_id": state["session_id"],
+              "observation_identity": identity, "instrument": "BTC-USD",
+              "frequency_seconds": 86400, "timestamp": observation["timestamp"],
+              "strategy": "SMA3_LONG_ONLY",
+              "parameters": {"window": 3, "entry": "close > sma_close_3",
+                             "exit": "close <= sma_close_3"},
+              "close": observation["close"], "sma_close_3": sma,
+              "warm_up": sma is None, "decision": decision,
+              "target_position": target_position,
+              "previous_position": previous_position}
+
+    state["processed_observations"] = state["processed_observations"] + [observation]
+    state["decisions"] = state["decisions"] + [record]
+    _atomic_write(state_path, encoded(state))
+    state_bytes = state_path.read_bytes()
+    result = {"status": "PASS", "new_observation": True, "new_decision": True,
+              "decision": record,
+              "processed_observations": len(state["processed_observations"]),
+              "decision_count": len(state["decisions"]),
+              "state_sha256": digest(state_bytes)}
+    publish(output, {"paper-decision.json": encoded(result)})
+    return result
+
+
 def execute_virtual(state_path, output):
     """Execute persisted ENTER/EXIT decisions only at the next candle open."""
     state_path = Path(state_path)
