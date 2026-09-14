@@ -919,6 +919,141 @@ def prepare_real_order_proposal(state_path, output, decision_identity, risk_conf
     return result
 
 
+def _paper_position_value(internal_position_state):
+    return {"FLAT": 0, "LONG": 1}.get(internal_position_state)
+
+
+def prepare_paper_session_proposal(session_path, proposals_path, output,
+                                   decision_identity, risk_config):
+    """Persist one bounded proposal from a PAPER session decision, storage kept
+    separate from the session's own strict state.json contract."""
+    session_path = Path(session_path)
+    proposals_path = Path(proposals_path)
+    session = load_paper_session(session_path)
+    decisions = [item for item in session["decisions"]
+                 if item.get("identity") == decision_identity]
+    if len(decisions) != 1:
+        raise ValueError("Exactly one persisted SMA3 decision is required")
+    decision = decisions[0]
+
+    registry = {"proposals": []}
+    if proposals_path.exists():
+        registry = json.loads(proposals_path.read_bytes())
+        if not isinstance(registry, dict) or not isinstance(registry.get("proposals"), list):
+            raise ValueError("Persisted proposal registry is invalid")
+    existing = list(registry["proposals"])
+    matching = [item for item in existing
+                if item.get("decision_identity") == decision_identity]
+    if matching:
+        if len(matching) != 1:
+            raise ValueError("Duplicate persisted proposals for one decision")
+        result = {"proposal_created": False, "proposal": matching[0],
+                  "proposal_count": len(existing), "broker_request_sent": False,
+                  "real_market_effect": "NONE",
+                  "session_sha256": digest(session_path.read_bytes()),
+                  "proposals_sha256": digest(proposals_path.read_bytes())}
+        publish(output, {"paper-order-proposal.json": encoded(result)})
+        return result
+
+    allowed = {
+        "broker", "account_target", "instrument", "max_capital_usd",
+        "max_exposure_usd", "risk_budget_usd", "proposed_notional_usd",
+        "operational_risk_usd", "order_type", "limit_price",
+        "manual_approval_required", "risk_contract_identity",
+        "risk_contract_version",
+    }
+    if not isinstance(risk_config, dict) or set(risk_config) != allowed:
+        raise ValueError("Risk configuration fields are incomplete or unsupported")
+
+    reasons = []
+    try:
+        max_capital = _proposal_decimal(risk_config["max_capital_usd"], "max_capital_usd")
+        max_exposure = _proposal_decimal(risk_config["max_exposure_usd"], "max_exposure_usd")
+        risk_budget = _proposal_decimal(risk_config["risk_budget_usd"], "risk_budget_usd")
+        notional = _proposal_decimal(risk_config["proposed_notional_usd"], "proposed_notional_usd")
+        operational_risk = _proposal_decimal(risk_config["operational_risk_usd"], "operational_risk_usd")
+        limit_price = _proposal_decimal(risk_config["limit_price"], "limit_price")
+    except ValueError as error:
+        reasons.append(str(error))
+        max_capital = max_exposure = risk_budget = notional = operational_risk = limit_price = Decimal(0)
+
+    if risk_config["broker"] != "Alpaca":
+        reasons.append("broker must be Alpaca")
+    if risk_config["account_target"] != "real/live":
+        reasons.append("account target must be declared as real/live")
+    if session.get("instrument") != "BTC-USD" or decision.get("instrument") != "BTC-USD" \
+            or risk_config["instrument"] != "BTC-USD":
+        reasons.append("instrument must be BTC-USD")
+    if decision.get("strategy") != "SMA3_LONG_ONLY":
+        reasons.append("decision must originate from SMA3_LONG_ONLY")
+    action = decision.get("decision")
+    position = _paper_position_value(session.get("internal_position_state"))
+    if action not in ("ENTER", "EXIT"):
+        reasons.append("decision action must be ENTER or EXIT")
+    elif position is None or (action, position) not in (("ENTER", 0), ("EXIT", 1)):
+        reasons.append("decision is incompatible with the current PAPER session position")
+    if max_capital != Decimal("200"):
+        reasons.append("approved available capital must be exactly 200 USD")
+    if max_exposure <= 0 or max_exposure > Decimal("50"):
+        reasons.append("maximum exposure exceeds the approved 50 USD ceiling")
+    if notional <= 0 or notional > max_exposure or notional > max_capital:
+        reasons.append("proposed exposure exceeds the configured limit")
+    if risk_budget != Decimal("5"):
+        reasons.append("operational risk budget must be exactly 5 USD")
+    if operational_risk < 0 or operational_risk > risk_budget:
+        reasons.append("operational risk exceeds the 5 USD threshold")
+    if risk_config["order_type"] != "limit" or limit_price <= 0:
+        reasons.append("a positive limit price and limit order type are required")
+    if risk_config["manual_approval_required"] is not True:
+        reasons.append("manual approval must be explicitly required")
+    if risk_config["risk_contract_version"] != PHASE4_RISK_CONTRACT_VERSION:
+        reasons.append("risk contract version is not the approved version")
+    if risk_config["risk_contract_identity"] != phase4_risk_contract_identity(risk_config):
+        reasons.append("risk contract identity does not match its terms")
+
+    side = {"ENTER": "BUY", "EXIT": "SELL"}.get(action)
+    proposal = {
+        "identity": f"PAPER_SESSION_ORDER_PROPOSAL|{decision_identity}",
+        "session_id": session["session_id"],
+        "decision_identity": decision_identity,
+        "observation_identity": decision.get("observation_identity"),
+        "decision_timestamp": decision.get("timestamp"),
+        "created_at": decision.get("timestamp"),
+        "action": action,
+        "instrument": "BTC-USD",
+        "side": side,
+        "order_type": "LIMIT",
+        "notional_usd": _proposal_number(notional),
+        "quantity": _proposal_number(notional / limit_price) if limit_price > 0 else None,
+        "limit_price": _proposal_number(limit_price) if limit_price > 0 else None,
+        "exposure_usd": _proposal_number(notional),
+        "risk": {
+            "broker": "Alpaca", "account_target": "real/live",
+            "max_capital_usd": _proposal_number(max_capital),
+            "max_exposure_usd": _proposal_number(max_exposure),
+            "risk_budget_usd": _proposal_number(risk_budget),
+            "operational_risk_usd": _proposal_number(operational_risk),
+            "risk_budget_is_guaranteed_maximum_loss": False,
+            "risk_contract_identity": risk_config["risk_contract_identity"],
+            "risk_contract_version": risk_config["risk_contract_version"],
+        },
+        "status": "REJECTED" if reasons else "PENDING_MANUAL_APPROVAL",
+        "transmission_status": "NOT_SENT",
+        "rejection_reasons": reasons,
+    }
+    proposal["proposal_identity"] = _proposal_identity(proposal)
+    existing.append(proposal)
+    registry["proposals"] = existing
+    _atomic_write(proposals_path, encoded(registry))
+    result = {"proposal_created": True, "proposal": proposal,
+              "proposal_count": len(existing), "broker_request_sent": False,
+              "real_market_effect": "NONE",
+              "session_sha256": digest(session_path.read_bytes()),
+              "proposals_sha256": digest(proposals_path.read_bytes())}
+    publish(output, {"paper-order-proposal.json": encoded(result)})
+    return result
+
+
 def record_manual_approval(state_path, output, proposal_id, proposal_identity,
                            actor, approved_at, decision):
     """Persist one explicit manual decision; perform no subsequent action."""
