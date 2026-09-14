@@ -393,6 +393,162 @@ def decide(state_path, output):
     return result
 
 
+PAPER_SESSION_SCHEMA_VERSION = "1"
+
+
+def _paper_session_identity(session_id, started_at):
+    content = {"session_id": session_id, "mode": "PAPER",
+               "instrument": "BTC-USD", "started_at": started_at,
+               "schema_version": PAPER_SESSION_SCHEMA_VERSION}
+    return f"PAPER_SESSION_STATE|{digest(encoded(content))}"
+
+
+def _valid_paper_session_id(value):
+    return isinstance(value, str) and value.startswith("PAPER_SESSION|") \
+        and len(value) <= 160 and len(value) > len("PAPER_SESSION|") \
+        and all(33 <= ord(char) <= 126 for char in value)
+
+
+def paper_session_state_is_valid(state):
+    """Validate the local PAPER session envelope without broker access."""
+    if not isinstance(state, dict) or set(state) != {
+            "session_id", "session_identity", "schema_version", "mode",
+            "instrument", "started_at", "internal_position_state",
+            "broker_position_observed", "reconciliation_status",
+            "warmup_observations", "processed_observations", "decisions",
+            "executions", "pending_actions", "broker_submissions"}:
+        return False
+    arrays = ("warmup_observations", "processed_observations", "decisions",
+              "executions", "pending_actions", "broker_submissions")
+    return (
+        _valid_paper_session_id(state.get("session_id"))
+        and state.get("session_identity") == _paper_session_identity(
+            state["session_id"], state.get("started_at"))
+        and state.get("schema_version") == PAPER_SESSION_SCHEMA_VERSION
+        and state.get("mode") == "PAPER"
+        and state.get("instrument") == "BTC-USD"
+        and _explicit_utc(state.get("started_at"))
+        and state.get("internal_position_state") in ("FLAT", "LONG")
+        and state.get("broker_position_observed") in (0, 1, "UNKNOWN")
+        and state.get("reconciliation_status") in (
+            "PENDING_BROKER_OBSERVATION", "RECONCILED", "POSITION_MISMATCH")
+        and all(isinstance(state.get(name), list) for name in arrays)
+    )
+
+
+def initialize_paper_session(state_path, output, session_id, mode, started_at):
+    """Create or recover one explicit PAPER session; never overwrite another state."""
+    state_path = Path(state_path)
+    if mode != "PAPER":
+        raise ValueError("Session mode must be explicit PAPER")
+    if not _valid_paper_session_id(session_id):
+        raise ValueError("A valid explicit PAPER session identity is required")
+    if not _explicit_utc(started_at):
+        raise ValueError("A canonical UTC session start is required")
+    if state_path.exists():
+        state = json.loads(state_path.read_bytes())
+        if not paper_session_state_is_valid(state):
+            raise ValueError("Existing state is not an operational PAPER session")
+        if state["session_id"] != session_id or state["started_at"] != started_at:
+            raise ValueError("Existing PAPER session cannot be reused for another identity")
+        created = False
+    else:
+        state = {
+            "session_id": session_id,
+            "session_identity": _paper_session_identity(session_id, started_at),
+            "schema_version": PAPER_SESSION_SCHEMA_VERSION,
+            "mode": "PAPER", "instrument": "BTC-USD", "started_at": started_at,
+            "internal_position_state": "FLAT",
+            "broker_position_observed": "UNKNOWN",
+            "reconciliation_status": "PENDING_BROKER_OBSERVATION",
+            "warmup_observations": [], "processed_observations": [],
+            "decisions": [], "executions": [], "pending_actions": [],
+            "broker_submissions": [],
+        }
+        if not paper_session_state_is_valid(state):
+            raise ValueError("Constructed PAPER session is invalid")
+        _atomic_write(state_path, encoded(state))
+        created = True
+    state_bytes = state_path.read_bytes()
+    result = {"status": "PASS", "created": created, "session": state,
+              "network_calls": 0, "credentials_used": False,
+              "paper_orders_sent": 0, "live_orders_sent": 0,
+              "state_sha256": digest(state_bytes)}
+    publish(output, {"paper-session.json": encoded(result)})
+    return result
+
+
+def load_paper_session(state_path):
+    """Reload one persisted PAPER session and fail closed on incompatible state."""
+    state_path = Path(state_path)
+    state = json.loads(state_path.read_bytes())
+    if not paper_session_state_is_valid(state):
+        raise ValueError("Persisted PAPER session is invalid or incompatible")
+    return state
+
+
+def _valid_warmup_observation(observation, started_epoch):
+    if not isinstance(observation, dict) or set(observation) != {
+            "identity", "instrument", "timestamp", "open", "high", "low",
+            "close", "volume"}:
+        return False
+    timestamp = observation.get("timestamp")
+    if not _explicit_utc(timestamp) or observation.get("instrument") != "BTC-USD" \
+            or observation.get("identity") != f"BTC-USD|86400|{timestamp}":
+        return False
+    numbers = [observation.get(name) for name in ("open", "high", "low", "close", "volume")]
+    return all(type(value) in (int, float) and math.isfinite(value) for value in numbers) \
+        and observation["volume"] >= 0 \
+        and observation["low"] <= min(observation["open"], observation["close"]) \
+        and observation["high"] >= max(observation["open"], observation["close"]) \
+        and epoch(timestamp) % 86400 == 0 \
+        and epoch(timestamp) + 86400 <= started_epoch
+
+
+def load_paper_session_warmup(state_path, output, observations):
+    """Persist closed SMA3 warm-up facts without routing them into decisions."""
+    state_path = Path(state_path)
+    state = load_paper_session(state_path)
+    if not isinstance(observations, list) or len(observations) < 3:
+        raise ValueError("At least three closed warm-up observations are required")
+    started_epoch = epoch(state["started_at"])
+    if not all(_valid_warmup_observation(item, started_epoch) for item in observations):
+        raise ValueError("Warm-up contains an invalid, unclosed, or post-start observation")
+    ordered = sorted(observations, key=lambda item: item["timestamp"])
+    identities = [item["identity"] for item in ordered]
+    timestamps = [epoch(item["timestamp"]) for item in ordered]
+    if len(set(identities)) != len(identities) \
+            or any(later - earlier != 86400
+                   for earlier, later in zip(timestamps, timestamps[1:])):
+        raise ValueError("Warm-up observations must be unique consecutive daily candles")
+    existing = state["warmup_observations"]
+    if existing:
+        if existing != ordered:
+            raise ValueError("Persisted warm-up cannot be silently replaced")
+        loaded = False
+    else:
+        if state["processed_observations"] or state["decisions"] \
+                or state["executions"] or state["pending_actions"] \
+                or state["broker_submissions"]:
+            raise ValueError("Warm-up must precede all operational processing")
+        state["warmup_observations"] = ordered
+        _atomic_write(state_path, encoded(state))
+        loaded = True
+    state_bytes = state_path.read_bytes()
+    result = {"status": "PASS", "loaded": loaded,
+              "session_id": state["session_id"],
+              "warmup_observations": len(state["warmup_observations"]),
+              "processed_operational_observations": len(state["processed_observations"]),
+              "retroactive_decisions": len(state["decisions"]),
+              "executions": len(state["executions"]),
+              "pending_actions": len(state["pending_actions"]),
+              "broker_submissions": len(state["broker_submissions"]),
+              "network_calls": 0, "credentials_used": False,
+              "state_sha256": digest(state_bytes)}
+    publish(output, {"paper-warmup.json": encoded(result)})
+    return result
+
+
 def execute_virtual(state_path, output):
     """Execute persisted ENTER/EXIT decisions only at the next candle open."""
     state_path = Path(state_path)
@@ -2418,6 +2574,16 @@ def main():
     decision = commands.add_parser("decide")
     decision.add_argument("--state", required=True)
     decision.add_argument("--output", required=True)
+    paper_session = commands.add_parser("initialize-paper-session")
+    paper_session.add_argument("--state", required=True)
+    paper_session.add_argument("--output", required=True)
+    paper_session.add_argument("--session-id", required=True)
+    paper_session.add_argument("--mode", required=True)
+    paper_session.add_argument("--started-at", required=True)
+    paper_warmup = commands.add_parser("load-paper-warmup")
+    paper_warmup.add_argument("--state", required=True)
+    paper_warmup.add_argument("--output", required=True)
+    paper_warmup.add_argument("--input", required=True)
     execution = commands.add_parser("execute-virtual")
     execution.add_argument("--state", required=True)
     execution.add_argument("--output", required=True)
@@ -2501,6 +2667,13 @@ def main():
             result = observe(args.input, args.state, args.output)
         elif args.command == "decide":
             result = decide(args.state, args.output)
+        elif args.command == "initialize-paper-session":
+            result = initialize_paper_session(
+                args.state, args.output, args.session_id, args.mode, args.started_at)
+        elif args.command == "load-paper-warmup":
+            observations = json.loads(Path(args.input).read_bytes())
+            result = load_paper_session_warmup(
+                args.state, args.output, observations)
         elif args.command == "execute-virtual":
             result = execute_virtual(args.state, args.output)
         elif args.command == "prepare-real-order":
