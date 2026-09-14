@@ -2009,6 +2009,377 @@ def observe_alpaca_paper_position(state_path, output, attempt_id, observed_at,
     return result
 
 
+ALPACA_LIVE_HOST = "api.alpaca.markets"
+ALPACA_LIVE_BASE_ENDPOINT = f"https://{ALPACA_LIVE_HOST}/v2"
+LIVE_REQUEST_MAX_AGE_SECONDS = 900
+
+
+def _live_order_body(request):
+    body = _paper_order_body(request)
+    body["client_order_id"] = (
+        "tg-p4-live-" + digest(request["identity"].encode("utf-8"))[:36])
+    return body
+
+
+def _live_request_is_fresh(request, attempted_at):
+    if not _explicit_utc(attempted_at) or not _explicit_utc(request.get("prepared_at")):
+        return False
+    age = epoch(attempted_at) - epoch(request["prepared_at"])
+    return 0 <= age <= LIVE_REQUEST_MAX_AGE_SECONDS
+
+
+def alpaca_live_https_request(method, host, path, body, timeout_seconds,
+                              credential_injector):
+    """Perform one allowlisted LIVE request; PAPER targets are never accepted."""
+    allowed = (
+        method == "POST" and path == "/v2/orders" and isinstance(body, dict)
+        or method == "GET" and path.startswith("/v2/orders/") and body is None
+        or method == "GET" and path.startswith(
+            "/v2/orders:by_client_order_id?client_order_id=tg-p4-live-") and body is None
+        or method == "DELETE" and path.startswith("/v2/orders/") and body is None
+        or method == "GET" and path == "/v2/positions/BTC%2FUSD" and body is None
+    )
+    if host != ALPACA_LIVE_HOST or not allowed or not callable(credential_injector):
+        raise ValueError("LIVE transport received a forbidden target")
+    headers = credential_injector({
+        "Accept": "application/json",
+        "User-Agent": "TramitaGO-Quant-Core-Phase4-Live/0.1",
+    })
+    payload = None
+    if body is not None:
+        payload = json.dumps(body, sort_keys=True, allow_nan=False,
+                             separators=(",", ":")).encode("utf-8")
+        headers = {**headers, "Content-Type": "application/json"}
+    connection = HTTPSConnection(host, timeout=timeout_seconds)
+    try:
+        connection.request(method, path, body=payload, headers=headers)
+        response = connection.getresponse()
+        response_body = response.read(1_000_001)
+        return {"status_code": response.status,
+                "content_type": response.getheader("Content-Type"),
+                "location": response.getheader("Location"),
+                "body": response_body}
+    finally:
+        connection.close()
+
+
+def _live_attempt_result(state_path, output, attempt, status, *, sent):
+    state_bytes = Path(state_path).read_bytes()
+    result = {"status": status, "attempt": attempt,
+              "live_request_sent": sent, "paper_request_sent": False,
+              "real_capital_used_during_implementation": False,
+              "state_sha256": digest(state_bytes)}
+    publish(output, {"live-order-attempt.json": encoded(result)})
+    return result
+
+
+def execute_alpaca_live_order(state_path, output, request_id, attempted_at,
+                              timeout_seconds, credential_provider, transport):
+    """Submit one current, approved LIVE request at most once."""
+    state_path = Path(state_path)
+    state = json.loads(state_path.read_bytes())
+    attempts = state.get("alpaca_live_order_attempts", [])
+    if not isinstance(attempts, list):
+        raise ValueError("Persisted LIVE order attempts must be a list")
+    existing = [item for item in attempts if isinstance(item, dict)
+                and item.get("request_id") == request_id]
+    if existing:
+        if len(existing) != 1:
+            raise ValueError("Duplicate LIVE order attempts for one request")
+        attempt = existing[0]
+        if attempt.get("state") in ("ATTEMPT_RECORDED", "SEND_ATTEMPTED"):
+            attempt["state"] = "UNKNOWN"
+            attempt["result"] = "UNKNOWN"
+            attempt["error_category"] = "RECOVERED_AMBIGUOUS_ATTEMPT"
+            attempt["reconciliation_status"] = "REQUIRED"
+            attempt["result_persisted"] = True
+            _atomic_write(state_path, encoded(state))
+        return _live_attempt_result(
+            state_path, output, attempt, attempt["result"], sent=False)
+
+    requests = state.get("alpaca_prepared_requests", [])
+    matching = ([item for item in requests if isinstance(item, dict)
+                 and item.get("identity") == request_id]
+                if isinstance(requests, list) else [])
+    request = matching[0] if len(matching) == 1 else None
+    valid_timeout = type(timeout_seconds) in (int, float) \
+        and math.isfinite(timeout_seconds) and timeout_seconds > 0
+    valid_request = (
+        request is not None
+        and prepared_alpaca_request_is_valid(state, request)
+        and request.get("target_environment") == "LIVE"
+        and _live_request_is_fresh(request, attempted_at)
+        and valid_timeout and callable(credential_provider) and callable(transport)
+    )
+    if not valid_request:
+        result = {"status": "BLOCKED_REQUEST", "attempt": None,
+                  "live_request_sent": False, "paper_request_sent": False,
+                  "real_capital_used_during_implementation": False,
+                  "state_sha256": digest(state_path.read_bytes())}
+        publish(output, {"live-order-attempt.json": encoded(result)})
+        return result
+    try:
+        injector = credential_provider()
+    except BaseException:
+        injector = None
+    if not callable(injector):
+        result = {"status": "BLOCKED_CREDENTIALS", "attempt": None,
+                  "live_request_sent": False, "paper_request_sent": False,
+                  "real_capital_used_during_implementation": False,
+                  "state_sha256": digest(state_path.read_bytes())}
+        publish(output, {"live-order-attempt.json": encoded(result)})
+        return result
+
+    order_body = _live_order_body(request)
+    request_hash = digest(encoded(request))
+    attempt_content = {"request_id": request_id, "request_hash": request_hash,
+                       "payload_hash": request["payload_sha256"],
+                       "client_order_id": order_body["client_order_id"]}
+    attempt = {
+        "identity": "ALPACA_LIVE_ORDER_ATTEMPT|" + digest(encoded(attempt_content)),
+        **attempt_content,
+        "decision_id": request["decision_identity"],
+        "proposal_id": request["proposal_id"],
+        "approval_id": request["approval_identity"],
+        "risk_revalidation_id": request["revalidation_identity"],
+        "risk_contract_identity": request["risk_contract_identity"],
+        "risk_contract_version": request["risk_contract_version"],
+        "environment": "LIVE", "endpoint_host": ALPACA_LIVE_HOST,
+        "created_at": attempted_at, "state": "ATTEMPT_RECORDED",
+        "result": None, "http_status": None, "order": None,
+        "error_category": None, "reconciliation_status": "NOT_STARTED",
+        "live_request_sent": False, "paper_request_sent": False,
+        "credentials_persisted": False, "result_persisted": False,
+    }
+    attempts.append(attempt)
+    state["alpaca_live_order_attempts"] = attempts
+    _atomic_write(state_path, encoded(state))
+    attempt["state"] = "SEND_ATTEMPTED"
+    _atomic_write(state_path, encoded(state))
+    try:
+        response = transport("POST", ALPACA_LIVE_HOST, "/v2/orders", order_body,
+                             timeout_seconds, injector)
+        attempt["live_request_sent"] = True
+        code, payload = _paper_json_response(response)
+        attempt["http_status"] = code
+        if code in (200, 201):
+            attempt["order"] = _paper_order_snapshot(
+                payload, order_body["client_order_id"])
+            attempt["state"] = attempt["result"] = "ACCEPTED"
+            attempt["reconciliation_status"] = "ORDER_OBSERVATION_REQUIRED"
+        elif 400 <= code < 500:
+            attempt["state"] = attempt["result"] = "REJECTED"
+            attempt["error_category"] = "BROKER_REJECTED"
+            attempt["reconciliation_status"] = "BROKER_REJECTION_RECORDED"
+        else:
+            attempt["state"] = attempt["result"] = "UNKNOWN"
+            attempt["error_category"] = "AMBIGUOUS_HTTP_STATUS"
+            attempt["reconciliation_status"] = "REQUIRED"
+    except BaseException as error:
+        attempt["live_request_sent"] = True
+        attempt["state"] = attempt["result"] = "UNKNOWN"
+        attempt["error_category"] = type(error).__name__
+        attempt["reconciliation_status"] = "REQUIRED"
+    attempt["result_persisted"] = True
+    _atomic_write(state_path, encoded(state))
+    return _live_attempt_result(
+        state_path, output, attempt, attempt["result"], sent=True)
+
+
+def _live_existing_attempt(state, attempt_id):
+    attempts = state.get("alpaca_live_order_attempts", [])
+    matching = ([item for item in attempts if isinstance(item, dict)
+                 and item.get("identity") == attempt_id]
+                if isinstance(attempts, list) else [])
+    attempt = matching[0] if len(matching) == 1 else None
+    if attempt is None or attempt.get("environment") != "LIVE" \
+            or attempt.get("result") not in ("ACCEPTED", "REJECTED", "UNKNOWN"):
+        raise ValueError("A unique persisted LIVE order attempt is required")
+    return attempt
+
+
+def observe_alpaca_live_order(state_path, output, attempt_id, observed_at,
+                              timeout_seconds, credential_provider, transport):
+    """Query one known LIVE order without creating or resending an order."""
+    state_path = Path(state_path)
+    state = json.loads(state_path.read_bytes())
+    attempt = _live_existing_attempt(state, attempt_id)
+    if not _explicit_utc(observed_at):
+        raise ValueError("An explicit UTC timestamp is required")
+    observations = state.get("alpaca_live_order_observations", [])
+    if not isinstance(observations, list):
+        raise ValueError("Persisted LIVE order observations must be a list")
+    identity = "ALPACA_LIVE_ORDER_OBSERVATION|" + digest(encoded(
+        {"attempt_id": attempt_id, "observed_at": observed_at}))
+    existing = [item for item in observations if item.get("identity") == identity]
+    if existing:
+        observation = existing[0]
+    else:
+        injector = credential_provider()
+        if not callable(injector):
+            raise ValueError("LIVE credentials are absent")
+        order = attempt.get("order")
+        if isinstance(order, dict):
+            known_order_id = order["broker_order_id"]
+            path = "/v2/orders/" + _paper_resource_path(known_order_id)
+        else:
+            known_order_id = None
+            path = ("/v2/orders:by_client_order_id?client_order_id="
+                    + _paper_resource_path(attempt["client_order_id"]))
+        try:
+            response = transport("GET", ALPACA_LIVE_HOST, path, None,
+                                 timeout_seconds, injector)
+            code, payload = _paper_json_response(response)
+            snapshot = _paper_order_snapshot(payload) if code == 200 else None
+            status = "OBSERVED" if snapshot else "UNAVAILABLE"
+            error = None if snapshot else "ORDER_NOT_AVAILABLE"
+        except BaseException as exc:
+            code, snapshot, status, error = None, None, "UNKNOWN", type(exc).__name__
+        broker_status = snapshot.get("status") if snapshot else None
+        reconciliation = (
+            "FILLED_AWAITING_POSITION" if broker_status == "filled" else
+            "PARTIAL_FILL_REQUIRES_CANCELLATION" if broker_status == "partially_filled" else
+            "OPEN_ORDER" if broker_status in {"new", "accepted", "pending_new"} else
+            "REQUIRED" if status == "UNKNOWN" else "TERMINAL_ORDER_OBSERVED")
+        observation = {
+            "identity": identity, "attempt_id": attempt_id,
+            "decision_id": attempt["decision_id"],
+            "proposal_id": attempt["proposal_id"],
+            "approval_id": attempt["approval_id"],
+            "risk_revalidation_id": attempt["risk_revalidation_id"],
+            "broker_order_id": (snapshot.get("broker_order_id")
+                                if snapshot else known_order_id),
+            "observed_at": observed_at, "http_status": code,
+            "status": status, "order": snapshot, "error_category": error,
+            "reconciliation_status": reconciliation,
+            "credentials_persisted": False,
+        }
+        observations.append(observation)
+        state["alpaca_live_order_observations"] = observations
+        _atomic_write(state_path, encoded(state))
+    result = {"status": observation["status"], "observation": observation,
+              "orders_sent": 0, "paper_orders_sent": 0,
+              "state_sha256": digest(state_path.read_bytes())}
+    publish(output, {"live-order-observation.json": encoded(result)})
+    return result
+
+
+def cancel_alpaca_live_remainder(state_path, output, attempt_id, cancelled_at,
+                                 timeout_seconds, credential_provider, transport):
+    """Cancel only the remainder of a previously observed partial LIVE fill."""
+    state_path = Path(state_path)
+    state = json.loads(state_path.read_bytes())
+    attempt = _live_existing_attempt(state, attempt_id)
+    observations = state.get("alpaca_live_order_observations", [])
+    relevant = [item for item in observations if isinstance(item, dict)
+                and item.get("attempt_id") == attempt_id and isinstance(item.get("order"), dict)]
+    latest = relevant[-1] if relevant else None
+    if latest is None or latest["order"].get("status") != "partially_filled" \
+            or not _explicit_utc(cancelled_at):
+        raise ValueError("An observed partial LIVE fill is required")
+    cancellations = state.get("alpaca_live_order_cancellations", [])
+    if not isinstance(cancellations, list):
+        raise ValueError("Persisted LIVE cancellations must be a list")
+    existing = [item for item in cancellations if item.get("attempt_id") == attempt_id]
+    if existing:
+        cancellation = existing[0]
+    else:
+        injector = credential_provider()
+        if not callable(injector):
+            raise ValueError("LIVE credentials are absent")
+        order_id = latest["order"]["broker_order_id"]
+        try:
+            response = transport("DELETE", ALPACA_LIVE_HOST,
+                                 "/v2/orders/" + _paper_resource_path(order_id),
+                                 None, timeout_seconds, injector)
+            code, _ = _paper_json_response(response)
+            status = "CANCELLED" if code == 204 else "UNKNOWN"
+            error = None if code == 204 else "CANCEL_NOT_CONFIRMED"
+        except BaseException as exc:
+            code, status, error = None, "UNKNOWN", type(exc).__name__
+        cancellation = {
+            "identity": "ALPACA_LIVE_CANCELLATION|" + digest(encoded(
+                {"attempt_id": attempt_id, "cancelled_at": cancelled_at})),
+            "attempt_id": attempt_id, "broker_order_id": order_id,
+            "cancelled_at": cancelled_at, "http_status": code, "status": status,
+            "error_category": error, "quantity_increased": False,
+            "new_order_created": False, "reconciliation_required": True,
+            "credentials_persisted": False,
+        }
+        cancellations.append(cancellation)
+        state["alpaca_live_order_cancellations"] = cancellations
+        _atomic_write(state_path, encoded(state))
+    result = {"status": cancellation["status"], "cancellation": cancellation,
+              "orders_sent": 0, "paper_orders_sent": 0,
+              "state_sha256": digest(state_path.read_bytes())}
+    publish(output, {"live-order-cancellation.json": encoded(result)})
+    return result
+
+
+def observe_alpaca_live_position(state_path, output, attempt_id, observed_at,
+                                 timeout_seconds, credential_provider, transport):
+    """Observe a sanitized real BTC/USD position without changing internal positions."""
+    state_path = Path(state_path)
+    state = json.loads(state_path.read_bytes())
+    attempt = _live_existing_attempt(state, attempt_id)
+    if not _explicit_utc(observed_at):
+        raise ValueError("An explicit UTC timestamp is required")
+    positions = state.get("alpaca_live_position_observations", [])
+    if not isinstance(positions, list):
+        raise ValueError("Persisted LIVE position observations must be a list")
+    identity = "ALPACA_LIVE_POSITION|" + digest(encoded(
+        {"attempt_id": attempt_id, "observed_at": observed_at}))
+    existing = [item for item in positions if item.get("identity") == identity]
+    if existing:
+        observation = existing[0]
+    else:
+        injector = credential_provider()
+        if not callable(injector):
+            raise ValueError("LIVE credentials are absent")
+        try:
+            response = transport("GET", ALPACA_LIVE_HOST,
+                                 "/v2/positions/BTC%2FUSD", None,
+                                 timeout_seconds, injector)
+            code, payload = _paper_json_response(response)
+            if code == 404:
+                status, snapshot, error = "UNAVAILABLE", None, "NO_OPEN_POSITION"
+            elif code == 200 and isinstance(payload, dict) \
+                    and payload.get("symbol") in ("BTC/USD", "BTCUSD"):
+                snapshot = {"symbol": "BTC/USD",
+                            "qty": _safe_broker_text(payload.get("qty"), 64),
+                            "side": _safe_broker_text(payload.get("side"), 16),
+                            "market_value": _safe_broker_text(payload.get("market_value"), 64),
+                            "avg_entry_price": _safe_broker_text(
+                                payload.get("avg_entry_price"), 64)}
+                status, error = "OBSERVED", None
+            else:
+                status, snapshot, error = "UNKNOWN", None, "POSITION_NOT_DETERMINABLE"
+        except BaseException as exc:
+            code, status, snapshot, error = None, "UNKNOWN", None, type(exc).__name__
+        observation = {
+            "identity": identity, "attempt_id": attempt_id,
+            "decision_id": attempt["decision_id"],
+            "proposal_id": attempt["proposal_id"],
+            "broker_order_id": (attempt.get("order") or {}).get("broker_order_id"),
+            "observed_at": observed_at, "http_status": code,
+            "status": status, "broker_position": snapshot,
+            "internal_target_position_changed": False,
+            "virtual_position_changed": False,
+            "reconciliation_status": ("POSITION_OBSERVED" if status == "OBSERVED"
+                                      else "NO_OPEN_POSITION" if status == "UNAVAILABLE"
+                                      else "REQUIRED"),
+            "error_category": error, "credentials_persisted": False,
+        }
+        positions.append(observation)
+        state["alpaca_live_position_observations"] = positions
+        _atomic_write(state_path, encoded(state))
+    result = {"status": observation["status"], "observation": observation,
+              "orders_sent": 0, "paper_orders_sent": 0,
+              "state_sha256": digest(state_path.read_bytes())}
+    publish(output, {"live-position-observation.json": encoded(result)})
+    return result
+
+
 ALPACA_PAPER_ACCOUNT_ENDPOINT = "https://paper-api.alpaca.markets/v2/account"
 ALPACA_LIVE_ACCOUNT_ENDPOINT = "https://api.alpaca.markets/v2/account"
 
@@ -2039,6 +2410,27 @@ def alpaca_paper_credentials_from_environment():
     )
     if not valid:
         raise ValueError("PAPER credentials are incomplete or invalid")
+
+    def inject(headers):
+        return {**headers, "APCA-API-KEY-ID": key_id,
+                "APCA-API-SECRET-KEY": secret_key}
+
+    return inject
+
+
+def alpaca_live_credentials_from_environment():
+    """Return a LIVE-only in-memory header injector; never expose credential values."""
+    key_id = os.environ.get("ALPACA_LIVE_API_KEY_ID")
+    secret_key = os.environ.get("ALPACA_LIVE_API_SECRET_KEY")
+    if key_id is None and secret_key is None:
+        return None
+    valid = all(
+        isinstance(value, str) and bool(value)
+        and all(33 <= ord(char) <= 126 for char in value)
+        for value in (key_id, secret_key)
+    )
+    if not valid:
+        raise ValueError("LIVE credentials are incomplete or invalid")
 
     def inject(headers):
         return {**headers, "APCA-API-KEY-ID": key_id,
@@ -2646,6 +3038,30 @@ def main():
     observe_position.add_argument("--attempt-id", required=True)
     observe_position.add_argument("--observed-at", required=True)
     observe_position.add_argument("--timeout-seconds", required=True, type=float)
+    submit_live = commands.add_parser("submit-live-order")
+    submit_live.add_argument("--state", required=True)
+    submit_live.add_argument("--output", required=True)
+    submit_live.add_argument("--request-id", required=True)
+    submit_live.add_argument("--attempted-at", required=True)
+    submit_live.add_argument("--timeout-seconds", required=True, type=float)
+    observe_live_order = commands.add_parser("observe-live-order")
+    observe_live_order.add_argument("--state", required=True)
+    observe_live_order.add_argument("--output", required=True)
+    observe_live_order.add_argument("--attempt-id", required=True)
+    observe_live_order.add_argument("--observed-at", required=True)
+    observe_live_order.add_argument("--timeout-seconds", required=True, type=float)
+    cancel_live = commands.add_parser("cancel-live-remainder")
+    cancel_live.add_argument("--state", required=True)
+    cancel_live.add_argument("--output", required=True)
+    cancel_live.add_argument("--attempt-id", required=True)
+    cancel_live.add_argument("--cancelled-at", required=True)
+    cancel_live.add_argument("--timeout-seconds", required=True, type=float)
+    observe_live_position = commands.add_parser("observe-live-position")
+    observe_live_position.add_argument("--state", required=True)
+    observe_live_position.add_argument("--output", required=True)
+    observe_live_position.add_argument("--attempt-id", required=True)
+    observe_live_position.add_argument("--observed-at", required=True)
+    observe_live_position.add_argument("--timeout-seconds", required=True, type=float)
     realized = commands.add_parser("realize-results")
     realized.add_argument("--state", required=True)
     marking = commands.add_parser("mark-unrealized")
@@ -2720,6 +3136,26 @@ def main():
                 args.state, args.output, args.attempt_id, args.observed_at,
                 args.timeout_seconds, alpaca_paper_credentials_from_environment,
                 alpaca_paper_https_request)
+        elif args.command == "submit-live-order":
+            result = execute_alpaca_live_order(
+                args.state, args.output, args.request_id, args.attempted_at,
+                args.timeout_seconds, alpaca_live_credentials_from_environment,
+                alpaca_live_https_request)
+        elif args.command == "observe-live-order":
+            result = observe_alpaca_live_order(
+                args.state, args.output, args.attempt_id, args.observed_at,
+                args.timeout_seconds, alpaca_live_credentials_from_environment,
+                alpaca_live_https_request)
+        elif args.command == "cancel-live-remainder":
+            result = cancel_alpaca_live_remainder(
+                args.state, args.output, args.attempt_id, args.cancelled_at,
+                args.timeout_seconds, alpaca_live_credentials_from_environment,
+                alpaca_live_https_request)
+        elif args.command == "observe-live-position":
+            result = observe_alpaca_live_position(
+                args.state, args.output, args.attempt_id, args.observed_at,
+                args.timeout_seconds, alpaca_live_credentials_from_environment,
+                alpaca_live_https_request)
         elif args.command == "realize-results":
             result = realize_results(args.state)
         elif args.command == "mark-unrealized":
