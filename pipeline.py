@@ -747,6 +747,84 @@ def validate_paper_session_operational_observation(state_path, fixture_path,
     return result
 
 
+def compose_paper_session_sma3(state_path, fixture_path, acceptance_path,
+                               indicator_path, output):
+    """Compose one causal SMA3 indicator without creating a decision."""
+    state_path = Path(state_path)
+    fixture_path = Path(fixture_path)
+    acceptance_path = Path(acceptance_path)
+    indicator_path = Path(indicator_path)
+    output = Path(output)
+    state = load_paper_session(state_path)
+    fixture = load_paper_session_fixture(state_path, fixture_path)
+    acceptance = json.loads(acceptance_path.read_bytes())
+    if (acceptance.get("session_id") != state["session_id"]
+            or acceptance.get("session_identity") != state["session_identity"]
+            or acceptance.get("observation_accepted") is not True
+            or acceptance.get("lookahead") != "NOT_USED"):
+        raise ValueError("Operational observation was not accepted without lookahead")
+    if acceptance.get("processing_instant_utc") != fixture.get("processing_instant_utc"):
+        raise ValueError("Acceptance and fixture processing instants differ")
+    operational = fixture["operational_observations"]
+    if len(operational) != 1 or acceptance.get("observation_identity") != operational[0]["identity"]:
+        raise ValueError("Accepted operational observation does not match fixture")
+    processing_epoch = epoch(fixture["processing_instant_utc"])
+    if not _valid_fixture_observation(
+            operational[0], processing_epoch, accepted_required=True,
+            started_epoch=epoch(state["started_at"])):
+        raise ValueError("Operational observation is not eligible for SMA3")
+    warmup = fixture["warmup_observations"]
+    if state["warmup_observations"] != warmup:
+        raise ValueError("Persisted warm-up does not match the fixture")
+    combined = warmup + operational
+    operational_index = len(warmup)
+    if operational_index < 2:
+        raise ValueError("SMA3 requires three available closed observations")
+    inputs = combined[operational_index - 2:operational_index + 1]
+    sma_close_3 = math.fsum(item["close"] / 3 for item in inputs)
+    indicator = {
+        "schema_version": PAPER_SESSION_SCHEMA_VERSION,
+        "session_id": state["session_id"],
+        "session_identity": state["session_identity"],
+        "instrument": "BTC-USD",
+        "frequency_seconds": 86400,
+        "strategy": "SMA3_LONG_ONLY",
+        "parameters": {"window": 3, "source": "close", "formula": "mean(close[t-2:t+1])"},
+        "observation_identity": operational[0]["identity"],
+        "input_observation_identities": [item["identity"] for item in inputs],
+        "processing_instant_utc": fixture["processing_instant_utc"],
+        "sma_close_3": sma_close_3,
+        "lookahead": "NOT_USED",
+    }
+    if indicator_path.exists():
+        existing = json.loads(indicator_path.read_bytes())
+        if existing != indicator:
+            raise ValueError("Persisted SMA3 indicator cannot be silently replaced")
+        created = False
+    else:
+        _atomic_write(indicator_path, encoded(indicator))
+        created = True
+    state = load_paper_session(state_path)
+    if state["decisions"] or state["executions"] or state["pending_actions"]:
+        raise ValueError("SMA3 composition must not create operational effects")
+    indicator_bytes = indicator_path.read_bytes()
+    result = {"status": "PASS", "created": created,
+              "session_id": state["session_id"],
+              "warmup_observations": len(warmup),
+              "operational_observations": len(operational),
+              "observation_identity": operational[0]["identity"],
+              "input_observation_identities": indicator["input_observation_identities"],
+              "processing_instant_utc": indicator["processing_instant_utc"],
+              "sma_close_3": sma_close_3, "lookahead": "NOT_USED",
+              "decisions": len(state["decisions"]),
+              "executions": len(state["executions"]),
+              "pending_actions": len(state["pending_actions"]),
+              "proposals": 0, "network_calls": 0, "credentials_used": False,
+              "indicator_sha256": digest(indicator_bytes)}
+    publish(output, {"paper-sma3-indicator.json": encoded(result)})
+    return result
+
+
 def _valid_operational_observation(observation, started_epoch, processed_epoch):
     if not isinstance(observation, dict) or set(observation) != {
             "identity", "instrument", "timestamp", "open", "high", "low",
@@ -3421,6 +3499,12 @@ def main():
     paper_operational.add_argument("--fixture", required=True)
     paper_operational.add_argument("--acceptance", required=True)
     paper_operational.add_argument("--output", required=True)
+    paper_sma3 = commands.add_parser("compose-paper-sma3")
+    paper_sma3.add_argument("--state", required=True)
+    paper_sma3.add_argument("--fixture", required=True)
+    paper_sma3.add_argument("--acceptance", required=True)
+    paper_sma3.add_argument("--indicator", required=True)
+    paper_sma3.add_argument("--output", required=True)
     execution = commands.add_parser("execute-virtual")
     execution.add_argument("--state", required=True)
     execution.add_argument("--output", required=True)
@@ -3544,6 +3628,10 @@ def main():
             result = validate_paper_session_operational_observation(
                 Path(args.state), Path(args.fixture), Path(args.acceptance),
                 Path(args.output))
+        elif args.command == "compose-paper-sma3":
+            result = compose_paper_session_sma3(
+                Path(args.state), Path(args.fixture), Path(args.acceptance),
+                Path(args.indicator), Path(args.output))
         elif args.command == "execute-virtual":
             result = execute_virtual(args.state, args.output)
         elif args.command == "prepare-real-order":
