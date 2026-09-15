@@ -549,6 +549,139 @@ def load_paper_session_warmup(state_path, output, observations):
     return result
 
 
+def _valid_fixture_observation(observation, processing_epoch, *, accepted_required=False,
+                               started_epoch=None):
+    fields = {"identity", "instrument", "timestamp", "open", "high", "low",
+              "close", "volume"}
+    if accepted_required:
+        fields.add("accepted_at_utc")
+    if not isinstance(observation, dict) or set(observation) != fields:
+        return False
+    timestamp = observation.get("timestamp")
+    if not _explicit_utc(timestamp) or observation.get("instrument") != "BTC-USD" \
+            or observation.get("identity") != f"BTC-USD|86400|{timestamp}":
+        return False
+    numbers = [observation.get(name) for name in ("open", "high", "low", "close", "volume")]
+    if not all(type(value) in (int, float) and math.isfinite(value) for value in numbers):
+        return False
+    observation_epoch = epoch(timestamp)
+    valid = (
+        observation["volume"] >= 0
+        and observation["low"] <= min(observation["open"], observation["close"])
+        and observation["high"] >= max(observation["open"], observation["close"])
+        and observation_epoch % 86400 == 0
+        and observation_epoch + 86400 <= processing_epoch
+    )
+    if accepted_required:
+        accepted_at = observation.get("accepted_at_utc")
+        valid = valid and _explicit_utc(accepted_at) and started_epoch is not None \
+            and epoch(accepted_at) > started_epoch
+    return valid
+
+
+def _validate_paper_session_fixture(fixture, state, processing_instant_utc):
+    if not isinstance(fixture, dict) or set(fixture) != {
+            "schema_version", "session_id", "session_identity", "mode",
+            "instrument", "frequency_seconds", "processing_instant_utc",
+            "warmup_observations", "operational_observations"}:
+        raise ValueError("Historical PAPER fixture envelope is invalid")
+    if (fixture["schema_version"] != PAPER_SESSION_SCHEMA_VERSION
+            or fixture["session_id"] != state["session_id"]
+            or fixture["session_identity"] != state["session_identity"]
+            or fixture["mode"] != "PAPER"
+            or fixture["instrument"] != "BTC-USD"
+            or fixture["frequency_seconds"] != 86400
+            or fixture["processing_instant_utc"] != processing_instant_utc):
+        raise ValueError("Historical PAPER fixture identity is incompatible")
+    if not _explicit_utc(processing_instant_utc):
+        raise ValueError("An explicit UTC processing instant is required")
+    warmup = fixture["warmup_observations"]
+    operational = fixture["operational_observations"]
+    if not isinstance(warmup, list) or len(warmup) != 3 \
+            or not isinstance(operational, list) or len(operational) != 1:
+        raise ValueError("Historical PAPER fixture must contain 3 warm-up and 1 operational observations")
+    observations = warmup + operational
+    processing_epoch = epoch(processing_instant_utc)
+    started_epoch = epoch(state["started_at"])
+    if (not all(_valid_fixture_observation(item, processing_epoch) for item in warmup)
+            or not _valid_fixture_observation(
+                operational[0], processing_epoch, accepted_required=True,
+                started_epoch=started_epoch)):
+        raise ValueError("Historical PAPER fixture contains an invalid or open candle")
+    timestamps = [epoch(item["timestamp"]) for item in observations]
+    if len(set(timestamps)) != 4 or any(later - earlier != 86400
+                                        for earlier, later in zip(timestamps, timestamps[1:])):
+        raise ValueError("Historical PAPER fixture observations must be unique and chronological")
+    if any(epoch(item["timestamp"]) + 86400 > epoch(state["started_at"])
+           for item in warmup):
+        raise ValueError("Warm-up observation must close before the PAPER session starts")
+    return observations
+
+
+def prepare_paper_session_fixture(state_path, fixture_path, output, observations,
+                                  processing_instant_utc):
+    """Persist three warm-up candles and one separate pending operational candle."""
+    state_path = Path(state_path)
+    fixture_path = Path(fixture_path)
+    state = load_paper_session(state_path)
+    if not _explicit_utc(processing_instant_utc):
+        raise ValueError("An explicit UTC processing instant is required")
+    if not isinstance(observations, list) or len(observations) != 4:
+        raise ValueError("Exactly four historical observations are required")
+    candidate = {
+        "schema_version": PAPER_SESSION_SCHEMA_VERSION,
+        "session_id": state["session_id"],
+        "session_identity": state["session_identity"],
+        "mode": "PAPER", "instrument": "BTC-USD", "frequency_seconds": 86400,
+        "processing_instant_utc": processing_instant_utc,
+        "warmup_observations": observations[:3],
+        "operational_observations": observations[3:],
+    }
+    _validate_paper_session_fixture(candidate, state, processing_instant_utc)
+    if not state["warmup_observations"]:
+        load_paper_session_warmup(state_path, output.with_name(output.name + "-warmup"),
+                                  observations[:3])
+    state = load_paper_session(state_path)
+    if fixture_path.exists():
+        existing = json.loads(fixture_path.read_bytes())
+        _validate_paper_session_fixture(existing, state, processing_instant_utc)
+        if existing != candidate:
+            raise ValueError("Persisted historical PAPER fixture cannot be silently replaced")
+        created = False
+    else:
+        _atomic_write(fixture_path, encoded(candidate))
+        created = True
+    fixture_bytes = fixture_path.read_bytes()
+    state = load_paper_session(state_path)
+    result = {"status": "PASS", "created": created,
+              "session_id": state["session_id"],
+              "warmup_observations": len(candidate["warmup_observations"]),
+              "operational_input_observations": len(candidate["operational_observations"]),
+              "processed_operational_observations": len(state["processed_observations"]),
+              "decisions": len(state["decisions"]), "executions": len(state["executions"]),
+              "pending_actions": len(state["pending_actions"]),
+              "processing_instant_utc": processing_instant_utc,
+              "network_calls": 0, "credentials_used": False,
+              "state_sha256": digest(state_path.read_bytes()),
+              "fixture_sha256": digest(fixture_bytes)}
+    publish(output, {"paper-session-fixture.json": encoded(result)})
+    return result
+
+
+def load_paper_session_fixture(state_path, fixture_path):
+    """Reload and validate the isolated historical PAPER input without processing it."""
+    state = load_paper_session(state_path)
+    fixture = json.loads(Path(fixture_path).read_bytes())
+    observations = _validate_paper_session_fixture(
+        fixture, state, fixture.get("processing_instant_utc"))
+    if state["warmup_observations"] != observations[:3]:
+        raise ValueError("Persisted warm-up does not match the historical PAPER fixture")
+    if state["processed_observations"] or state["decisions"] \
+            or state["executions"] or state["pending_actions"]:
+        raise ValueError("Historical PAPER fixture was already processed")
+    return fixture
+
+
 def _valid_operational_observation(observation, started_epoch, processed_epoch):
     if not isinstance(observation, dict) or set(observation) != {
             "identity", "instrument", "timestamp", "open", "high", "low",
@@ -3212,6 +3345,12 @@ def main():
     paper_warmup.add_argument("--state", required=True)
     paper_warmup.add_argument("--output", required=True)
     paper_warmup.add_argument("--input", required=True)
+    paper_fixture = commands.add_parser("prepare-paper-fixture")
+    paper_fixture.add_argument("--state", required=True)
+    paper_fixture.add_argument("--fixture", required=True)
+    paper_fixture.add_argument("--output", required=True)
+    paper_fixture.add_argument("--input", required=True)
+    paper_fixture.add_argument("--processing-instant", required=True)
     execution = commands.add_parser("execute-virtual")
     execution.add_argument("--state", required=True)
     execution.add_argument("--output", required=True)
@@ -3326,6 +3465,11 @@ def main():
             observations = json.loads(Path(args.input).read_bytes())
             result = load_paper_session_warmup(
                 args.state, args.output, observations)
+        elif args.command == "prepare-paper-fixture":
+            observations = json.loads(Path(args.input).read_bytes())
+            result = prepare_paper_session_fixture(
+                Path(args.state), Path(args.fixture), Path(args.output),
+                observations, args.processing_instant)
         elif args.command == "execute-virtual":
             result = execute_virtual(args.state, args.output)
         elif args.command == "prepare-real-order":
