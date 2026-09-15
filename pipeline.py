@@ -682,6 +682,71 @@ def load_paper_session_fixture(state_path, fixture_path):
     return fixture
 
 
+def validate_paper_session_operational_observation(state_path, fixture_path,
+                                                   acceptance_path, output):
+    """Accept one eligible operational candle without creating a decision."""
+    state_path = Path(state_path)
+    fixture_path = Path(fixture_path)
+    acceptance_path = Path(acceptance_path)
+    output = Path(output)
+    state = load_paper_session(state_path)
+    fixture = load_paper_session_fixture(state_path, fixture_path)
+    processing_instant = fixture.get("processing_instant_utc")
+    if not _explicit_utc(processing_instant):
+        raise ValueError("An explicit UTC processing instant is required")
+    operational = fixture["operational_observations"]
+    if len(operational) != 1:
+        raise ValueError("Exactly one operational observation is required")
+    observation = operational[0]
+    processing_epoch = epoch(processing_instant)
+    started_epoch = epoch(state["started_at"])
+    if not _valid_fixture_observation(observation, processing_epoch,
+                                      accepted_required=True,
+                                      started_epoch=started_epoch):
+        raise ValueError("Operational observation is not temporally eligible")
+    interval_start = observation["timestamp"]
+    interval_end = iso(epoch(interval_start) + 86400)
+    acceptance = {
+        "schema_version": PAPER_SESSION_SCHEMA_VERSION,
+        "session_id": state["session_id"],
+        "session_identity": state["session_identity"],
+        "observation_identity": observation["identity"],
+        "processing_instant_utc": processing_instant,
+        "interval_start_utc": interval_start,
+        "interval_end_utc": interval_end,
+        "accepted_at_utc": observation["accepted_at_utc"],
+        "observation_accepted": True,
+        "lookahead": "NOT_USED",
+    }
+    if acceptance_path.exists():
+        existing = json.loads(acceptance_path.read_bytes())
+        if existing != acceptance:
+            raise ValueError("Persisted operational acceptance cannot be silently replaced")
+        created = False
+    else:
+        _atomic_write(acceptance_path, encoded(acceptance))
+        created = True
+    state = load_paper_session(state_path)
+    if state["decisions"] or state["executions"] or state["pending_actions"]:
+        raise ValueError("Operational eligibility must not create effects")
+    acceptance_bytes = acceptance_path.read_bytes()
+    result = {"status": "PASS", "created": created,
+              "session_id": state["session_id"],
+              "observation_accepted": True, "lookahead": "NOT_USED",
+              "processing_instant_utc": processing_instant,
+              "interval_start_utc": interval_start,
+              "interval_end_utc": interval_end,
+              "accepted_at_utc": observation["accepted_at_utc"],
+              "decisions": len(state["decisions"]),
+              "executions": len(state["executions"]),
+              "pending_actions": len(state["pending_actions"]),
+              "proposals": 0,
+              "network_calls": 0, "credentials_used": False,
+              "acceptance_sha256": digest(acceptance_bytes)}
+    publish(output, {"paper-operational-acceptance.json": encoded(result)})
+    return result
+
+
 def _valid_operational_observation(observation, started_epoch, processed_epoch):
     if not isinstance(observation, dict) or set(observation) != {
             "identity", "instrument", "timestamp", "open", "high", "low",
@@ -3351,6 +3416,11 @@ def main():
     paper_fixture.add_argument("--output", required=True)
     paper_fixture.add_argument("--input", required=True)
     paper_fixture.add_argument("--processing-instant", required=True)
+    paper_operational = commands.add_parser("validate-paper-operational")
+    paper_operational.add_argument("--state", required=True)
+    paper_operational.add_argument("--fixture", required=True)
+    paper_operational.add_argument("--acceptance", required=True)
+    paper_operational.add_argument("--output", required=True)
     execution = commands.add_parser("execute-virtual")
     execution.add_argument("--state", required=True)
     execution.add_argument("--output", required=True)
@@ -3470,6 +3540,10 @@ def main():
             result = prepare_paper_session_fixture(
                 Path(args.state), Path(args.fixture), Path(args.output),
                 observations, args.processing_instant)
+        elif args.command == "validate-paper-operational":
+            result = validate_paper_session_operational_observation(
+                Path(args.state), Path(args.fixture), Path(args.acceptance),
+                Path(args.output))
         elif args.command == "execute-virtual":
             result = execute_virtual(args.state, args.output)
         elif args.command == "prepare-real-order":
