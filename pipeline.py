@@ -825,6 +825,127 @@ def compose_paper_session_sma3(state_path, fixture_path, acceptance_path,
     return result
 
 
+def _sma3_configuration_identity(indicator):
+    content = {
+        "strategy": indicator.get("strategy"),
+        "instrument": indicator.get("instrument"),
+        "frequency_seconds": indicator.get("frequency_seconds"),
+        "parameters": indicator.get("parameters"),
+    }
+    return f"SMA3_CONFIG|{digest(encoded(content))}"
+
+
+def persist_paper_session_sma3_decision(state_path, fixture_path, acceptance_path,
+                                        indicator_path, output):
+    """Consume one validated SMA3 indicator and persist its natural decision."""
+    state_path = Path(state_path)
+    fixture_path = Path(fixture_path)
+    acceptance_path = Path(acceptance_path)
+    indicator_path = Path(indicator_path)
+    output = Path(output)
+    state = load_paper_session(state_path)
+    if not fixture_path.exists() or not acceptance_path.exists() or not indicator_path.exists():
+        raise ValueError("T4 requires the persisted fixture, acceptance, and SMA3 indicator")
+    fixture = json.loads(fixture_path.read_bytes())
+    observations = _validate_paper_session_fixture(
+        fixture, state, fixture.get("processing_instant_utc"))
+    if state["warmup_observations"] != observations[:3]:
+        raise ValueError("Persisted warm-up does not match the fixture")
+    acceptance = json.loads(acceptance_path.read_bytes())
+    indicator = json.loads(indicator_path.read_bytes())
+    operational = fixture["operational_observations"]
+    if len(operational) != 1:
+        raise ValueError("Exactly one operational observation is required")
+    observation = operational[0]
+    required_indicator = {
+        "schema_version", "session_id", "session_identity", "instrument",
+        "frequency_seconds", "strategy", "parameters", "observation_identity",
+        "input_observation_identities", "processing_instant_utc", "sma_close_3",
+        "lookahead"}
+    if set(indicator) != required_indicator:
+        raise ValueError("SMA3 indicator is incomplete")
+    if (indicator["schema_version"] != PAPER_SESSION_SCHEMA_VERSION
+            or indicator["session_id"] != state["session_id"]
+            or indicator["session_identity"] != state["session_identity"]
+            or indicator["instrument"] != "BTC-USD"
+            or indicator["frequency_seconds"] != 86400
+            or indicator["strategy"] != "SMA3_LONG_ONLY"
+            or indicator["parameters"] != {
+                "window": 3, "source": "close", "formula": "mean(close[t-2:t+1])"}
+            or indicator["observation_identity"] != observation["identity"]
+            or indicator["input_observation_identities"] != [
+                item["identity"] for item in fixture["warmup_observations"][1:]
+                + operational]
+            or indicator["processing_instant_utc"] != fixture["processing_instant_utc"]
+            or indicator["lookahead"] != "NOT_USED"
+            or type(indicator["sma_close_3"]) not in (int, float)
+            or not math.isfinite(indicator["sma_close_3"])
+            or acceptance.get("observation_accepted") is not True
+            or acceptance.get("observation_identity") != observation["identity"]
+            or acceptance.get("processing_instant_utc") != indicator["processing_instant_utc"]):
+        raise ValueError("SMA3 indicator is not traceable to the accepted observation")
+    config_identity = _sma3_configuration_identity(indicator)
+    processing_instant = indicator["processing_instant_utc"]
+    decision_identity = (f"SMA3_DECISION|{observation['identity']}|"
+                         f"{config_identity}|{processing_instant}")
+    existing = next((item for item in state["decisions"]
+                     if item.get("identity") == decision_identity), None)
+    if existing is not None:
+        if existing.get("observation_identity") != observation["identity"]:
+            raise ValueError("Persisted decision identity is inconsistent")
+        created = False
+        decision = existing
+    else:
+        processed = {item["identity"]: item for item in state["processed_observations"]}
+        if observation["identity"] in processed and processed[observation["identity"]] != observation:
+            raise ValueError("Persisted operational observation cannot be silently altered")
+        previous_position = _paper_session_running_position(state["decisions"])
+        target_position = 1 if observation["close"] > indicator["sma_close_3"] else 0
+        decision_name = ("ENTER" if target_position == 1 and previous_position == 0 else
+                         "EXIT" if target_position == 0 and previous_position == 1 else "HOLD")
+        decision = {
+            "identity": decision_identity,
+            "session_id": state["session_id"],
+            "observation_identity": observation["identity"],
+            "instrument": "BTC-USD",
+            "frequency_seconds": 86400,
+            "timestamp": observation["timestamp"],
+            "strategy": indicator["strategy"],
+            "configuration_identity": config_identity,
+            "parameters": indicator["parameters"],
+            "processing_instant_utc": processing_instant,
+            "close": observation["close"],
+            "sma_close_3": indicator["sma_close_3"],
+            "previous_position": previous_position,
+            "target_position": target_position,
+            "decision": decision_name,
+            "lookahead": "NOT_USED",
+        }
+        next_state = dict(state)
+        next_state["processed_observations"] = state["processed_observations"] \
+            if observation["identity"] in processed else state["processed_observations"] + [observation]
+        next_state["decisions"] = state["decisions"] + [decision]
+        if not paper_session_state_is_valid(next_state):
+            raise ValueError("Constructed PAPER decision state is invalid")
+        _atomic_write(state_path, encoded(next_state))
+        created = True
+        state = next_state
+    state = load_paper_session(state_path)
+    result = {"status": "PASS", "created": created,
+              "session_id": state["session_id"], "decision": decision,
+              "configuration_identity": config_identity,
+              "processing_instant_utc": processing_instant,
+              "processed_observations": len(state["processed_observations"]),
+              "decisions": len(state["decisions"]),
+              "executions": len(state["executions"]),
+              "pending_actions": len(state["pending_actions"]), "proposals": 0,
+              "lookahead": "NOT_USED", "network_calls": 0,
+              "credentials_used": False,
+              "state_sha256": digest(state_path.read_bytes())}
+    publish(output, {"paper-sma3-decision.json": encoded(result)})
+    return result
+
+
 def _valid_operational_observation(observation, started_epoch, processed_epoch):
     if not isinstance(observation, dict) or set(observation) != {
             "identity", "instrument", "timestamp", "open", "high", "low",
@@ -3505,6 +3626,12 @@ def main():
     paper_sma3.add_argument("--acceptance", required=True)
     paper_sma3.add_argument("--indicator", required=True)
     paper_sma3.add_argument("--output", required=True)
+    paper_decision = commands.add_parser("persist-paper-sma3-decision")
+    paper_decision.add_argument("--state", required=True)
+    paper_decision.add_argument("--fixture", required=True)
+    paper_decision.add_argument("--acceptance", required=True)
+    paper_decision.add_argument("--indicator", required=True)
+    paper_decision.add_argument("--output", required=True)
     execution = commands.add_parser("execute-virtual")
     execution.add_argument("--state", required=True)
     execution.add_argument("--output", required=True)
@@ -3630,6 +3757,10 @@ def main():
                 Path(args.output))
         elif args.command == "compose-paper-sma3":
             result = compose_paper_session_sma3(
+                Path(args.state), Path(args.fixture), Path(args.acceptance),
+                Path(args.indicator), Path(args.output))
+        elif args.command == "persist-paper-sma3-decision":
+            result = persist_paper_session_sma3_decision(
                 Path(args.state), Path(args.fixture), Path(args.acceptance),
                 Path(args.indicator), Path(args.output))
         elif args.command == "execute-virtual":
