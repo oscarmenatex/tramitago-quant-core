@@ -411,12 +411,15 @@ def _valid_paper_session_id(value):
 
 def paper_session_state_is_valid(state):
     """Validate the local PAPER session envelope without broker access."""
-    if not isinstance(state, dict) or set(state) != {
+    required = {
             "session_id", "session_identity", "schema_version", "mode",
             "instrument", "started_at", "internal_position_state",
             "broker_position_observed", "reconciliation_status",
             "warmup_observations", "processed_observations", "decisions",
-            "executions", "pending_actions", "broker_submissions"}:
+            "executions", "pending_actions", "broker_submissions"}
+    optional = {"paper_risk_evaluations"}
+    if not isinstance(state, dict) or set(state) - required - optional \
+            or not required <= set(state):
         return False
     arrays = ("warmup_observations", "processed_observations", "decisions",
               "executions", "pending_actions", "broker_submissions")
@@ -433,6 +436,8 @@ def paper_session_state_is_valid(state):
         and state.get("reconciliation_status") in (
             "PENDING_BROKER_OBSERVATION", "RECONCILED", "POSITION_MISMATCH")
         and all(isinstance(state.get(name), list) for name in arrays)
+        and ("paper_risk_evaluations" not in state
+             or isinstance(state["paper_risk_evaluations"], list))
     )
 
 
@@ -943,6 +948,113 @@ def persist_paper_session_sma3_decision(state_path, fixture_path, acceptance_pat
               "credentials_used": False,
               "state_sha256": digest(state_path.read_bytes())}
     publish(output, {"paper-sma3-decision.json": encoded(result)})
+    return result
+
+
+PAPER_RISK_PROFILE = {
+    "profile": "PAPER_SCALE_80K_V1", "mode": "PAPER", "instrument": "BTC-USD",
+    "capital_simulated_usd": "80000", "available_cash_simulated_usd": "80000",
+    "leverage": "1x", "max_exposure_per_operation_usd": "20000",
+    "risk_budget_usd": "2000",
+}
+
+
+def paper_risk_profile_identity(profile):
+    return f"PAPER_RISK_PROFILE|{digest(encoded(profile))}"
+
+
+def apply_paper_risk_to_session(state_path, output, decision_identity,
+                                evaluated_at, risk_profile=None):
+    """Apply the approved PAPER-only transition without broker effects."""
+    state_path = Path(state_path)
+    output = Path(output)
+    state = load_paper_session(state_path)
+    if not _explicit_utc(evaluated_at):
+        raise ValueError("An explicit UTC Risk evaluation instant is required")
+    decisions = [item for item in state["decisions"]
+                 if item.get("identity") == decision_identity]
+    if len(decisions) != 1:
+        raise ValueError("Exactly one persisted PAPER decision is required")
+    decision = decisions[0]
+    profile = PAPER_RISK_PROFILE if risk_profile is None else risk_profile
+    expected_profile = PAPER_RISK_PROFILE
+    profile_valid = isinstance(profile, dict) and profile == expected_profile
+    profile_identity = paper_risk_profile_identity(profile) if isinstance(profile, dict) \
+        else "PAPER_RISK_PROFILE|INVALID"
+    evaluations = list(state.get("paper_risk_evaluations", []))
+    evaluation_identity = f"PAPER_RISK|{decision_identity}|{profile_identity}|{evaluated_at}"
+    existing = next((item for item in evaluations
+                     if item.get("identity") == evaluation_identity), None)
+    if existing is not None:
+        result = {"status": "PASS", "created": False, "risk_result": existing["risk_result"],
+                  "paper_effect": existing["paper_effect"],
+                  "position_before": existing["position_before"],
+                  "position_after": existing["position_after"],
+                  "evaluation": existing, "network_calls": 0,
+                  "credentials_used": False, "broker_requests": 0}
+        publish(output, {"paper-risk.json": encoded(result)})
+        return result
+    if not profile_valid:
+        result = {"status": "PASS", "created": False, "risk_result": "BLOCKED",
+                  "paper_effect": "BLOCKED", "position_before": state["internal_position_state"],
+                  "position_after": state["internal_position_state"],
+                  "reason": "PAPER Risk profile is missing, altered, or ambiguous",
+                  "network_calls": 0, "credentials_used": False, "broker_requests": 0}
+        publish(output, {"paper-risk.json": encoded(result)})
+        return result
+    position_before = state["internal_position_state"]
+    action = decision.get("decision")
+    position_after = position_before
+    risk_result = "NO_EFFECT"
+    paper_effect = "NO_EFFECT"
+    reason = "Decision has no position transition"
+    dollar_limit = "DEFERRED_NO_ORDER_INTENT"
+    for field in ("notional_usd", "exposure_usd"):
+        if field in decision:
+            try:
+                amount = Decimal(str(decision[field]))
+            except (InvalidOperation, ValueError):
+                amount = None
+            if amount is None or not amount.is_finite() or amount < 0 \
+                    or amount > Decimal("20000"):
+                risk_result = "BLOCKED"
+                paper_effect = "BLOCKED"
+                reason = "Decision exposure exceeds or fails PAPER limit validation"
+            else:
+                dollar_limit = "VALIDATED_20000_USD_MAX"
+    if risk_result != "BLOCKED":
+        if action == "ENTER" and position_before == "FLAT":
+            risk_result, paper_effect, position_after, reason = (
+                "ALLOWED", "UPDATED", "LONG", "PAPER ENTER allowed from FLAT")
+        elif action == "EXIT" and position_before == "LONG":
+            risk_result, paper_effect, position_after, reason = (
+                "ALLOWED", "UPDATED", "FLAT", "PAPER EXIT allowed from LONG")
+        elif action in ("HOLD", "NO_DECISION"):
+            pass
+        else:
+            risk_result = "BLOCKED"
+            paper_effect = "BLOCKED"
+            reason = "Decision is incompatible with the internal PAPER position"
+    evaluation = {
+        "identity": evaluation_identity, "decision_identity": decision_identity,
+        "risk_configuration_identity": profile_identity,
+        "risk_profile": profile, "risk_result": risk_result,
+        "paper_effect": paper_effect, "position_before": position_before,
+        "position_after": position_after, "evaluated_at": evaluated_at,
+        "reason": reason, "dollar_limit_validation": dollar_limit,
+        "broker_position_observed": state["broker_position_observed"],
+    }
+    next_state = dict(state)
+    next_state["internal_position_state"] = position_after
+    next_state["paper_risk_evaluations"] = evaluations + [evaluation]
+    if not paper_session_state_is_valid(next_state):
+        raise ValueError("Constructed PAPER Risk state is invalid")
+    _atomic_write(state_path, encoded(next_state))
+    result = {"status": "PASS", "created": True, "risk_result": risk_result,
+              "paper_effect": paper_effect, "position_before": position_before,
+              "position_after": position_after, "evaluation": evaluation,
+              "network_calls": 0, "credentials_used": False, "broker_requests": 0}
+    publish(output, {"paper-risk.json": encoded(result)})
     return result
 
 
@@ -3632,6 +3744,11 @@ def main():
     paper_decision.add_argument("--acceptance", required=True)
     paper_decision.add_argument("--indicator", required=True)
     paper_decision.add_argument("--output", required=True)
+    paper_risk = commands.add_parser("apply-paper-risk")
+    paper_risk.add_argument("--state", required=True)
+    paper_risk.add_argument("--decision-id", required=True)
+    paper_risk.add_argument("--evaluated-at", required=True)
+    paper_risk.add_argument("--output", required=True)
     execution = commands.add_parser("execute-virtual")
     execution.add_argument("--state", required=True)
     execution.add_argument("--output", required=True)
@@ -3763,6 +3880,10 @@ def main():
             result = persist_paper_session_sma3_decision(
                 Path(args.state), Path(args.fixture), Path(args.acceptance),
                 Path(args.indicator), Path(args.output))
+        elif args.command == "apply-paper-risk":
+            result = apply_paper_risk_to_session(
+                Path(args.state), Path(args.output), args.decision_id,
+                args.evaluated_at)
         elif args.command == "execute-virtual":
             result = execute_virtual(args.state, args.output)
         elif args.command == "prepare-real-order":
