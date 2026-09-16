@@ -1090,6 +1090,14 @@ def run_paper_cycle(state_path, fixture_path, acceptance_path, indicator_path,
                       "cycle_id": record["cycle_id"],
                       "network_calls": 0, "credentials_used": False,
                       "paper_orders_sent": 0, "live_orders_sent": 0}
+            if output.exists():
+                receipt = output / "paper-cycle.json"
+                if (set(path.name for path in output.iterdir()) == {"paper-cycle.json"}
+                        and receipt.exists()
+                        and receipt.read_bytes() in {
+                            encoded({**result, "created": True}),
+                            encoded({**result, "created": False})}):
+                    return result
             publish(output, {"paper-cycle.json": encoded(result)})
             return result
         except OSError:
