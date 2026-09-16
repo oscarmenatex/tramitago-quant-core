@@ -1058,6 +1058,121 @@ def apply_paper_risk_to_session(state_path, output, decision_identity,
     return result
 
 
+def run_paper_cycle(state_path, fixture_path, acceptance_path, indicator_path,
+                    cycle_path, output, cycle_id, processing_instant_utc):
+    """Reconstruct one completed PAPER cycle without replaying its effects."""
+    state_path = Path(state_path)
+    fixture_path = Path(fixture_path)
+    acceptance_path = Path(acceptance_path)
+    indicator_path = Path(indicator_path)
+    cycle_path = Path(cycle_path)
+    output = Path(output)
+
+    def persist(record):
+        try:
+            if cycle_path.exists():
+                existing = json.loads(cycle_path.read_bytes())
+                if existing != record:
+                    raise ValueError("Persisted cycle identity cannot be silently replaced")
+                created = False
+            else:
+                _atomic_write(cycle_path, encoded(record))
+                created = True
+            result = {"status": "PASS", "created": created,
+                      "terminal_result": record["terminal_result"],
+                      "cycle_id": record["cycle_id"],
+                      "network_calls": 0, "credentials_used": False,
+                      "paper_orders_sent": 0, "live_orders_sent": 0}
+            publish(output, {"paper-cycle.json": encoded(result)})
+            return result
+        except OSError:
+            return {"status": "RECOVERABLE_ERROR", "created": False,
+                    "terminal_result": "RECOVERABLE_ERROR", "cycle_id": cycle_id,
+                    "network_calls": 0, "credentials_used": False,
+                    "paper_orders_sent": 0, "live_orders_sent": 0}
+
+    try:
+        if not isinstance(cycle_id, str) or not cycle_id.startswith("PAPER_CYCLE|") \
+                or not cycle_id.strip() or not _explicit_utc(processing_instant_utc):
+            raise ValueError("Cycle identity and processing instant are invalid")
+        state = load_paper_session(state_path)
+        fixture = json.loads(fixture_path.read_bytes())
+        observations = _validate_paper_session_fixture(
+            fixture, state, fixture.get("processing_instant_utc"))
+        acceptance = json.loads(acceptance_path.read_bytes())
+        indicator = json.loads(indicator_path.read_bytes())
+        operational = fixture["operational_observations"][0]
+        if processing_instant_utc != fixture["processing_instant_utc"] \
+                or acceptance.get("observation_accepted") is not True \
+                or acceptance.get("lookahead") != "NOT_USED":
+            raise ValueError("Cycle temporal evidence is inconsistent")
+        if indicator.get("observation_identity") != operational["identity"] \
+                or indicator.get("processing_instant_utc") != processing_instant_utc \
+                or indicator.get("lookahead") != "NOT_USED":
+            raise ValueError("Cycle SMA3 evidence is inconsistent")
+        expected_cycle_id = (f"PAPER_CYCLE|{state['session_id']}|{operational['identity']}|"
+                             f"{processing_instant_utc}")
+        if cycle_id != expected_cycle_id:
+            record = {
+                "schema_version": PAPER_SESSION_SCHEMA_VERSION, "cycle_id": cycle_id,
+                "session_id": state["session_id"], "mode": state["mode"],
+                "processing_instant_utc": processing_instant_utc,
+                "operational_observation_identity": operational["identity"],
+                "new_observation": False, "terminal_result": "NOTHING_DUE",
+                "reason": "Cycle identity does not target a new eligible observation",
+                "validations": {"lookahead": "NOT_USED"}, "executions": 0,
+                "pending_actions": 0, "proposals": 0,
+            }
+            return persist(record)
+        new_observation = True
+        decision = next((item for item in state["decisions"]
+                         if item.get("observation_identity") == operational["identity"]), None)
+        risk = next((item for item in state.get("paper_risk_evaluations", [])
+                     if item.get("decision_identity") == (decision or {}).get("identity")), None)
+        if decision is None or risk is None:
+            raise ValueError("Cycle requires persisted decision and PAPER Risk evaluation")
+        elif risk.get("risk_result") == "BLOCKED":
+            terminal = "BLOCKED"
+            reason = risk.get("reason", "PAPER Risk blocked the cycle")
+        elif risk.get("risk_result") not in ("ALLOWED", "NO_EFFECT") \
+                or risk.get("position_after") != state["internal_position_state"] \
+                or risk.get("broker_position_observed") != state["broker_position_observed"]:
+            raise ValueError("Cycle decision, Risk, and PAPER position are inconsistent")
+        else:
+            terminal = "COMPLETED"
+            reason = "Decision, PAPER Risk, and internal position are persisted"
+        record = {
+            "schema_version": PAPER_SESSION_SCHEMA_VERSION, "cycle_id": cycle_id,
+            "session_id": state["session_id"], "mode": state["mode"],
+            "instrument": state["instrument"],
+            "processing_instant_utc": processing_instant_utc,
+            "warmup_observation_identities": [item["identity"] for item in observations[:3]],
+            "operational_observation_identity": operational["identity"],
+            "new_observation": new_observation,
+            "indicator": {"identity": indicator.get("observation_identity"),
+                          "sma_close_3": indicator.get("sma_close_3"),
+                          "processing_instant_utc": indicator.get("processing_instant_utc"),
+                          "lookahead": indicator.get("lookahead")},
+            "decision": decision, "risk": risk,
+            "position_before": (risk or {}).get("position_before", state["internal_position_state"]),
+            "position_after": state["internal_position_state"],
+            "broker_position_observed": state["broker_position_observed"],
+            "validations": {"acceptance": acceptance, "lookahead": "NOT_USED",
+                            "closed_observation": True},
+            "terminal_result": terminal, "reason": reason,
+            "executions": len(state["executions"]),
+            "pending_actions": len(state["pending_actions"]), "proposals": 0,
+        }
+        return persist(record)
+    except (ValueError, KeyError, TypeError, json.JSONDecodeError, FileNotFoundError) as error:
+        record = {"schema_version": PAPER_SESSION_SCHEMA_VERSION, "cycle_id": cycle_id,
+                  "processing_instant_utc": processing_instant_utc,
+                  "terminal_result": "BLOCKED", "reason": str(error),
+                  "new_observation": False, "validations": {"lookahead": "NOT_USED"},
+                  "executions": 0, "pending_actions": 0, "proposals": 0}
+        return persist(record)
+
+
 def _valid_operational_observation(observation, started_epoch, processed_epoch):
     if not isinstance(observation, dict) or set(observation) != {
             "identity", "instrument", "timestamp", "open", "high", "low",
@@ -3749,6 +3864,15 @@ def main():
     paper_risk.add_argument("--decision-id", required=True)
     paper_risk.add_argument("--evaluated-at", required=True)
     paper_risk.add_argument("--output", required=True)
+    paper_cycle = commands.add_parser("run-paper-cycle")
+    paper_cycle.add_argument("--state", required=True)
+    paper_cycle.add_argument("--fixture", required=True)
+    paper_cycle.add_argument("--acceptance", required=True)
+    paper_cycle.add_argument("--indicator", required=True)
+    paper_cycle.add_argument("--cycle", required=True)
+    paper_cycle.add_argument("--cycle-id", required=True)
+    paper_cycle.add_argument("--processing-instant", required=True)
+    paper_cycle.add_argument("--output", required=True)
     execution = commands.add_parser("execute-virtual")
     execution.add_argument("--state", required=True)
     execution.add_argument("--output", required=True)
@@ -3884,6 +4008,11 @@ def main():
             result = apply_paper_risk_to_session(
                 Path(args.state), Path(args.output), args.decision_id,
                 args.evaluated_at)
+        elif args.command == "run-paper-cycle":
+            result = run_paper_cycle(
+                Path(args.state), Path(args.fixture), Path(args.acceptance),
+                Path(args.indicator), Path(args.cycle), Path(args.output),
+                args.cycle_id, args.processing_instant)
         elif args.command == "execute-virtual":
             result = execute_virtual(args.state, args.output)
         elif args.command == "prepare-real-order":
