@@ -885,6 +885,13 @@ def persist_paper_session_sma3_decision(state_path, fixture_path, acceptance_pat
             or indicator["lookahead"] != "NOT_USED"
             or type(indicator["sma_close_3"]) not in (int, float)
             or not math.isfinite(indicator["sma_close_3"])
+            or acceptance.get("schema_version") != PAPER_SESSION_SCHEMA_VERSION
+            or acceptance.get("session_id") != state["session_id"]
+            or acceptance.get("session_identity") != state["session_identity"]
+            or acceptance.get("interval_start_utc") != observation["timestamp"]
+            or acceptance.get("interval_end_utc") != iso(epoch(observation["timestamp"]) + 86400)
+            or acceptance.get("accepted_at_utc") != observation["accepted_at_utc"]
+            or acceptance.get("lookahead") != "NOT_USED"
             or acceptance.get("observation_accepted") is not True
             or acceptance.get("observation_identity") != observation["identity"]
             or acceptance.get("processing_instant_utc") != indicator["processing_instant_utc"]):
@@ -1097,11 +1104,40 @@ def run_paper_cycle(state_path, fixture_path, acceptance_path, indicator_path,
             raise ValueError("Cycle identity and processing instant are invalid")
         state = load_paper_session(state_path)
         fixture = json.loads(fixture_path.read_bytes())
+        if not isinstance(fixture, dict):
+            raise ValueError("Historical PAPER fixture envelope is invalid")
         observations = _validate_paper_session_fixture(
             fixture, state, fixture.get("processing_instant_utc"))
         acceptance = json.loads(acceptance_path.read_bytes())
         indicator = json.loads(indicator_path.read_bytes())
         operational = fixture["operational_observations"][0]
+        expected_acceptance = {
+            "schema_version": PAPER_SESSION_SCHEMA_VERSION,
+            "session_id": state["session_id"], "session_identity": state["session_identity"],
+            "observation_identity": operational["identity"],
+            "processing_instant_utc": processing_instant_utc,
+            "interval_start_utc": operational["timestamp"],
+            "interval_end_utc": iso(epoch(operational["timestamp"]) + 86400),
+            "accepted_at_utc": operational["accepted_at_utc"],
+            "observation_accepted": True, "lookahead": "NOT_USED",
+        }
+        if acceptance != expected_acceptance:
+            raise ValueError("Cycle acceptance evidence is incomplete or inconsistent")
+        if not isinstance(indicator, dict) or indicator.get("parameters") != {
+                "window": 3, "source": "close", "formula": "mean(close[t-2:t+1])"} \
+                or indicator.get("strategy") != "SMA3_LONG_ONLY" \
+                or indicator.get("schema_version") != PAPER_SESSION_SCHEMA_VERSION \
+                or indicator.get("session_id") != state["session_id"] \
+                or indicator.get("session_identity") != state["session_identity"] \
+                or indicator.get("instrument") != state["instrument"] \
+                or indicator.get("frequency_seconds") != 86400 \
+                or indicator.get("input_observation_identities") != [
+                    item["identity"] for item in observations[1:]] \
+                or type(indicator.get("sma_close_3")) not in (int, float) \
+                or not math.isfinite(indicator["sma_close_3"]):
+            raise ValueError("Cycle SMA3 configuration or provenance is inconsistent")
+        if state["warmup_observations"] != observations[:3]:
+            raise ValueError("Persisted warm-up does not match the fixture")
         if processing_instant_utc != fixture["processing_instant_utc"] \
                 or acceptance.get("observation_accepted") is not True \
                 or acceptance.get("lookahead") != "NOT_USED":
@@ -1125,13 +1161,57 @@ def run_paper_cycle(state_path, fixture_path, acceptance_path, indicator_path,
             }
             return persist(record)
         new_observation = True
-        decision = next((item for item in state["decisions"]
-                         if item.get("observation_identity") == operational["identity"]), None)
-        risk = next((item for item in state.get("paper_risk_evaluations", [])
-                     if item.get("decision_identity") == (decision or {}).get("identity")), None)
-        if decision is None or risk is None:
-            raise ValueError("Cycle requires persisted decision and PAPER Risk evaluation")
-        elif risk.get("risk_result") == "BLOCKED":
+        if any(not isinstance(item, dict) for collection in (
+                state["processed_observations"], state["decisions"],
+                state.get("paper_risk_evaluations", [])) for item in collection):
+            raise ValueError("Cycle persisted records are malformed")
+        processed = [item for item in state["processed_observations"]
+                     if item.get("identity") == operational["identity"]]
+        decisions = [item for item in state["decisions"]
+                     if item.get("observation_identity") == operational["identity"]]
+        if processed != [operational] or len(decisions) != 1:
+            raise ValueError("Cycle requires one matching observation and decision")
+        decision = decisions[0]
+        configuration = _sma3_configuration_identity(indicator)
+        expected_decision_fields = {
+            "identity": f"SMA3_DECISION|{operational['identity']}|{configuration}|{processing_instant_utc}",
+            "session_id": state["session_id"], "instrument": state["instrument"],
+            "frequency_seconds": 86400, "timestamp": operational["timestamp"],
+            "strategy": indicator["strategy"], "configuration_identity": configuration,
+            "parameters": indicator["parameters"], "processing_instant_utc": processing_instant_utc,
+            "close": operational["close"], "sma_close_3": indicator["sma_close_3"],
+            "lookahead": "NOT_USED",
+        }
+        if any(decision.get(key) != value for key, value in expected_decision_fields.items()):
+            raise ValueError("Cycle decision is not traceable to the indicator")
+        risks = [item for item in state.get("paper_risk_evaluations", [])
+                 if item.get("decision_identity") == decision["identity"]]
+        if len(risks) != 1:
+            raise ValueError("Cycle requires one persisted PAPER Risk evaluation")
+        risk = risks[0]
+        risk_configuration = paper_risk_profile_identity(PAPER_RISK_PROFILE)
+        required_risk = {"identity", "decision_identity", "risk_configuration_identity",
+                         "risk_profile", "risk_result", "paper_effect", "position_before",
+                         "position_after", "evaluated_at", "reason", "dollar_limit_validation",
+                         "broker_position_observed"}
+        if not required_risk <= set(risk) or risk["risk_profile"] != PAPER_RISK_PROFILE \
+                or risk["risk_configuration_identity"] != risk_configuration \
+                or not _explicit_utc(risk["evaluated_at"]) \
+                or risk["identity"] != f"PAPER_RISK|{decision['identity']}|{risk_configuration}|{risk['evaluated_at']}":
+            raise ValueError("Cycle PAPER Risk evidence is incomplete or inconsistent")
+        if risk.get("risk_result") == "ALLOWED":
+            transition = (decision.get("decision"), decision.get("previous_position"),
+                          decision.get("target_position"), risk["position_before"],
+                          risk["position_after"], risk["paper_effect"])
+            if transition not in (("ENTER", 0, 1, "FLAT", "LONG", "UPDATED"),
+                                  ("EXIT", 1, 0, "LONG", "FLAT", "UPDATED")):
+                raise ValueError("Cycle decision and PAPER Risk transition are incompatible")
+        elif risk.get("risk_result") == "NO_EFFECT":
+            if decision.get("decision") not in ("HOLD", "NO_DECISION") \
+                    or risk["position_before"] != risk["position_after"] \
+                    or risk["paper_effect"] != "NO_EFFECT":
+                raise ValueError("Cycle no-effect evidence is inconsistent")
+        if risk.get("risk_result") == "BLOCKED":
             terminal = "BLOCKED"
             reason = risk.get("reason", "PAPER Risk blocked the cycle")
         elif risk.get("risk_result") not in ("ALLOWED", "NO_EFFECT") \
