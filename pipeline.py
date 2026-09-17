@@ -36,6 +36,19 @@ SCHEMA = {"instrument": "string", "timestamp": "UTC ISO8601 bucket start",
           "sma_close_3": "nullable finite float64"}
 URL = "https://api.exchange.coinbase.com/products/BTC-USD/candles?" + urlencode(
     {"granularity": 86400, "start": CONFIG["start"], "end": CONFIG["end_exclusive"]})
+COINBASE_PUBLIC_REQUEST_HEADERS = {
+    "User-Agent": "TramitaGO-Quant-Core-Phase1/0.1",
+    "Accept": "application/json",
+}
+
+
+def _coinbase_public_request_headers():
+    """Return the shared, unauthenticated public Coinbase request contract."""
+    return dict(COINBASE_PUBLIC_REQUEST_HEADERS)
+
+
+def _coinbase_public_request(url):
+    return Request(url, headers=_coinbase_public_request_headers())
 
 
 def digest(data):
@@ -83,8 +96,7 @@ def acquire(output):
         raise ValueError("Capture output already exists; use its conserved input for replay")
     acquired_at = datetime.now(timezone.utc).isoformat()
     try:
-        request = Request(URL, headers={"User-Agent": "TramitaGO-Quant-Core-Phase1/0.1",
-                                       "Accept": "application/json"})
+        request = _coinbase_public_request(URL)
         with urlopen(request, timeout=30) as response:
             raw = response.read(2_000_001)
             if len(raw) > 2_000_000:
@@ -739,6 +751,237 @@ def load_forward_paper_preparation(session_path, configuration_path, invocation_
     if not _forward_paper_invocation_is_valid(invocation, state, configuration):
         raise ValueError("Persisted FORWARD_PAPER invocation is invalid or inconsistent")
     return {"session": state, "configuration": configuration, "invocation": invocation}
+
+
+FORWARD_PAPER_DATASET_SCHEMA_VERSION = "1"
+COINBASE_PUBLIC_CANDLES_ENDPOINT = URL.split("?", 1)[0]
+FORWARD_PAPER_MINIMUM_CLOSED_OBSERVATIONS = 4
+
+
+def _forward_paper_query_window(processing_instant_utc, granularity_seconds):
+    processing_epoch = epoch(processing_instant_utc)
+    interval_start = processing_epoch - processing_epoch % granularity_seconds
+    return {
+        "endpoint": COINBASE_PUBLIC_CANDLES_ENDPOINT,
+        "end_exclusive_utc": processing_instant_utc,
+        "granularity_seconds": granularity_seconds,
+        "start_utc": iso(interval_start - 4 * granularity_seconds),
+    }
+
+
+def _coinbase_public_http_get(url, headers, timeout_seconds):
+    """Perform the one unauthenticated public HTTP request used by M1.2-T2."""
+    if headers != _coinbase_public_request_headers():
+        raise ValueError("COINBASE_PUBLIC request headers differ from the public contract")
+    request = Request(url, headers=headers)
+    with urlopen(request, timeout=timeout_seconds) as response:
+        raw = response.read(2_000_001)
+    if len(raw) > 2_000_000:
+        raise ValueError("Coinbase response exceeds bounded size")
+    return raw
+
+
+def _valid_forward_paper_timeout(timeout_seconds):
+    return type(timeout_seconds) in (int, float) and math.isfinite(timeout_seconds) \
+        and 0 < timeout_seconds <= 30
+
+
+def _forward_paper_normalized_observations(raw, processing_instant_utc):
+    """Reuse the canonical OHLCV normalization before adding forward metadata."""
+    rows, report = normalize(raw, start=0)
+    report = validate(rows, report, require_coverage=False)
+    if report["errors"] or report["rejected"]:
+        raise ValueError("Coinbase response contains invalid OHLCV observations")
+    processing_epoch = epoch(processing_instant_utc)
+    observations = []
+    excluded_open = 0
+    for row in rows:
+        interval_start = row["timestamp"]
+        interval_end = iso(epoch(interval_start) + 86400)
+        if epoch(interval_end) > processing_epoch:
+            excluded_open += 1
+            continue
+        observations.append({
+            "identity": f"BTC-USD|86400|{interval_start}",
+            "instrument": "BTC-USD",
+            "granularity_seconds": 86400,
+            "interval_start_utc": interval_start,
+            "interval_end_utc": interval_end,
+            "accepted_at_utc": processing_instant_utc,
+            "open": row["open"],
+            "high": row["high"],
+            "low": row["low"],
+            "close": row["close"],
+            "volume": row["volume"],
+            "source": "COINBASE_PUBLIC",
+        })
+    if len(observations) < FORWARD_PAPER_MINIMUM_CLOSED_OBSERVATIONS:
+        raise ValueError("Coinbase response has fewer than four closed observations")
+    return observations, excluded_open
+
+
+def _forward_paper_observation_is_valid(observation, processing_instant_utc):
+    fields = {
+        "identity", "instrument", "granularity_seconds", "interval_start_utc",
+        "interval_end_utc", "accepted_at_utc", "open", "high", "low",
+        "close", "volume", "source",
+    }
+    if not isinstance(observation, dict) or set(observation) != fields \
+            or observation.get("instrument") != "BTC-USD" \
+            or observation.get("granularity_seconds") != 86400 \
+            or observation.get("source") != "COINBASE_PUBLIC":
+        return False
+    interval_start = observation.get("interval_start_utc")
+    interval_end = observation.get("interval_end_utc")
+    if not _explicit_utc(interval_start) or not _explicit_utc(interval_end) \
+            or observation.get("accepted_at_utc") != processing_instant_utc \
+            or observation.get("identity") != f"BTC-USD|86400|{interval_start}" \
+            or epoch(interval_start) % 86400 != 0 \
+            or interval_end != iso(epoch(interval_start) + 86400) \
+            or epoch(interval_end) > epoch(processing_instant_utc):
+        return False
+    values = [observation.get(name) for name in ("open", "high", "low", "close", "volume")]
+    return all(type(value) in (int, float) and math.isfinite(value) for value in values) \
+        and observation["volume"] >= 0 \
+        and observation["low"] <= min(observation["open"], observation["close"]) \
+        and observation["high"] >= max(observation["open"], observation["close"])
+
+
+def _forward_paper_dataset_content(state, configuration, invocation, query_window,
+                                  observations, excluded_open_observation_count):
+    return {
+        "accepted_at_utc": invocation["processing_instant_utc"],
+        "closed_observation_count": len(observations),
+        "configuration_id": configuration["configuration_id"],
+        "excluded_open_observation_count": excluded_open_observation_count,
+        "granularity_seconds": configuration["granularity_seconds"],
+        "instrument": configuration["instrument"],
+        "invocation_id": invocation["invocation_id"],
+        "observations": observations,
+        "processing_instant_utc": invocation["processing_instant_utc"],
+        "query_window": query_window,
+        "schema_version": FORWARD_PAPER_DATASET_SCHEMA_VERSION,
+        "session_id": state["session_id"],
+        "session_identity": state["session_identity"],
+        "source": configuration["data_source"],
+    }
+
+
+def _forward_paper_dataset(state, configuration, invocation, query_window,
+                           observations, excluded_open_observation_count):
+    content = _forward_paper_dataset_content(
+        state, configuration, invocation, query_window, observations,
+        excluded_open_observation_count)
+    return {
+        **content,
+        "dataset_id": "FORWARD_PAPER_DATASET|" + digest(encoded(content)),
+    }
+
+
+def _forward_paper_dataset_is_valid(dataset, state, configuration, invocation):
+    fields = {
+        "schema_version", "dataset_id", "source", "instrument",
+        "granularity_seconds", "session_id", "session_identity",
+        "configuration_id", "invocation_id", "processing_instant_utc",
+        "accepted_at_utc", "query_window", "closed_observation_count",
+        "excluded_open_observation_count", "observations",
+    }
+    if not isinstance(dataset, dict) or set(dataset) != fields \
+            or dataset.get("schema_version") != FORWARD_PAPER_DATASET_SCHEMA_VERSION \
+            or dataset.get("source") != "COINBASE_PUBLIC" \
+            or dataset.get("instrument") != "BTC-USD" \
+            or dataset.get("granularity_seconds") != 86400 \
+            or dataset.get("session_id") != state["session_id"] \
+            or dataset.get("session_identity") != state["session_identity"] \
+            or dataset.get("configuration_id") != configuration["configuration_id"] \
+            or dataset.get("invocation_id") != invocation["invocation_id"] \
+            or dataset.get("processing_instant_utc") != invocation["processing_instant_utc"] \
+            or dataset.get("accepted_at_utc") != invocation["processing_instant_utc"] \
+            or not isinstance(dataset.get("query_window"), dict) \
+            or dataset.get("query_window") != _forward_paper_query_window(
+                invocation["processing_instant_utc"], 86400) \
+            or type(dataset.get("excluded_open_observation_count")) is not int \
+            or dataset["excluded_open_observation_count"] < 0 \
+            or not isinstance(dataset.get("observations"), list) \
+            or dataset.get("closed_observation_count") != len(dataset["observations"]):
+        return False
+    observations = dataset["observations"]
+    identities = [item.get("identity") for item in observations if isinstance(item, dict)]
+    starts = [item.get("interval_start_utc") for item in observations if isinstance(item, dict)]
+    if len(observations) < FORWARD_PAPER_MINIMUM_CLOSED_OBSERVATIONS \
+            or len(identities) != len(observations) \
+            or len(set(identities)) != len(identities) \
+            or starts != sorted(starts) \
+            or not all(_forward_paper_observation_is_valid(
+                item, invocation["processing_instant_utc"]) for item in observations):
+        return False
+    content = {key: dataset[key] for key in fields - {"dataset_id"}}
+    return dataset["dataset_id"] == "FORWARD_PAPER_DATASET|" + digest(encoded(content))
+
+
+def load_forward_paper_observation_dataset(session_path, configuration_path,
+                                           invocation_path, dataset_path):
+    """Reload one validated FORWARD_PAPER dataset without changing the session."""
+    preparation = load_forward_paper_preparation(
+        session_path, configuration_path, invocation_path)
+    dataset = json.loads(Path(dataset_path).read_bytes())
+    if not _forward_paper_dataset_is_valid(
+            dataset, preparation["session"], preparation["configuration"],
+            preparation["invocation"]):
+        raise ValueError("Persisted FORWARD_PAPER observation dataset is invalid")
+    return dataset
+
+
+def acquire_forward_paper_observations(session_path, configuration_path,
+                                       invocation_path, dataset_path, *,
+                                       transport=None, timeout_seconds=30):
+    """Acquire, normalize, and persist only closed Coinbase public observations."""
+    if not _valid_forward_paper_timeout(timeout_seconds):
+        raise ValueError("COINBASE_PUBLIC timeout must be finite and between zero and 30 seconds")
+    preparation = load_forward_paper_preparation(
+        session_path, configuration_path, invocation_path)
+    state = preparation["session"]
+    configuration = preparation["configuration"]
+    invocation = preparation["invocation"]
+    if configuration["data_source"] != "COINBASE_PUBLIC" \
+            or configuration["instrument"] != "BTC-USD" \
+            or configuration["granularity_seconds"] != 86400 \
+            or invocation["cycle_mode"] != "FORWARD_PAPER":
+        raise ValueError("FORWARD_PAPER preparation is incompatible with Coinbase public observations")
+    dataset_path = Path(dataset_path)
+    if dataset_path.exists():
+        dataset = load_forward_paper_observation_dataset(
+            session_path, configuration_path, invocation_path, dataset_path)
+        return {
+            "status": "PASS", "created": False, "dataset": dataset,
+            "public_transport_calls": 0, "credentials_used": False,
+            "broker_network_calls": 0, "paper_orders_sent": 0,
+            "live_orders_sent": 0,
+        }
+
+    query_window = _forward_paper_query_window(
+        invocation["processing_instant_utc"], configuration["granularity_seconds"])
+    query = urlencode({
+        "granularity": configuration["granularity_seconds"],
+        "start": query_window["start_utc"],
+        "end": query_window["end_exclusive_utc"],
+    })
+    transport = transport or _coinbase_public_http_get
+    raw = transport(f"{COINBASE_PUBLIC_CANDLES_ENDPOINT}?{query}",
+                    _coinbase_public_request_headers(), timeout_seconds)
+    observations, excluded_open = _forward_paper_normalized_observations(
+        raw, invocation["processing_instant_utc"])
+    dataset = _forward_paper_dataset(
+        state, configuration, invocation, query_window, observations, excluded_open)
+    if not _forward_paper_dataset_is_valid(dataset, state, configuration, invocation):
+        raise ValueError("Constructed FORWARD_PAPER observation dataset is invalid")
+    _atomic_write(dataset_path, encoded(dataset))
+    return {
+        "status": "PASS", "created": True, "dataset": dataset,
+        "public_transport_calls": 1, "credentials_used": False,
+        "broker_network_calls": 0, "paper_orders_sent": 0,
+        "live_orders_sent": 0,
+    }
 
 
 def _valid_warmup_observation(observation, started_epoch):
