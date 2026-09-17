@@ -441,8 +441,8 @@ def paper_session_state_is_valid(state):
     )
 
 
-def initialize_paper_session(state_path, output, session_id, mode, started_at):
-    """Create or recover one explicit PAPER session; never overwrite another state."""
+def _create_or_recover_paper_session(state_path, session_id, mode, started_at):
+    """Create or recover the strict PAPER state without publishing evidence."""
     state_path = Path(state_path)
     if mode != "PAPER":
         raise ValueError("Session mode must be explicit PAPER")
@@ -474,6 +474,14 @@ def initialize_paper_session(state_path, output, session_id, mode, started_at):
             raise ValueError("Constructed PAPER session is invalid")
         _atomic_write(state_path, encoded(state))
         created = True
+    return state, created
+
+
+def initialize_paper_session(state_path, output, session_id, mode, started_at):
+    """Create or recover one explicit PAPER session; never overwrite another state."""
+    state_path = Path(state_path)
+    state, created = _create_or_recover_paper_session(
+        state_path, session_id, mode, started_at)
     state_bytes = state_path.read_bytes()
     result = {"status": "PASS", "created": created, "session": state,
               "network_calls": 0, "credentials_used": False,
@@ -490,6 +498,247 @@ def load_paper_session(state_path):
     if not paper_session_state_is_valid(state):
         raise ValueError("Persisted PAPER session is invalid or incompatible")
     return state
+
+
+FORWARD_PAPER_CONFIGURATION_VERSION = "1"
+FORWARD_PAPER_STRATEGY_VERSION = "SMA3_V1"
+FORWARD_PAPER_CONFIGURATION_REGISTRY_SCHEMA_VERSION = "1"
+FORWARD_PAPER_INVOCATION_SCHEMA_VERSION = "1"
+
+
+def forward_paper_configuration():
+    """Return the complete, versioned contract for a forward PAPER cycle."""
+    content = {
+        "configuration_version": FORWARD_PAPER_CONFIGURATION_VERSION,
+        "cycle_mode": "FORWARD_PAPER",
+        "data_source": "COINBASE_PUBLIC",
+        "granularity_seconds": 86400,
+        "instrument": "BTC-USD",
+        "position_model": "LONG_ONLY_0_1",
+        "risk_profile": "PAPER_SCALE_80K_V1",
+        "session_mode": "PAPER",
+        "strategy": "SMA3",
+        "strategy_version": FORWARD_PAPER_STRATEGY_VERSION,
+    }
+    return {
+        **content,
+        "configuration_id": "FORWARD_PAPER_CONFIGURATION|" + digest(encoded(content)),
+    }
+
+
+def _forward_paper_configuration_is_valid(configuration):
+    expected = forward_paper_configuration()
+    return isinstance(configuration, dict) and configuration == expected
+
+
+def _forward_paper_session_link(state, configuration_id):
+    return {
+        "configuration_id": configuration_id,
+        "session_id": state["session_id"],
+        "session_identity": state["session_identity"],
+        "started_at": state["started_at"],
+    }
+
+
+def _forward_paper_configuration_registry_is_valid(registry):
+    required = {"schema_version", "configurations", "session_configurations"}
+    if not isinstance(registry, dict) or set(registry) != required \
+            or registry.get("schema_version") != FORWARD_PAPER_CONFIGURATION_REGISTRY_SCHEMA_VERSION \
+            or not isinstance(registry.get("configurations"), list) \
+            or not isinstance(registry.get("session_configurations"), list):
+        return False
+    configurations = registry["configurations"]
+    if not all(_forward_paper_configuration_is_valid(item) for item in configurations):
+        return False
+    identifiers = [item["configuration_id"] for item in configurations]
+    if len(identifiers) != len(set(identifiers)):
+        return False
+    links = registry["session_configurations"]
+    link_fields = {"configuration_id", "session_id", "session_identity", "started_at"}
+    if not all(isinstance(link, dict) and set(link) == link_fields
+               and link.get("configuration_id") in identifiers
+               and _valid_paper_session_id(link.get("session_id"))
+               and _explicit_utc(link.get("started_at"))
+               and link.get("session_identity") == _paper_session_identity(
+                   link["session_id"], link["started_at"])
+               for link in links):
+        return False
+    sessions = [link["session_id"] for link in links]
+    identities = [link["session_identity"] for link in links]
+    return len(sessions) == len(set(sessions)) and len(identities) == len(set(identities))
+
+
+def _load_forward_paper_configuration_registry(configuration_path):
+    configuration_path = Path(configuration_path)
+    registry = json.loads(configuration_path.read_bytes())
+    if not _forward_paper_configuration_registry_is_valid(registry):
+        raise ValueError("Persisted FORWARD_PAPER configuration registry is invalid")
+    return registry
+
+
+def _persist_forward_paper_configuration(configuration_path, state):
+    """Persist one deduplicated contract and its immutable session association."""
+    configuration_path = Path(configuration_path)
+    configuration = forward_paper_configuration()
+    if configuration_path.exists():
+        registry = _load_forward_paper_configuration_registry(configuration_path)
+    else:
+        registry = {
+            "schema_version": FORWARD_PAPER_CONFIGURATION_REGISTRY_SCHEMA_VERSION,
+            "configurations": [],
+            "session_configurations": [],
+        }
+
+    configurations = {
+        item["configuration_id"]: item for item in registry["configurations"]}
+    existing = configurations.get(configuration["configuration_id"])
+    if existing is not None and existing != configuration:
+        raise ValueError("Persisted FORWARD_PAPER configuration identity is inconsistent")
+    configuration_created = existing is None
+    if configuration_created:
+        registry["configurations"].append(configuration)
+
+    link = _forward_paper_session_link(state, configuration["configuration_id"])
+    same_session = [item for item in registry["session_configurations"]
+                    if item["session_id"] == state["session_id"]]
+    if same_session:
+        if len(same_session) != 1 or same_session[0] != link:
+            raise ValueError("A FORWARD_PAPER session cannot replace its configuration")
+        association_created = False
+    else:
+        registry["session_configurations"].append(link)
+        association_created = True
+
+    if configuration_created or association_created:
+        if not _forward_paper_configuration_registry_is_valid(registry):
+            raise ValueError("Constructed FORWARD_PAPER configuration registry is invalid")
+        _atomic_write(configuration_path, encoded(registry))
+    return configuration, configuration_created, association_created
+
+
+def load_forward_paper_configuration(session_path, configuration_path):
+    """Reload the exact FORWARD_PAPER contract associated with one PAPER session."""
+    state = load_paper_session(session_path)
+    registry = _load_forward_paper_configuration_registry(configuration_path)
+    links = [item for item in registry["session_configurations"]
+             if item["session_id"] == state["session_id"]
+             and item["session_identity"] == state["session_identity"]]
+    if len(links) != 1:
+        raise ValueError("PAPER session has no unambiguous FORWARD_PAPER configuration")
+    configurations = {item["configuration_id"]: item for item in registry["configurations"]}
+    configuration = configurations.get(links[0]["configuration_id"])
+    if configuration is None or links[0] != _forward_paper_session_link(
+            state, configuration["configuration_id"]):
+        raise ValueError("PAPER session configuration association is inconsistent")
+    return configuration
+
+
+def _forward_paper_session_is_initial(state):
+    return (
+        state["mode"] == "PAPER"
+        and state["internal_position_state"] == "FLAT"
+        and state["broker_position_observed"] == "UNKNOWN"
+        and state["reconciliation_status"] == "PENDING_BROKER_OBSERVATION"
+        and not state["warmup_observations"]
+        and not state["processed_observations"]
+        and not state["decisions"]
+        and not state.get("paper_risk_evaluations", [])
+        and not state["executions"]
+        and not state["pending_actions"]
+        and not state["broker_submissions"]
+    )
+
+
+def _forward_paper_invocation(state, configuration, processing_instant_utc):
+    content = {
+        "configuration_id": configuration["configuration_id"],
+        "cycle_mode": "FORWARD_PAPER",
+        "processing_instant_utc": processing_instant_utc,
+        "session_id": state["session_id"],
+        "session_identity": state["session_identity"],
+    }
+    return {
+        "schema_version": FORWARD_PAPER_INVOCATION_SCHEMA_VERSION,
+        **content,
+        "invocation_id": "FORWARD_PAPER_INVOCATION|" + digest(encoded(content)),
+    }
+
+
+def _forward_paper_invocation_is_valid(invocation, state, configuration):
+    expected = _forward_paper_invocation(
+        state, configuration, invocation.get("processing_instant_utc")
+        if isinstance(invocation, dict) else None)
+    return (
+        isinstance(invocation, dict)
+        and _explicit_utc(invocation.get("processing_instant_utc"))
+        and epoch(invocation["processing_instant_utc"]) >= epoch(state["started_at"])
+        and invocation == expected
+    )
+
+
+def _persist_forward_paper_invocation(invocation_path, state, configuration,
+                                      processing_instant_utc):
+    invocation_path = Path(invocation_path)
+    invocation = _forward_paper_invocation(state, configuration, processing_instant_utc)
+    if invocation_path.exists():
+        existing = json.loads(invocation_path.read_bytes())
+        if not _forward_paper_invocation_is_valid(existing, state, configuration) \
+                or existing != invocation:
+            raise ValueError("Persisted FORWARD_PAPER invocation cannot be silently replaced")
+        return invocation, False
+    if not _forward_paper_invocation_is_valid(invocation, state, configuration):
+        raise ValueError("Constructed FORWARD_PAPER invocation is invalid")
+    _atomic_write(invocation_path, encoded(invocation))
+    return invocation, True
+
+
+def prepare_forward_paper_invocation(session_path, configuration_path, invocation_path,
+                                     session_id, started_at, processing_instant_utc,
+                                     session_mode="PAPER", cycle_mode="FORWARD_PAPER"):
+    """Create or recover a no-I/O FORWARD_PAPER session and one invocation input."""
+    if session_mode != "PAPER":
+        raise ValueError("FORWARD_PAPER session mode must be explicit PAPER")
+    if cycle_mode != "FORWARD_PAPER":
+        raise ValueError("Cycle mode must be explicit FORWARD_PAPER")
+    if not _explicit_utc(processing_instant_utc):
+        raise ValueError("An explicit canonical UTC processing instant is required")
+    if not _explicit_utc(started_at):
+        raise ValueError("A canonical UTC session start is required")
+    if epoch(processing_instant_utc) < epoch(started_at):
+        raise ValueError("Processing instant cannot precede session start")
+
+    state, session_created = _create_or_recover_paper_session(
+        session_path, session_id, session_mode, started_at)
+    if not _forward_paper_session_is_initial(state):
+        raise ValueError("FORWARD_PAPER requires an independent initial PAPER session")
+    configuration, configuration_created, association_created = \
+        _persist_forward_paper_configuration(configuration_path, state)
+    invocation, invocation_created = _persist_forward_paper_invocation(
+        invocation_path, state, configuration, processing_instant_utc)
+    return {
+        "status": "PASS",
+        "session": state,
+        "configuration": configuration,
+        "invocation": invocation,
+        "session_created": session_created,
+        "configuration_created": configuration_created,
+        "configuration_association_created": association_created,
+        "invocation_created": invocation_created,
+        "network_calls": 0,
+        "credentials_used": False,
+        "paper_orders_sent": 0,
+        "live_orders_sent": 0,
+    }
+
+
+def load_forward_paper_preparation(session_path, configuration_path, invocation_path):
+    """Reload a prepared FORWARD_PAPER session without executing its cycle."""
+    state = load_paper_session(session_path)
+    configuration = load_forward_paper_configuration(session_path, configuration_path)
+    invocation = json.loads(Path(invocation_path).read_bytes())
+    if not _forward_paper_invocation_is_valid(invocation, state, configuration):
+        raise ValueError("Persisted FORWARD_PAPER invocation is invalid or inconsistent")
+    return {"session": state, "configuration": configuration, "invocation": invocation}
 
 
 def _valid_warmup_observation(observation, started_epoch):
