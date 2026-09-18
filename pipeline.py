@@ -1051,6 +1051,171 @@ def select_forward_paper_eligible_observation(session_path, configuration_path,
     }
 
 
+def _load_forward_paper_selection_receipt(session_path, configuration_path,
+                                          invocation_path, dataset_path,
+                                          selection_path):
+    preparation = load_forward_paper_preparation(
+        session_path, configuration_path, invocation_path)
+    dataset = load_forward_paper_observation_dataset(
+        session_path, configuration_path, invocation_path, dataset_path)
+    selection = json.loads(Path(selection_path).read_bytes())
+    required = {
+        "schema_version", "selection_id", "configuration_id", "dataset_id",
+        "invocation_id", "operational_observation", "processing_instant_utc",
+        "result", "session_id", "session_identity", "warmup_observations",
+    }
+    if set(selection) != required:
+        raise ValueError("T3 selection receipt is incomplete")
+    content = {key: selection[key] for key in required - {"selection_id", "schema_version"}}
+    if (selection["schema_version"] != FORWARD_PAPER_SELECTION_SCHEMA_VERSION
+            or selection["selection_id"] != "FORWARD_PAPER_SELECTION|"
+            + digest(encoded(content))
+            or selection["result"] not in (
+                "OPERATIONAL_OBSERVATION_ACCEPTED", "NOTHING_DUE")
+            or selection["session_id"] != preparation["session"]["session_id"]
+            or selection["session_identity"] != preparation["session"]["session_identity"]
+            or selection["configuration_id"] != preparation["configuration"]["configuration_id"]
+            or selection["invocation_id"] != preparation["invocation"]["invocation_id"]
+            or selection["dataset_id"] != dataset["dataset_id"]
+            or selection["processing_instant_utc"]
+            != preparation["invocation"]["processing_instant_utc"]):
+        raise ValueError("T3 selection receipt is incompatible")
+    warmup = selection["warmup_observations"]
+    operational = selection["operational_observation"]
+    expected_count = preparation["configuration"]["warmup_observation_count"]
+    observations = dataset["observations"]
+    if selection["result"] == "NOTHING_DUE":
+        if warmup != [] or operational is not None:
+            raise ValueError("T3 NOTHING_DUE receipt is inconsistent")
+        return preparation, dataset, selection
+    if (not isinstance(warmup, list) or len(warmup) != expected_count
+            or not isinstance(operational, dict)
+            or operational not in observations
+            or warmup != observations[
+                observations.index(operational) - expected_count:observations.index(operational)]
+            ):
+        raise ValueError("T3 selection receipt observations are incompatible")
+    return preparation, dataset, selection
+
+
+def _forward_paper_m11_observation(observation, accepted=False):
+    fields = {
+        "identity": observation["identity"],
+        "instrument": observation["instrument"],
+        "timestamp": observation["interval_start_utc"],
+        "open": observation["open"],
+        "high": observation["high"],
+        "low": observation["low"],
+        "close": observation["close"],
+        "volume": observation["volume"],
+    }
+    if accepted:
+        fields["accepted_at_utc"] = observation["accepted_at_utc"]
+    return fields
+
+
+def compose_forward_paper_cycle(session_path, configuration_path, invocation_path,
+                                dataset_path, selection_path, fixture_path,
+                                acceptance_path, indicator_path, cycle_path,
+                                output, risk_evaluated_at_utc):
+    """Compose one accepted T3 observation through the canonical M1.1 PAPER cycle."""
+    try:
+        preparation, dataset, selection = _load_forward_paper_selection_receipt(
+            session_path, configuration_path, invocation_path, dataset_path,
+            selection_path)
+    except (ValueError, KeyError, TypeError, json.JSONDecodeError, FileNotFoundError) as error:
+        return {"status": "PASS", "composition_result": "BLOCKED",
+                "reason": str(error), "network_calls": 0,
+                "credentials_used": False}
+
+    if not _explicit_utc(risk_evaluated_at_utc):
+        return {"status": "PASS", "composition_result": "BLOCKED",
+                "reason": "An explicit PAPER Risk evaluation instant is required",
+                "network_calls": 0, "credentials_used": False}
+
+    state = preparation["session"]
+    configuration = preparation["configuration"]
+    invocation = preparation["invocation"]
+    operational = selection["operational_observation"]
+    processing_instant = invocation["processing_instant_utc"]
+    if selection["result"] == "NOTHING_DUE":
+        return {
+            "status": "PASS", "composition_result": "NOTHING_DUE",
+            "session_id": state["session_id"],
+            "configuration_id": configuration["configuration_id"],
+            "invocation_id": invocation["invocation_id"],
+            "dataset_id": dataset["dataset_id"],
+            "selection_id": selection["selection_id"],
+            "processing_instant_utc": processing_instant,
+            "operational_observation": None, "network_calls": 0,
+            "credentials_used": False,
+        }
+    cycle_id = (f"PAPER_CYCLE|{state['session_id']}|{operational['identity']}|"
+                f"{processing_instant}")
+    fixture_path = Path(fixture_path)
+    acceptance_path = Path(acceptance_path)
+    indicator_path = Path(indicator_path)
+    cycle_path = Path(cycle_path)
+    output = Path(output)
+
+    if (not cycle_path.exists()
+            and operational["identity"] in {
+                item["identity"] for item in state["processed_observations"]
+            }):
+        return {"status": "PASS", "composition_result": "BLOCKED",
+                "reason": "Operational observation is already processed",
+                "network_calls": 0, "credentials_used": False}
+
+    if not cycle_path.exists():
+        observations = [
+            _forward_paper_m11_observation(item)
+            for item in selection["warmup_observations"]
+        ] + [_forward_paper_m11_observation(operational, accepted=True)]
+        prepare_paper_session_fixture(
+            session_path, fixture_path, output / "fixture", observations,
+            processing_instant)
+        validate_paper_session_operational_observation(
+            session_path, fixture_path, acceptance_path, output / "acceptance")
+        compose_paper_session_sma3(
+            session_path, fixture_path, acceptance_path, indicator_path,
+            output / "indicator")
+        persist_paper_session_sma3_decision(
+            session_path, fixture_path, acceptance_path, indicator_path,
+            output / "decision")
+        decision = load_paper_session(session_path)["decisions"][-1]
+        apply_paper_risk_to_session(
+            session_path, output / "risk", decision["identity"],
+            risk_evaluated_at_utc)
+
+    cycle = run_paper_cycle(
+        session_path, fixture_path, acceptance_path, indicator_path,
+        cycle_path, output / "cycle", cycle_id, processing_instant)
+    state_after = load_paper_session(session_path)
+    return {
+        "status": "PASS", "composition_result": cycle["terminal_result"],
+        "session_id": state["session_id"],
+        "configuration_id": configuration["configuration_id"],
+        "invocation_id": invocation["invocation_id"],
+        "dataset_id": dataset["dataset_id"],
+        "selection_id": selection["selection_id"],
+        "processing_instant_utc": processing_instant,
+        "operational_observation": operational,
+        "cycle": cycle,
+        "sma3": json.loads((output / "indicator" / "paper-sma3-indicator.json").read_bytes()),
+        "decision": json.loads((output / "decision" / "paper-sma3-decision.json").read_bytes()),
+        "risk": json.loads((output / "risk" / "paper-risk.json").read_bytes()),
+        "position_before": state["internal_position_state"],
+        "position_after": state_after["internal_position_state"],
+        "broker_position_observed": state_after["broker_position_observed"],
+        "processed_observations": len(state_after["processed_observations"]),
+        "decisions": len(state_after["decisions"]),
+        "risk_evaluations": len(state_after["paper_risk_evaluations"]),
+        "executions": len(state_after["executions"]),
+        "pending_actions": len(state_after["pending_actions"]),
+        "proposals": 0, "network_calls": 0, "credentials_used": False,
+    }
+
+
 def acquire_forward_paper_observations(session_path, configuration_path,
                                        invocation_path, dataset_path, *,
                                        transport=None, timeout_seconds=30):
