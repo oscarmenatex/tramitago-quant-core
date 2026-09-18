@@ -1171,9 +1171,9 @@ def compose_forward_paper_cycle(session_path, configuration_path, invocation_pat
             _forward_paper_m11_observation(item)
             for item in selection["warmup_observations"]
         ] + [_forward_paper_m11_observation(operational, accepted=True)]
-        prepare_paper_session_fixture(
-            session_path, fixture_path, output / "fixture", observations,
-            processing_instant)
+        prepare_forward_paper_session_fixture(
+            session_path, configuration_path, invocation_path, fixture_path,
+            output / "fixture", observations)
         validate_paper_session_operational_observation(
             session_path, fixture_path, acceptance_path, output / "acceptance")
         compose_paper_session_sma3(
@@ -1266,6 +1266,176 @@ def acquire_forward_paper_observations(session_path, configuration_path,
         "broker_network_calls": 0, "paper_orders_sent": 0,
         "live_orders_sent": 0,
     }
+
+
+FORWARD_PAPER_INVOCATION_RESULT_SCHEMA_VERSION = "1"
+
+
+def _forward_paper_invocation_result_content(preparation, terminal_result, reason,
+                                              evidence):
+    return {
+        "configuration_id": preparation["configuration"]["configuration_id"],
+    "canonical_cycle_id": evidence.get("cycle_id"),
+    "dataset_id": evidence.get("dataset_id"),
+        "evidence": evidence,
+        "invocation_id": preparation["invocation"]["invocation_id"],
+        "mode": "FORWARD_PAPER",
+        "processing_instant_utc": preparation["invocation"]["processing_instant_utc"],
+        "reason": reason,
+    "selection_receipt_id": evidence.get("selection_receipt_id"),
+        "session_id": preparation["session"]["session_id"],
+        "terminal_result": terminal_result,
+    }
+
+
+def _forward_paper_invocation_result_record(preparation, terminal_result, reason,
+                                            evidence):
+    content = _forward_paper_invocation_result_content(
+        preparation, terminal_result, reason, evidence)
+    return {
+        "schema_version": FORWARD_PAPER_INVOCATION_RESULT_SCHEMA_VERSION,
+        **content,
+        "invocation_result_id": "FORWARD_PAPER_INVOCATION_RESULT|" + digest(encoded(content)),
+    }
+
+
+def _persist_forward_paper_invocation_result(result_path, record):
+    result_path = Path(result_path)
+    if result_path.exists():
+        existing = json.loads(result_path.read_bytes())
+        if existing != record:
+            raise ValueError("Persisted FORWARD_PAPER invocation result cannot be silently replaced")
+        return False
+    _atomic_write(result_path, encoded(record))
+    return True
+
+
+def _load_forward_paper_invocation_result(result_path):
+    result = json.loads(Path(result_path).read_bytes())
+    required = {
+        "schema_version", "invocation_result_id", "canonical_cycle_id", "configuration_id",
+        "dataset_id", "evidence", "invocation_id", "mode", "processing_instant_utc",
+        "reason", "selection_receipt_id", "session_id", "terminal_result",
+    }
+    if set(result) != required or result["schema_version"] != \
+            FORWARD_PAPER_INVOCATION_RESULT_SCHEMA_VERSION:
+        raise ValueError("Persisted FORWARD_PAPER invocation result is incomplete")
+    content = {key: result[key] for key in required - {"invocation_result_id", "schema_version"}}
+    if result["invocation_result_id"] != "FORWARD_PAPER_INVOCATION_RESULT|" \
+            + digest(encoded(content)):
+        raise ValueError("Persisted FORWARD_PAPER invocation result identity is invalid")
+    if result["terminal_result"] not in {
+            "COMPLETED", "NOTHING_DUE", "BLOCKED", "RECOVERABLE_ERROR"}:
+        raise ValueError("Persisted FORWARD_PAPER invocation result is unknown")
+    return result
+
+
+def _forward_paper_invocation_result_view(record, created=False, replay=False):
+    return {"status": "PASS", "created": created, "replay": replay,
+            **record, "network_calls": 0, "credentials_used": False,
+            "broker_network_calls": 0, "paper_orders_sent": 0,
+            "live_orders_sent": 0}
+
+
+def run_forward_paper_invocation(session_path, configuration_path, invocation_path,
+                                 dataset_path, selection_path, fixture_path,
+                                 acceptance_path, indicator_path, cycle_path,
+                                 result_path, output, session_id, started_at,
+                                 processing_instant_utc, risk_evaluated_at_utc, *,
+                                 transport=None, timeout_seconds=30):
+    """Run one T1-T4 FORWARD_PAPER invocation and persist its terminal result."""
+    try:
+        if all(Path(path).exists() for path in (
+                session_path, configuration_path, invocation_path)):
+            preparation = load_forward_paper_preparation(
+                session_path, configuration_path, invocation_path)
+        else:
+            preparation = prepare_forward_paper_invocation(
+                session_path, configuration_path, invocation_path, session_id,
+                started_at, processing_instant_utc)
+        if Path(result_path).exists():
+            existing = _load_forward_paper_invocation_result(result_path)
+            expected = _forward_paper_invocation_result_content(
+                preparation, existing["terminal_result"], existing["reason"],
+                existing["evidence"])
+            if existing["invocation_result_id"] != \
+                    "FORWARD_PAPER_INVOCATION_RESULT|" + digest(encoded(expected)):
+                raise ValueError("Persisted FORWARD_PAPER invocation result is incompatible")
+            return _forward_paper_invocation_result_view(existing, replay=True)
+    except (ValueError, KeyError, TypeError, json.JSONDecodeError, FileNotFoundError) as error:
+        return {"status": "PASS", "terminal_result": "BLOCKED", "reason": str(error),
+                "network_calls": 0, "credentials_used": False}
+
+    try:
+        acquisition = acquire_forward_paper_observations(
+            session_path, configuration_path, invocation_path, dataset_path,
+            transport=transport, timeout_seconds=timeout_seconds)
+    except ValueError as error:
+        record = _forward_paper_invocation_result_record(
+            preparation, "BLOCKED", str(error),
+            {"dataset_id": None, "selection_receipt_id": None, "cycle_id": None})
+        created = _persist_forward_paper_invocation_result(result_path, record)
+        return _forward_paper_invocation_result_view(record, created=created)
+    except ValueError as error:
+        record = _forward_paper_invocation_result_record(
+            preparation, "BLOCKED", str(error),
+            {"dataset_id": None, "selection_receipt_id": None, "cycle_id": None})
+        created = _persist_forward_paper_invocation_result(result_path, record)
+        return _forward_paper_invocation_result_view(record, created=created)
+    except (OSError, TimeoutError) as error:
+        record = _forward_paper_invocation_result_record(
+            preparation, "RECOVERABLE_ERROR", str(error),
+            {"dataset_id": None, "selection_receipt_id": None, "cycle_id": None})
+        try:
+            created = _persist_forward_paper_invocation_result(result_path, record)
+        except OSError:
+            return {"status": "PASS", "terminal_result": "RECOVERABLE_ERROR",
+                    "reason": str(error), "network_calls": 0, "credentials_used": False}
+        return _forward_paper_invocation_result_view(record, created=created)
+
+    try:
+        selected = select_forward_paper_eligible_observation(
+            session_path, configuration_path, invocation_path, dataset_path,
+            selection_path)
+        dataset = acquisition["dataset"]
+        evidence = {"dataset_id": dataset["dataset_id"],
+                    "selection_receipt_id": None, "cycle_id": None}
+        if selected.get("selection"):
+            evidence["selection_receipt_id"] = selected["selection"]["selection_id"]
+        if selected["selection_result"] == "NOTHING_DUE":
+            record = _forward_paper_invocation_result_record(
+                preparation, "NOTHING_DUE", "No new eligible operational observation", evidence)
+        elif selected["selection_result"] == "BLOCKED":
+            record = _forward_paper_invocation_result_record(
+                preparation, "BLOCKED", selected.get("reason", "T3 blocked"), evidence)
+        else:
+            composed = compose_forward_paper_cycle(
+                session_path, configuration_path, invocation_path, dataset_path,
+                selection_path, fixture_path, acceptance_path, indicator_path,
+                cycle_path, output, risk_evaluated_at_utc)
+            cycle = composed.get("cycle", {})
+            evidence["cycle_id"] = cycle.get("cycle_id")
+            record = _forward_paper_invocation_result_record(
+                preparation, composed["composition_result"],
+                composed.get("reason", "FORWARD_PAPER cycle completed"), {
+                    **evidence, "operational_observation": composed.get("operational_observation"),
+                    "sma3": composed.get("sma3"), "decision": composed.get("decision"),
+                    "risk": composed.get("risk"), "position_before": composed.get("position_before"),
+                    "position_after": composed.get("position_after"),
+                    "broker_position_observed": composed.get("broker_position_observed"),
+                })
+        created = _persist_forward_paper_invocation_result(result_path, record)
+        return _forward_paper_invocation_result_view(record, created=created)
+    except (OSError, TimeoutError) as error:
+        record = _forward_paper_invocation_result_record(
+            preparation, "RECOVERABLE_ERROR", str(error),
+            {"dataset_id": None, "selection_receipt_id": None, "cycle_id": None})
+        try:
+            created = _persist_forward_paper_invocation_result(result_path, record)
+        except OSError:
+            return {"status": "PASS", "terminal_result": "RECOVERABLE_ERROR",
+                    "reason": str(error), "network_calls": 0, "credentials_used": False}
+        return _forward_paper_invocation_result_view(record, created=created)
 
 
 def _valid_warmup_observation(observation, started_epoch):
@@ -1361,11 +1531,19 @@ def _valid_fixture_observation(observation, processing_epoch, *, accepted_requir
 
 
 def _validate_paper_session_fixture(fixture, state, processing_instant_utc):
-    if not isinstance(fixture, dict) or set(fixture) != {
-            "schema_version", "session_id", "session_identity", "mode",
-            "instrument", "frequency_seconds", "processing_instant_utc",
-            "warmup_observations", "operational_observations"}:
+    base_fields = {
+        "schema_version", "session_id", "session_identity", "mode",
+        "instrument", "frequency_seconds", "processing_instant_utc",
+        "warmup_observations", "operational_observations"}
+    forward_fields = {"cycle_mode", "configuration_id", "invocation_id"}
+    if not isinstance(fixture, dict) or set(fixture) not in (
+            base_fields, base_fields | forward_fields):
         raise ValueError("Historical PAPER fixture envelope is invalid")
+    forward_paper = set(fixture) == base_fields | forward_fields
+    if forward_paper and (fixture["cycle_mode"] != "FORWARD_PAPER"
+                          or not isinstance(fixture["configuration_id"], str)
+                          or not isinstance(fixture["invocation_id"], str)):
+        raise ValueError("FORWARD_PAPER fixture context is invalid")
     if (fixture["schema_version"] != PAPER_SESSION_SCHEMA_VERSION
             or fixture["session_id"] != state["session_id"]
             or fixture["session_identity"] != state["session_identity"]
@@ -1393,14 +1571,19 @@ def _validate_paper_session_fixture(fixture, state, processing_instant_utc):
     if len(set(timestamps)) != 4 or any(later - earlier != 86400
                                         for earlier, later in zip(timestamps, timestamps[1:])):
         raise ValueError("Historical PAPER fixture observations must be unique and chronological")
-    if any(epoch(item["timestamp"]) + 86400 > epoch(state["started_at"])
-           for item in warmup):
+    if not forward_paper and any(
+            epoch(item["timestamp"]) + 86400 > epoch(state["started_at"])
+            for item in warmup):
         raise ValueError("Warm-up observation must close before the PAPER session starts")
+    if forward_paper and any(
+            epoch(item["timestamp"]) + 86400 > epoch(operational[0]["timestamp"])
+            for item in warmup):
+        raise ValueError("FORWARD_PAPER warm-up must precede the operational observation")
     return observations
 
 
-def prepare_paper_session_fixture(state_path, fixture_path, output, observations,
-                                  processing_instant_utc):
+def _prepare_paper_session_fixture(state_path, fixture_path, output, observations,
+                                   processing_instant_utc, fixture_context=None):
     """Persist three warm-up candles and one separate pending operational candle."""
     state_path = Path(state_path)
     fixture_path = Path(fixture_path)
@@ -1418,10 +1601,18 @@ def prepare_paper_session_fixture(state_path, fixture_path, output, observations
         "warmup_observations": observations[:3],
         "operational_observations": observations[3:],
     }
+    if fixture_context is not None:
+        candidate.update(fixture_context)
     _validate_paper_session_fixture(candidate, state, processing_instant_utc)
     if not state["warmup_observations"]:
-        load_paper_session_warmup(state_path, output.with_name(output.name + "-warmup"),
-                                  observations[:3])
+        if fixture_context is None:
+            load_paper_session_warmup(
+                state_path, output.with_name(output.name + "-warmup"), observations[:3])
+        else:
+            state["warmup_observations"] = observations[:3]
+            if not paper_session_state_is_valid(state):
+                raise ValueError("Constructed FORWARD_PAPER warm-up state is invalid")
+            _atomic_write(state_path, encoded(state))
     state = load_paper_session(state_path)
     if fixture_path.exists():
         existing = json.loads(fixture_path.read_bytes())
@@ -1447,6 +1638,37 @@ def prepare_paper_session_fixture(state_path, fixture_path, output, observations
               "fixture_sha256": digest(fixture_bytes)}
     publish(output, {"paper-session-fixture.json": encoded(result)})
     return result
+
+
+def prepare_paper_session_fixture(state_path, fixture_path, output, observations,
+                                  processing_instant_utc):
+    """Persist the historical M1.1 fixture with pre-session warm-up rules."""
+    return _prepare_paper_session_fixture(
+        state_path, fixture_path, output, observations, processing_instant_utc)
+
+
+def prepare_forward_paper_session_fixture(session_path, configuration_path,
+                                          invocation_path, fixture_path, output,
+                                          observations):
+    """Persist the M1.1 fixture shape from validated FORWARD_PAPER T1 inputs."""
+    preparation = load_forward_paper_preparation(
+        session_path, configuration_path, invocation_path)
+    state = preparation["session"]
+    configuration = preparation["configuration"]
+    invocation = preparation["invocation"]
+    if (configuration["cycle_mode"] != "FORWARD_PAPER"
+            or configuration["session_mode"] != "PAPER"
+            or invocation["cycle_mode"] != "FORWARD_PAPER"
+            or invocation["configuration_id"] != configuration["configuration_id"]
+            or invocation["session_id"] != state["session_id"]
+            or invocation["session_identity"] != state["session_identity"]):
+        raise ValueError("FORWARD_PAPER T1 association is incompatible")
+    context = {"cycle_mode": "FORWARD_PAPER",
+               "configuration_id": configuration["configuration_id"],
+               "invocation_id": invocation["invocation_id"]}
+    return _prepare_paper_session_fixture(
+        session_path, fixture_path, output, observations,
+        invocation["processing_instant_utc"], context)
 
 
 def load_paper_session_fixture(state_path, fixture_path):

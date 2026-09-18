@@ -69,8 +69,8 @@ class M12T4ForwardPaperCycleCompositionTests(unittest.TestCase):
 
     def test_accepted_observation_uses_all_canonical_m11_contracts(self):
         self.select()
-        with patch.object(p, "prepare_paper_session_fixture",
-                          wraps=p.prepare_paper_session_fixture) as fixture, \
+        with patch.object(p, "prepare_forward_paper_session_fixture",
+                  wraps=p.prepare_forward_paper_session_fixture) as fixture, \
                 patch.object(p, "compose_paper_session_sma3",
                              wraps=p.compose_paper_session_sma3) as sma3, \
                 patch.object(p, "persist_paper_session_sma3_decision",
