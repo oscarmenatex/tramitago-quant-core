@@ -531,6 +531,7 @@ def forward_paper_configuration():
         "session_mode": "PAPER",
         "strategy": "SMA3",
         "strategy_version": FORWARD_PAPER_STRATEGY_VERSION,
+        "warmup_observation_count": 3,
     }
     return {
         **content,
@@ -930,6 +931,124 @@ def load_forward_paper_observation_dataset(session_path, configuration_path,
             preparation["invocation"]):
         raise ValueError("Persisted FORWARD_PAPER observation dataset is invalid")
     return dataset
+
+
+FORWARD_PAPER_SELECTION_SCHEMA_VERSION = "1"
+
+
+def _forward_paper_selection_content(preparation, dataset, result,
+                                     warmup_observations, operational_observation):
+    return {
+        "configuration_id": preparation["configuration"]["configuration_id"],
+        "dataset_id": dataset["dataset_id"],
+        "invocation_id": preparation["invocation"]["invocation_id"],
+        "operational_observation": operational_observation,
+        "processing_instant_utc": preparation["invocation"]["processing_instant_utc"],
+        "result": result,
+        "session_id": preparation["session"]["session_id"],
+        "session_identity": preparation["session"]["session_identity"],
+        "warmup_observations": warmup_observations,
+    }
+
+
+def _forward_paper_selection_record(preparation, dataset, result,
+                                   warmup_observations, operational_observation):
+    content = _forward_paper_selection_content(
+        preparation, dataset, result, warmup_observations, operational_observation)
+    return {
+        "schema_version": FORWARD_PAPER_SELECTION_SCHEMA_VERSION,
+        **content,
+        "selection_id": "FORWARD_PAPER_SELECTION|" + digest(encoded(content)),
+    }
+
+
+def _persist_forward_paper_selection(selection_path, record):
+    selection_path = Path(selection_path)
+    if selection_path.exists():
+        existing = json.loads(selection_path.read_bytes())
+        if existing != record:
+            raise ValueError("Persisted FORWARD_PAPER selection cannot be silently replaced")
+        return False
+    _atomic_write(selection_path, encoded(record))
+    return True
+
+
+def select_forward_paper_eligible_observation(session_path, configuration_path,
+                                              invocation_path, dataset_path,
+                                              selection_path):
+    """Select one causal operational observation without changing PAPER state."""
+    try:
+        preparation = load_forward_paper_preparation(
+            session_path, configuration_path, invocation_path)
+        dataset = load_forward_paper_observation_dataset(
+            session_path, configuration_path, invocation_path, dataset_path)
+    except (ValueError, KeyError, TypeError, json.JSONDecodeError, FileNotFoundError) as error:
+        return {"status": "BLOCKED", "selection_result": "BLOCKED",
+                "reason": str(error), "network_calls": 0, "credentials_used": False}
+    state = preparation["session"]
+    configuration = preparation["configuration"]
+    invocation = preparation["invocation"]
+    processing_instant = invocation["processing_instant_utc"]
+    if (configuration["cycle_mode"] != "FORWARD_PAPER"
+            or configuration["session_mode"] != "PAPER"
+            or dataset["configuration_id"] != configuration["configuration_id"]
+            or dataset["invocation_id"] != invocation["invocation_id"]
+            or dataset["session_id"] != state["session_id"]
+            or dataset["session_identity"] != state["session_identity"]
+            or dataset["processing_instant_utc"] != processing_instant):
+        return {"status": "BLOCKED", "selection_result": "BLOCKED",
+                "reason": "FORWARD_PAPER inputs are incompatible", "network_calls": 0,
+                "credentials_used": False}
+
+    warmup_count = configuration.get("warmup_observation_count")
+    if type(warmup_count) is not int or warmup_count < 1:
+        return {"status": "BLOCKED", "selection_result": "BLOCKED",
+                "reason": "FORWARD_PAPER warm-up configuration is invalid",
+                "network_calls": 0, "credentials_used": False}
+
+    observations = dataset["observations"]
+    processed = {item["identity"] for item in state["processed_observations"]}
+    candidate = next((item for item in observations[warmup_count:]
+                      if item["identity"] not in processed), None)
+    if candidate is None:
+        result = "NOTHING_DUE"
+        warmup = []
+        operational = None
+    else:
+        started_epoch = epoch(state["started_at"])
+        if (not _explicit_utc(candidate.get("accepted_at_utc"))
+                or epoch(candidate["accepted_at_utc"]) <= started_epoch
+                or epoch(candidate["interval_end_utc"]) > epoch(processing_instant)):
+            return {"status": "BLOCKED", "selection_result": "BLOCKED",
+                    "reason": "Operational observation is not temporally eligible",
+                    "network_calls": 0, "credentials_used": False}
+        candidate_index = observations.index(candidate)
+        warmup = observations[max(0, candidate_index - warmup_count):candidate_index]
+        if len(warmup) != warmup_count:
+            result = "NOTHING_DUE"
+            warmup = []
+            operational = None
+        else:
+            result = "OPERATIONAL_OBSERVATION_ACCEPTED"
+            operational = candidate
+
+    record = _forward_paper_selection_record(
+        preparation, dataset, result, warmup, operational)
+    created = _persist_forward_paper_selection(selection_path, record)
+    state_after = load_paper_session(session_path)
+    if state_after != state:
+        raise ValueError("Operational observation selection modified PAPER state")
+    return {
+        "status": "PASS", "created": created, "selection_result": result,
+        "selection": record, "warmup_observations": warmup,
+        "operational_observation": operational,
+        "processing_instant_utc": processing_instant, "lookahead": "NOT_USED",
+        "decisions": len(state_after["decisions"]),
+        "risk_evaluations": len(state_after.get("paper_risk_evaluations", [])),
+        "executions": len(state_after["executions"]),
+        "pending_actions": len(state_after["pending_actions"]), "proposals": 0,
+        "network_calls": 0, "credentials_used": False,
+    }
 
 
 def acquire_forward_paper_observations(session_path, configuration_path,
