@@ -2110,6 +2110,11 @@ def _forward_paper_activation_attempts_path(receipt_directory, activation_id):
     return Path(receipt_directory) / ("activation-" + key + "-attempts.json")
 
 
+def _forward_paper_activation_attempts_lock_path(receipt_directory, activation_id):
+    key = digest(activation_id.encode("utf-8"))
+    return Path(receipt_directory) / ".attempts-locks" / (key + ".lock")
+
+
 def _forward_paper_activation_attempts_is_valid(record, activation_id):
     if not isinstance(record, dict) \
             or set(record) != FORWARD_PAPER_ACTIVATION_ATTEMPTS_RECORD_FIELDS \
@@ -2187,58 +2192,67 @@ def attempt_forward_paper_activation(
 
     attempts_path = _forward_paper_activation_attempts_path(
         receipt_directory, activation_id)
-    attempts_record = _load_forward_paper_activation_attempts(
-        attempts_path, activation_id, now_utc)
-    processing_instant_utc = attempts_record["processing_instant_utc"]
-    attempts = attempts_record["attempts"]
+    lock_path = _forward_paper_activation_attempts_lock_path(
+        receipt_directory, activation_id)
     now = datetime.fromisoformat(now_utc.replace("Z", "+00:00"))
 
-    if attempts:
-        last = attempts[-1]
-        if not _forward_paper_activation_attempt_is_retryable(
-                last["status"], last["m12_terminal_result"]):
-            return {"status": last["status"], "activation_id": activation_id,
-                    "attempt_number": last["attempt_number"], "attempts_used": len(attempts),
-                    "next_retry_at_utc": None,
-                    "operator_action_required": _forward_paper_activation_attempt_needs_operator(
-                        last["status"], last["m12_terminal_result"]),
-                    "m12_terminal_result": last["m12_terminal_result"],
-                    "reason": last["reason"]}
-        if len(attempts) >= FORWARD_PAPER_ACTIVATION_MAX_ATTEMPTS:
-            return {"status": "RECOVERABLE_ERROR", "reason": "T5_MAX_ATTEMPTS_EXHAUSTED",
-                    "activation_id": activation_id, "attempt_number": last["attempt_number"],
-                    "attempts_used": len(attempts), "next_retry_at_utc": None,
-                    "operator_action_required": True}
-        last_attempt_at = datetime.fromisoformat(
-            last["attempted_at_utc"].replace("Z", "+00:00"))
-        next_retry_at = _forward_paper_activation_next_retry_at(
-            last["attempt_number"], last_attempt_at)
-        if now < next_retry_at:
-            return {"status": "RECOVERABLE_ERROR", "reason": "T5_BACKOFF_NOT_ELAPSED",
-                    "activation_id": activation_id, "attempt_number": last["attempt_number"],
-                    "attempts_used": len(attempts),
-                    "next_retry_at_utc": next_retry_at.isoformat().replace("+00:00", "Z"),
-                    "operator_action_required": False}
+    # The read-decide-call-write sequence below must be atomic per activation:
+    # without this lock, two concurrent callers can both read zero prior
+    # attempts, both proceed, and the loser's write silently overwrites the
+    # winner's -- losing an attempt record without either caller noticing.
+    with _forward_paper_activation_os_lock(lock_path):
+        attempts_record = _load_forward_paper_activation_attempts(
+            attempts_path, activation_id, now_utc)
+        processing_instant_utc = attempts_record["processing_instant_utc"]
+        attempts = attempts_record["attempts"]
 
-    attempt_number = len(attempts) + 1
-    attempt_id = f"{activation_id}|ATTEMPT_{attempt_number}|{now_utc}"
-    result = run_forward_paper_activation(
-        policy_path, configuration_path, session_path, invocation_path,
-        ledger_directory, receipt_directory, dataset_path, selection_path,
-        fixture_path, acceptance_path, indicator_path, cycle_path,
-        m12_result_path, output, processing_instant_utc, owner_id,
-        transport=transport, timeout_seconds=timeout_seconds)
+        if attempts:
+            last = attempts[-1]
+            if not _forward_paper_activation_attempt_is_retryable(
+                    last["status"], last["m12_terminal_result"]):
+                return {"status": last["status"], "activation_id": activation_id,
+                        "attempt_number": last["attempt_number"],
+                        "attempts_used": len(attempts), "next_retry_at_utc": None,
+                        "operator_action_required":
+                            _forward_paper_activation_attempt_needs_operator(
+                                last["status"], last["m12_terminal_result"]),
+                        "m12_terminal_result": last["m12_terminal_result"],
+                        "reason": last["reason"]}
+            if len(attempts) >= FORWARD_PAPER_ACTIVATION_MAX_ATTEMPTS:
+                return {"status": "RECOVERABLE_ERROR", "reason": "T5_MAX_ATTEMPTS_EXHAUSTED",
+                        "activation_id": activation_id, "attempt_number": last["attempt_number"],
+                        "attempts_used": len(attempts), "next_retry_at_utc": None,
+                        "operator_action_required": True}
+            last_attempt_at = datetime.fromisoformat(
+                last["attempted_at_utc"].replace("Z", "+00:00"))
+            next_retry_at = _forward_paper_activation_next_retry_at(
+                last["attempt_number"], last_attempt_at)
+            if now < next_retry_at:
+                return {"status": "RECOVERABLE_ERROR", "reason": "T5_BACKOFF_NOT_ELAPSED",
+                        "activation_id": activation_id, "attempt_number": last["attempt_number"],
+                        "attempts_used": len(attempts),
+                        "next_retry_at_utc": next_retry_at.isoformat().replace("+00:00", "Z"),
+                        "operator_action_required": False}
 
-    m12_terminal_result = result.get("m12_terminal_result")
-    retryable = _forward_paper_activation_attempt_is_retryable(
-        result["status"], m12_terminal_result)
-    attempts_record["attempts"] = attempts + [{
-        "attempt_id": attempt_id, "attempt_number": attempt_number,
-        "attempted_at_utc": now_utc,
-        "status": result["status"], "m12_terminal_result": m12_terminal_result,
-        "reason": result.get("reason"),
-    }]
-    _atomic_write(attempts_path, encoded(attempts_record))
+        attempt_number = len(attempts) + 1
+        attempt_id = f"{activation_id}|ATTEMPT_{attempt_number}|{now_utc}"
+        result = run_forward_paper_activation(
+            policy_path, configuration_path, session_path, invocation_path,
+            ledger_directory, receipt_directory, dataset_path, selection_path,
+            fixture_path, acceptance_path, indicator_path, cycle_path,
+            m12_result_path, output, processing_instant_utc, owner_id,
+            transport=transport, timeout_seconds=timeout_seconds)
+
+        m12_terminal_result = result.get("m12_terminal_result")
+        retryable = _forward_paper_activation_attempt_is_retryable(
+            result["status"], m12_terminal_result)
+        attempts_record["attempts"] = attempts + [{
+            "attempt_id": attempt_id, "attempt_number": attempt_number,
+            "attempted_at_utc": now_utc,
+            "status": result["status"], "m12_terminal_result": m12_terminal_result,
+            "reason": result.get("reason"),
+        }]
+        _atomic_write(attempts_path, encoded(attempts_record))
 
     exhausted = retryable and attempt_number >= FORWARD_PAPER_ACTIVATION_MAX_ATTEMPTS
     next_retry_at_utc = None
