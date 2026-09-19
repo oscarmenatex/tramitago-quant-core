@@ -1,0 +1,15 @@
+# M1.3-T8 example crontab entry.
+#
+# Runs the one non-interactive entrypoint every 5 minutes. The entrypoint
+# itself decides whether the daily activation is actually due (NOTHING_DUE
+# most ticks) -- this crontab line does not need to know the policy's
+# schedule, only how often to check.
+#
+# Install with: crontab deploy/forward_paper_activation.crontab.example
+# (edit REPO_PATH and DATA_DIR first, or export them in the environment
+# this crontab runs under).
+
+REPO_PATH=/opt/tramitago-quant-core
+DATA_DIR=/var/lib/tramitago-quant-core/forward-paper
+
+*/5 * * * * cd $REPO_PATH && /usr/bin/python3 -B pipeline.py run-forward-paper-activation --data-dir $DATA_DIR >> /var/log/tramitago-forward-paper.log 2>&1

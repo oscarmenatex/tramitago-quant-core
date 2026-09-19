@@ -2349,6 +2349,69 @@ def forward_paper_activation_status(
     }
 
 
+FORWARD_PAPER_HOST_OWNER_FILENAME = "owner-id.txt"
+
+
+def _forward_paper_host_owner_id(data_dir):
+    """Return this host's stable, persisted lease-owner identity.
+
+    Created once on first run and reused by every later cron tick from this
+    host; an existing identity is never replaced or fabricated anew.
+    """
+    data_dir = Path(data_dir)
+    owner_path = data_dir / FORWARD_PAPER_HOST_OWNER_FILENAME
+    if owner_path.exists():
+        owner_id = owner_path.read_text(encoding="utf-8").strip()
+        if not _forward_paper_activation_owner_id_is_valid(owner_id):
+            raise ValueError("Persisted host owner id is invalid")
+        return owner_id
+    data_dir.mkdir(parents=True, exist_ok=True)
+    owner_id = str(uuid.uuid4())
+    temporary = owner_path.with_name(owner_path.name + "." + uuid.uuid4().hex + ".tmp")
+    try:
+        with temporary.open("x", encoding="utf-8") as stream:
+            stream.write(owner_id)
+        try:
+            os.link(temporary, owner_path)
+        except FileExistsError:
+            pass
+    finally:
+        try:
+            temporary.unlink(missing_ok=True)
+        except OSError:
+            pass
+    persisted = owner_path.read_text(encoding="utf-8").strip()
+    if not _forward_paper_activation_owner_id_is_valid(persisted):
+        raise ValueError("Persisted host owner id is invalid")
+    return persisted
+
+
+def forward_paper_activation_entrypoint(data_dir, *, now_utc=None, timeout_seconds=30,
+                                        transport=None):
+    """M1.3-T8: the one non-interactive entrypoint a persistent host repeats.
+
+    Resolves every path a single activation needs from one data directory,
+    so a scheduler never has to remember or pass more than its location.
+    Determines its own current instant unless one is given (for tests), and
+    calls no function beyond the already-public T1-T6 surface -- it adds no
+    new activation logic of its own, only a fixed on-disk layout and a
+    persisted host identity.
+    """
+    data_dir = Path(data_dir)
+    now_utc = now_utc or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    owner_id = _forward_paper_host_owner_id(data_dir)
+    result = attempt_forward_paper_activation(
+        data_dir / "policy.json", data_dir / "configuration.json",
+        data_dir / "session" / "state.json", data_dir / "invocation.json",
+        data_dir / "activation-ledger", data_dir / "activation-receipts",
+        data_dir / "dataset.json", data_dir / "selection.json",
+        data_dir / "fixture.json", data_dir / "acceptance.json",
+        data_dir / "indicator.json", data_dir / "cycle.json",
+        data_dir / "m12-invocation-result.json", data_dir / "output",
+        now_utc, owner_id, transport=transport, timeout_seconds=timeout_seconds)
+    return {**result, "owner_id": owner_id, "now_utc": now_utc}
+
+
 FORWARD_PAPER_DATASET_SCHEMA_VERSION = "1"
 COINBASE_PUBLIC_CANDLES_ENDPOINT = URL.split("?", 1)[0]
 FORWARD_PAPER_MINIMUM_CLOSED_OBSERVATIONS = 4
@@ -6649,6 +6712,10 @@ def main():
     open_event.add_argument("--state", required=True)
     open_event.add_argument("--input", required=True)
     open_event.add_argument("--output", required=True)
+    forward_paper_activation = commands.add_parser("run-forward-paper-activation")
+    forward_paper_activation.add_argument("--data-dir", required=True)
+    forward_paper_activation.add_argument("--now")
+    forward_paper_activation.add_argument("--timeout-seconds", type=float, default=30)
     args = parser.parse_args()
     try:
         if args.command == "acquire":
@@ -6766,6 +6833,9 @@ def main():
             result = mark_unrealized(args.state, args.valuation_instant)
         elif args.command == "open-event":
             result = capture_open_event(args.state, json.loads(Path(args.input).read_bytes()), args.output)
+        elif args.command == "run-forward-paper-activation":
+            result = forward_paper_activation_entrypoint(
+                args.data_dir, now_utc=args.now, timeout_seconds=args.timeout_seconds)
         else:
             result = compare(args.first, args.second)
             publish(args.output, {"comparison.json": encoded(result)})
