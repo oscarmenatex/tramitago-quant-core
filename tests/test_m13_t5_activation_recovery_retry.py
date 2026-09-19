@@ -1,4 +1,4 @@
-"""Focused tests for M1.3-T6: recovery of an interrupted M1.2 binding, and
+"""Focused tests for M1.3-T5: recovery of an interrupted M1.2 binding, and
 the bounded, result-dependent retry policy wrapping the T4 runner."""
 
 import json
@@ -11,7 +11,7 @@ import uuid
 import pipeline as p
 
 
-class M13T6ActivationRecoveryRetryTests(unittest.TestCase):
+class M13T5ActivationRecoveryRetryTests(unittest.TestCase):
     PROCESSING = "2026-09-18T00:15:00Z"
     STARTED = "2026-09-14T00:00:00Z"
 
@@ -151,7 +151,7 @@ class M13T6ActivationRecoveryRetryTests(unittest.TestCase):
         with patch.object(p, "run_forward_paper_invocation",
                           side_effect=AssertionError("backoff not elapsed yet")):
             too_soon = self.attempt(processing="2026-09-18T00:15:30Z")
-        self.assertEqual(too_soon["reason"], "T6_BACKOFF_NOT_ELAPSED")
+        self.assertEqual(too_soon["reason"], "T5_BACKOFF_NOT_ELAPSED")
         self.assertEqual(too_soon["attempts_used"], 1)
 
         with patch.object(p, "run_forward_paper_invocation",
@@ -167,12 +167,12 @@ class M13T6ActivationRecoveryRetryTests(unittest.TestCase):
         self.assertEqual(third["status"], "RECOVERABLE_ERROR")
         self.assertEqual(third["next_retry_at_utc"], None)
         self.assertTrue(third["operator_action_required"])
-        self.assertEqual(third["reason"], "T6_MAX_ATTEMPTS_EXHAUSTED")
+        self.assertEqual(third["reason"], "T5_MAX_ATTEMPTS_EXHAUSTED")
 
         with patch.object(p, "run_forward_paper_invocation",
                           side_effect=AssertionError("attempts already exhausted")):
             fourth = self.attempt(processing="2026-09-18T00:30:00Z")
-        self.assertEqual(fourth["reason"], "T6_MAX_ATTEMPTS_EXHAUSTED")
+        self.assertEqual(fourth["reason"], "T5_MAX_ATTEMPTS_EXHAUSTED")
         self.assertEqual(fourth["attempts_used"], 3)
 
     def test_completed_is_never_retried_and_blocked_is_never_retried(self):
