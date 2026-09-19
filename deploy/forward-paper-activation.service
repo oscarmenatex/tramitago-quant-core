@@ -1,0 +1,11 @@
+[Unit]
+Description=TramitaGO Quant Core - M1.3 FORWARD_PAPER activation tick (one run, then exit)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=tramitago
+WorkingDirectory=/opt/tramitago-quant-core
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/usr/bin/python3 -B pipeline.py run-forward-paper-activation --data-dir /var/lib/tramitago-quant-core/forward-paper
