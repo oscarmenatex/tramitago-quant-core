@@ -1496,6 +1496,502 @@ def evaluate_forward_paper_activation_due(
     )
 
 
+FORWARD_PAPER_ACTIVATION_RECEIPT_SCHEMA_VERSION = "1"
+FORWARD_PAPER_ACTIVATION_RECEIPT_STATUSES = {
+    "M12_BOUND", "M12_RESULT_RECORDED",
+}
+FORWARD_PAPER_ACTIVATION_M12_TERMINAL_RESULTS = {
+    "COMPLETED", "NOTHING_DUE", "BLOCKED", "RECOVERABLE_ERROR",
+}
+
+
+def _forward_paper_activation_receipt_path(receipt_directory, activation_id):
+    key = digest(activation_id.encode("utf-8"))
+    return Path(receipt_directory) / ("activation-" + key + ".json")
+
+
+def _forward_paper_activation_receipt_seal(receipt):
+    content = {key: value for key, value in receipt.items()
+               if key != "receipt_identity"}
+    return {
+        **content,
+        "receipt_identity": "FORWARD_PAPER_ACTIVATION_RECEIPT|" + digest(encoded(content)),
+    }
+
+
+def _forward_paper_activation_receipt_is_valid(receipt, expected):
+    fields = {
+        "schema_version", "activation_id", "policy_id", "policy_identity",
+        "configuration_id", "scheduled_for_utc", "processing_instant_utc",
+        "owner_id", "expires_at_utc", "invocation_id",
+        "m12_processing_instant_utc", "m12_result_target",
+        "status", "m12_terminal_result", "m12_result_reference", "m12_result_hash",
+        "m12_invocation_result_id", "receipt_identity",
+    }
+    if not isinstance(receipt, dict) or set(receipt) != fields:
+        return False
+    if (receipt["schema_version"] != FORWARD_PAPER_ACTIVATION_RECEIPT_SCHEMA_VERSION
+            or receipt["status"] not in FORWARD_PAPER_ACTIVATION_RECEIPT_STATUSES
+            or not _forward_paper_activation_owner_id_is_valid(receipt["owner_id"])
+            or not _explicit_utc(receipt["scheduled_for_utc"])
+            or not _explicit_utc(receipt["processing_instant_utc"])
+            or not _explicit_utc(receipt["expires_at_utc"])
+            or not _explicit_utc(receipt["m12_processing_instant_utc"])
+            or not isinstance(receipt["m12_result_target"], str)
+            or not receipt["m12_result_target"]
+            or any(receipt.get(key) != value for key, value in expected.items())):
+        return False
+    if receipt["status"] == "M12_BOUND":
+        if any(receipt[key] is not None for key in (
+                "m12_terminal_result", "m12_result_reference", "m12_result_hash",
+                "m12_invocation_result_id")):
+            return False
+    else:
+        result_hash = receipt["m12_result_hash"]
+        if (receipt["m12_terminal_result"] not in
+                FORWARD_PAPER_ACTIVATION_M12_TERMINAL_RESULTS
+                or receipt["m12_result_reference"] != receipt["m12_result_target"]
+                or not isinstance(result_hash, str) or len(result_hash) != 64
+                or any(character not in "0123456789abcdef" for character in result_hash)
+                or not isinstance(receipt["m12_invocation_result_id"], str)
+                or not receipt["m12_invocation_result_id"]):
+            return False
+    return receipt["receipt_identity"] == _forward_paper_activation_receipt_seal(
+        {key: value for key, value in receipt.items() if key != "receipt_identity"}
+    )["receipt_identity"]
+
+
+def _load_forward_paper_activation_receipt(receipt_path, expected):
+    receipt = json.loads(Path(receipt_path).read_bytes())
+    if not _forward_paper_activation_receipt_is_valid(receipt, expected):
+        raise ValueError("Persisted FORWARD_PAPER activation receipt is invalid or conflicting")
+    return receipt
+
+
+def _create_forward_paper_activation_receipt(receipt_path, receipt):
+    """Publish one complete receipt atomically without replacing an existing binding."""
+    receipt_path = Path(receipt_path)
+    receipt_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = receipt_path.with_name(
+        receipt_path.name + "." + uuid.uuid4().hex + ".tmp")
+    try:
+        with temporary.open("xb") as temporary_file:
+            temporary_file.write(encoded(receipt))
+            temporary_file.flush()
+            os.fsync(temporary_file.fileno())
+        try:
+            os.link(temporary, receipt_path)
+        except FileExistsError:
+            return False
+        return True
+    finally:
+        try:
+            temporary.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
+def _forward_paper_activation_lease_matches_receipt(ledger, receipt):
+    return any(
+        event["event_type"] in {"LEASE_ACQUIRED", "LEASE_RECOVERED"}
+        and event["owner_id"] == receipt["owner_id"]
+        and event["expires_at_utc"] == receipt["expires_at_utc"]
+        for event in ledger["event_history"]
+    )
+
+
+def _forward_paper_activation_m12_result_evidence(result, result_path, preparation):
+    if not isinstance(result, dict):
+        return None
+    terminal = result.get("terminal_result")
+    if terminal not in FORWARD_PAPER_ACTIVATION_M12_TERMINAL_RESULTS:
+        return None
+    try:
+        result_path = Path(result_path)
+        raw = result_path.read_bytes()
+        persisted = json.loads(raw)
+    except (OSError, ValueError, TypeError, UnicodeError):
+        return None
+    if (not isinstance(persisted, dict)
+            or persisted.get("mode") != "FORWARD_PAPER"
+            or persisted.get("configuration_id") !=
+            preparation["configuration"]["configuration_id"]
+            or persisted.get("session_id") != preparation["session"]["session_id"]
+            or persisted.get("processing_instant_utc") !=
+            preparation["invocation"]["processing_instant_utc"]
+            or persisted.get("invocation_id") != preparation["invocation"]["invocation_id"]
+            or persisted.get("terminal_result") != terminal
+            or persisted.get("invocation_result_id") != result.get("invocation_result_id")
+            or not isinstance(persisted.get("invocation_result_id"), str)
+            or not persisted["invocation_result_id"]):
+        return None
+    return {
+        "m12_terminal_result": terminal,
+        "m12_result_reference": str(result_path.resolve()),
+        "m12_result_hash": digest(raw),
+        "m12_invocation_result_id": persisted["invocation_result_id"],
+    }
+
+
+def _forward_paper_activation_receipt_result_evidence(receipt):
+    try:
+        result_path = Path(receipt["m12_result_reference"])
+        raw = result_path.read_bytes()
+        result = json.loads(raw)
+    except (OSError, ValueError, TypeError, UnicodeError):
+        return None
+    if (digest(raw) != receipt["m12_result_hash"]
+            or not isinstance(result, dict)
+            or result.get("mode") != "FORWARD_PAPER"
+            or result.get("configuration_id") != receipt["configuration_id"]
+            or result.get("processing_instant_utc") !=
+            receipt["m12_processing_instant_utc"]
+            or result.get("invocation_id") != receipt["invocation_id"]
+            or result.get("terminal_result") != receipt["m12_terminal_result"]
+            or result.get("invocation_result_id") != receipt["m12_invocation_result_id"]):
+        return None
+    return {
+        "m12_terminal_result": receipt["m12_terminal_result"],
+        "m12_result_reference": receipt["m12_result_reference"],
+        "m12_result_hash": receipt["m12_result_hash"],
+        "m12_invocation_result_id": receipt["m12_invocation_result_id"],
+    }
+
+
+def _forward_paper_activation_t4_response(status, reason=None, **fields):
+    return {
+        "status": status,
+        "reason": reason,
+        "m12_invoked": False,
+        "m12_invocations": 0,
+        "recovery_required": False,
+        "network_calls": 0,
+        "credentials_used": False,
+        "broker_network_calls": 0,
+        "paper_orders_sent": 0,
+        "live_orders_sent": 0,
+        **fields,
+    }
+
+
+def _forward_paper_activation_existing_receipt_response(
+        receipt_path, receipt_expected, activation, ledger_directory,
+        policy_path, configuration_path, m12_result_path):
+    receipt = _load_forward_paper_activation_receipt(receipt_path, receipt_expected)
+    ledger = load_forward_paper_activation_ledger(
+        ledger_directory, activation, policy_path, configuration_path)
+    if not _forward_paper_activation_lease_matches_receipt(ledger, receipt):
+        return _forward_paper_activation_t4_response(
+            "BLOCKED", "RECEIPT_LEASE_EVIDENCE_MISMATCH",
+            activation_result="BLOCKED", activation_id=activation["activation_id"])
+    if receipt["status"] == "M12_BOUND":
+        return _forward_paper_activation_t4_response(
+            "RECOVERY_REQUIRED", "M12_BOUND_WITHOUT_RESULT",
+            activation_result="DUE", receipt=receipt, receipt_status="M12_BOUND",
+            recovery_required=True, activation_id=activation["activation_id"])
+    if receipt["m12_result_target"] != str(Path(m12_result_path).resolve()):
+        return _forward_paper_activation_t4_response(
+            "BLOCKED", "RECEIPT_RESULT_REFERENCE_CONFLICT",
+            activation_result="BLOCKED", receipt=receipt,
+            activation_id=activation["activation_id"])
+    evidence = _forward_paper_activation_receipt_result_evidence(receipt)
+    if evidence is None:
+        return _forward_paper_activation_t4_response(
+            "BLOCKED", "M12_RESULT_EVIDENCE_INVALID",
+            activation_result="BLOCKED", receipt=receipt,
+            activation_id=activation["activation_id"])
+    return _forward_paper_activation_t4_response(
+        "PASS", activation_result="DUE", receipt=receipt,
+        receipt_status="M12_RESULT_RECORDED", replay=True,
+        activation_id=activation["activation_id"], **evidence)
+
+
+def run_forward_paper_activation(
+        policy_path, configuration_path, session_path, invocation_path,
+        ledger_directory, receipt_directory, dataset_path, selection_path,
+        fixture_path, acceptance_path, indicator_path, cycle_path,
+        m12_result_path, output, processing_instant_utc, owner_id, *,
+        transport=None, timeout_seconds=30):
+    """Run one T3-authorized activation through the canonical public M1.2 entrypoint."""
+    if not _forward_paper_activation_owner_id_is_valid(owner_id):
+        return _forward_paper_activation_t4_response(
+            "BLOCKED", "INVALID_OWNER_ID", activation_result="BLOCKED")
+    if not _explicit_utc(processing_instant_utc):
+        return _forward_paper_activation_t4_response(
+            "BLOCKED", "INVALID_UTC_INSTANT", activation_result="BLOCKED")
+
+    try:
+        preparation = load_forward_paper_preparation(
+            session_path, configuration_path, invocation_path)
+        policy = load_forward_paper_activation_policy(policy_path, configuration_path)
+        configuration = preparation["configuration"]
+        if policy["configuration_id"] != configuration["configuration_id"]:
+            raise ValueError("T1 policy and M1.2 configuration are incompatible")
+        activation = evaluate_forward_paper_activation(
+            policy, configuration, processing_instant_utc)
+    except (OSError, ValueError, TypeError, KeyError, UnicodeError) as error:
+        return _forward_paper_activation_t4_response(
+            "BLOCKED", "INVALID_T1_M12_ASSOCIATION: " + str(error),
+            activation_result="BLOCKED")
+
+    activation_id = activation["activation_id"]
+    m12_result_target = str(Path(m12_result_path).resolve())
+    receipt_path = _forward_paper_activation_receipt_path(
+        receipt_directory, activation_id)
+    receipt_expected = {
+        "activation_id": activation_id,
+        "policy_id": activation["policy_id"],
+        "policy_identity": activation["policy_identity"],
+        "configuration_id": activation["configuration_id"],
+        "scheduled_for_utc": activation["scheduled_for_utc"],
+        "processing_instant_utc": processing_instant_utc,
+        "invocation_id": preparation["invocation"]["invocation_id"],
+        "m12_processing_instant_utc":
+            preparation["invocation"]["processing_instant_utc"],
+        "m12_result_target": m12_result_target,
+    }
+
+    if receipt_path.exists():
+        try:
+            return _forward_paper_activation_existing_receipt_response(
+                receipt_path, receipt_expected, activation, ledger_directory,
+                policy_path, configuration_path, m12_result_path)
+        except (OSError, ValueError, TypeError, KeyError, UnicodeError) as error:
+            return _forward_paper_activation_t4_response(
+                "BLOCKED", "INVALID_OR_CONFLICTING_T4_RECEIPT: " + str(error),
+                activation_result="BLOCKED", activation_id=activation_id)
+
+    if activation["result"] == "NOTHING_DUE":
+        return _forward_paper_activation_t4_response(
+            "PASS", activation_result="NOTHING_DUE",
+            policy_id=activation["policy_id"],
+            configuration_id=activation["configuration_id"],
+            scheduled_for_utc=activation["scheduled_for_utc"],
+            activation_id=activation_id,
+            next_scheduled_for_utc=activation["next_scheduled_for_utc"])
+
+    try:
+        existing_ledger = load_forward_paper_activation_ledger(
+            ledger_directory, activation, policy_path, configuration_path)
+    except FileNotFoundError:
+        existing_ledger = None
+    except (OSError, ValueError, TypeError, KeyError, UnicodeError) as error:
+        return _forward_paper_activation_t4_response(
+            "BLOCKED", "INVALID_T2_LEDGER: " + str(error),
+            activation_result="BLOCKED", activation_id=activation_id)
+    if existing_ledger is not None:
+        now = datetime.fromisoformat(processing_instant_utc.replace("Z", "+00:00"))
+        expires_at = datetime.fromisoformat(
+            existing_ledger["expires_at_utc"].replace("Z", "+00:00"))
+        if existing_ledger["lease_status"] != "ACTIVE":
+            return _forward_paper_activation_t4_response(
+                "BLOCKED", "T2_LEASE_NOT_ACTIVE",
+                activation_result="BLOCKED", activation_id=activation_id)
+        if now >= expires_at:
+            return _forward_paper_activation_t4_response(
+                "BLOCKED", "T2_LEASE_EXPIRED",
+                activation_result="BLOCKED", activation_id=activation_id)
+
+    due = evaluate_forward_paper_activation_due(
+        policy_path, configuration_path, session_path, invocation_path,
+        ledger_directory, processing_instant_utc, owner_id)
+    if due.get("result") != "DUE":
+        return _forward_paper_activation_t4_response(
+            "BLOCKED", "T3_" + str(due.get("reason") or due.get("result")),
+            activation_result=due.get("result", "BLOCKED"),
+            activation_id=activation_id, t3_evidence=due)
+    if (due.get("policy_id") != activation["policy_id"]
+            or due.get("configuration_id") != activation["configuration_id"]
+            or due.get("scheduled_for_utc") != activation["scheduled_for_utc"]
+            or due.get("activation_id") != activation_id
+            or due.get("owner_id") != owner_id
+            or due.get("evaluated_at_utc") != processing_instant_utc
+            or due.get("lease_acquisition") not in {"ACQUIRED", "ALREADY_OWNED"}):
+        return _forward_paper_activation_t4_response(
+            "BLOCKED", "T3_AUTHORIZATION_INCOMPATIBLE",
+            activation_result="BLOCKED", activation_id=activation_id,
+            t3_evidence=due)
+
+    # Another same-activation T4 call may have completed while this call was
+    # entering T3. A persisted binding wins over a newly acquired lease.
+    if receipt_path.exists():
+        try:
+            raced_receipt = _load_forward_paper_activation_receipt(
+                receipt_path, receipt_expected)
+            race_release = None
+            if (due.get("lease_acquisition") == "ACQUIRED"
+                    and raced_receipt["owner_id"] != owner_id):
+                race_release = release_forward_paper_activation_lease(
+                    ledger_directory, activation, policy_path, configuration_path,
+                    owner_id, processing_instant_utc)
+            replay = _forward_paper_activation_existing_receipt_response(
+                receipt_path, receipt_expected, activation, ledger_directory,
+                policy_path, configuration_path, m12_result_path)
+            if race_release is not None:
+                replay["lease_released"] = (
+                    race_release.get("status") == "PASS"
+                    and race_release.get("lease_result") == "RELEASED")
+                if not replay["lease_released"]:
+                    replay["status"] = "RECOVERABLE_ERROR"
+                    replay["reason"] = "T2_RACE_LEASE_RELEASE_NOT_CONFIRMED"
+            return replay
+        except (OSError, ValueError, TypeError, KeyError, UnicodeError) as error:
+            return _forward_paper_activation_t4_response(
+                "BLOCKED", "RECEIPT_RACE_CONFLICT: " + str(error),
+                activation_result="BLOCKED", activation_id=activation_id)
+
+    try:
+        # Reload all authoritative inputs after T3 has established the lease.
+        preparation = load_forward_paper_preparation(
+            session_path, configuration_path, invocation_path)
+        policy = load_forward_paper_activation_policy(policy_path, configuration_path)
+        configuration = preparation["configuration"]
+        activation = evaluate_forward_paper_activation(
+            policy, configuration, processing_instant_utc)
+        ledger = load_forward_paper_activation_ledger(
+            ledger_directory, activation, policy_path, configuration_path)
+        processing_instant = datetime.fromisoformat(
+            processing_instant_utc.replace("Z", "+00:00"))
+        lease_expires_at = datetime.fromisoformat(
+            ledger["expires_at_utc"].replace("Z", "+00:00"))
+        if (activation["result"] != "DUE"
+                or not _forward_paper_session_is_initial(preparation["session"])
+                or activation["policy_id"] != due["policy_id"]
+                or activation["policy_identity"] != policy["policy_identity"]
+                or activation["configuration_id"] != due["configuration_id"]
+                or activation["scheduled_for_utc"] != due["scheduled_for_utc"]
+                or activation["activation_id"] != due["activation_id"]
+                or ledger["lease_status"] != "ACTIVE"
+                or ledger["lease_owner_id"] != owner_id
+                or ledger["expires_at_utc"] != due["expires_at_utc"]
+                or processing_instant >= lease_expires_at
+                or not _forward_paper_activation_lease_matches_receipt(
+                    ledger, {
+                        "owner_id": owner_id,
+                        "expires_at_utc": due["expires_at_utc"],
+                    })):
+            raise ValueError("T1/T2/T3 authorization changed before M1.2 binding")
+    except (OSError, ValueError, TypeError, KeyError, UnicodeError) as error:
+        return _forward_paper_activation_t4_response(
+            "BLOCKED", "AUTHORIZATION_RELOAD_FAILED: " + str(error),
+            activation_result="BLOCKED", activation_id=activation_id)
+
+    receipt_expected = {
+        "activation_id": activation["activation_id"],
+        "policy_id": activation["policy_id"],
+        "policy_identity": activation["policy_identity"],
+        "configuration_id": activation["configuration_id"],
+        "scheduled_for_utc": activation["scheduled_for_utc"],
+        "processing_instant_utc": processing_instant_utc,
+        "invocation_id": preparation["invocation"]["invocation_id"],
+        "m12_processing_instant_utc":
+            preparation["invocation"]["processing_instant_utc"],
+        "m12_result_target": m12_result_target,
+    }
+    receipt = _forward_paper_activation_receipt_seal({
+        "schema_version": FORWARD_PAPER_ACTIVATION_RECEIPT_SCHEMA_VERSION,
+        **receipt_expected,
+        "owner_id": owner_id,
+        "expires_at_utc": due["expires_at_utc"],
+        "status": "M12_BOUND",
+        "m12_terminal_result": None,
+        "m12_result_reference": None,
+        "m12_result_hash": None,
+        "m12_invocation_result_id": None,
+    })
+    try:
+        created = _create_forward_paper_activation_receipt(receipt_path, receipt)
+    except OSError as error:
+        return _forward_paper_activation_t4_response(
+            "RECOVERABLE_ERROR", "T4_RECEIPT_CREATE_FAILED: " + str(error),
+            activation_result="DUE", activation_id=activation_id,
+            t3_evidence=due)
+    if not created:
+        try:
+            raced_receipt = _load_forward_paper_activation_receipt(
+                receipt_path, receipt_expected)
+            if (due["lease_acquisition"] == "ACQUIRED"
+                    and raced_receipt["owner_id"] != owner_id):
+                # T2 may have been released after our initial no-receipt check;
+                # release only the fresh lease this invocation just acquired.
+                race_release = release_forward_paper_activation_lease(
+                    ledger_directory, activation, policy_path, configuration_path,
+                    owner_id, processing_instant_utc)
+            else:
+                race_release = None
+            replay = _forward_paper_activation_existing_receipt_response(
+                receipt_path, receipt_expected, activation, ledger_directory,
+                policy_path, configuration_path, m12_result_path)
+            if race_release is not None:
+                replay["lease_released"] = (
+                    race_release.get("status") == "PASS"
+                    and race_release.get("lease_result") == "RELEASED")
+                if not replay["lease_released"]:
+                    replay["status"] = "RECOVERABLE_ERROR"
+                    replay["reason"] = "T2_RACE_LEASE_RELEASE_NOT_CONFIRMED"
+            return replay
+        except (OSError, ValueError, TypeError, KeyError, UnicodeError) as error:
+            return _forward_paper_activation_t4_response(
+                "BLOCKED", "RECEIPT_CREATE_CONFLICT: " + str(error),
+                activation_result="BLOCKED", activation_id=activation_id)
+
+    try:
+        # This is the only M1.2 business entrypoint T4 is allowed to call.
+        m12_result = run_forward_paper_invocation(
+            session_path, configuration_path, invocation_path,
+            dataset_path, selection_path, fixture_path, acceptance_path,
+            indicator_path, cycle_path, m12_result_path, output,
+            preparation["session"]["session_id"],
+            preparation["session"]["started_at"], processing_instant_utc,
+            processing_instant_utc, transport=transport,
+            timeout_seconds=timeout_seconds)
+    except Exception as error:
+        return _forward_paper_activation_t4_response(
+            "RECOVERY_REQUIRED", "M12_INTERRUPTED_AFTER_BINDING: " + str(error),
+            activation_result="DUE", receipt=receipt, receipt_status="M12_BOUND",
+            recovery_required=True, activation_id=activation_id)
+
+    evidence = _forward_paper_activation_m12_result_evidence(
+        m12_result, m12_result_path, preparation)
+    if evidence is None:
+        return _forward_paper_activation_t4_response(
+            "RECOVERY_REQUIRED", "M12_RESULT_NOT_PERSISTED_OR_INCOMPATIBLE",
+            activation_result="DUE", receipt=receipt, receipt_status="M12_BOUND",
+            recovery_required=True, activation_id=activation_id)
+
+    completed_receipt = _forward_paper_activation_receipt_seal({
+        **{key: value for key, value in receipt.items() if key != "receipt_identity"},
+        "status": "M12_RESULT_RECORDED",
+        **evidence,
+    })
+    try:
+        _atomic_write(receipt_path, encoded(completed_receipt))
+    except OSError as error:
+        return _forward_paper_activation_t4_response(
+            "RECOVERY_REQUIRED", "T4_RESULT_RECEIPT_UPDATE_FAILED: " + str(error),
+            activation_result="DUE", receipt=receipt, receipt_status="M12_BOUND",
+            recovery_required=True, activation_id=activation_id,
+            m12_invoked=True, m12_invocations=1,
+            m12_terminal_result=evidence["m12_terminal_result"])
+
+    release = release_forward_paper_activation_lease(
+        ledger_directory, activation, policy_path, configuration_path,
+        owner_id, processing_instant_utc)
+    release_ok = release.get("status") == "PASS" \
+        and release.get("lease_result") == "RELEASED"
+    return _forward_paper_activation_t4_response(
+        "PASS" if release_ok else "RECOVERABLE_ERROR",
+        None if release_ok else "T2_LEASE_RELEASE_NOT_CONFIRMED",
+        activation_result="DUE", receipt=completed_receipt,
+        receipt_status="M12_RESULT_RECORDED", replay=False,
+        activation_id=activation_id, m12_invoked=True, m12_invocations=1,
+        m12_terminal_result=evidence["m12_terminal_result"],
+        m12_result_reference=evidence["m12_result_reference"],
+        m12_result_hash=evidence["m12_result_hash"],
+        m12_invocation_result_id=evidence["m12_invocation_result_id"],
+        lease_released=release_ok, lease_evidence=release.get("ledger"))
+
+
 FORWARD_PAPER_DATASET_SCHEMA_VERSION = "1"
 COINBASE_PUBLIC_CANDLES_ENDPOINT = URL.split("?", 1)[0]
 FORWARD_PAPER_MINIMUM_CLOSED_OBSERVATIONS = 4
