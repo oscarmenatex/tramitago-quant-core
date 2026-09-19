@@ -122,6 +122,18 @@ class M13T5ActivationRecoveryRetryTests(unittest.TestCase):
         self.assertEqual(recovered["m12_terminal_result"], "COMPLETED")
         self.assertEqual(recovered["recovery_source"], "PERSISTED_M12_RESULT")
         self.assertTrue(recovered["replay"])
+        self.assertTrue(recovered["lease_released"])
+        ledger = self.ledger_record()
+        self.assertEqual(ledger["lease_status"], "RELEASED")
+
+    def ledger_record(self, case=None):
+        case = self.case if case is None else case
+        activation = p.evaluate_forward_paper_activation(
+            p.load_forward_paper_activation_policy(case["policy"], case["configuration"]),
+            p.load_forward_paper_configuration(case["session"], case["configuration"]),
+            self.PROCESSING)
+        return p.load_forward_paper_activation_ledger(
+            case["ledger"], activation, case["policy"], case["configuration"])
 
     def test_still_in_flight_interruption_stays_recovery_required_without_retry(self):
         def interrupted(*args, **kwargs):
