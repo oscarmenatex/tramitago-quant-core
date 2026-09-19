@@ -1728,11 +1728,18 @@ def _forward_paper_activation_existing_receipt_response(
                 "status": "M12_RESULT_RECORDED", **persisted_result,
             })
             _atomic_write(receipt_path, encoded(completed_receipt))
+            release = release_forward_paper_activation_lease(
+                ledger_directory, activation, policy_path, configuration_path,
+                receipt["owner_id"], receipt_expected["processing_instant_utc"])
             return _forward_paper_activation_t4_response(
                 "PASS", activation_result="DUE", receipt=completed_receipt,
                 receipt_status="M12_RESULT_RECORDED", replay=True,
                 activation_id=activation["activation_id"],
-                recovery_source="PERSISTED_M12_RESULT", **persisted_result)
+                recovery_source="PERSISTED_M12_RESULT",
+                lease_released=(release.get("status") == "PASS"
+                                and release.get("lease_result") in
+                                ("RELEASED", "ALREADY_RELEASED")),
+                **persisted_result)
         return _forward_paper_activation_t4_response(
             "RECOVERY_REQUIRED", "M12_BOUND_WITHOUT_RESULT",
             activation_result="DUE", receipt=receipt, receipt_status="M12_BOUND",
