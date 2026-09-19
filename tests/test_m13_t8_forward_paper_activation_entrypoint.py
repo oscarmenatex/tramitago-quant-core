@@ -131,6 +131,87 @@ class M13T8EntrypointFunctionTests(unittest.TestCase):
         self.assertEqual(result["now_utc"], "2026-09-17T00:00:00Z")
 
 
+class M13T8RealChainBootstrapTests(unittest.TestCase):
+    """Exercise the entrypoint through the REAL M1.1/M1.2 acquisition,
+    selection, and decision chain (only the HTTP transport is a double) --
+    this is what would have caught the deploy/README.md bootstrap bug
+    where started_at == processing_instant_utc silently made every
+    observation permanently ineligible."""
+
+    NOW = "2026-09-20T00:15:01Z"
+
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.data_dir = Path(self.temporary.name) / "data"
+
+    @staticmethod
+    def bootstrap_correctly(data_dir, *, started_at, now_utc):
+        """Mirrors deploy/README.md's corrected bootstrap: started_at must
+        be strictly earlier than the invocation's processing instant."""
+        data_dir.mkdir(parents=True, exist_ok=True)
+        configuration = p.forward_paper_configuration()
+        (data_dir / "configuration.json").write_bytes(p.encoded({
+            "schema_version": p.FORWARD_PAPER_CONFIGURATION_REGISTRY_SCHEMA_VERSION,
+            "configurations": [configuration], "session_configurations": [],
+        }))
+        session_id = "PAPER_SESSION|t8-real-chain"
+        p.initialize_paper_session(
+            data_dir / "session" / "state.json", data_dir / "session-init",
+            session_id, "PAPER", started_at)
+        p.prepare_forward_paper_activation_policy(
+            data_dir / "policy.json", data_dir / "configuration.json")
+        p.prepare_forward_paper_invocation(
+            data_dir / "session" / "state.json", data_dir / "configuration.json",
+            data_dir / "invocation.json", session_id, started_at, now_utc)
+
+    @staticmethod
+    def synthetic_coinbase_transport():
+        candles = [
+            [p.epoch(f"2026-09-{day:02d}T00:00:00Z"), close - 1, close + 1,
+             close - 0.5, close, 100.0]
+            for day, close in ((16, 100.0), (17, 105.0), (18, 110.0), (19, 130.0))
+        ]
+
+        def transport(url, headers, timeout_seconds):
+            return json.dumps(candles).encode("utf-8")
+        return transport
+
+    def test_broken_bootstrap_with_equal_started_at_is_permanently_ineligible(self):
+        """The exact bug found on the real Oracle Cloud VM: started_at ==
+        processing_instant_utc makes every observation forever BLOCKED."""
+        same_instant = self.NOW
+        self.bootstrap_correctly(self.data_dir, started_at=same_instant, now_utc=same_instant)
+        result = p.forward_paper_activation_entrypoint(
+            self.data_dir, now_utc=self.NOW,
+            transport=self.synthetic_coinbase_transport())
+        self.assertEqual(result["m12_terminal_result"], "BLOCKED")
+
+    def test_correct_bootstrap_processes_a_real_eligible_observation(self):
+        self.bootstrap_correctly(
+            self.data_dir, started_at="2026-09-19T00:00:00Z", now_utc=self.NOW)
+        result = p.forward_paper_activation_entrypoint(
+            self.data_dir, now_utc=self.NOW,
+            transport=self.synthetic_coinbase_transport())
+        self.assertEqual(result["status"], "PASS")
+        self.assertIn(result["m12_terminal_result"], ("COMPLETED",))
+        evidence = json.loads((self.data_dir / "m12-invocation-result.json").read_bytes())["evidence"]
+        self.assertIsNotNone(evidence["selection_receipt_id"])
+        selection = json.loads((self.data_dir / "selection.json").read_bytes())
+        self.assertEqual(selection["result"], "OPERATIONAL_OBSERVATION_ACCEPTED")
+        self.assertEqual(selection["operational_observation"]["identity"],
+                         "BTC-USD|86400|2026-09-19T00:00:00Z")
+        self.assertEqual(len(selection["warmup_observations"]), 3)
+
+        # Replay at a later instant must not repeat the acquisition or decision.
+        replay = p.forward_paper_activation_entrypoint(
+            self.data_dir, now_utc="2026-09-20T00:20:00Z",
+            transport=lambda *a: (_ for _ in ()).throw(
+                AssertionError("must not re-acquire once already processed")))
+        self.assertEqual(replay["status"], "PASS")
+        self.assertEqual(replay["m12_terminal_result"], "COMPLETED")
+
+
 class M13T8CliSubprocessTests(unittest.TestCase):
     """Prove the file is directly invocable the way a cron entry would call
     it: no interactive input, structured JSON on stdout, exit code 0 for
