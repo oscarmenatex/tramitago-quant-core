@@ -1633,6 +1633,38 @@ def _forward_paper_activation_m12_result_evidence(result, result_path, preparati
     }
 
 
+def _forward_paper_activation_persisted_m12_result(result_path, preparation):
+    """Read one M1.2 result directly from disk, with no fresh M1.2 call.
+
+    Used only after an expired T2 lease, to answer T6's question before
+    invoking M1.2 again: did the dead attempt already finish?
+    """
+    try:
+        result_path = Path(result_path)
+        raw = result_path.read_bytes()
+        persisted = json.loads(raw)
+    except (OSError, ValueError, TypeError, UnicodeError):
+        return None
+    if (not isinstance(persisted, dict)
+            or persisted.get("mode") != "FORWARD_PAPER"
+            or persisted.get("configuration_id") !=
+            preparation["configuration"]["configuration_id"]
+            or persisted.get("session_id") != preparation["session"]["session_id"]
+            or persisted.get("processing_instant_utc") !=
+            preparation["invocation"]["processing_instant_utc"]
+            or persisted.get("invocation_id") != preparation["invocation"]["invocation_id"]
+            or persisted.get("terminal_result") not in FORWARD_PAPER_ACTIVATION_M12_TERMINAL_RESULTS
+            or not isinstance(persisted.get("invocation_result_id"), str)
+            or not persisted["invocation_result_id"]):
+        return None
+    return {
+        "m12_terminal_result": persisted["terminal_result"],
+        "m12_result_reference": str(result_path.resolve()),
+        "m12_result_hash": digest(raw),
+        "m12_invocation_result_id": persisted["invocation_result_id"],
+    }
+
+
 def _forward_paper_activation_receipt_result_evidence(receipt):
     try:
         result_path = Path(receipt["m12_result_reference"])
@@ -1676,7 +1708,7 @@ def _forward_paper_activation_t4_response(status, reason=None, **fields):
 
 def _forward_paper_activation_existing_receipt_response(
         receipt_path, receipt_expected, activation, ledger_directory,
-        policy_path, configuration_path, m12_result_path):
+        policy_path, configuration_path, m12_result_path, preparation):
     receipt = _load_forward_paper_activation_receipt(receipt_path, receipt_expected)
     ledger = load_forward_paper_activation_ledger(
         ledger_directory, activation, policy_path, configuration_path)
@@ -1685,6 +1717,22 @@ def _forward_paper_activation_existing_receipt_response(
             "BLOCKED", "RECEIPT_LEASE_EVIDENCE_MISMATCH",
             activation_result="BLOCKED", activation_id=activation["activation_id"])
     if receipt["status"] == "M12_BOUND":
+        # T6: the previous attempt may have finished M1.2 before dying, just
+        # after binding but before recording the result in its own receipt.
+        persisted_result = _forward_paper_activation_persisted_m12_result(
+            m12_result_path, preparation)
+        if persisted_result is not None:
+            completed_receipt = _forward_paper_activation_receipt_seal({
+                **{key: value for key, value in receipt.items()
+                   if key != "receipt_identity"},
+                "status": "M12_RESULT_RECORDED", **persisted_result,
+            })
+            _atomic_write(receipt_path, encoded(completed_receipt))
+            return _forward_paper_activation_t4_response(
+                "PASS", activation_result="DUE", receipt=completed_receipt,
+                receipt_status="M12_RESULT_RECORDED", replay=True,
+                activation_id=activation["activation_id"],
+                recovery_source="PERSISTED_M12_RESULT", **persisted_result)
         return _forward_paper_activation_t4_response(
             "RECOVERY_REQUIRED", "M12_BOUND_WITHOUT_RESULT",
             activation_result="DUE", receipt=receipt, receipt_status="M12_BOUND",
@@ -1755,7 +1803,7 @@ def run_forward_paper_activation(
         try:
             return _forward_paper_activation_existing_receipt_response(
                 receipt_path, receipt_expected, activation, ledger_directory,
-                policy_path, configuration_path, m12_result_path)
+                policy_path, configuration_path, m12_result_path, preparation)
         except (OSError, ValueError, TypeError, KeyError, UnicodeError) as error:
             return _forward_paper_activation_t4_response(
                 "BLOCKED", "INVALID_OR_CONFLICTING_T4_RECEIPT: " + str(error),
@@ -1788,6 +1836,33 @@ def run_forward_paper_activation(
                 "BLOCKED", "T2_LEASE_NOT_ACTIVE",
                 activation_result="BLOCKED", activation_id=activation_id)
         if now >= expires_at:
+            # T6: a dead attempt may have already finished writing its M1.2
+            # result before it died. Never repeat M1.2 when that is provable.
+            persisted_result = _forward_paper_activation_persisted_m12_result(
+                m12_result_path, preparation)
+            if persisted_result is not None:
+                sealed = _forward_paper_activation_receipt_seal({
+                    "schema_version": FORWARD_PAPER_ACTIVATION_RECEIPT_SCHEMA_VERSION,
+                    **receipt_expected, "owner_id": existing_ledger["lease_owner_id"],
+                    "expires_at_utc": existing_ledger["expires_at_utc"],
+                    "status": "M12_RESULT_RECORDED", **persisted_result,
+                })
+                try:
+                    _create_forward_paper_activation_receipt(receipt_path, sealed)
+                except OSError as error:
+                    return _forward_paper_activation_t4_response(
+                        "RECOVERABLE_ERROR", "T6_RECEIPT_BACKFILL_FAILED: " + str(error),
+                        activation_result="DUE", activation_id=activation_id)
+                release = release_forward_paper_activation_lease(
+                    ledger_directory, activation, policy_path, configuration_path,
+                    existing_ledger["lease_owner_id"], processing_instant_utc)
+                return _forward_paper_activation_t4_response(
+                    "PASS", activation_result="DUE", receipt=sealed,
+                    receipt_status="M12_RESULT_RECORDED", replay=True,
+                    activation_id=activation_id, recovery_source="PERSISTED_M12_RESULT",
+                    lease_released=(release.get("status") == "PASS"
+                                    and release.get("lease_result") == "RELEASED"),
+                    **persisted_result)
             return _forward_paper_activation_t4_response(
                 "BLOCKED", "T2_LEASE_EXPIRED",
                 activation_result="BLOCKED", activation_id=activation_id)
@@ -1826,7 +1901,7 @@ def run_forward_paper_activation(
                     owner_id, processing_instant_utc)
             replay = _forward_paper_activation_existing_receipt_response(
                 receipt_path, receipt_expected, activation, ledger_directory,
-                policy_path, configuration_path, m12_result_path)
+                policy_path, configuration_path, m12_result_path, preparation)
             if race_release is not None:
                 replay["lease_released"] = (
                     race_release.get("status") == "PASS"
@@ -1921,7 +1996,7 @@ def run_forward_paper_activation(
                 race_release = None
             replay = _forward_paper_activation_existing_receipt_response(
                 receipt_path, receipt_expected, activation, ledger_directory,
-                policy_path, configuration_path, m12_result_path)
+                policy_path, configuration_path, m12_result_path, preparation)
             if race_release is not None:
                 replay["lease_released"] = (
                     race_release.get("status") == "PASS"
@@ -1990,6 +2065,189 @@ def run_forward_paper_activation(
         m12_result_hash=evidence["m12_result_hash"],
         m12_invocation_result_id=evidence["m12_invocation_result_id"],
         lease_released=release_ok, lease_evidence=release.get("ledger"))
+
+
+FORWARD_PAPER_ACTIVATION_ATTEMPTS_SCHEMA_VERSION = "1"
+FORWARD_PAPER_ACTIVATION_MAX_ATTEMPTS = 3
+FORWARD_PAPER_ACTIVATION_RETRY_BACKOFF_SECONDS = (60, 300)
+# T4-level statuses that mean "not resolved yet, worth checking again".
+FORWARD_PAPER_ACTIVATION_RETRYABLE_T4_STATUSES = {"RECOVERABLE_ERROR", "RECOVERY_REQUIRED"}
+# M1.2's own terminal_result, once T4 itself PASSed: only RECOVERABLE_ERROR retries.
+FORWARD_PAPER_ACTIVATION_RETRYABLE_M12_RESULTS = {"RECOVERABLE_ERROR"}
+FORWARD_PAPER_ACTIVATION_BLOCKING_M12_RESULTS = {"BLOCKED"}
+FORWARD_PAPER_ACTIVATION_ATTEMPT_FIELDS = {
+    "attempt_id", "attempt_number", "attempted_at_utc", "status",
+    "m12_terminal_result", "reason",
+}
+FORWARD_PAPER_ACTIVATION_ATTEMPTS_RECORD_FIELDS = {
+    "schema_version", "activation_id", "processing_instant_utc", "attempts",
+}
+
+
+def _forward_paper_activation_attempt_is_retryable(status, m12_terminal_result):
+    if status in FORWARD_PAPER_ACTIVATION_RETRYABLE_T4_STATUSES:
+        return True
+    return status == "PASS" and m12_terminal_result \
+        in FORWARD_PAPER_ACTIVATION_RETRYABLE_M12_RESULTS
+
+
+def _forward_paper_activation_attempt_needs_operator(status, m12_terminal_result):
+    if status == "BLOCKED":
+        return True
+    return status == "PASS" and m12_terminal_result \
+        in FORWARD_PAPER_ACTIVATION_BLOCKING_M12_RESULTS
+
+
+def _forward_paper_activation_attempts_path(receipt_directory, activation_id):
+    key = digest(activation_id.encode("utf-8"))
+    return Path(receipt_directory) / ("activation-" + key + "-attempts.json")
+
+
+def _forward_paper_activation_attempts_is_valid(record, activation_id):
+    if not isinstance(record, dict) \
+            or set(record) != FORWARD_PAPER_ACTIVATION_ATTEMPTS_RECORD_FIELDS \
+            or record.get("schema_version") != FORWARD_PAPER_ACTIVATION_ATTEMPTS_SCHEMA_VERSION \
+            or record.get("activation_id") != activation_id \
+            or not _explicit_utc(record.get("processing_instant_utc")) \
+            or not isinstance(record.get("attempts"), list):
+        return False
+    return all(
+        isinstance(item, dict) and set(item) == FORWARD_PAPER_ACTIVATION_ATTEMPT_FIELDS
+        and item.get("attempt_number") == index + 1
+        and _explicit_utc(item.get("attempted_at_utc"))
+        for index, item in enumerate(record["attempts"]))
+
+
+def _load_forward_paper_activation_attempts(attempts_path, activation_id, processing_instant_utc):
+    attempts_path = Path(attempts_path)
+    if not attempts_path.exists():
+        return {"schema_version": FORWARD_PAPER_ACTIVATION_ATTEMPTS_SCHEMA_VERSION,
+                "activation_id": activation_id,
+                "processing_instant_utc": processing_instant_utc, "attempts": []}
+    record = json.loads(attempts_path.read_bytes())
+    if not _forward_paper_activation_attempts_is_valid(record, activation_id):
+        raise ValueError("Persisted FORWARD_PAPER activation attempts are invalid")
+    return record
+
+
+def _forward_paper_activation_next_retry_at(attempt_number, since):
+    index = min(attempt_number, len(FORWARD_PAPER_ACTIVATION_RETRY_BACKOFF_SECONDS)) - 1
+    backoff = FORWARD_PAPER_ACTIVATION_RETRY_BACKOFF_SECONDS[index]
+    return since + timedelta(seconds=backoff)
+
+
+def attempt_forward_paper_activation(
+        policy_path, configuration_path, session_path, invocation_path,
+        ledger_directory, receipt_directory, dataset_path, selection_path,
+        fixture_path, acceptance_path, indicator_path, cycle_path,
+        m12_result_path, output, now_utc, owner_id, *,
+        transport=None, timeout_seconds=30):
+    """Bound repeated T4 runs of one activation by a result-dependent policy.
+
+    T4 (run_forward_paper_activation) already guarantees at most one M1.2
+    call per activation and safely recovers a completed M1.2 result. This
+    wrapper additionally guarantees at most FORWARD_PAPER_ACTIVATION_MAX_ATTEMPTS
+    T4 calls while an activation stays RECOVERABLE_ERROR/RECOVERY_REQUIRED,
+    spaced by an increasing backoff, and never retries a COMPLETED,
+    NOTHING_DUE, or BLOCKED activation. It does not know how SMA3, Risk, or
+    the PAPER position are computed; it only calls the public T4 entrypoint.
+
+    now_utc is the real, ever-advancing instant used to decide DUE/backoff.
+    T4 itself always receives the same frozen processing_instant_utc for a
+    given activation (fixed at its first attempt), so a receipt created by
+    one attempt is always a valid replay target for a later retry.
+    """
+    if not _explicit_utc(now_utc):
+        return {"status": "BLOCKED", "reason": "INVALID_UTC_INSTANT",
+                "activation_id": None, "attempt_number": None, "attempts_used": 0,
+                "next_retry_at_utc": None, "operator_action_required": False}
+    try:
+        policy, configuration = _forward_paper_activation_policy_inputs(
+            policy_path, configuration_path)
+        activation = evaluate_forward_paper_activation(policy, configuration, now_utc)
+    except (OSError, ValueError, TypeError, KeyError, UnicodeError) as error:
+        return {"status": "BLOCKED", "reason": "INVALID_T1_ASSOCIATION: " + str(error),
+                "activation_id": None, "attempt_number": None, "attempts_used": 0,
+                "next_retry_at_utc": None, "operator_action_required": False}
+
+    activation_id = activation["activation_id"]
+    if activation["result"] == "NOTHING_DUE":
+        return {"status": "PASS", "activation_result": "NOTHING_DUE",
+                "activation_id": activation_id, "attempt_number": None,
+                "attempts_used": 0, "next_retry_at_utc": None,
+                "operator_action_required": False,
+                "next_scheduled_for_utc": activation["next_scheduled_for_utc"]}
+
+    attempts_path = _forward_paper_activation_attempts_path(
+        receipt_directory, activation_id)
+    attempts_record = _load_forward_paper_activation_attempts(
+        attempts_path, activation_id, now_utc)
+    processing_instant_utc = attempts_record["processing_instant_utc"]
+    attempts = attempts_record["attempts"]
+    now = datetime.fromisoformat(now_utc.replace("Z", "+00:00"))
+
+    if attempts:
+        last = attempts[-1]
+        if not _forward_paper_activation_attempt_is_retryable(
+                last["status"], last["m12_terminal_result"]):
+            return {"status": last["status"], "activation_id": activation_id,
+                    "attempt_number": last["attempt_number"], "attempts_used": len(attempts),
+                    "next_retry_at_utc": None,
+                    "operator_action_required": _forward_paper_activation_attempt_needs_operator(
+                        last["status"], last["m12_terminal_result"]),
+                    "m12_terminal_result": last["m12_terminal_result"],
+                    "reason": last["reason"]}
+        if len(attempts) >= FORWARD_PAPER_ACTIVATION_MAX_ATTEMPTS:
+            return {"status": "RECOVERABLE_ERROR", "reason": "T6_MAX_ATTEMPTS_EXHAUSTED",
+                    "activation_id": activation_id, "attempt_number": last["attempt_number"],
+                    "attempts_used": len(attempts), "next_retry_at_utc": None,
+                    "operator_action_required": True}
+        last_attempt_at = datetime.fromisoformat(
+            last["attempted_at_utc"].replace("Z", "+00:00"))
+        next_retry_at = _forward_paper_activation_next_retry_at(
+            last["attempt_number"], last_attempt_at)
+        if now < next_retry_at:
+            return {"status": "RECOVERABLE_ERROR", "reason": "T6_BACKOFF_NOT_ELAPSED",
+                    "activation_id": activation_id, "attempt_number": last["attempt_number"],
+                    "attempts_used": len(attempts),
+                    "next_retry_at_utc": next_retry_at.isoformat().replace("+00:00", "Z"),
+                    "operator_action_required": False}
+
+    attempt_number = len(attempts) + 1
+    attempt_id = f"{activation_id}|ATTEMPT_{attempt_number}|{now_utc}"
+    result = run_forward_paper_activation(
+        policy_path, configuration_path, session_path, invocation_path,
+        ledger_directory, receipt_directory, dataset_path, selection_path,
+        fixture_path, acceptance_path, indicator_path, cycle_path,
+        m12_result_path, output, processing_instant_utc, owner_id,
+        transport=transport, timeout_seconds=timeout_seconds)
+
+    m12_terminal_result = result.get("m12_terminal_result")
+    retryable = _forward_paper_activation_attempt_is_retryable(
+        result["status"], m12_terminal_result)
+    attempts_record["attempts"] = attempts + [{
+        "attempt_id": attempt_id, "attempt_number": attempt_number,
+        "attempted_at_utc": now_utc,
+        "status": result["status"], "m12_terminal_result": m12_terminal_result,
+        "reason": result.get("reason"),
+    }]
+    _atomic_write(attempts_path, encoded(attempts_record))
+
+    exhausted = retryable and attempt_number >= FORWARD_PAPER_ACTIVATION_MAX_ATTEMPTS
+    next_retry_at_utc = None
+    if retryable and not exhausted:
+        next_retry_at_utc = _forward_paper_activation_next_retry_at(
+            attempt_number, now).isoformat().replace("+00:00", "Z")
+    needs_operator = exhausted or _forward_paper_activation_attempt_needs_operator(
+        result["status"], m12_terminal_result)
+
+    return {
+        **result, "attempt_id": attempt_id, "attempt_number": attempt_number,
+        "attempts_used": attempt_number, "next_retry_at_utc": next_retry_at_utc,
+        "operator_action_required": needs_operator,
+        "status": "RECOVERABLE_ERROR" if exhausted else result["status"],
+        "reason": "T6_MAX_ATTEMPTS_EXHAUSTED" if exhausted else result.get("reason"),
+    }
 
 
 FORWARD_PAPER_DATASET_SCHEMA_VERSION = "1"
