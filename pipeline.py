@@ -2257,6 +2257,84 @@ def attempt_forward_paper_activation(
     }
 
 
+def forward_paper_activation_status(
+        policy_path, configuration_path, ledger_directory, receipt_directory,
+        now_utc):
+    """Expose the minimal operator-consultable status of one activation.
+
+    Read-only: never invokes M1.2, never writes anything, and never learns
+    how SMA3, Risk, or the PAPER position are computed — it only reads what
+    T1 (policy), T2 (ledger/lease), T4 (receipt), and T5 (attempts) already
+    persisted for the activation scheduled for now_utc's daily slot.
+    """
+    if not _explicit_utc(now_utc):
+        raise ValueError("An explicit UTC instant is required")
+    policy, configuration = _forward_paper_activation_policy_inputs(
+        policy_path, configuration_path)
+    activation = evaluate_forward_paper_activation(policy, configuration, now_utc)
+    activation_id = activation["activation_id"]
+
+    attempts_path = _forward_paper_activation_attempts_path(
+        receipt_directory, activation_id)
+    attempts = []
+    if attempts_path.exists():
+        attempts = _load_forward_paper_activation_attempts(
+            attempts_path, activation_id, now_utc)["attempts"]
+    last_attempt = attempts[-1] if attempts else None
+
+    receipt_path = _forward_paper_activation_receipt_path(
+        receipt_directory, activation_id)
+    receipt = None
+    if receipt_path.exists():
+        try:
+            receipt = json.loads(receipt_path.read_bytes())
+        except (OSError, ValueError, TypeError, UnicodeError):
+            receipt = None
+
+    lease = None
+    try:
+        lease = load_forward_paper_activation_ledger(
+            ledger_directory, activation, policy_path, configuration_path)
+    except FileNotFoundError:
+        lease = None
+    except (OSError, ValueError, TypeError, KeyError, UnicodeError):
+        lease = None
+    lease_active = False
+    if lease is not None:
+        now = datetime.fromisoformat(now_utc.replace("Z", "+00:00"))
+        expires_at = datetime.fromisoformat(
+            lease["expires_at_utc"].replace("Z", "+00:00"))
+        lease_active = lease["lease_status"] == "ACTIVE" and now < expires_at
+
+    if last_attempt is not None:
+        last_result = last_attempt["m12_terminal_result"] or last_attempt["status"]
+        reason = last_attempt["reason"]
+    elif receipt is not None:
+        last_result = receipt.get("m12_terminal_result") or receipt.get("status")
+        reason = None
+    elif activation["result"] == "NOTHING_DUE":
+        last_result = "NOTHING_DUE"
+        reason = None
+    else:
+        last_result = None
+        reason = None
+
+    return {
+        "status": "PASS",
+        "activation_id": activation_id,
+        "scheduled_for_utc": activation["scheduled_for_utc"],
+        "last_result": last_result,
+        "reason": reason,
+        "attempts_used": len(attempts),
+        "lease_active": lease_active,
+        "lease_owner_id": lease.get("lease_owner_id") if lease else None,
+        "lease_expires_at_utc": lease.get("expires_at_utc") if lease else None,
+        "next_scheduled_for_utc": activation["next_scheduled_for_utc"],
+        "network_calls": 0, "credentials_used": False,
+        "paper_orders_sent": 0, "live_orders_sent": 0,
+    }
+
+
 FORWARD_PAPER_DATASET_SCHEMA_VERSION = "1"
 COINBASE_PUBLIC_CANDLES_ENDPOINT = URL.split("?", 1)[0]
 FORWARD_PAPER_MINIMUM_CLOSED_OBSERVATIONS = 4
