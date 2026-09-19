@@ -50,12 +50,20 @@ Esto se ejecuta **una sola vez** al desplegar, no en cada tick. Es la
 
 ```bash
 cd /opt/tramitago-quant-core
-python3 -B - <<'PY'
+python3.11 -B - <<'PY'
 import pipeline as p
 from pathlib import Path
+from datetime import datetime, timezone
 
 data_dir = Path("/var/lib/tramitago-quant-core/forward-paper")
-started_at = "2026-09-19T00:00:00Z"        # ajustar al instante real de arranque
+now_utc = datetime.now(timezone.utc)
+# started_at MUST be strictly earlier than the invocation's processing instant
+# below -- select_forward_paper_eligible_observation rejects any candidate
+# whose accepted_at_utc is not > session.started_at. Truncating to today's
+# UTC midnight gives a clear, safe margin (any earlier instant works too).
+started_at = now_utc.replace(hour=0, minute=0, second=0, microsecond=0) \
+    .isoformat().replace("+00:00", "Z")
+processing_instant_utc = now_utc.isoformat().replace("+00:00", "Z")
 session_id = "PAPER_SESSION|<identidad-unica>"
 
 configuration = p.forward_paper_configuration()
@@ -71,10 +79,17 @@ p.prepare_forward_paper_activation_policy(
     data_dir / "policy.json", data_dir / "configuration.json")
 p.prepare_forward_paper_invocation(
     data_dir / "session" / "state.json", data_dir / "configuration.json",
-    data_dir / "invocation.json", session_id, started_at, started_at)
+    data_dir / "invocation.json", session_id, started_at, processing_instant_utc)
 print("bootstrap OK:", data_dir)
+print("started_at:", started_at, "/ processing_instant_utc:", processing_instant_utc)
 PY
 ```
+
+**Importante**: `started_at` y `processing_instant_utc` (el segundo y tercer argumento reales de
+`prepare_forward_paper_invocation`) deben ser distintos, con `started_at` estrictamente anterior.
+Si se usa el mismo valor para ambos, toda observación queda permanentemente inelegible
+(`"Operational observation is not temporally eligible"`), porque el criterio de causalidad exige
+`accepted_at_utc > started_at`, y `accepted_at_utc` coincide con `processing_instant_utc`.
 
 ## Paso 1 — Instalar el disparador (elegir uno)
 
