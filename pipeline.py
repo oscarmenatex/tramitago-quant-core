@@ -1383,6 +1383,119 @@ def release_forward_paper_activation_lease(ledger_directory, activation,
             "LEDGER_PERSISTENCE_OR_LOCK_FAILED: " + str(error))
 
 
+def _forward_paper_activation_due_response(result, reason=None, **fields):
+    return {
+        "result": result,
+        "reason": reason,
+        **fields,
+        "network_calls": 0,
+        "credentials_used": False,
+        "paper_orders_sent": 0,
+        "live_orders_sent": 0,
+    }
+
+
+def evaluate_forward_paper_activation_due(
+        policy_path, configuration_path, session_path, invocation_path,
+        ledger_directory, evaluated_at_utc, owner_id):
+    """Evaluate one explicit activation and acquire its canonical T2 lease."""
+    if not _forward_paper_activation_owner_id_is_valid(owner_id):
+        return _forward_paper_activation_due_response(
+            "BLOCKED", "INVALID_OWNER_ID")
+    if not _explicit_utc(evaluated_at_utc):
+        return _forward_paper_activation_due_response(
+            "BLOCKED", "INVALID_UTC_INSTANT")
+
+    try:
+        preparation = load_forward_paper_preparation(
+            session_path, configuration_path, invocation_path)
+        if not _forward_paper_session_is_initial(preparation["session"]):
+            return _forward_paper_activation_due_response(
+                "BLOCKED", "INVALID_FORWARD_PAPER_SESSION")
+        policy = load_forward_paper_activation_policy(
+            policy_path, configuration_path)
+        configuration = preparation["configuration"]
+        if policy["configuration_id"] != configuration["configuration_id"]:
+            return _forward_paper_activation_due_response(
+                "BLOCKED", "INVALID_T1_ASSOCIATION")
+        if epoch(evaluated_at_utc) < epoch(
+                preparation["invocation"]["processing_instant_utc"]):
+            return _forward_paper_activation_due_response(
+                "BLOCKED", "EVALUATION_PRECEDES_INVOCATION")
+        activation = evaluate_forward_paper_activation(
+            policy, configuration, evaluated_at_utc)
+    except (OSError, ValueError, TypeError, KeyError, UnicodeError):
+        return _forward_paper_activation_due_response(
+            "BLOCKED", "INVALID_T1_ASSOCIATION")
+
+    if activation["result"] == "NOTHING_DUE":
+        return _forward_paper_activation_due_response(
+            "NOTHING_DUE",
+            policy_id=activation["policy_id"],
+            configuration_id=activation["configuration_id"],
+            evaluated_at_utc=evaluated_at_utc,
+            next_scheduled_for_utc=activation["next_scheduled_for_utc"],
+        )
+
+    try:
+        lease = acquire_forward_paper_activation_lease(
+            ledger_directory, activation, policy_path, configuration_path,
+            owner_id, evaluated_at_utc)
+    except (OSError, ValueError, TypeError, KeyError, UnicodeError):
+        return _forward_paper_activation_due_response(
+            "BLOCKED", "LEASE_UNAVAILABLE",
+            policy_id=activation["policy_id"],
+            configuration_id=activation["configuration_id"],
+            scheduled_for_utc=activation["scheduled_for_utc"],
+            activation_id=activation["activation_id"],
+            evaluated_at_utc=evaluated_at_utc,
+        )
+
+    lease_reason = lease.get("reason")
+    lease_evidence = lease.get("ledger")
+    common_fields = {
+        "policy_id": activation["policy_id"],
+        "configuration_id": activation["configuration_id"],
+        "scheduled_for_utc": activation["scheduled_for_utc"],
+        "activation_id": activation["activation_id"],
+        "evaluated_at_utc": evaluated_at_utc,
+        "next_scheduled_for_utc": activation["next_scheduled_for_utc"],
+        "lease_evidence": lease_evidence,
+    }
+    if lease.get("status") != "PASS":
+        if lease_reason == "ACTIVATION_IN_PROGRESS":
+            reason = "ACTIVE_LEASE"
+        elif isinstance(lease_reason, str) and "INVALID_PERSISTED_LEDGER" in lease_reason:
+            reason = "INVALID_LEDGER"
+        elif isinstance(lease_reason, str) and "INVALID_T1_ASSOCIATION" in lease_reason:
+            reason = "INVALID_T1_ASSOCIATION"
+        elif lease_reason == "LEDGER_TIME_REGRESSION":
+            reason = "INVALID_LEDGER"
+        else:
+            reason = "LEASE_UNAVAILABLE"
+        return _forward_paper_activation_due_response(
+            "BLOCKED", reason, **common_fields)
+
+    if lease.get("lease_result") not in {"ACQUIRED", "ALREADY_OWNED", "RECOVERED"} \
+            or not isinstance(lease_evidence, dict):
+        return _forward_paper_activation_due_response(
+            "BLOCKED", "INCOMPATIBLE_LEASE", **common_fields)
+
+    return _forward_paper_activation_due_response(
+        "DUE",
+        policy_id=activation["policy_id"],
+        configuration_id=activation["configuration_id"],
+        scheduled_for_utc=activation["scheduled_for_utc"],
+        activation_id=activation["activation_id"],
+        owner_id=owner_id,
+        evaluated_at_utc=evaluated_at_utc,
+        expires_at_utc=lease_evidence["expires_at_utc"],
+        next_scheduled_for_utc=activation["next_scheduled_for_utc"],
+        lease_acquisition=lease["lease_result"],
+        lease_evidence=lease_evidence,
+    )
+
+
 FORWARD_PAPER_DATASET_SCHEMA_VERSION = "1"
 COINBASE_PUBLIC_CANDLES_ENDPOINT = URL.split("?", 1)[0]
 FORWARD_PAPER_MINIMUM_CLOSED_OBSERVATIONS = 4
