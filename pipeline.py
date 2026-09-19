@@ -2,6 +2,7 @@
 
 import argparse
 import csv
+from contextlib import contextmanager
 from decimal import Decimal, InvalidOperation
 import hashlib
 from http.client import HTTPSConnection
@@ -13,6 +14,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import platform
 import sys
+import uuid
 from urllib.parse import quote, urlencode, urlsplit
 from urllib.request import Request, urlopen
 
@@ -932,6 +934,453 @@ def evaluate_forward_paper_activation(policy_or_path, configuration_or_path,
         "paper_orders_sent": 0,
         "live_orders_sent": 0,
     }
+
+
+FORWARD_PAPER_ACTIVATION_LEASE_SCHEMA_VERSION = "1"
+FORWARD_PAPER_ACTIVATION_LEASE_DURATION_SECONDS = 900
+FORWARD_PAPER_ACTIVATION_LEASE_EVENT_TYPES = {
+    "LEASE_ACQUIRED", "LEASE_CONFLICT", "LEASE_RELEASED",
+    "LEASE_EXPIRED", "LEASE_RECOVERED",
+}
+
+
+def _forward_paper_activation_context(activation, policy_path, configuration_path):
+    policy, configuration = _forward_paper_activation_policy_inputs(
+        policy_path, configuration_path)
+    if not isinstance(activation, dict):
+        raise ValueError("A T1 activation evaluation is required")
+    scheduled_for_utc = activation.get("scheduled_for_utc")
+    if not _explicit_utc(scheduled_for_utc):
+        raise ValueError("Activation scheduled_for_utc is invalid")
+    scheduled = datetime.fromisoformat(scheduled_for_utc.replace("Z", "+00:00"))
+    expected_slot = _forward_paper_activation_slot_for_date(scheduled)
+    expected_scheduled = expected_slot.isoformat().replace("+00:00", "Z")
+    if scheduled_for_utc != expected_scheduled:
+        raise ValueError("Activation is not aligned to the T1 policy slot")
+    expected_activation_id = _forward_paper_activation_id(
+        policy, configuration, scheduled_for_utc)
+    if (activation.get("activation_id") != expected_activation_id
+            or activation.get("policy_id") != policy["policy_id"]
+            or activation.get("policy_identity") != policy["policy_identity"]
+            or activation.get("configuration_id") != configuration["configuration_id"]
+            or activation.get("condition") not in {"DUE", "NOTHING_DUE"}):
+        raise ValueError("Activation association is invalid or incompatible with T1")
+    return {
+        "activation_id": expected_activation_id,
+        "policy_id": policy["policy_id"],
+        "policy_identity": policy["policy_identity"],
+        "configuration_id": configuration["configuration_id"],
+        "scheduled_for_utc": scheduled_for_utc,
+        "scheduled_at": expected_slot,
+        "policy": policy,
+        "configuration": configuration,
+    }
+
+
+def _forward_paper_activation_owner_id_is_valid(owner_id):
+    if not isinstance(owner_id, str):
+        return False
+    try:
+        return str(uuid.UUID(owner_id)) == owner_id
+    except (ValueError, AttributeError):
+        return False
+
+
+def _forward_paper_activation_ledger_paths(ledger_directory, activation_id):
+    ledger_directory = Path(ledger_directory)
+    key = digest(activation_id.encode("utf-8"))
+    return (ledger_directory / ("activation-" + key + ".json"),
+            ledger_directory / ".activation-locks" / (key + ".lock"))
+
+
+@contextmanager
+def _forward_paper_activation_os_lock(lock_path):
+    """Hold an OS-released, per-activation interprocess exclusive lock."""
+    lock_path = Path(lock_path)
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open("a+b") as lock_file:
+        if os.name == "nt":
+            import msvcrt
+            lock_file.seek(0)
+            msvcrt.locking(lock_file.fileno(), msvcrt.LK_LOCK, 1)
+            try:
+                if lock_file.seek(0, os.SEEK_END) == 0:
+                    lock_file.write(b"\0")
+                    lock_file.flush()
+                yield
+            finally:
+                lock_file.seek(0)
+                msvcrt.locking(lock_file.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
+            try:
+                yield
+            finally:
+                fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+
+
+def _forward_paper_activation_event(event_type, event_at_utc, owner_id,
+                                    previous_owner_id=None, reason=None,
+                                    expires_at_utc=None):
+    return {
+        "event_type": event_type,
+        "event_at_utc": event_at_utc,
+        "owner_id": owner_id,
+        "previous_owner_id": previous_owner_id,
+        "reason": reason,
+        "expires_at_utc": expires_at_utc,
+    }
+
+
+def _forward_paper_activation_ledger_is_valid(ledger, context):
+    fields = {
+        "schema_version", "activation_id", "policy_id", "policy_identity",
+        "configuration_id", "scheduled_for_utc", "lease_duration_seconds",
+        "lease_owner_id", "acquired_at_utc", "expires_at_utc", "lease_status",
+        "event_history",
+    }
+    if not isinstance(ledger, dict) or set(ledger) != fields:
+        return False
+    if (ledger["schema_version"] != FORWARD_PAPER_ACTIVATION_LEASE_SCHEMA_VERSION
+            or ledger["activation_id"] != context["activation_id"]
+            or ledger["policy_id"] != context["policy_id"]
+            or ledger["policy_identity"] != context["policy_identity"]
+            or ledger["configuration_id"] != context["configuration_id"]
+            or ledger["scheduled_for_utc"] != context["scheduled_for_utc"]
+            or ledger["lease_duration_seconds"] !=
+            FORWARD_PAPER_ACTIVATION_LEASE_DURATION_SECONDS
+            or not _forward_paper_activation_owner_id_is_valid(ledger["lease_owner_id"])
+            or not _explicit_utc(ledger["acquired_at_utc"])
+            or not _explicit_utc(ledger["expires_at_utc"])
+            or ledger["lease_status"] not in {"ACTIVE", "RELEASED", "EXPIRED"}
+            or datetime.fromisoformat(ledger["expires_at_utc"].replace("Z", "+00:00")) !=
+            datetime.fromisoformat(ledger["acquired_at_utc"].replace("Z", "+00:00")) +
+            timedelta(seconds=FORWARD_PAPER_ACTIVATION_LEASE_DURATION_SECONDS)
+            or not isinstance(ledger["event_history"], list)
+            or not ledger["event_history"]):
+        return False
+    event_fields = {
+        "event_type", "event_at_utc", "owner_id", "previous_owner_id",
+        "reason", "expires_at_utc",
+    }
+    for event in ledger["event_history"]:
+        if (not isinstance(event, dict) or set(event) != event_fields
+                or event["event_type"] not in FORWARD_PAPER_ACTIVATION_LEASE_EVENT_TYPES
+                or not _explicit_utc(event["event_at_utc"])
+                or not _forward_paper_activation_owner_id_is_valid(event["owner_id"])
+                or (event["previous_owner_id"] is not None
+                    and not _forward_paper_activation_owner_id_is_valid(
+                        event["previous_owner_id"]))
+                or (event["reason"] is not None and not isinstance(event["reason"], str))
+                or (event["expires_at_utc"] is not None
+                    and not _explicit_utc(event["expires_at_utc"]))):
+            return False
+    event_instants = [datetime.fromisoformat(
+        event["event_at_utc"].replace("Z", "+00:00")) for event in ledger["event_history"]]
+    if event_instants != sorted(event_instants):
+        return False
+    transitions = [event for event in ledger["event_history"] if event["event_type"] in {
+        "LEASE_ACQUIRED", "LEASE_RECOVERED", "LEASE_RELEASED", "LEASE_EXPIRED"}]
+    current_lease = next((event for event in reversed(transitions)
+                          if event["event_type"] in {"LEASE_ACQUIRED", "LEASE_RECOVERED"}),
+                         None)
+    if (current_lease is None
+            or current_lease["owner_id"] != ledger["lease_owner_id"]
+            or current_lease["event_at_utc"] != ledger["acquired_at_utc"]
+            or current_lease["expires_at_utc"] != ledger["expires_at_utc"]):
+        return False
+    last_transition = transitions[-1]
+    expected_last_transition = {
+        "ACTIVE": {"LEASE_ACQUIRED", "LEASE_RECOVERED"},
+        "RELEASED": {"LEASE_RELEASED"},
+        "EXPIRED": {"LEASE_EXPIRED"},
+    }[ledger["lease_status"]]
+    if (last_transition["event_type"] not in expected_last_transition
+            or last_transition["owner_id"] != ledger["lease_owner_id"]):
+        return False
+    return True
+
+
+def _load_forward_paper_activation_ledger_path(ledger_path, context):
+    ledger = json.loads(Path(ledger_path).read_bytes())
+    if not _forward_paper_activation_ledger_is_valid(ledger, context):
+        raise ValueError("Persisted FORWARD_PAPER activation ledger is invalid")
+    return ledger
+
+
+def load_forward_paper_activation_ledger(ledger_directory, activation,
+                                         policy_path, configuration_path):
+    """Reload one validated T2 activation ledger without changing it."""
+    context = _forward_paper_activation_context(
+        activation, policy_path, configuration_path)
+    ledger_path, _ = _forward_paper_activation_ledger_paths(
+        ledger_directory, context["activation_id"])
+    return _load_forward_paper_activation_ledger_path(ledger_path, context)
+
+
+def _forward_paper_activation_lease_result(status, lease_result, reason=None,
+                                           ledger=None):
+    return {
+        "status": status,
+        "lease_result": lease_result,
+        "reason": reason,
+        "ledger": ledger,
+        "network_calls": 0,
+        "credentials_used": False,
+        "paper_orders_sent": 0,
+        "live_orders_sent": 0,
+    }
+
+
+def _persist_forward_paper_activation_ledger(ledger_path, ledger):
+    if not _forward_paper_activation_ledger_is_valid(
+            ledger, {
+                "activation_id": ledger["activation_id"],
+                "policy_id": ledger["policy_id"],
+                "policy_identity": ledger["policy_identity"],
+                "configuration_id": ledger["configuration_id"],
+                "scheduled_for_utc": ledger["scheduled_for_utc"],
+            }):
+        raise ValueError("Constructed FORWARD_PAPER activation ledger is invalid")
+    temporary = Path(ledger_path).with_name(Path(ledger_path).name + ".tmp")
+    try:
+        _atomic_write(ledger_path, encoded(ledger))
+    except OSError:
+        try:
+            temporary.unlink(missing_ok=True)
+        except OSError:
+            pass
+        raise
+
+
+def _forward_paper_activation_ledger_time_is_valid(ledger, now_utc):
+    latest_event_at = ledger["event_history"][-1]["event_at_utc"]
+    now = datetime.fromisoformat(now_utc.replace("Z", "+00:00"))
+    latest_event = datetime.fromisoformat(latest_event_at.replace("Z", "+00:00"))
+    return now >= latest_event
+
+
+def _forward_paper_activation_expiry(now_utc):
+    instant = datetime.fromisoformat(now_utc.replace("Z", "+00:00"))
+    return (instant + timedelta(seconds=FORWARD_PAPER_ACTIVATION_LEASE_DURATION_SECONDS)
+            ).isoformat().replace("+00:00", "Z")
+
+
+def _forward_paper_activation_ledger_event(ledger, event_type, now_utc, owner_id,
+                                           previous_owner_id=None, reason=None,
+                                           expires_at_utc=None):
+    ledger["event_history"].append(_forward_paper_activation_event(
+        event_type, now_utc, owner_id, previous_owner_id, reason, expires_at_utc))
+
+
+def acquire_forward_paper_activation_lease(ledger_directory, activation,
+                                           policy_path, configuration_path,
+                                           owner_id, now_utc):
+    """Acquire or recover one explicit activation lease under a keyed OS lock."""
+    if not _forward_paper_activation_owner_id_is_valid(owner_id):
+        return _forward_paper_activation_lease_result(
+            "BLOCKED", "BLOCKED", "INVALID_OWNER_ID")
+    if not _explicit_utc(now_utc):
+        return _forward_paper_activation_lease_result(
+            "BLOCKED", "BLOCKED", "INVALID_UTC_INSTANT")
+    try:
+        context = _forward_paper_activation_context(
+            activation, policy_path, configuration_path)
+    except (ValueError, KeyError, TypeError, json.JSONDecodeError, OSError) as error:
+        return _forward_paper_activation_lease_result(
+            "BLOCKED", "BLOCKED", "INVALID_T1_ASSOCIATION: " + str(error))
+    if activation.get("condition") != "DUE":
+        return _forward_paper_activation_lease_result(
+            "BLOCKED", "BLOCKED", "ACTIVATION_NOT_DUE")
+    now = datetime.fromisoformat(now_utc.replace("Z", "+00:00"))
+    scheduled = context["scheduled_at"]
+    if now < scheduled:
+        return _forward_paper_activation_lease_result(
+            "BLOCKED", "BLOCKED", "ACTIVATION_NOT_DUE")
+    if now >= scheduled + timedelta(days=1):
+        return _forward_paper_activation_lease_result(
+            "BLOCKED", "BLOCKED", "ACTIVATION_WINDOW_CLOSED")
+
+    ledger_path, lock_path = _forward_paper_activation_ledger_paths(
+        ledger_directory, context["activation_id"])
+    try:
+        with _forward_paper_activation_os_lock(lock_path):
+            ledger = None
+            if ledger_path.exists():
+                try:
+                    ledger = _load_forward_paper_activation_ledger_path(
+                        ledger_path, context)
+                except (ValueError, KeyError, TypeError, json.JSONDecodeError, OSError) as error:
+                    return _forward_paper_activation_lease_result(
+                        "BLOCKED", "BLOCKED", "INVALID_PERSISTED_LEDGER: " + str(error))
+
+            if ledger is None:
+                expires_at_utc = _forward_paper_activation_expiry(now_utc)
+                ledger = {
+                    "schema_version": FORWARD_PAPER_ACTIVATION_LEASE_SCHEMA_VERSION,
+                    "activation_id": context["activation_id"],
+                    "policy_id": context["policy_id"],
+                    "policy_identity": context["policy_identity"],
+                    "configuration_id": context["configuration_id"],
+                    "scheduled_for_utc": context["scheduled_for_utc"],
+                    "lease_duration_seconds":
+                        FORWARD_PAPER_ACTIVATION_LEASE_DURATION_SECONDS,
+                    "lease_owner_id": owner_id,
+                    "acquired_at_utc": now_utc,
+                    "expires_at_utc": expires_at_utc,
+                    "lease_status": "ACTIVE",
+                    "event_history": [],
+                }
+                _forward_paper_activation_ledger_event(
+                    ledger, "LEASE_ACQUIRED", now_utc, owner_id,
+                    expires_at_utc=expires_at_utc)
+                _persist_forward_paper_activation_ledger(ledger_path, ledger)
+                return _forward_paper_activation_lease_result(
+                    "PASS", "ACQUIRED", ledger=ledger)
+
+            if not _forward_paper_activation_ledger_time_is_valid(ledger, now_utc):
+                return _forward_paper_activation_lease_result(
+                    "BLOCKED", "BLOCKED", "LEDGER_TIME_REGRESSION", ledger)
+
+            if ledger["lease_status"] == "ACTIVE":
+                expires_at = datetime.fromisoformat(
+                    ledger["expires_at_utc"].replace("Z", "+00:00"))
+                if now < expires_at:
+                    if ledger["lease_owner_id"] == owner_id:
+                        return _forward_paper_activation_lease_result(
+                            "PASS", "ALREADY_OWNED", ledger=ledger)
+                    _forward_paper_activation_ledger_event(
+                        ledger, "LEASE_CONFLICT", now_utc, owner_id,
+                        previous_owner_id=ledger["lease_owner_id"],
+                        reason="ACTIVATION_IN_PROGRESS",
+                        expires_at_utc=ledger["expires_at_utc"])
+                    _persist_forward_paper_activation_ledger(ledger_path, ledger)
+                    return _forward_paper_activation_lease_result(
+                        "BLOCKED", "BLOCKED", "ACTIVATION_IN_PROGRESS", ledger)
+                ledger["lease_status"] = "EXPIRED"
+                _forward_paper_activation_ledger_event(
+                    ledger, "LEASE_EXPIRED", now_utc, ledger["lease_owner_id"],
+                    expires_at_utc=ledger["expires_at_utc"])
+                if ledger["lease_owner_id"] == owner_id:
+                    _persist_forward_paper_activation_ledger(ledger_path, ledger)
+                    return _forward_paper_activation_lease_result(
+                        "BLOCKED", "BLOCKED", "EXPIRED_LEASE_REQUIRES_NEW_OWNER", ledger)
+                previous_owner_id = ledger["lease_owner_id"]
+                ledger["lease_owner_id"] = owner_id
+                ledger["acquired_at_utc"] = now_utc
+                ledger["expires_at_utc"] = _forward_paper_activation_expiry(now_utc)
+                ledger["lease_status"] = "ACTIVE"
+                _forward_paper_activation_ledger_event(
+                    ledger, "LEASE_RECOVERED", now_utc, owner_id,
+                    previous_owner_id=previous_owner_id,
+                    expires_at_utc=ledger["expires_at_utc"])
+                _persist_forward_paper_activation_ledger(ledger_path, ledger)
+                return _forward_paper_activation_lease_result(
+                    "PASS", "RECOVERED", ledger=ledger)
+
+            if ledger["lease_status"] == "EXPIRED":
+                if ledger["lease_owner_id"] == owner_id:
+                    return _forward_paper_activation_lease_result(
+                        "BLOCKED", "BLOCKED", "EXPIRED_LEASE_REQUIRES_NEW_OWNER", ledger)
+                previous_owner_id = ledger["lease_owner_id"]
+                ledger["lease_owner_id"] = owner_id
+                ledger["acquired_at_utc"] = now_utc
+                ledger["expires_at_utc"] = _forward_paper_activation_expiry(now_utc)
+                ledger["lease_status"] = "ACTIVE"
+                _forward_paper_activation_ledger_event(
+                    ledger, "LEASE_RECOVERED", now_utc, owner_id,
+                    previous_owner_id=previous_owner_id,
+                    expires_at_utc=ledger["expires_at_utc"])
+                _persist_forward_paper_activation_ledger(ledger_path, ledger)
+                return _forward_paper_activation_lease_result(
+                    "PASS", "RECOVERED", ledger=ledger)
+
+            expires_at_utc = _forward_paper_activation_expiry(now_utc)
+            ledger["lease_owner_id"] = owner_id
+            ledger["acquired_at_utc"] = now_utc
+            ledger["expires_at_utc"] = expires_at_utc
+            ledger["lease_status"] = "ACTIVE"
+            _forward_paper_activation_ledger_event(
+                ledger, "LEASE_ACQUIRED", now_utc, owner_id,
+                previous_owner_id=None, expires_at_utc=expires_at_utc)
+            _persist_forward_paper_activation_ledger(ledger_path, ledger)
+            return _forward_paper_activation_lease_result(
+                "PASS", "ACQUIRED", ledger=ledger)
+    except OSError as error:
+        return _forward_paper_activation_lease_result(
+            "RECOVERABLE_ERROR", "RECOVERABLE_ERROR",
+            "LEDGER_PERSISTENCE_OR_LOCK_FAILED: " + str(error))
+
+
+def release_forward_paper_activation_lease(ledger_directory, activation,
+                                           policy_path, configuration_path,
+                                           owner_id, now_utc):
+    """Release only the current owner's unexpired activation lease."""
+    if not _forward_paper_activation_owner_id_is_valid(owner_id):
+        return _forward_paper_activation_lease_result(
+            "BLOCKED", "BLOCKED", "INVALID_OWNER_ID")
+    if not _explicit_utc(now_utc):
+        return _forward_paper_activation_lease_result(
+            "BLOCKED", "BLOCKED", "INVALID_UTC_INSTANT")
+    try:
+        context = _forward_paper_activation_context(
+            activation, policy_path, configuration_path)
+    except (ValueError, KeyError, TypeError, json.JSONDecodeError, OSError) as error:
+        return _forward_paper_activation_lease_result(
+            "BLOCKED", "BLOCKED", "INVALID_T1_ASSOCIATION: " + str(error))
+    ledger_path, lock_path = _forward_paper_activation_ledger_paths(
+        ledger_directory, context["activation_id"])
+    try:
+        with _forward_paper_activation_os_lock(lock_path):
+            try:
+                ledger = _load_forward_paper_activation_ledger_path(
+                    ledger_path, context)
+            except (ValueError, KeyError, TypeError, json.JSONDecodeError, OSError) as error:
+                return _forward_paper_activation_lease_result(
+                    "BLOCKED", "BLOCKED", "INVALID_PERSISTED_LEDGER: " + str(error))
+            if not _forward_paper_activation_ledger_time_is_valid(ledger, now_utc):
+                return _forward_paper_activation_lease_result(
+                    "BLOCKED", "BLOCKED", "LEDGER_TIME_REGRESSION", ledger)
+            if ledger["lease_status"] == "ACTIVE":
+                expires_at = datetime.fromisoformat(
+                    ledger["expires_at_utc"].replace("Z", "+00:00"))
+                if datetime.fromisoformat(now_utc.replace("Z", "+00:00")) >= expires_at:
+                    ledger["lease_status"] = "EXPIRED"
+                    _forward_paper_activation_ledger_event(
+                        ledger, "LEASE_EXPIRED", now_utc, ledger["lease_owner_id"],
+                        expires_at_utc=ledger["expires_at_utc"])
+                    _persist_forward_paper_activation_ledger(ledger_path, ledger)
+                    return _forward_paper_activation_lease_result(
+                        "BLOCKED", "BLOCKED", "LEASE_EXPIRED", ledger)
+            if ledger["lease_status"] == "RELEASED":
+                if ledger["lease_owner_id"] == owner_id:
+                    return _forward_paper_activation_lease_result(
+                        "PASS", "ALREADY_RELEASED", ledger=ledger)
+                conflict_reason = "LEASE_OWNER_MISMATCH"
+            elif ledger["lease_status"] != "ACTIVE":
+                conflict_reason = "LEASE_NOT_ACTIVE"
+            elif ledger["lease_owner_id"] != owner_id:
+                conflict_reason = "LEASE_OWNER_MISMATCH"
+            else:
+                ledger["lease_status"] = "RELEASED"
+                _forward_paper_activation_ledger_event(
+                    ledger, "LEASE_RELEASED", now_utc, owner_id,
+                    expires_at_utc=ledger["expires_at_utc"])
+                _persist_forward_paper_activation_ledger(ledger_path, ledger)
+                return _forward_paper_activation_lease_result(
+                    "PASS", "RELEASED", ledger=ledger)
+            _forward_paper_activation_ledger_event(
+                ledger, "LEASE_CONFLICT", now_utc, owner_id,
+                previous_owner_id=ledger["lease_owner_id"],
+                reason=conflict_reason, expires_at_utc=ledger["expires_at_utc"])
+            _persist_forward_paper_activation_ledger(ledger_path, ledger)
+            return _forward_paper_activation_lease_result(
+                "BLOCKED", "BLOCKED", conflict_reason, ledger)
+    except OSError as error:
+        return _forward_paper_activation_lease_result(
+            "RECOVERABLE_ERROR", "RECOVERABLE_ERROR",
+            "LEDGER_PERSISTENCE_OR_LOCK_FAILED: " + str(error))
 
 
 FORWARD_PAPER_DATASET_SCHEMA_VERSION = "1"
