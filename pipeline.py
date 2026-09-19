@@ -9,7 +9,7 @@ import io
 import json
 import math
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import platform
 import sys
@@ -752,6 +752,186 @@ def load_forward_paper_preparation(session_path, configuration_path, invocation_
     if not _forward_paper_invocation_is_valid(invocation, state, configuration):
         raise ValueError("Persisted FORWARD_PAPER invocation is invalid or inconsistent")
     return {"session": state, "configuration": configuration, "invocation": invocation}
+
+
+FORWARD_PAPER_ACTIVATION_POLICY_ID = "FORWARD_PAPER_DAILY_V1"
+FORWARD_PAPER_ACTIVATION_POLICY_VERSION = "1"
+FORWARD_PAPER_ACTIVATION_POLICY_SCHEMA_VERSION = "1"
+FORWARD_PAPER_ACTIVATION_SLOT_TIME_UTC = "00:15:00Z"
+FORWARD_PAPER_ACTIVATION_MAX_LATENCY_WINDOW = "UNTIL_NEXT_DAILY_SLOT"
+
+
+def _forward_paper_activation_policy_content(configuration):
+    if not _forward_paper_configuration_is_valid(configuration):
+        raise ValueError("FORWARD_PAPER configuration is invalid")
+    return {
+        "schema_version": FORWARD_PAPER_ACTIVATION_POLICY_SCHEMA_VERSION,
+        "policy_id": FORWARD_PAPER_ACTIVATION_POLICY_ID,
+        "policy_version": FORWARD_PAPER_ACTIVATION_POLICY_VERSION,
+        "timezone": "UTC",
+        "slot_time_utc": FORWARD_PAPER_ACTIVATION_SLOT_TIME_UTC,
+        "max_latency_window": FORWARD_PAPER_ACTIVATION_MAX_LATENCY_WINDOW,
+        "configuration_id": configuration["configuration_id"],
+    }
+
+
+def _forward_paper_activation_policy_record(configuration):
+    content = _forward_paper_activation_policy_content(configuration)
+    return {
+        **content,
+        "policy_identity": "FORWARD_PAPER_ACTIVATION_POLICY|" + digest(encoded(content)),
+    }
+
+
+def forward_paper_activation_policy(configuration=None):
+    """Return the canonical, versioned daily FORWARD_PAPER time policy."""
+    return _forward_paper_activation_policy_record(
+        forward_paper_configuration() if configuration is None else configuration)
+
+
+def _forward_paper_configuration_for_activation(configuration_path):
+    """Load one canonical M1.2 configuration without loading or changing state."""
+    if isinstance(configuration_path, dict):
+        configuration = configuration_path
+    else:
+        configuration_path = Path(configuration_path)
+        persisted = json.loads(configuration_path.read_bytes())
+        if _forward_paper_configuration_is_valid(persisted):
+            configuration = persisted
+        else:
+            if not _forward_paper_configuration_registry_is_valid(persisted):
+                raise ValueError("Persisted FORWARD_PAPER configuration registry is invalid")
+            configurations = persisted["configurations"]
+            if len(configurations) != 1:
+                raise ValueError("FORWARD_PAPER configuration is ambiguous")
+            configuration = configurations[0]
+    if not _forward_paper_configuration_is_valid(configuration):
+        raise ValueError("FORWARD_PAPER configuration is invalid")
+    return configuration
+
+
+def _forward_paper_activation_policy_is_valid(policy, configuration):
+    if not isinstance(policy, dict):
+        return False
+    expected_content = _forward_paper_activation_policy_content(configuration)
+    required = set(expected_content) | {"policy_identity"}
+    if set(policy) != required or any(policy.get(key) != value
+                                      for key, value in expected_content.items()):
+        return False
+    return policy.get("policy_identity") == "FORWARD_PAPER_ACTIVATION_POLICY|" + digest(
+        encoded(expected_content))
+
+
+def _load_forward_paper_activation_policy(policy_path, configuration):
+    policy = json.loads(Path(policy_path).read_bytes())
+    if not _forward_paper_activation_policy_is_valid(policy, configuration):
+        raise ValueError("Persisted FORWARD_PAPER activation policy is invalid")
+    return policy
+
+
+def prepare_forward_paper_activation_policy(policy_path, configuration_path):
+    """Persist or reload M1.3-T1 policy without creating or changing PAPER state."""
+    configuration = _forward_paper_configuration_for_activation(configuration_path)
+    policy = _forward_paper_activation_policy_record(configuration)
+    policy_path = Path(policy_path)
+    if policy_path.exists():
+        existing = _load_forward_paper_activation_policy(policy_path, configuration)
+        if existing != policy:
+            raise ValueError(
+                "Persisted FORWARD_PAPER activation policy cannot be silently replaced")
+        return {
+            "status": "PASS", "created": False, "policy": existing,
+            "configuration_id": configuration["configuration_id"],
+            "network_calls": 0, "credentials_used": False,
+            "paper_orders_sent": 0, "live_orders_sent": 0,
+        }
+    if not _forward_paper_activation_policy_is_valid(policy, configuration):
+        raise ValueError("Constructed FORWARD_PAPER activation policy is invalid")
+    _atomic_write(policy_path, encoded(policy))
+    return {
+        "status": "PASS", "created": True, "policy": policy,
+        "configuration_id": configuration["configuration_id"],
+        "network_calls": 0, "credentials_used": False,
+        "paper_orders_sent": 0, "live_orders_sent": 0,
+    }
+
+
+def persist_forward_paper_activation_policy(policy_path, configuration_path):
+    """Persist or verify the canonical M1.3-T1 policy."""
+    return prepare_forward_paper_activation_policy(policy_path, configuration_path)
+
+
+def load_forward_paper_activation_policy(policy_path, configuration_path):
+    """Reload the exact M1.3-T1 policy bound to a valid M1.2 configuration."""
+    configuration = _forward_paper_configuration_for_activation(configuration_path)
+    return _load_forward_paper_activation_policy(policy_path, configuration)
+
+
+def _forward_paper_activation_policy_inputs(policy_or_path, configuration_or_path):
+    configuration = _forward_paper_configuration_for_activation(configuration_or_path)
+    if isinstance(policy_or_path, dict):
+        policy = policy_or_path
+    else:
+        policy = _load_forward_paper_activation_policy(policy_or_path, configuration)
+    if not _forward_paper_activation_policy_is_valid(policy, configuration):
+        raise ValueError("FORWARD_PAPER activation policy is invalid or unbound")
+    return policy, configuration
+
+
+def _forward_paper_activation_slot_for_date(instant):
+    slot = datetime(instant.year, instant.month, instant.day, 0, 15,
+                    tzinfo=timezone.utc)
+    return slot
+
+
+def _forward_paper_activation_id(policy, configuration, scheduled_for_utc):
+    if not _explicit_utc(scheduled_for_utc):
+        raise ValueError("scheduled_for_utc must be an explicit UTC instant")
+    return ("FORWARD_PAPER_ACTIVATION|" + policy["policy_id"] + "|"
+            + configuration["configuration_id"] + "|" + scheduled_for_utc)
+
+
+def forward_paper_activation_id(policy, configuration, scheduled_for_utc):
+    """Return the canonical activation identity for one scheduled UTC slot."""
+    return _forward_paper_activation_id(policy, configuration, scheduled_for_utc)
+
+
+def evaluate_forward_paper_activation(policy_or_path, configuration_or_path,
+                                      now_utc):
+    """Evaluate one explicit UTC instant against the daily 00:15Z policy."""
+    if not _explicit_utc(now_utc):
+        raise ValueError("An explicit canonical UTC evaluation instant is required")
+    policy, configuration = _forward_paper_activation_policy_inputs(
+        policy_or_path, configuration_or_path)
+    instant = datetime.fromisoformat(now_utc.replace("Z", "+00:00"))
+    scheduled = _forward_paper_activation_slot_for_date(instant)
+    scheduled_for_utc = scheduled.isoformat().replace("+00:00", "Z")
+    if instant < scheduled:
+        condition = "NOTHING_DUE"
+        next_scheduled = scheduled_for_utc
+    else:
+        condition = "DUE"
+        next_scheduled = (scheduled + timedelta(days=1)).isoformat()
+        next_scheduled = next_scheduled.replace("+00:00", "Z")
+    activation_id = _forward_paper_activation_id(
+        policy, configuration, scheduled_for_utc)
+    return {
+        "status": "PASS",
+        "policy_id": policy["policy_id"],
+        "policy_identity": policy["policy_identity"],
+        "configuration_id": configuration["configuration_id"],
+        "scheduled_for_utc": scheduled_for_utc,
+        "activation_id": activation_id,
+        "condition": condition,
+        "activation_result": condition,
+        "result": condition,
+        "next_scheduled_for_utc": next_scheduled,
+        "evaluated_at_utc": now_utc,
+        "network_calls": 0,
+        "credentials_used": False,
+        "paper_orders_sent": 0,
+        "live_orders_sent": 0,
+    }
 
 
 FORWARD_PAPER_DATASET_SCHEMA_VERSION = "1"
