@@ -1,12 +1,4 @@
-"""Focused tests for M1.3-T6: minimal, read-only operator-consultable status.
-
-Note on numbering: this file targets forward_paper_activation_status, the
-task labelled M1.3-T6 ("exponer evidencia operativa minima") in the current
-task tracking. The recovery/retry work landing in PR #22 was authored under
-the branch name codex/m1.3-t5-... but its own test file was named
-test_m13_t6_activation_recovery_retry.py before this corrected numbering was
-confirmed -- that mismatch is pre-existing and out of scope here.
-"""
+"""Focused tests for M1.3-T6: minimal, read-only operator-consultable status."""
 
 import json
 from pathlib import Path
