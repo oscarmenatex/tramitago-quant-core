@@ -1636,7 +1636,7 @@ def _forward_paper_activation_m12_result_evidence(result, result_path, preparati
 def _forward_paper_activation_persisted_m12_result(result_path, preparation):
     """Read one M1.2 result directly from disk, with no fresh M1.2 call.
 
-    Used only after an expired T2 lease, to answer T6's question before
+    Used only after an expired T2 lease, to answer T5's question before
     invoking M1.2 again: did the dead attempt already finish?
     """
     try:
@@ -1717,7 +1717,7 @@ def _forward_paper_activation_existing_receipt_response(
             "BLOCKED", "RECEIPT_LEASE_EVIDENCE_MISMATCH",
             activation_result="BLOCKED", activation_id=activation["activation_id"])
     if receipt["status"] == "M12_BOUND":
-        # T6: the previous attempt may have finished M1.2 before dying, just
+        # T5: the previous attempt may have finished M1.2 before dying, just
         # after binding but before recording the result in its own receipt.
         persisted_result = _forward_paper_activation_persisted_m12_result(
             m12_result_path, preparation)
@@ -1836,7 +1836,7 @@ def run_forward_paper_activation(
                 "BLOCKED", "T2_LEASE_NOT_ACTIVE",
                 activation_result="BLOCKED", activation_id=activation_id)
         if now >= expires_at:
-            # T6: a dead attempt may have already finished writing its M1.2
+            # T5: a dead attempt may have already finished writing its M1.2
             # result before it died. Never repeat M1.2 when that is provable.
             persisted_result = _forward_paper_activation_persisted_m12_result(
                 m12_result_path, preparation)
@@ -1851,7 +1851,7 @@ def run_forward_paper_activation(
                     _create_forward_paper_activation_receipt(receipt_path, sealed)
                 except OSError as error:
                     return _forward_paper_activation_t4_response(
-                        "RECOVERABLE_ERROR", "T6_RECEIPT_BACKFILL_FAILED: " + str(error),
+                        "RECOVERABLE_ERROR", "T5_RECEIPT_BACKFILL_FAILED: " + str(error),
                         activation_result="DUE", activation_id=activation_id)
                 release = release_forward_paper_activation_lease(
                     ledger_directory, activation, policy_path, configuration_path,
@@ -2198,7 +2198,7 @@ def attempt_forward_paper_activation(
                     "m12_terminal_result": last["m12_terminal_result"],
                     "reason": last["reason"]}
         if len(attempts) >= FORWARD_PAPER_ACTIVATION_MAX_ATTEMPTS:
-            return {"status": "RECOVERABLE_ERROR", "reason": "T6_MAX_ATTEMPTS_EXHAUSTED",
+            return {"status": "RECOVERABLE_ERROR", "reason": "T5_MAX_ATTEMPTS_EXHAUSTED",
                     "activation_id": activation_id, "attempt_number": last["attempt_number"],
                     "attempts_used": len(attempts), "next_retry_at_utc": None,
                     "operator_action_required": True}
@@ -2207,7 +2207,7 @@ def attempt_forward_paper_activation(
         next_retry_at = _forward_paper_activation_next_retry_at(
             last["attempt_number"], last_attempt_at)
         if now < next_retry_at:
-            return {"status": "RECOVERABLE_ERROR", "reason": "T6_BACKOFF_NOT_ELAPSED",
+            return {"status": "RECOVERABLE_ERROR", "reason": "T5_BACKOFF_NOT_ELAPSED",
                     "activation_id": activation_id, "attempt_number": last["attempt_number"],
                     "attempts_used": len(attempts),
                     "next_retry_at_utc": next_retry_at.isoformat().replace("+00:00", "Z"),
@@ -2246,7 +2246,7 @@ def attempt_forward_paper_activation(
         "attempts_used": attempt_number, "next_retry_at_utc": next_retry_at_utc,
         "operator_action_required": needs_operator,
         "status": "RECOVERABLE_ERROR" if exhausted else result["status"],
-        "reason": "T6_MAX_ATTEMPTS_EXHAUSTED" if exhausted else result.get("reason"),
+        "reason": "T5_MAX_ATTEMPTS_EXHAUSTED" if exhausted else result.get("reason"),
     }
 
 
