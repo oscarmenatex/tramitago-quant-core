@@ -211,6 +211,30 @@ class M13T8RealChainBootstrapTests(unittest.TestCase):
         self.assertEqual(replay["status"], "PASS")
         self.assertEqual(replay["m12_terminal_result"], "COMPLETED")
 
+    def test_entrypoint_continues_on_a_new_daily_slot_after_paper_state_changes(self):
+        self.bootstrap_correctly(
+            self.data_dir, started_at="2026-09-19T00:00:00Z", now_utc=self.NOW)
+        first = p.forward_paper_activation_entrypoint(
+            self.data_dir, now_utc=self.NOW,
+            transport=self.synthetic_coinbase_transport())
+        state_after_day_one = (self.data_dir / "session" / "state.json").read_bytes()
+        public_entrypoint = p.run_forward_paper_invocation
+
+        with patch.object(p, "run_forward_paper_invocation",
+                          side_effect=public_entrypoint) as m12:
+            second = p.forward_paper_activation_entrypoint(
+                self.data_dir, now_utc="2026-09-21T00:15:01Z",
+                transport=lambda *args: (_ for _ in ()).throw(
+                    AssertionError("the previous M1.2 result must replay")))
+
+        self.assertEqual(first["status"], "PASS")
+        self.assertEqual(second["status"], "PASS")
+        self.assertEqual(second["m12_terminal_result"], "COMPLETED")
+        self.assertEqual(m12.call_count, 1)
+        self.assertNotEqual(first["activation_id"], second["activation_id"])
+        self.assertEqual((self.data_dir / "session" / "state.json").read_bytes(),
+                         state_after_day_one)
+
 
 class M13T8CliSubprocessTests(unittest.TestCase):
     """Prove the file is directly invocable the way a cron entry would call

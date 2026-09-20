@@ -205,6 +205,31 @@ class M13T4AuthorizedForwardPaperInvocationTests(unittest.TestCase):
         self.assertEqual(len(state["processed_observations"]), 1)
         self.assertTrue(json.loads(self.case["cycle"].read_bytes())["cycle_id"])
 
+    def test_ongoing_paper_session_reaches_public_m12_on_the_next_daily_slot(self):
+        synthetic, _ = self.transport_calls(self.case)
+        first = self.invoke(processing="2026-09-18T00:15:00Z", transport=synthetic)
+        state_after_day_one = self.case["session"].read_bytes()
+        public_entrypoint = p.run_forward_paper_invocation
+
+        with patch.object(p, "run_forward_paper_invocation",
+                          side_effect=public_entrypoint) as m12:
+            second = self.invoke(
+                processing="2026-09-19T00:15:00Z",
+                transport=lambda *args: (_ for _ in ()).throw(
+                    AssertionError("the day-one result must not be reacquired")))
+
+        self.assertEqual(first["status"], "PASS")
+        self.assertEqual(second["status"], "PASS")
+        self.assertEqual(second["m12_terminal_result"], "COMPLETED")
+        self.assertTrue(second["m12_invoked"])
+        self.assertEqual(second["m12_invocations"], 1)
+        self.assertEqual(m12.call_count, 1)
+        self.assertNotEqual(first["activation_id"], second["activation_id"])
+        self.assertNotEqual(
+            self.activation(processing="2026-09-18T00:15:00Z")["scheduled_for_utc"],
+            self.activation(processing="2026-09-19T00:15:00Z")["scheduled_for_utc"])
+        self.assertEqual(self.case["session"].read_bytes(), state_after_day_one)
+
     def test_all_canonical_m12_terminals_are_referenced_without_transformation(self):
         for terminal in ("COMPLETED", "NOTHING_DUE", "BLOCKED", "RECOVERABLE_ERROR"):
             with self.subTest(terminal=terminal):
