@@ -121,6 +121,30 @@ class M13T6ForwardPaperActivationStatusTests(unittest.TestCase):
         self.assertEqual(status["attempts_used"], 1)
         self.assertFalse(status["lease_active"])
 
+    def test_last_persisted_activation_survives_slot_change_and_newer_blocked_attempt_wins(self):
+        with patch.object(p, "run_forward_paper_invocation",
+                          side_effect=self._fake_m12(self.case, "COMPLETED")):
+            day_one = self.attempt(processing="2026-09-18T00:15:00Z")
+
+        before_day_two = self.status(now="2026-09-19T00:00:00Z")
+        self.assertEqual(before_day_two["activation_id"], day_one["activation_id"])
+        self.assertEqual(before_day_two["scheduled_for_utc"], "2026-09-18T00:15:00Z")
+        self.assertEqual(before_day_two["last_result"], "COMPLETED")
+        self.assertEqual(before_day_two["next_scheduled_for_utc"], "2026-09-19T00:15:00Z")
+
+        state = json.loads(self.case["session"].read_bytes())
+        state["mode"] = "LIVE"
+        self.case["session"].write_bytes(p.encoded(state))
+        day_two = self.attempt(processing="2026-09-19T00:15:00Z")
+        self.assertEqual(day_two["status"], "BLOCKED")
+
+        after_day_two = self.status(now="2026-09-19T00:20:00Z")
+        self.assertNotEqual(after_day_two["activation_id"], day_one["activation_id"])
+        self.assertEqual(after_day_two["scheduled_for_utc"], "2026-09-19T00:15:00Z")
+        self.assertEqual(after_day_two["last_result"], "BLOCKED")
+        self.assertIsNotNone(after_day_two["reason"])
+        self.assertEqual(after_day_two["last_attempt"]["attempt_number"], 1)
+
     def test_blocked_activation_shows_reason_without_lease(self):
         state = json.loads(self.case["session"].read_bytes())
         state["mode"] = "LIVE"
@@ -156,12 +180,12 @@ class M13T6ForwardPaperActivationStatusTests(unittest.TestCase):
         with patch.object(p, "run_forward_paper_invocation",
                           side_effect=self._fake_m12(self.case, "COMPLETED")):
             self.attempt()
-        receipts_before = {
-            path: path.read_bytes() for path in self.case["receipts"].rglob("*") if path.is_file()}
+        files_before = {
+            path: path.read_bytes() for path in self.root.rglob("*") if path.is_file()}
         self.status(now="2026-09-18T01:00:00Z")
-        receipts_after = {
-            path: path.read_bytes() for path in self.case["receipts"].rglob("*") if path.is_file()}
-        self.assertEqual(receipts_before, receipts_after)
+        files_after = {
+            path: path.read_bytes() for path in self.root.rglob("*") if path.is_file()}
+        self.assertEqual(files_before, files_after)
 
 
 if __name__ == "__main__":

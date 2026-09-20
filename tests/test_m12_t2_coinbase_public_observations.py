@@ -179,7 +179,7 @@ class M12T2CoinbasePublicObservationTests(unittest.TestCase):
             "executions", "pending_actions", "proposals")], [[], [], [], [], [], []])
 
     def test_m11_and_m12_t1_contracts_remain_loadable(self):
-        historical = p.load_paper_session("artifacts/m1.1-t1-paper-session/state.json")
+        historical = p.load_paper_session(self.session_path)
         preparation = p.load_forward_paper_preparation(
             self.session_path, self.configuration_path, self.invocation_path)
         self.assertEqual(historical["mode"], "PAPER")

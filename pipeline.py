@@ -664,6 +664,11 @@ def _forward_paper_session_is_initial(state):
     )
 
 
+def _forward_paper_session_is_activation_eligible(state):
+    """Accept a canonical ongoing PAPER session for recurring T3/T4 work."""
+    return paper_session_state_is_valid(state) and state["mode"] == "PAPER"
+
+
 def _forward_paper_invocation(state, configuration, processing_instant_utc):
     content = {
         "configuration_id": configuration["configuration_id"],
@@ -1409,7 +1414,7 @@ def evaluate_forward_paper_activation_due(
     try:
         preparation = load_forward_paper_preparation(
             session_path, configuration_path, invocation_path)
-        if not _forward_paper_session_is_initial(preparation["session"]):
+        if not _forward_paper_session_is_activation_eligible(preparation["session"]):
             return _forward_paper_activation_due_response(
                 "BLOCKED", "INVALID_FORWARD_PAPER_SESSION")
         policy = load_forward_paper_activation_policy(
@@ -1497,6 +1502,7 @@ def evaluate_forward_paper_activation_due(
 
 
 FORWARD_PAPER_ACTIVATION_RECEIPT_SCHEMA_VERSION = "1"
+FORWARD_PAPER_ACTIVATION_RETRY_RECEIPT_SCHEMA_VERSION = "2"
 FORWARD_PAPER_ACTIVATION_RECEIPT_STATUSES = {
     "M12_BOUND", "M12_RESULT_RECORDED",
 }
@@ -1508,6 +1514,33 @@ FORWARD_PAPER_ACTIVATION_M12_TERMINAL_RESULTS = {
 def _forward_paper_activation_receipt_path(receipt_directory, activation_id):
     key = digest(activation_id.encode("utf-8"))
     return Path(receipt_directory) / ("activation-" + key + ".json")
+
+
+def _forward_paper_activation_attempt_id(activation_id, attempt_number):
+    return f"{activation_id}|ATTEMPT_{attempt_number}"
+
+
+def _forward_paper_activation_attempt_identity_is_valid(
+        activation_id, attempt_id, attempt_number):
+    return isinstance(attempt_number, int) and attempt_number > 1 \
+        and attempt_id == _forward_paper_activation_attempt_id(
+            activation_id, attempt_number)
+
+
+def _forward_paper_activation_attempt_receipt_path(
+        receipt_directory, activation_id, attempt_id):
+    activation_key = digest(activation_id.encode("utf-8"))
+    attempt_key = digest(attempt_id.encode("utf-8"))
+    return Path(receipt_directory) / (
+        "activation-" + activation_key + "-attempt-" + attempt_key + ".json")
+
+
+def _forward_paper_activation_attempt_result_path(
+        receipt_directory, activation_id, attempt_id):
+    activation_key = digest(activation_id.encode("utf-8"))
+    attempt_key = digest(attempt_id.encode("utf-8"))
+    return Path(receipt_directory) / (
+        "activation-" + activation_key + "-attempt-" + attempt_key + "-m12-result.json")
 
 
 def _forward_paper_activation_receipt_seal(receipt):
@@ -1528,10 +1561,20 @@ def _forward_paper_activation_receipt_is_valid(receipt, expected):
         "status", "m12_terminal_result", "m12_result_reference", "m12_result_hash",
         "m12_invocation_result_id", "receipt_identity",
     }
-    if not isinstance(receipt, dict) or set(receipt) != fields:
+    retry_fields = fields | {"attempt_id", "attempt_number"}
+    if not isinstance(receipt, dict):
         return False
-    if (receipt["schema_version"] != FORWARD_PAPER_ACTIVATION_RECEIPT_SCHEMA_VERSION
-            or receipt["status"] not in FORWARD_PAPER_ACTIVATION_RECEIPT_STATUSES
+    if receipt.get("schema_version") == FORWARD_PAPER_ACTIVATION_RECEIPT_SCHEMA_VERSION:
+        if set(receipt) != fields:
+            return False
+    elif receipt.get("schema_version") == FORWARD_PAPER_ACTIVATION_RETRY_RECEIPT_SCHEMA_VERSION:
+        if set(receipt) != retry_fields or not _forward_paper_activation_attempt_identity_is_valid(
+                receipt.get("activation_id"), receipt.get("attempt_id"),
+                receipt.get("attempt_number")):
+            return False
+    else:
+        return False
+    if (receipt["status"] not in FORWARD_PAPER_ACTIVATION_RECEIPT_STATUSES
             or not _forward_paper_activation_owner_id_is_valid(receipt["owner_id"])
             or not _explicit_utc(receipt["scheduled_for_utc"])
             or not _explicit_utc(receipt["processing_instant_utc"])
@@ -1766,7 +1809,7 @@ def run_forward_paper_activation(
         ledger_directory, receipt_directory, dataset_path, selection_path,
         fixture_path, acceptance_path, indicator_path, cycle_path,
         m12_result_path, output, processing_instant_utc, owner_id, *,
-        transport=None, timeout_seconds=30):
+        attempt_id=None, attempt_number=None, transport=None, timeout_seconds=30):
     """Run one T3-authorized activation through the canonical public M1.2 entrypoint."""
     if not _forward_paper_activation_owner_id_is_valid(owner_id):
         return _forward_paper_activation_t4_response(
@@ -1790,9 +1833,18 @@ def run_forward_paper_activation(
             activation_result="BLOCKED")
 
     activation_id = activation["activation_id"]
+    if ((attempt_id is None) != (attempt_number is None)
+            or (attempt_id is not None
+                and not _forward_paper_activation_attempt_identity_is_valid(
+                    activation_id, attempt_id, attempt_number))):
+        return _forward_paper_activation_t4_response(
+            "BLOCKED", "INVALID_T5_ATTEMPT_ASSOCIATION",
+            activation_result="BLOCKED", activation_id=activation_id)
     m12_result_target = str(Path(m12_result_path).resolve())
-    receipt_path = _forward_paper_activation_receipt_path(
-        receipt_directory, activation_id)
+    receipt_path = (
+        _forward_paper_activation_receipt_path(receipt_directory, activation_id)
+        if attempt_id is None else _forward_paper_activation_attempt_receipt_path(
+            receipt_directory, activation_id, attempt_id))
     receipt_expected = {
         "activation_id": activation_id,
         "policy_id": activation["policy_id"],
@@ -1804,6 +1856,8 @@ def run_forward_paper_activation(
         "m12_processing_instant_utc":
             preparation["invocation"]["processing_instant_utc"],
         "m12_result_target": m12_result_target,
+        **({"attempt_id": attempt_id, "attempt_number": attempt_number}
+           if attempt_id is not None else {}),
     }
 
     if receipt_path.exists():
@@ -1838,7 +1892,7 @@ def run_forward_paper_activation(
         now = datetime.fromisoformat(processing_instant_utc.replace("Z", "+00:00"))
         expires_at = datetime.fromisoformat(
             existing_ledger["expires_at_utc"].replace("Z", "+00:00"))
-        if existing_ledger["lease_status"] != "ACTIVE":
+        if existing_ledger["lease_status"] != "ACTIVE" and attempt_id is None:
             return _forward_paper_activation_t4_response(
                 "BLOCKED", "T2_LEASE_NOT_ACTIVE",
                 activation_result="BLOCKED", activation_id=activation_id)
@@ -1849,7 +1903,9 @@ def run_forward_paper_activation(
                 m12_result_path, preparation)
             if persisted_result is not None:
                 sealed = _forward_paper_activation_receipt_seal({
-                    "schema_version": FORWARD_PAPER_ACTIVATION_RECEIPT_SCHEMA_VERSION,
+                    "schema_version": (FORWARD_PAPER_ACTIVATION_RETRY_RECEIPT_SCHEMA_VERSION
+                                       if attempt_id is not None
+                                       else FORWARD_PAPER_ACTIVATION_RECEIPT_SCHEMA_VERSION),
                     **receipt_expected, "owner_id": existing_ledger["lease_owner_id"],
                     "expires_at_utc": existing_ledger["expires_at_utc"],
                     "status": "M12_RESULT_RECORDED", **persisted_result,
@@ -1937,7 +1993,7 @@ def run_forward_paper_activation(
         lease_expires_at = datetime.fromisoformat(
             ledger["expires_at_utc"].replace("Z", "+00:00"))
         if (activation["result"] != "DUE"
-                or not _forward_paper_session_is_initial(preparation["session"])
+                or not _forward_paper_session_is_activation_eligible(preparation["session"])
                 or activation["policy_id"] != due["policy_id"]
                 or activation["policy_identity"] != policy["policy_identity"]
                 or activation["configuration_id"] != due["configuration_id"]
@@ -1969,9 +2025,13 @@ def run_forward_paper_activation(
         "m12_processing_instant_utc":
             preparation["invocation"]["processing_instant_utc"],
         "m12_result_target": m12_result_target,
+        **({"attempt_id": attempt_id, "attempt_number": attempt_number}
+           if attempt_id is not None else {}),
     }
     receipt = _forward_paper_activation_receipt_seal({
-        "schema_version": FORWARD_PAPER_ACTIVATION_RECEIPT_SCHEMA_VERSION,
+        "schema_version": (FORWARD_PAPER_ACTIVATION_RETRY_RECEIPT_SCHEMA_VERSION
+                           if attempt_id is not None
+                           else FORWARD_PAPER_ACTIVATION_RECEIPT_SCHEMA_VERSION),
         **receipt_expected,
         "owner_id": owner_id,
         "expires_at_utc": due["expires_at_utc"],
@@ -2235,13 +2295,24 @@ def attempt_forward_paper_activation(
                         "operator_action_required": False}
 
         attempt_number = len(attempts) + 1
-        attempt_id = f"{activation_id}|ATTEMPT_{attempt_number}|{now_utc}"
+        attempt_id = _forward_paper_activation_attempt_id(
+            activation_id, attempt_number)
+        retry_result_path = m12_result_path
+        t5_attempt = {}
+        if (attempt_number > 1 and last["status"] == "PASS"
+                and last["m12_terminal_result"] == "RECOVERABLE_ERROR"):
+            retry_result_path = _forward_paper_activation_attempt_result_path(
+                receipt_directory, activation_id, attempt_id)
+            t5_attempt = {
+                "attempt_id": attempt_id,
+                "attempt_number": attempt_number,
+            }
         result = run_forward_paper_activation(
             policy_path, configuration_path, session_path, invocation_path,
             ledger_directory, receipt_directory, dataset_path, selection_path,
             fixture_path, acceptance_path, indicator_path, cycle_path,
-            m12_result_path, output, processing_instant_utc, owner_id,
-            transport=transport, timeout_seconds=timeout_seconds)
+            retry_result_path, output, processing_instant_utc, owner_id,
+            **t5_attempt, transport=transport, timeout_seconds=timeout_seconds)
 
         m12_terminal_result = result.get("m12_terminal_result")
         retryable = _forward_paper_activation_attempt_is_retryable(
@@ -2271,6 +2342,111 @@ def attempt_forward_paper_activation(
     }
 
 
+def _forward_paper_activation_from_persisted_id(policy, configuration, activation_id):
+    if not isinstance(activation_id, str) or "|" not in activation_id:
+        return None
+    scheduled_for_utc = activation_id.rsplit("|", 1)[-1]
+    if not _explicit_utc(scheduled_for_utc):
+        return None
+    activation = evaluate_forward_paper_activation(
+        policy, configuration, scheduled_for_utc)
+    if activation["activation_id"] != activation_id:
+        return None
+    return activation
+
+
+def _forward_paper_activation_status_receipt_expected(
+        receipt, activation, policy, configuration):
+    if not isinstance(receipt, dict):
+        return None
+    expected = {
+        "activation_id": activation["activation_id"],
+        "policy_id": policy["policy_id"],
+        "policy_identity": policy["policy_identity"],
+        "configuration_id": configuration["configuration_id"],
+        "scheduled_for_utc": activation["scheduled_for_utc"],
+        "processing_instant_utc": receipt.get("processing_instant_utc"),
+        "invocation_id": receipt.get("invocation_id"),
+        "m12_processing_instant_utc": receipt.get("m12_processing_instant_utc"),
+        "m12_result_target": receipt.get("m12_result_target"),
+    }
+    if receipt.get("schema_version") == FORWARD_PAPER_ACTIVATION_RETRY_RECEIPT_SCHEMA_VERSION:
+        expected.update({
+            "attempt_id": receipt.get("attempt_id"),
+            "attempt_number": receipt.get("attempt_number"),
+        })
+    return expected
+
+
+def _forward_paper_last_persisted_activation(
+        policy, configuration, ledger_directory, receipt_directory):
+    """Load the newest valid activation evidence without changing any file."""
+    candidates = {}
+
+    def candidate(activation_id):
+        activation = _forward_paper_activation_from_persisted_id(
+            policy, configuration, activation_id)
+        if activation is None:
+            return None
+        return candidates.setdefault(activation_id, {
+            "activation": activation, "ledger": None, "receipt": None,
+            "receipt_order": 0, "attempts": [],
+        })
+
+    receipt_directory = Path(receipt_directory)
+    attempts_directory = receipt_directory
+    if attempts_directory.exists():
+        for attempts_path in attempts_directory.glob("activation-*-attempts.json"):
+            try:
+                raw = json.loads(attempts_path.read_bytes())
+                entry = candidate(raw.get("activation_id"))
+                if entry is not None:
+                    entry["attempts"] = _load_forward_paper_activation_attempts(
+                        attempts_path, entry["activation"]["activation_id"],
+                        raw.get("processing_instant_utc"))["attempts"]
+            except (OSError, ValueError, TypeError, KeyError, UnicodeError,
+                    json.JSONDecodeError):
+                continue
+
+        for receipt_path in attempts_directory.glob("activation-*.json"):
+            if receipt_path.name.endswith("-attempts.json"):
+                continue
+            try:
+                raw = json.loads(receipt_path.read_bytes())
+                entry = candidate(raw.get("activation_id"))
+                if entry is None:
+                    continue
+                receipt = _load_forward_paper_activation_receipt(
+                    receipt_path,
+                    _forward_paper_activation_status_receipt_expected(
+                        raw, entry["activation"], policy, configuration))
+                receipt_order = receipt.get("attempt_number", 1)
+                if receipt_order >= entry["receipt_order"]:
+                    entry["receipt"] = receipt
+                    entry["receipt_order"] = receipt_order
+            except (OSError, ValueError, TypeError, KeyError, UnicodeError,
+                    json.JSONDecodeError):
+                continue
+
+    ledger_directory = Path(ledger_directory)
+    if ledger_directory.exists():
+        for ledger_path in ledger_directory.glob("activation-*.json"):
+            try:
+                raw = json.loads(ledger_path.read_bytes())
+                entry = candidate(raw.get("activation_id"))
+                if entry is not None:
+                    entry["ledger"] = load_forward_paper_activation_ledger(
+                        ledger_directory, entry["activation"], policy, configuration)
+            except (OSError, ValueError, TypeError, KeyError, UnicodeError,
+                    json.JSONDecodeError):
+                continue
+
+    if not candidates:
+        return None
+    return max(candidates.values(), key=lambda entry: (
+        entry["activation"]["scheduled_for_utc"], entry["activation"]["activation_id"]))
+
+
 def forward_paper_activation_status(
         policy_path, configuration_path, ledger_directory, receipt_directory,
         now_utc):
@@ -2285,34 +2461,15 @@ def forward_paper_activation_status(
         raise ValueError("An explicit UTC instant is required")
     policy, configuration = _forward_paper_activation_policy_inputs(
         policy_path, configuration_path)
-    activation = evaluate_forward_paper_activation(policy, configuration, now_utc)
-    activation_id = activation["activation_id"]
-
-    attempts_path = _forward_paper_activation_attempts_path(
-        receipt_directory, activation_id)
-    attempts = []
-    if attempts_path.exists():
-        attempts = _load_forward_paper_activation_attempts(
-            attempts_path, activation_id, now_utc)["attempts"]
+    current_activation = evaluate_forward_paper_activation(
+        policy, configuration, now_utc)
+    persisted = _forward_paper_last_persisted_activation(
+        policy, configuration, ledger_directory, receipt_directory)
+    activation = persisted["activation"] if persisted is not None else current_activation
+    attempts = persisted["attempts"] if persisted is not None else []
     last_attempt = attempts[-1] if attempts else None
-
-    receipt_path = _forward_paper_activation_receipt_path(
-        receipt_directory, activation_id)
-    receipt = None
-    if receipt_path.exists():
-        try:
-            receipt = json.loads(receipt_path.read_bytes())
-        except (OSError, ValueError, TypeError, UnicodeError):
-            receipt = None
-
-    lease = None
-    try:
-        lease = load_forward_paper_activation_ledger(
-            ledger_directory, activation, policy_path, configuration_path)
-    except FileNotFoundError:
-        lease = None
-    except (OSError, ValueError, TypeError, KeyError, UnicodeError):
-        lease = None
+    receipt = persisted["receipt"] if persisted is not None else None
+    lease = persisted["ledger"] if persisted is not None else None
     lease_active = False
     if lease is not None:
         now = datetime.fromisoformat(now_utc.replace("Z", "+00:00"))
@@ -2326,7 +2483,7 @@ def forward_paper_activation_status(
     elif receipt is not None:
         last_result = receipt.get("m12_terminal_result") or receipt.get("status")
         reason = None
-    elif activation["result"] == "NOTHING_DUE":
+    elif current_activation["result"] == "NOTHING_DUE":
         last_result = "NOTHING_DUE"
         reason = None
     else:
@@ -2335,7 +2492,7 @@ def forward_paper_activation_status(
 
     return {
         "status": "PASS",
-        "activation_id": activation_id,
+        "activation_id": activation["activation_id"],
         "scheduled_for_utc": activation["scheduled_for_utc"],
         "last_result": last_result,
         "reason": reason,
@@ -2343,7 +2500,8 @@ def forward_paper_activation_status(
         "lease_active": lease_active,
         "lease_owner_id": lease.get("lease_owner_id") if lease else None,
         "lease_expires_at_utc": lease.get("expires_at_utc") if lease else None,
-        "next_scheduled_for_utc": activation["next_scheduled_for_utc"],
+        "last_attempt": last_attempt,
+        "next_scheduled_for_utc": current_activation["next_scheduled_for_utc"],
         "network_calls": 0, "credentials_used": False,
         "paper_orders_sent": 0, "live_orders_sent": 0,
     }

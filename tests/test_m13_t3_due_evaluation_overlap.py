@@ -206,6 +206,29 @@ print(json.dumps({"result": result["result"], "reason": result["reason"],
             "previous_owner_id"], old_owner)
         self._assert_preparation_unchanged()
 
+    def test_ongoing_canonical_paper_session_is_due_on_a_new_daily_slot(self):
+        state = json.loads(self.session_path.read_bytes())
+        state["processed_observations"].append({"persisted": True})
+        state["decisions"].append({"persisted": True})
+        state["paper_risk_evaluations"] = [{"persisted": True}]
+        state["internal_position_state"] = "LONG"
+        state["broker_position_observed"] = 1
+        state["reconciliation_status"] = "RECONCILED"
+        self.session_path.write_bytes(p.encoded(state))
+
+        first = self._evaluate("2026-09-18T00:15:01Z", str(uuid.uuid4()))
+        second = self._evaluate("2026-09-19T00:15:01Z", str(uuid.uuid4()))
+
+        self.assertEqual(first["result"], "DUE")
+        self.assertEqual(second["result"], "DUE")
+        self.assertNotEqual(first["activation_id"], second["activation_id"])
+        self.assertNotEqual(first["scheduled_for_utc"], second["scheduled_for_utc"])
+        with self.assertRaisesRegex(ValueError, "initial PAPER session"):
+            p.prepare_forward_paper_invocation(
+                self.session_path, self.configuration_path, self.invocation_path,
+                "PAPER_SESSION|m13-t3-due-evaluation", "2026-09-17T00:00:00Z",
+                "2026-09-17T00:00:00Z")
+
     def test_invalid_owner_and_non_utc_time_fail_closed_without_lease(self):
         before = self._contract_bytes()
         for now, owner_id, expected_reason in (
