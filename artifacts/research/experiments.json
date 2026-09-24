@@ -1,0 +1,117 @@
+{
+  "experiments": [
+    {
+      "conditions": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= SMA3_t",
+          "upper_group": "close_t > SMA3_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > SMA3_t) - mean(return_t+1 | close_t <= SMA3_t)",
+          "name": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_SMA3_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "sma": {
+          "source": "close",
+          "window": 3
+        },
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "created_at": "2026-09-24T12:34:10.424681Z",
+      "experiment_id": "EXPERIMENT|23000efa-a18e-44cb-9a64-993cfb65200d",
+      "record_id": "EXPERIMENT_VERSION|EXPERIMENT|23000efa-a18e-44cb-9a64-993cfb65200d|1|b89a7a41531bed017d0cf96be1644f761ba5868a78ee6898b0a250d47357257a",
+      "references": {
+        "dataset": {
+          "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|4d2f8ad3473b82e3e380fa09a765dd0b6e8d38ea9a2d786e59391a286b11ccbf",
+          "dataset_sha256": "5e83e25519e809abee510550aca32fdd8884149ebd565f19369046879f9d3306",
+          "evaluable_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "hypothesis_id": "HYPOTHESIS|3345b100-db15-4aa2-976d-dbd797cbc4a3",
+          "hypothesis_version": 1,
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "hypothesis": {
+          "code_revision": "00f40857faf517aca9939f6c5f66395eec09f8ee",
+          "hypothesis_id": "HYPOTHESIS|3345b100-db15-4aa2-976d-dbd797cbc4a3",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|3345b100-db15-4aa2-976d-dbd797cbc4a3|1|18a92fa7153e8fb0477a3ba0ca9b7d0fcf5deb0f8ea3ca484c2296065ad94f57",
+          "system_version": "0.1.0",
+          "version": 1
+        }
+      },
+      "revision_reason": "INITIAL_CONDITIONS_FIXED",
+      "status": "CONDITIONS_FIXED",
+      "version": 1
+    }
+  ],
+  "schema_version": "1"
+}
