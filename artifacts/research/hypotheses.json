@@ -1,0 +1,44 @@
+{
+  "hypotheses": [
+    {
+      "acceptance_criterion": {
+        "comparison": "GT",
+        "expected_direction": "INCREASE",
+        "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+        "threshold": "0"
+      },
+      "code_revision": "00f40857faf517aca9939f6c5f66395eec09f8ee",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2026-01-01T00:00:00Z",
+          "start_utc": "2025-01-01T00:00:00Z"
+        },
+        "universe": [
+          "BTC-USD"
+        ],
+        "variables": [
+          "close",
+          "sma_close_3",
+          "forward_return_1d"
+        ]
+      },
+      "creation_context": {
+        "created_by": "Oscar Carmenate Rodriguez",
+        "provenance": [
+          "DISCOVERY|artifacts/live-run-1",
+          "SNAPSHOT_SHA256|a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+        ]
+      },
+      "creation_timestamp": "2026-09-24T04:34:42.503765Z",
+      "description": "For BTC-USD, the mean t+1 return when close_t > SMA3_t exceeds the mean t+1 return when close_t <= SMA3_t.",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|3345b100-db15-4aa2-976d-dbd797cbc4a3",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|3345b100-db15-4aa2-976d-dbd797cbc4a3|1|18a92fa7153e8fb0477a3ba0ca9b7d0fcf5deb0f8ea3ca484c2296065ad94f57",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+      "version": 1
+    }
+  ],
+  "schema_version": "2"
+}
