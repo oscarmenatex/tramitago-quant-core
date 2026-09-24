@@ -1,0 +1,29 @@
+{
+  "evaluable_period": {
+    "end_exclusive_utc": "2026-01-01T00:00:00Z",
+    "start_utc": "2025-01-01T00:00:00Z"
+  },
+  "evaluable_row_count": 365,
+  "hypothesis_id": "HYPOTHESIS|3345b100-db15-4aa2-976d-dbd797cbc4a3",
+  "hypothesis_version": 1,
+  "row_roles": {
+    "evaluable": "EVALUATION",
+    "support_forward_return": "SUPPORT_FORWARD_RETURN",
+    "support_sma3_warmup": "SUPPORT_SMA3_WARMUP"
+  },
+  "schema_version": "1",
+  "support_rows": [
+    {
+      "row_role": "SUPPORT_SMA3_WARMUP",
+      "timestamp": "2024-12-30T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_SMA3_WARMUP",
+      "timestamp": "2024-12-31T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_FORWARD_RETURN",
+      "timestamp": "2026-01-01T00:00:00Z"
+    }
+  ]
+}
