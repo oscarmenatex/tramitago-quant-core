@@ -971,6 +971,360 @@ def verified_hypothesis_dataset(directory, registry_path=None):
     return manifest
 
 
+EXPERIMENT_CONDITIONS_REGISTRY_SCHEMA_VERSION = "1"
+EXPERIMENT_CONDITIONS_SCHEMA_VERSION = "1"
+EXPERIMENT_CONDITIONS_STATUS = "CONDITIONS_FIXED"
+EXPERIMENT_COSTS_NOT_APPLICABLE = (
+    "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution")
+
+
+def _experiment_id_is_valid(value):
+    if not isinstance(value, str) or not value.startswith("EXPERIMENT|"):
+        return False
+    try:
+        return str(uuid.UUID(value.removeprefix("EXPERIMENT|"))) == value.removeprefix(
+            "EXPERIMENT|")
+    except ValueError:
+        return False
+
+
+def _experiment_reference(hypothesis, dataset, selection):
+    identity = dataset["identity"]
+    return {
+        "hypothesis": {
+            "hypothesis_id": hypothesis["hypothesis_id"],
+            "version": hypothesis["version"],
+            "record_id": hypothesis["record_id"],
+            "system_version": hypothesis["system_version"],
+            "code_revision": hypothesis["code_revision"],
+        },
+        "dataset": {
+            "dataset_id": dataset["dataset_id"],
+            "dataset_sha256": dataset["dataset_sha256"],
+            "hypothesis_id": identity["hypothesis_id"],
+            "hypothesis_version": identity["hypothesis_version"],
+            "evaluable_period": dataset["config"]["evaluable_period"],
+            "support_rows": selection["support_rows"],
+        },
+    }
+
+
+def _discovery_snapshot(hypothesis):
+    values = hypothesis["creation_context"]["provenance"]
+    snapshots = [value.removeprefix("SNAPSHOT_SHA256|") for value in values
+                 if value.startswith("SNAPSHOT_SHA256|")]
+    if len(snapshots) != 1 or not re.fullmatch(r"[0-9a-f]{64}", snapshots[0]):
+        raise ValueError("Hypothesis discovery snapshot is not explicit")
+    if "DISCOVERY|artifacts/live-run-1" not in values:
+        raise ValueError("Hypothesis discovery evidence is not explicit")
+    return snapshots[0]
+
+
+def _experiment_conditions(hypothesis, dataset, selection):
+    reference = _experiment_reference(hypothesis, dataset, selection)
+    criterion = hypothesis["acceptance_criterion"]
+    metric = hypothesis["target_metric"]
+    if (criterion != {
+            "metric": metric, "comparison": "GT", "threshold": "0",
+            "expected_direction": "INCREASE"}
+            or dataset["config"]["instrument"] != "BTC-USD"
+            or dataset["config"]["frequency_seconds"] != 86400
+            or reference["dataset"]["evaluable_period"]
+            != hypothesis["constraints"]["period"]):
+        raise ValueError("Hypothesis and dataset conditions are incompatible")
+    return {
+        "schema_version": EXPERIMENT_CONDITIONS_SCHEMA_VERSION,
+        "instrument": "BTC-USD",
+        "frequency_seconds": 86400,
+        "analytical_rule": {
+            "upper_group": "close_t > SMA3_t",
+            "lower_or_equal_group": "close_t <= SMA3_t",
+        },
+        "sma": {"source": "close", "window": 3},
+        "outcome": {"name": "return_t+1", "formula": "(close_t+1 / close_t) - 1"},
+        "metric": {
+            "name": metric,
+            "formula": "mean(return_t+1 | close_t > SMA3_t) - mean(return_t+1 | close_t <= SMA3_t)",
+        },
+        "acceptance_criterion": criterion,
+        "population": {
+            "included_row_role": HYPOTHESIS_DATASET_EVALUATION_ROLE,
+            "excluded_row_roles": [
+                HYPOTHESIS_DATASET_WARMUP_ROLE,
+                HYPOTHESIS_DATASET_FORWARD_ROLE,
+            ],
+            "support_rows": selection["support_rows"],
+        },
+        "temporal_split": {
+            "discovery_evidence": {
+                "path": "artifacts/live-run-1",
+                "period": "2024",
+                "snapshot_sha256": _discovery_snapshot(hypothesis),
+                "role": "DISCOVERY_ONLY",
+            },
+            "independent_evaluation_period": reference["dataset"]["evaluable_period"],
+            "training": "NOT_USED",
+            "optimization": "NOT_USED",
+            "oos_proportion": "NOT_APPLICABLE",
+        },
+        "costs": {"declaration": EXPERIMENT_COSTS_NOT_APPLICABLE},
+        "execution_scope": {
+            "metric_calculated": False,
+            "experiment_executed": False,
+            "backtest_executed": False,
+        },
+    }
+
+
+def _experiment_conditions_are_valid(conditions):
+    fields = {
+        "schema_version", "instrument", "frequency_seconds", "analytical_rule", "sma",
+        "outcome", "metric", "acceptance_criterion", "population", "temporal_split",
+        "costs", "execution_scope",
+    }
+    if not isinstance(conditions, dict) or set(conditions) != fields:
+        return False
+    period = conditions["temporal_split"].get("independent_evaluation_period") \
+        if isinstance(conditions["temporal_split"], dict) else None
+    support_rows = conditions["population"].get("support_rows") \
+        if isinstance(conditions["population"], dict) else None
+    criterion = conditions.get("acceptance_criterion")
+    return (
+        conditions.get("schema_version") == EXPERIMENT_CONDITIONS_SCHEMA_VERSION
+        and conditions.get("instrument") == "BTC-USD"
+        and conditions.get("frequency_seconds") == 86400
+        and conditions.get("analytical_rule") == {
+            "upper_group": "close_t > SMA3_t", "lower_or_equal_group": "close_t <= SMA3_t"}
+        and conditions.get("sma") == {"source": "close", "window": 3}
+        and conditions.get("outcome") == {
+            "name": "return_t+1", "formula": "(close_t+1 / close_t) - 1"}
+        and isinstance(conditions.get("metric"), dict)
+        and _hypothesis_text_is_valid(conditions["metric"].get("name"))
+        and conditions["metric"].get("formula")
+        == "mean(return_t+1 | close_t > SMA3_t) - mean(return_t+1 | close_t <= SMA3_t)"
+        and isinstance(criterion, dict)
+        and set(criterion) == {"metric", "comparison", "threshold", "expected_direction"}
+        and criterion.get("metric") == conditions["metric"]["name"]
+        and criterion.get("comparison") == "GT" and criterion.get("threshold") == "0"
+        and criterion.get("expected_direction") == "INCREASE"
+        and isinstance(period, dict) and set(period) == {"start_utc", "end_exclusive_utc"}
+        and _explicit_utc(period["start_utc"]) and _explicit_utc(period["end_exclusive_utc"])
+        and epoch(period["start_utc"]) < epoch(period["end_exclusive_utc"])
+        and isinstance(support_rows, list) and len(support_rows) == 3
+        and [item.get("row_role") if isinstance(item, dict) else None for item in support_rows]
+        == [HYPOTHESIS_DATASET_WARMUP_ROLE, HYPOTHESIS_DATASET_WARMUP_ROLE,
+            HYPOTHESIS_DATASET_FORWARD_ROLE]
+        and conditions["population"].get("included_row_role") == HYPOTHESIS_DATASET_EVALUATION_ROLE
+        and conditions["population"].get("excluded_row_roles") == [
+            HYPOTHESIS_DATASET_WARMUP_ROLE, HYPOTHESIS_DATASET_FORWARD_ROLE]
+        and isinstance(conditions["temporal_split"].get("discovery_evidence"), dict)
+        and conditions["temporal_split"]["discovery_evidence"].get("path")
+        == "artifacts/live-run-1"
+        and conditions["temporal_split"]["discovery_evidence"].get("period") == "2024"
+        and re.fullmatch(r"[0-9a-f]{64}",
+                         conditions["temporal_split"]["discovery_evidence"].get("snapshot_sha256", ""))
+        and conditions["temporal_split"]["discovery_evidence"].get("role") == "DISCOVERY_ONLY"
+        and conditions["temporal_split"].get("training") == "NOT_USED"
+        and conditions["temporal_split"].get("optimization") == "NOT_USED"
+        and conditions["temporal_split"].get("oos_proportion") == "NOT_APPLICABLE"
+        and conditions.get("costs") == {"declaration": EXPERIMENT_COSTS_NOT_APPLICABLE}
+        and conditions.get("execution_scope") == {
+            "metric_calculated": False, "experiment_executed": False,
+            "backtest_executed": False}
+    )
+
+
+def _experiment_record_content(experiment_id, version, references, conditions, created_at,
+                               status, revision_reason):
+    return {
+        "experiment_id": experiment_id,
+        "version": version,
+        "references": references,
+        "conditions": conditions,
+        "created_at": created_at,
+        "status": status,
+        "revision_reason": revision_reason,
+    }
+
+
+def _experiment_record(experiment_id, version, references, conditions, created_at,
+                       status, revision_reason):
+    content = _experiment_record_content(
+        experiment_id, version, references, conditions, created_at, status, revision_reason)
+    return {**content, "record_id": "EXPERIMENT_VERSION|" + experiment_id + "|"
+            + str(version) + "|" + digest(encoded(content))}
+
+
+def _experiment_record_is_valid(record):
+    fields = {
+        "experiment_id", "version", "references", "conditions", "created_at", "status",
+        "revision_reason", "record_id"}
+    if not isinstance(record, dict) or set(record) != fields:
+        return False
+    references = record.get("references")
+    if (not _experiment_id_is_valid(record.get("experiment_id"))
+            or not isinstance(record.get("version"), int) or isinstance(record["version"], bool)
+            or record["version"] < 1 or not isinstance(references, dict)
+            or set(references) != {"hypothesis", "dataset"}
+            or not isinstance(references["hypothesis"], dict)
+            or set(references["hypothesis"]) != {
+                "hypothesis_id", "version", "record_id", "system_version", "code_revision"}
+            or not _hypothesis_id_is_valid(references["hypothesis"].get("hypothesis_id"))
+            or not isinstance(references["hypothesis"].get("version"), int)
+            or not _hypothesis_text_is_valid(references["hypothesis"].get("record_id"))
+            or not _hypothesis_system_version_is_valid(references["hypothesis"].get("system_version"))
+            or not _hypothesis_code_revision_is_valid(references["hypothesis"].get("code_revision"))
+            or not isinstance(references["dataset"], dict)
+            or set(references["dataset"]) != {
+                "dataset_id", "dataset_sha256", "hypothesis_id", "hypothesis_version",
+                "evaluable_period", "support_rows"}
+            or not isinstance(references["dataset"].get("dataset_id"), str)
+            or not references["dataset"]["dataset_id"].startswith("HISTORICAL_HYPOTHESIS_DATASET|")
+            or not re.fullmatch(r"[0-9a-f]{64}", references["dataset"].get("dataset_sha256", ""))
+            or references["dataset"].get("hypothesis_id") != references["hypothesis"]["hypothesis_id"]
+            or references["dataset"].get("hypothesis_version") != references["hypothesis"]["version"]
+            or not _experiment_conditions_are_valid(record.get("conditions"))
+            or record["conditions"]["temporal_split"]["independent_evaluation_period"]
+            != references["dataset"]["evaluable_period"]
+            or record["conditions"]["population"]["support_rows"]
+            != references["dataset"]["support_rows"]
+            or not _explicit_utc(record.get("created_at"))
+            or record.get("status") != EXPERIMENT_CONDITIONS_STATUS
+            or not _hypothesis_text_is_valid(record.get("revision_reason"))):
+        return False
+    expected = _experiment_record(
+        record["experiment_id"], record["version"], references, record["conditions"],
+        record["created_at"], record["status"], record["revision_reason"])
+    return record == expected
+
+
+def _experiment_registry_is_valid(registry):
+    if (not isinstance(registry, dict) or set(registry) != {"schema_version", "experiments"}
+            or registry.get("schema_version") != EXPERIMENT_CONDITIONS_REGISTRY_SCHEMA_VERSION
+            or not isinstance(registry.get("experiments"), list)
+            or not all(_experiment_record_is_valid(record) for record in registry["experiments"])):
+        return False
+    pairs = [(record["experiment_id"], record["version"]) for record in registry["experiments"]]
+    if len(pairs) != len(set(pairs)):
+        return False
+    for experiment_id in {record["experiment_id"] for record in registry["experiments"]}:
+        versions = sorted(record["version"] for record in registry["experiments"]
+                          if record["experiment_id"] == experiment_id)
+        if versions != list(range(1, len(versions) + 1)):
+            return False
+    return True
+
+
+def _load_experiment_conditions_registry(registry_path):
+    try:
+        registry = json.loads(Path(registry_path).read_bytes())
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        raise ValueError("Persisted experiment conditions registry cannot be read") from error
+    if not _experiment_registry_is_valid(registry):
+        raise ValueError("Persisted experiment conditions registry is invalid or has a version conflict")
+    return registry
+
+
+def _persist_experiment_conditions(registry_path, record):
+    """Append only one sealed identity/version pair; never overwrite prior conditions."""
+    if not _experiment_record_is_valid(record):
+        raise ValueError("Experiment conditions record is invalid")
+    registry_path = Path(registry_path)
+    registry = (_load_experiment_conditions_registry(registry_path) if registry_path.exists()
+                else {"schema_version": EXPERIMENT_CONDITIONS_REGISTRY_SCHEMA_VERSION,
+                      "experiments": []})
+    if any(item["experiment_id"] == record["experiment_id"]
+           and item["version"] == record["version"] for item in registry["experiments"]):
+        raise ValueError("Experiment identity and version already exist")
+    prior = [item for item in registry["experiments"]
+             if item["experiment_id"] == record["experiment_id"]]
+    if record["version"] != len(prior) + 1:
+        raise ValueError("Experiment versions must be appended consecutively")
+    registry["experiments"].append(record)
+    if not _experiment_registry_is_valid(registry):
+        raise ValueError("Constructed experiment conditions registry is invalid")
+    _atomic_write(registry_path, encoded(registry))
+    return record
+
+
+def _experiment_inputs(hypothesis_registry_path, dataset_directory, hypothesis_id,
+                       hypothesis_version, dataset_id):
+    hypothesis = load_hypothesis(hypothesis_registry_path, hypothesis_id, hypothesis_version)
+    dataset = verified_hypothesis_dataset(dataset_directory, hypothesis_registry_path)
+    selection = json.loads((Path(dataset_directory) / "selection.json").read_bytes())
+    if dataset["dataset_id"] != dataset_id:
+        raise ValueError("Dataset identity does not match the experiment reference")
+    references = _experiment_reference(hypothesis, dataset, selection)
+    if (references["dataset"]["hypothesis_id"] != hypothesis_id
+            or references["dataset"]["hypothesis_version"] != hypothesis_version
+            or references["dataset"]["evaluable_period"] != hypothesis["constraints"]["period"]):
+        raise ValueError("Hypothesis and dataset references are incompatible")
+    return hypothesis, dataset, selection, references
+
+
+def constitute_experiment_conditions(registry_path, *, hypothesis_registry_path,
+                                     dataset_directory, hypothesis_id, hypothesis_version,
+                                     dataset_id, created_at, revision_reason):
+    """Fix one real experiment definition without calculating or executing it."""
+    if not _explicit_utc(created_at) or not _hypothesis_text_is_valid(revision_reason):
+        raise ValueError("Experiment creation time and revision reason are required")
+    hypothesis, dataset, selection, references = _experiment_inputs(
+        hypothesis_registry_path, dataset_directory, hypothesis_id, hypothesis_version, dataset_id)
+    experiment_id = "EXPERIMENT|" + str(uuid.uuid4())
+    record = _experiment_record(
+        experiment_id, 1, references, _experiment_conditions(hypothesis, dataset, selection),
+        created_at, EXPERIMENT_CONDITIONS_STATUS, revision_reason)
+    return _persist_experiment_conditions(registry_path, record)
+
+
+def revise_experiment_conditions(registry_path, experiment_id, *, hypothesis_registry_path,
+                                 dataset_directory, hypothesis_id, hypothesis_version,
+                                 dataset_id, created_at, revision_reason):
+    """Append a new sealed version while retaining every prior experiment definition."""
+    if not _experiment_id_is_valid(experiment_id) or not _explicit_utc(created_at) \
+            or not _hypothesis_text_is_valid(revision_reason):
+        raise ValueError("Experiment identity, creation time, and revision reason are required")
+    registry = _load_experiment_conditions_registry(registry_path)
+    prior = [record for record in registry["experiments"]
+             if record["experiment_id"] == experiment_id]
+    if not prior:
+        raise ValueError("Experiment identity is not registered")
+    hypothesis, dataset, selection, references = _experiment_inputs(
+        hypothesis_registry_path, dataset_directory, hypothesis_id, hypothesis_version, dataset_id)
+    record = _experiment_record(
+        experiment_id, len(prior) + 1, references,
+        _experiment_conditions(hypothesis, dataset, selection), created_at,
+        EXPERIMENT_CONDITIONS_STATUS, revision_reason)
+    return _persist_experiment_conditions(registry_path, record)
+
+
+def load_experiment_conditions(registry_path, experiment_id, version):
+    """Reload exactly one sealed experiment-conditions version from any process."""
+    if (not _experiment_id_is_valid(experiment_id) or not isinstance(version, int)
+            or isinstance(version, bool) or version < 1):
+        raise ValueError("A valid experiment identity and version are required")
+    registry = _load_experiment_conditions_registry(registry_path)
+    matches = [record for record in registry["experiments"]
+               if record["experiment_id"] == experiment_id and record["version"] == version]
+    if len(matches) != 1:
+        raise ValueError("Experiment version is not registered unambiguously")
+    return matches[0]
+
+
+def verified_experiment_conditions(registry_path, experiment_id, version, *,
+                                   hypothesis_registry_path, dataset_directory):
+    """Reload a sealed definition and prove that its external immutable references agree."""
+    record = load_experiment_conditions(registry_path, experiment_id, version)
+    reference = record["references"]
+    hypothesis, dataset, selection, expected_references = _experiment_inputs(
+        hypothesis_registry_path, dataset_directory, reference["hypothesis"]["hypothesis_id"],
+        reference["hypothesis"]["version"], reference["dataset"]["dataset_id"])
+    if (reference != expected_references
+            or record["conditions"] != _experiment_conditions(hypothesis, dataset, selection)):
+        raise ValueError("Experiment conditions references are incompatible")
+    return record
+
+
 def observe(input_dir, state_path, output, *, raw=None, now=None):
     """Route recent Coinbase candles to closed observations or open-only events."""
     input_dir = Path(input_dir)
