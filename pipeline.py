@@ -1325,6 +1325,429 @@ def verified_experiment_conditions(registry_path, experiment_id, version, *,
     return record
 
 
+EXPERIMENT_RESULT_REGISTRY_SCHEMA_VERSION = "1"
+EXPERIMENT_RESULT_SCHEMA_VERSION = "1"
+EXPERIMENT_RESULT_STATUS = "COMPLETED"
+EXPERIMENT_RESULT_OUTCOMES = {"MET", "NOT_MET", "INCONCLUSIVE"}
+
+
+def _experiment_result_id_is_valid(value):
+    return (isinstance(value, str)
+            and bool(re.fullmatch(r"EXPERIMENT_RESULT\|[0-9a-f]{64}", value)))
+
+
+def _experiment_result_references(experiment):
+    return {
+        "experiment": {
+            "experiment_id": experiment["experiment_id"],
+            "version": experiment["version"],
+            "record_id": experiment["record_id"],
+        },
+        "hypothesis": experiment["references"]["hypothesis"],
+        "dataset": experiment["references"]["dataset"],
+    }
+
+
+def _experiment_result_id(references):
+    content = {
+        "schema_version": EXPERIMENT_RESULT_SCHEMA_VERSION,
+        "experiment": references["experiment"],
+        "hypothesis_record_id": references["hypothesis"]["record_id"],
+        "dataset_id": references["dataset"]["dataset_id"],
+        "dataset_sha256": references["dataset"]["dataset_sha256"],
+    }
+    return "EXPERIMENT_RESULT|" + digest(encoded(content))
+
+
+def _experiment_result_inputs(experiment, hypothesis, dataset, dataset_directory):
+    directory = Path(dataset_directory)
+    return {
+        "experiment_record_sha256": digest(encoded(experiment)),
+        "hypothesis_record_sha256": digest(encoded(hypothesis)),
+        "dataset_manifest_sha256": digest((directory / "manifest.json").read_bytes()),
+        "dataset_hashes": {
+            name: dataset[name] for name in (
+                "dataset_sha256", "selection_sha256", "validation_sha256", "raw_sha256",
+                "capture_sha256", "code_sha256")
+        },
+    }
+
+
+def _experiment_result_execution(code_revision):
+    if not _hypothesis_code_revision_is_valid(code_revision):
+        raise ValueError("Execution code revision must be a canonical full object identifier")
+    source = Path(__file__).read_bytes().replace(b"\r\n", b"\n")
+    return {"code_revision": code_revision, "pipeline_sha256": digest(source)}
+
+
+def _experiment_result_dataset_rows(dataset_directory, conditions):
+    """Parse the sealed CSV and derive only its independently evaluable observations."""
+    try:
+        text = (Path(dataset_directory) / "dataset.csv").read_text(encoding="utf-8")
+        reader = csv.DictReader(io.StringIO(text, newline=""))
+        if reader.fieldnames != HYPOTHESIS_DATASET_COLUMNS:
+            raise ValueError("Historical dataset columns are invalid for experiment execution")
+        raw_rows = list(reader)
+    except (OSError, UnicodeError, csv.Error) as error:
+        raise ValueError("Historical dataset cannot be read for experiment execution") from error
+    if not raw_rows:
+        raise ValueError("Historical dataset has no rows for experiment execution")
+
+    rows = []
+    for number, row in enumerate(raw_rows, 1):
+        if set(row) != set(HYPOTHESIS_DATASET_COLUMNS):
+            raise ValueError("Historical dataset row has unsupported fields")
+        try:
+            close = float(row["close"])
+            sma = None if row["sma_close_3"] == "" else float(row["sma_close_3"])
+            forward = (None if row["forward_return_1d"] == ""
+                       else float(row["forward_return_1d"]))
+        except (TypeError, ValueError) as error:
+            raise ValueError("Historical dataset has a nonnumeric experiment input") from error
+        if (not _explicit_utc(row["timestamp"]) or not math.isfinite(close) or close <= 0
+                or (sma is not None and not math.isfinite(sma))
+                or (forward is not None and not math.isfinite(forward))):
+            raise ValueError("Historical dataset has an invalid experiment input")
+        rows.append({
+            "instrument": row["instrument"], "timestamp": row["timestamp"],
+            "close": close, "sma_close_3": sma, "forward_return_1d": forward,
+            "row_role": row["row_role"], "source_row": number,
+        })
+
+    frequency = conditions["frequency_seconds"]
+    for index, row in enumerate(rows):
+        if row["instrument"] != conditions["instrument"]:
+            raise ValueError("Historical dataset instrument is incompatible with experiment")
+        if index and epoch(row["timestamp"]) != epoch(rows[index - 1]["timestamp"]) + frequency:
+            raise ValueError("Historical dataset has noncontiguous experiment rows")
+    support_rows = [{"timestamp": row["timestamp"], "row_role": row["row_role"]}
+                    for row in rows if row["row_role"] != HYPOTHESIS_DATASET_EVALUATION_ROLE]
+    if support_rows != conditions["population"]["support_rows"]:
+        raise ValueError("Historical dataset support rows are incompatible with experiment")
+
+    period = conditions["temporal_split"]["independent_evaluation_period"]
+    start, end = epoch(period["start_utc"]), epoch(period["end_exclusive_utc"])
+    expected_timestamps = [iso(value) for value in range(start, end, frequency)]
+    evidence = []
+    for index, row in enumerate(rows):
+        timestamp = epoch(row["timestamp"])
+        is_evaluable = start <= timestamp < end
+        if is_evaluable != (row["row_role"] == HYPOTHESIS_DATASET_EVALUATION_ROLE):
+            raise ValueError("Historical dataset row role is incompatible with experiment period")
+        if not is_evaluable:
+            continue
+        if index < 2 or index + 1 >= len(rows):
+            raise ValueError("Historical dataset lacks SMA or forward-return support")
+        prior = rows[index - 2:index + 1]
+        if any(item["close"] <= 0 for item in prior):
+            raise ValueError("Historical dataset has invalid SMA source values")
+        sma = math.fsum(item["close"] / 3 for item in prior)
+        next_row = rows[index + 1]
+        if (not math.isfinite(sma) or row["sma_close_3"] != sma
+                or epoch(next_row["timestamp"]) != timestamp + frequency):
+            raise ValueError("Historical dataset SMA or forward-return support is invalid")
+        forward_return = next_row["close"] / row["close"] - 1
+        if not math.isfinite(forward_return) or row["forward_return_1d"] != forward_return:
+            raise ValueError("Historical dataset forward return is invalid")
+        group = "UPPER" if row["close"] > sma else "LOWER_OR_EQUAL"
+        evidence.append({
+            "timestamp": row["timestamp"],
+            "row_role": HYPOTHESIS_DATASET_EVALUATION_ROLE,
+            "close": row["close"],
+            "sma_close_3": sma,
+            "next_timestamp": next_row["timestamp"],
+            "next_close": next_row["close"],
+            "return_t_plus_1": forward_return,
+            "group": group,
+        })
+    if [item["timestamp"] for item in evidence] != expected_timestamps:
+        raise ValueError("Historical dataset does not cover the experiment evaluation period")
+    return evidence
+
+
+def _experiment_result_summary(evidence, criterion):
+    upper = [item["return_t_plus_1"] for item in evidence if item["group"] == "UPPER"]
+    lower = [item["return_t_plus_1"] for item in evidence
+             if item["group"] == "LOWER_OR_EQUAL"]
+    upper_mean = math.fsum(upper) / len(upper) if upper else None
+    lower_mean = math.fsum(lower) / len(lower) if lower else None
+    groups = {
+        "upper": {"rule": "close_t > SMA3_t", "count": len(upper),
+                  "mean_return_t_plus_1": upper_mean},
+        "lower_or_equal": {"rule": "close_t <= SMA3_t", "count": len(lower),
+                           "mean_return_t_plus_1": lower_mean},
+    }
+    if (upper_mean is None or lower_mean is None
+            or not math.isfinite(upper_mean) or not math.isfinite(lower_mean)):
+        return {"groups": groups, "metric": None, "criterion": criterion,
+                "criterion_result": "INCONCLUSIVE", "inconclusive_reason": "GROUP_EMPTY_OR_NONFINITE"}
+    metric = upper_mean - lower_mean
+    if not math.isfinite(metric):
+        return {"groups": groups, "metric": None, "criterion": criterion,
+                "criterion_result": "INCONCLUSIVE", "inconclusive_reason": "NONFINITE_METRIC"}
+    if criterion != {"metric": criterion["metric"], "comparison": "GT", "threshold": "0",
+                     "expected_direction": "INCREASE"}:
+        raise ValueError("Experiment acceptance criterion is unsupported")
+    return {"groups": groups, "metric": metric, "criterion": criterion,
+            "criterion_result": "MET" if metric > 0 else "NOT_MET",
+            "inconclusive_reason": None}
+
+
+def _experiment_result_content(result_id, references, inputs, execution, evaluation, evidence):
+    return {
+        "result_id": result_id,
+        "schema_version": EXPERIMENT_RESULT_SCHEMA_VERSION,
+        "references": references,
+        "inputs": inputs,
+        "execution": execution,
+        "evaluation": evaluation,
+        "evidence": evidence,
+        "status": EXPERIMENT_RESULT_STATUS,
+    }
+
+
+def _experiment_result_record(result_id, references, inputs, execution, evaluation, evidence):
+    content = _experiment_result_content(
+        result_id, references, inputs, execution, evaluation, evidence)
+    return {**content, "record_id": "EXPERIMENT_RESULT_RECORD|" + result_id + "|"
+            + digest(encoded(content))}
+
+
+def _experiment_result_evaluation(period, evidence, criterion):
+    return {
+        "period": period,
+        "observation_count": len(evidence),
+        **_experiment_result_summary(evidence, criterion),
+    }
+
+
+def _experiment_result_record_is_valid(record):
+    fields = {
+        "result_id", "schema_version", "references", "inputs", "execution", "evaluation",
+        "evidence", "status", "record_id"}
+    if not isinstance(record, dict) or set(record) != fields:
+        return False
+    references = record.get("references")
+    if (not _experiment_result_id_is_valid(record.get("result_id"))
+            or record.get("schema_version") != EXPERIMENT_RESULT_SCHEMA_VERSION
+            or not isinstance(references, dict) or set(references) != {
+                "experiment", "hypothesis", "dataset"}
+            or not isinstance(references["experiment"], dict)
+            or set(references["experiment"]) != {"experiment_id", "version", "record_id"}
+            or not _experiment_id_is_valid(references["experiment"].get("experiment_id"))
+            or not isinstance(references["experiment"].get("version"), int)
+            or not _hypothesis_text_is_valid(references["experiment"].get("record_id"))
+            or not isinstance(references["hypothesis"], dict)
+            or set(references["hypothesis"]) != {
+                "hypothesis_id", "version", "record_id", "system_version", "code_revision"}
+            or not _hypothesis_id_is_valid(references["hypothesis"].get("hypothesis_id"))
+            or not isinstance(references["hypothesis"].get("version"), int)
+            or not _hypothesis_text_is_valid(references["hypothesis"].get("record_id"))
+            or not _hypothesis_system_version_is_valid(
+                references["hypothesis"].get("system_version"))
+            or not _hypothesis_code_revision_is_valid(
+                references["hypothesis"].get("code_revision"))
+            or not isinstance(references["dataset"], dict)
+            or set(references["dataset"]) != {
+                "dataset_id", "dataset_sha256", "hypothesis_id", "hypothesis_version",
+                "evaluable_period", "support_rows"}
+            or not references["dataset"].get("dataset_id", "").startswith(
+                "HISTORICAL_HYPOTHESIS_DATASET|")
+            or not re.fullmatch(r"[0-9a-f]{64}", references["dataset"].get("dataset_sha256", ""))
+            or references["dataset"].get("hypothesis_id") != references["hypothesis"]["hypothesis_id"]
+            or references["dataset"].get("hypothesis_version") != references["hypothesis"]["version"]
+            or record["result_id"] != _experiment_result_id(references)
+            or not isinstance(record.get("inputs"), dict)
+            or set(record["inputs"]) != {
+                "experiment_record_sha256", "hypothesis_record_sha256", "dataset_manifest_sha256",
+                "dataset_hashes"}
+            or not all(re.fullmatch(r"[0-9a-f]{64}", record["inputs"].get(name, ""))
+                       for name in ("experiment_record_sha256", "hypothesis_record_sha256",
+                                    "dataset_manifest_sha256"))
+            or not isinstance(record["inputs"]["dataset_hashes"], dict)
+            or set(record["inputs"]["dataset_hashes"]) != {
+                "dataset_sha256", "selection_sha256", "validation_sha256", "raw_sha256",
+                "capture_sha256", "code_sha256"}
+            or not all(re.fullmatch(r"[0-9a-f]{64}", value)
+                       for value in record["inputs"]["dataset_hashes"].values())
+            or not isinstance(record.get("execution"), dict)
+            or set(record["execution"]) != {"code_revision", "pipeline_sha256"}
+            or not _hypothesis_code_revision_is_valid(record["execution"].get("code_revision"))
+            or not re.fullmatch(r"[0-9a-f]{64}", record["execution"].get("pipeline_sha256", ""))
+            or not isinstance(record.get("evidence"), list)
+            or record.get("status") != EXPERIMENT_RESULT_STATUS):
+        return False
+    try:
+        evaluation = record["evaluation"]
+        if (not isinstance(evaluation, dict) or set(evaluation) != {
+                "period", "observation_count", "groups", "metric", "criterion",
+                "criterion_result", "inconclusive_reason"}
+                or evaluation["observation_count"] != len(record["evidence"])
+                or not isinstance(evaluation["period"], dict)
+                or set(evaluation["period"]) != {"start_utc", "end_exclusive_utc"}
+                or not _explicit_utc(evaluation["period"]["start_utc"])
+                or not _explicit_utc(evaluation["period"]["end_exclusive_utc"])
+                or epoch(evaluation["period"]["start_utc"])
+                >= epoch(evaluation["period"]["end_exclusive_utc"])):
+            return False
+        period = evaluation["period"]
+        expected_timestamps = [iso(value) for value in range(
+            epoch(period["start_utc"]), epoch(period["end_exclusive_utc"]), 86400)]
+        if len(record["evidence"]) != len(expected_timestamps):
+            return False
+        for expected_timestamp, item in zip(expected_timestamps, record["evidence"]):
+            if (not isinstance(item, dict) or set(item) != {
+                    "timestamp", "row_role", "close", "sma_close_3", "next_timestamp",
+                    "next_close", "return_t_plus_1", "group"}
+                    or item["timestamp"] != expected_timestamp
+                    or item["row_role"] != HYPOTHESIS_DATASET_EVALUATION_ROLE
+                    or item["next_timestamp"] != iso(epoch(item["timestamp"]) + 86400)
+                    or item["group"] not in {"UPPER", "LOWER_OR_EQUAL"}
+                    or not all(isinstance(item[name], float) and math.isfinite(item[name])
+                               for name in ("close", "sma_close_3", "next_close", "return_t_plus_1"))
+                    or item["return_t_plus_1"] != item["next_close"] / item["close"] - 1
+                    or item["group"] != ("UPPER" if item["close"] > item["sma_close_3"]
+                                          else "LOWER_OR_EQUAL")):
+                return False
+        expected_evaluation = _experiment_result_evaluation(
+            period, record["evidence"], evaluation["criterion"])
+        if evaluation != expected_evaluation or evaluation["criterion_result"] not in EXPERIMENT_RESULT_OUTCOMES:
+            return False
+    except (KeyError, TypeError, ValueError, OverflowError, ZeroDivisionError):
+        return False
+    expected = _experiment_result_record(
+        record["result_id"], references, record["inputs"], record["execution"],
+        record["evaluation"], record["evidence"])
+    return record == expected
+
+
+def _experiment_result_registry_is_valid(registry):
+    if (not isinstance(registry, dict) or set(registry) != {"schema_version", "results"}
+            or registry.get("schema_version") != EXPERIMENT_RESULT_REGISTRY_SCHEMA_VERSION
+            or not isinstance(registry.get("results"), list)
+            or not all(_experiment_result_record_is_valid(record) for record in registry["results"])):
+        return False
+    identifiers = [record["result_id"] for record in registry["results"]]
+    return len(identifiers) == len(set(identifiers))
+
+
+def _load_experiment_result_registry(registry_path):
+    try:
+        registry = json.loads(Path(registry_path).read_bytes())
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        raise ValueError("Persisted experiment result registry cannot be read") from error
+    if not _experiment_result_registry_is_valid(registry):
+        raise ValueError("Persisted experiment result registry is invalid")
+    return registry
+
+
+def _persist_experiment_result(registry_path, record):
+    if not _experiment_result_record_is_valid(record):
+        raise ValueError("Experiment result record is invalid")
+    path = Path(registry_path)
+    registry = (_load_experiment_result_registry(path) if path.exists()
+                else {"schema_version": EXPERIMENT_RESULT_REGISTRY_SCHEMA_VERSION, "results": []})
+    matches = [item for item in registry["results"] if item["result_id"] == record["result_id"]]
+    if matches:
+        if len(matches) == 1 and matches[0] == record:
+            return matches[0]
+        raise ValueError("Experiment result identity already exists with different content")
+    registry["results"].append(record)
+    if not _experiment_result_registry_is_valid(registry):
+        raise ValueError("Constructed experiment result registry is invalid")
+    _atomic_write(path, encoded(registry))
+    return record
+
+
+def _verified_experiment_result_inputs(experiment_registry_path, hypothesis_registry_path,
+                                       dataset_directory, experiment_id, experiment_version,
+                                       experiment_record_id):
+    experiment = verified_experiment_conditions(
+        experiment_registry_path, experiment_id, experiment_version,
+        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory)
+    if experiment["record_id"] != experiment_record_id:
+        raise ValueError("Experiment seal does not match the requested execution")
+    hypothesis = load_hypothesis(
+        hypothesis_registry_path, experiment["references"]["hypothesis"]["hypothesis_id"],
+        experiment["references"]["hypothesis"]["version"])
+    dataset = verified_hypothesis_dataset(dataset_directory, hypothesis_registry_path)
+    references = _experiment_result_references(experiment)
+    expected_hypothesis_reference = {
+        "hypothesis_id": hypothesis["hypothesis_id"], "version": hypothesis["version"],
+        "record_id": hypothesis["record_id"], "system_version": hypothesis["system_version"],
+        "code_revision": hypothesis["code_revision"],
+    }
+    if references["hypothesis"] != expected_hypothesis_reference:
+        raise ValueError("Experiment Hypothesis reference is invalid")
+    if (dataset["dataset_id"] != references["dataset"]["dataset_id"]
+            or dataset["dataset_sha256"] != references["dataset"]["dataset_sha256"]):
+        raise ValueError("Experiment dataset reference is invalid")
+    return experiment, hypothesis, dataset, references
+
+
+def execute_experiment_result(registry_path, *, experiment_registry_path,
+                              hypothesis_registry_path, dataset_directory, experiment_id,
+                              experiment_version, experiment_record_id, execution_code_revision):
+    """Execute one sealed definition locally and persist one deterministic aggregate result."""
+    experiment, hypothesis, dataset, references = _verified_experiment_result_inputs(
+        experiment_registry_path, hypothesis_registry_path, dataset_directory, experiment_id,
+        experiment_version, experiment_record_id)
+    result_id = _experiment_result_id(references)
+    path = Path(registry_path)
+    if path.exists():
+        registry = _load_experiment_result_registry(path)
+        matching = [record for record in registry["results"] if record["result_id"] == result_id]
+        if matching:
+            if len(matching) != 1:
+                raise ValueError("Experiment result identity is ambiguous")
+            return verified_experiment_result(
+                registry_path, result_id, experiment_registry_path=experiment_registry_path,
+                hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory)
+    evidence = _experiment_result_dataset_rows(dataset_directory, experiment["conditions"])
+    evaluation = _experiment_result_evaluation(
+        experiment["conditions"]["temporal_split"]["independent_evaluation_period"], evidence,
+        experiment["conditions"]["acceptance_criterion"])
+    record = _experiment_result_record(
+        result_id, references, _experiment_result_inputs(
+            experiment, hypothesis, dataset, dataset_directory),
+        _experiment_result_execution(execution_code_revision), evaluation, evidence)
+    return _persist_experiment_result(registry_path, record)
+
+
+def load_experiment_result(registry_path, result_id):
+    if not _experiment_result_id_is_valid(result_id):
+        raise ValueError("A valid experiment result identity is required")
+    registry = _load_experiment_result_registry(registry_path)
+    matches = [record for record in registry["results"] if record["result_id"] == result_id]
+    if len(matches) != 1:
+        raise ValueError("Experiment result is not registered unambiguously")
+    return matches[0]
+
+
+def verified_experiment_result(registry_path, result_id, *, experiment_registry_path,
+                               hypothesis_registry_path, dataset_directory):
+    """Reload a result and independently recalculate it from the sealed dataset."""
+    record = load_experiment_result(registry_path, result_id)
+    reference = record["references"]["experiment"]
+    experiment, hypothesis, dataset, references = _verified_experiment_result_inputs(
+        experiment_registry_path, hypothesis_registry_path, dataset_directory,
+        reference["experiment_id"], reference["version"], reference["record_id"])
+    if (record["references"] != references
+            or record["inputs"] != _experiment_result_inputs(
+                experiment, hypothesis, dataset, dataset_directory)):
+        raise ValueError("Experiment result inputs are incompatible")
+    evidence = _experiment_result_dataset_rows(dataset_directory, experiment["conditions"])
+    evaluation = _experiment_result_evaluation(
+        experiment["conditions"]["temporal_split"]["independent_evaluation_period"], evidence,
+        experiment["conditions"]["acceptance_criterion"])
+    expected = _experiment_result_record(
+        record["result_id"], references, record["inputs"], record["execution"],
+        evaluation, evidence)
+    if record != expected:
+        raise ValueError("Experiment result evidence or aggregate is invalid")
+    return record
+
+
 def observe(input_dir, state_path, output, *, raw=None, now=None):
     """Route recent Coinbase candles to closed observations or open-only events."""
     input_dir = Path(input_dir)
