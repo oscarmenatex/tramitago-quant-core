@@ -1,70 +1,70 @@
-# TramitaGO Quant Core — MVP de datos de Fase 1
+# TramitaGO Quant Core
 
-Implementación de un microciclo, sin código del legado. Autoridades:
-[DOC-011](https://docs.google.com/document/d/19S9qrUpSk2dnS5v3yk2-smSBFwMlUIdsd3GLgUr_II4/edit) y
-[procedimiento de Fase 1](https://docs.google.com/document/d/1oTiZuqREzslP52UnXNM8rRG5t0-4Fjz5NWbxK4yFShU/edit).
-La declaración histórica del procedimiento sobre capacidades ya existentes no
-describe Core: este trabajo comenzó con el repositorio vacío, sin commits.
+Plataforma de investigación cuantitativa construida de forma incremental y basada en evidencia:
+nada avanza sin evidencia verificable, ningún módulo se adelanta a lo que la fase actual autoriza.
+Este repositorio es Fase 0 de la visión completa (DOC-001 §9): investigación simulada, sin
+capital real ni conexión a ningún broker.
 
-## Decisiones de esta demostración
+Los documentos rectores (DOC-001 a DOC-009, Etapa 1/Etapa 2/Etapa 3, y las especificaciones
+`M1.x`/`M2.x`/`M3.x`) viven fuera de este repositorio, en una carpeta de documentación local del
+propietario del proyecto. No están commiteados aquí; este README resume su contenido relevante
+para poder trabajar sin ellos a mano.
 
-- Runtime: Python 3.11 o posterior, sólo biblioteca estándar; no requiere instalación de paquetes.
-- Fuente única: API pública Coinbase Exchange, endpoint GET de velas BTC-USD.
-  [Contrato del proveedor](https://docs.cdp.coinbase.com/api-reference/exchange-api/rest-api/products/get-product-candles).
-- Instrumento único: BTC-USD spot de ese mercado; no representa todo el mercado Bitcoin.
-- Frecuencia: 86400 segundos. Diez intervalos UTC completos, desde 2024-01-01
-  inclusive hasta 2024-01-11 exclusive. No se solicita una vela abierta.
-- Entrada: bytes JSON originales y metadatos de captura con URL, parámetros,
-  fecha, tipo de evidencia y SHA256. No requiere credenciales ni cuenta.
-- Esquema CSV v1: `instrument` (string), `timestamp` (ISO8601 UTC),
-  `open, high, low, close, volume` (float64 finitos), `sma_close_3` (float64 nullable).
-  Precios en USD por BTC; volumen en BTC. No se agregan ni ajustan precios.
-- El timestamp identifica el inicio de la vela. OHLCV y la media sólo están
-  disponibles al terminar ese día, nunca en su inicio.
-- Indicador único: media aritmética de los tres cierres de las velas t-2, t-1, t.
-  Las dos primeras filas tienen valor nulo (campo CSV vacío); no se imputan.
-  Cálculo con `math.fsum(close / 3)` y serialización float de Python.
-  No hay señales, posiciones ni estrategia.
+## Estado actual (corte 2026-09-26)
 
-## Políticas y límites
+| Etapa / Milestone | Estado |
+|---|---|
+| **Etapa 1** — Mínimo vertical (M1.1–M1.3) | Cerrada en código. Ciclo FORWARD_PAPER completo: adquisición y validación de datos, SMA3 causal, Risk PAPER estricto, activación remota recurrente y no interactiva. **T9** (observación longitudinal de 7 días distintos, 2026-09-21 a 2026-09-27) corriendo en una VM de Oracle Cloud; a un solo slot de cerrar formalmente. |
+| **Etapa 2** — Expansión controlada (M2.1–M2.5) | Cerrada en código. Hypothesis con criterio de aceptación predefinido, Experimento histórico y resultado sellado, Research Execution/Result, Disposition + Knowledge (preserva también resultados negativos), retroalimentación controlada completa: PAPER Evidence → Recommendation → Governance Authorization. |
+| **Etapa 2.6** — Rigor estadístico (M2.6) | Cerrada en código. Partición walk-forward, ejecución por fold contra baseline buy-and-hold, veredicto agregado (VALIDATED/NOT_VALIDATED/INSUFFICIENT_EVIDENCE), aditivo — nunca reescribe la Disposition de muestra única. |
+| **Etapa 3** — Robustez operacional (M3.1–M3.3) | En curso. M3.1 (contrato de estado operacional unificado) y M3.3 (auditoría de M2.x contra ese contrato) cerrados. M3.2 (certificar M1.3) pendiente del cierre real de T9. |
 
-Se normalizan el orden de campos del proveedor, tipos y timestamps; se ordenan
-las filas cronológicamente. La fuente puede devolver velas fuera de la ventana:
-se excluyen explícitamente y se cuentan. No se eliminan duplicados silenciosamente.
-Se rechaza el lote completo ante entrada vacía, campo faltante/no numérico,
-NaN/infinito, timestamp no alineado a medianoche UTC, duplicado, precio no positivo,
-volumen negativo, incoherencia OHLC o día faltante. No se rellenan huecos.
-El proveedor advierte que puede omitir intervalos sin operaciones: aquí un hueco
-impide demostrar este dataset. La comprobación de cobertura no demuestra por sí
-sola la exhaustividad de operaciones dentro de cada vela; se conserva la
-agregación histórica del proveedor como entrada, sin auditoría de ticks.
+Suite completa: `python -m pytest -q` → 501 tests, 276 subtests, todo en verde.
 
-`validation.json` separa recibidas, excluidas por rango, rechazadas por fila,
-válidas retenidas por el rechazo del lote y aceptadas para publicación. Ante fallo
-de validación sólo se producen informes de fallo, nunca `dataset.csv` ni un
-manifest PASS. Una entrada cuya huella o configuración no coincide se rechaza
-antes de producir resultados. Los hashes detectan cambios accidentales; no son
-firmas de autenticidad ante una alteración coordinada de datos y metadatos.
+## Qué NO es este repositorio
 
-Durante la ejecución original del microciclo, previa al versionado, todavía no
-existía un commit inicial: cada ejecución conserva una copia exacta de
-`pipeline.py` y su SHA256 como baseline ejecutable, además de versión de Python.
-La misma
-entrada, configuración y código producen los mismos bytes. Los directorios
-existentes con bytes idénticos no se reescriben; contenidos diferentes o
-incompletos provocan un fallo sin sobrescritura. Un fallo de disco puede dejar
-un directorio parcial, que no constituye una ejecución válida sin manifest e
-integridad correctos.
+No hay Risk Engine cuantitativo (límites de drawdown/exposición), Portfolio (multi-instrumento),
+Execution/Broker Adapter real (nunca se conecta a Alpaca ni a ningún broker — toda la operación
+PAPER es interna, en `state.json`), ni Fiscalidad. Todo eso está identificado pero no autorizado
+todavía (ver documentación local, sección "candidatos posteriores a Etapa 3").
 
-## Ejecución desde la raíz del repositorio
+## Arquitectura, por capacidad (DOC-005)
 
-Pruebas offline (fixtures sintéticas definidas en el código de pruebas):
+- **Data / M1.2** — adquisición y validación de observaciones públicas de Coinbase para el ciclo
+  FORWARD_PAPER.
+- **Decision / M1.1** — indicador SMA3 causal y decisión persistida.
+- **Risk PAPER / M1.1** — autoridad de transición de estado PAPER (no es un Risk Engine
+  cuantitativo).
+- **Activación recurrente / M1.3** — política, ledger/lease, recuperación y reintentos acotados,
+  status de solo lectura, entrypoint remoto no interactivo (`run-forward-paper-activation`).
+- **Research / M2.1–M2.3, M2.6** — Hypothesis, Experimento histórico sellado, Research
+  Execution/Result, partición y validación walk-forward.
+- **Strategy Evaluation / M2.4-T1, M2.5-T2** — Disposition (juzga contra el criterio propio de la
+  Hypothesis) y Recommendation (juzga PAPER Evidence contra límites declarados).
+- **Knowledge / M2.4-T2, M2.5-T1** — preserva hipótesis, metodología, resultados (incluidos los
+  negativos) e incorpora evidencia PAPER como referencia verificable, nunca como copia.
+- **Governance / M2.5-T3** — autoriza o rechaza una nueva versión de configuración; nunca toca la
+  configuración vigente ni T9; demostrado en aislamiento.
+
+Todo M2.x se invoca únicamente vía API de Python (no hay subcomandos de CLI para M2.x); la
+cobertura de tests en `tests/test_m2*.py` es la referencia de uso de cada función pública.
+
+## Ejecutar la suite de tests
+
+```powershell
+python -m pytest -q
+```
+
+o, sin dependencias de terceros:
 
 ```powershell
 python -B -m unittest discover -s tests -v
 ```
 
-Adquisición operacional controlada, una única petición HTTPS con timeout de 30 s:
+## CLI de `pipeline.py`
+
+Cadena original de adquisición/validación de datos (M1.1, la demostración más antigua del
+repositorio):
 
 ```powershell
 python -B pipeline.py acquire --output artifacts/live-input
@@ -73,51 +73,43 @@ python -B pipeline.py run --input artifacts/live-run-1 --output artifacts/live-r
 python -B pipeline.py compare artifacts/live-run-1 artifacts/live-run-2 --output artifacts/live-comparison
 ```
 
-No ejecutar los pasos posteriores si el anterior falla. `acquire` conserva la
-entrada, pero no declara que sea válida. Un fallo de red queda en
-`acquisition_failure.json` y retorna código 1; no demuestra adquisición.
-`run` normaliza, valida, deriva la media y publica CSV e informes en una sola
-ejecución. La segunda ejecución utiliza únicamente la captura conservada, sin red.
-`compare` verifica hashes de archivos y compara esquema, columnas, filas, rango,
-validación, indicadores completos, entrada, configuración, código y runtime.
-Devuelve código 1 ante divergencia o corrupción.
-
-Cada directorio de ejecución correcta contiene `dataset.csv`, `manifest.json`,
-`validation.json`, `raw.json`, `capture.json` y `pipeline_snapshot.py`. El manifest
-registra parámetros, esquema, hashes, rango, conteos y todos los valores de la
-media para esta muestra pequeña. La comparación queda en `comparison.json`.
-Para reproducir con el código conservado puede invocarse `pipeline_snapshot.py`
-con los mismos argumentos de `run`. No es necesario descargar nuevamente.
-
-`artifacts/` está ignorado por Git, incluidos capturas, datasets y evidencias.
-Las pruebas crean sus temporales dentro de ese directorio y los limpian.
-Sólo se pretende versionar `.gitignore`, este README, `pipeline.py` y las pruebas.
-Los datos reales no se incluyen como fixture de pruebas automática.
-
-Esta demostración no acredita estabilidad futura de la fuente, otros mercados
-o fechas, ni reproducibilidad de una nueva descarga cuyo contenido haya cambiado.
-No incluye backtesting, trading ni automatización operativa.
-
-## Evidencia observada del microciclo — 2026-09-12
-
-Python 3.14.3: 19 pruebas offline pasaron. La primera adquisición falló por
-restricción de red del sandbox (`artifacts/live-input/acquisition_failure.json`).
-Una única petición posterior con acceso de red ampliado tuvo éxito y quedó en
-`artifacts/live-input-online/`. Los comandos operacionales exitosos fueron:
+Entrypoint remoto no interactivo de M1.3 (el que corre recurrentemente en la VM de Oracle bajo
+T9 — **no ejecutar contra una instalación productiva sin saber lo que se hace**; es el mismo
+mecanismo que sostiene la observación longitudinal en curso):
 
 ```powershell
-python -B pipeline.py acquire --output artifacts/live-input-online
-python -B pipeline.py run --input artifacts/live-input-online --output artifacts/live-run-1
-python -B pipeline.py run --input artifacts/live-run-1 --output artifacts/live-run-2
-python -B pipeline.py compare artifacts/live-run-1 artifacts/live-run-2 --output artifacts/live-comparison
+python -B pipeline.py run-forward-paper-activation --data-dir <ruta> [--now <ISO8601Z>] [--timeout-seconds <n>]
 ```
 
-Resultado: 11 filas recibidas, una excluida por estar fuera del intervalo,
-10 aceptadas, cero rechazadas, cero errores. Ocho valores de SMA y dos nulos
-iniciales. Las 14 comparaciones pasaron. El CSV de ambas ejecuciones tiene SHA256
-`aa647b415a267d4a8a1d75ee5b85e8ae3fd6099863a0f450f8e3fc57d93c2e99`.
-El entregable se demostró para esta entrada y configuración concretas. La
-evidencia original fue producida antes del commit y del push; posteriormente, el
-MVP quedó versionado en el repositorio. La evidencia detallada permanece
-conservada localmente en `artifacts/microcycle-evidence.json` y los manifiestos
-de cada ejecución.
+Ver `deploy/README.md` para el bootstrap completo (systemd timer, crontab) de una instalación
+nueva.
+
+`pipeline.py` expone además subcomandos intermedios de M1.1 (`evaluate`, `observe`, `decide`,
+`initialize-paper-session`, `compose-paper-sma3`, `apply-paper-risk`, `run-paper-cycle`, órdenes
+PAPER/LIVE controladas, etc.) — cada uno documentado por su propio archivo de test
+(`tests/test_m1*.py`).
+
+## Esquema de datos (dataset histórico BTC-USD)
+
+- Fuente única: API pública Coinbase Exchange, endpoint GET de velas.
+  [Contrato del proveedor](https://docs.cdp.coinbase.com/api-reference/exchange-api/rest-api/products/get-product-candles).
+- Instrumento único: BTC-USD spot; frecuencia 86400 s (velas diarias UTC).
+- Esquema CSV: `instrument` (string), `timestamp` (ISO8601 UTC), `open, high, low, close, volume`
+  (float64 finitos), `sma_close_3` (float64 nullable, dos primeras filas nulas por warmup).
+  El timestamp identifica el inicio de la vela; OHLCV y la media sólo están disponibles al
+  terminar ese día.
+- Se rechaza el lote completo ante entrada vacía, campo faltante/no numérico, NaN/infinito,
+  timestamp no alineado a medianoche UTC, duplicado, precio no positivo, volumen negativo,
+  incoherencia OHLC o día faltante. No se rellenan huecos ni se corrige silenciosamente nada.
+- Cada ejecución conserva una copia exacta de `pipeline.py` (SHA256) y su versión de Python como
+  baseline ejecutable; misma entrada + configuración + código producen los mismos bytes.
+
+`artifacts/` está en `.gitignore` salvo los datasets de investigación ya sellados bajo
+`artifacts/research/` (Hypothesis, Experiment, Result — ver M2.1–M2.3), que sí se versionan por
+ser evidencia inmutable de investigación, no salida temporal de ejecución.
+
+## Despliegue
+
+`deploy/` contiene el `systemd` service/timer y el crontab de ejemplo para instalar el
+entrypoint de M1.3 en un host persistente (la instalación real corre en una VM de Oracle Cloud,
+bajo observación T9). Ver `deploy/README.md`.
