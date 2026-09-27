@@ -27,6 +27,7 @@ from tramitago_quant_core.shared.util import (
     digest, encoded, epoch, iso, publish, _atomic_write, _explicit_utc,
     _hypothesis_text_is_valid, _hypothesis_system_version_is_valid,
     _hypothesis_code_revision_is_valid, _SYSTEM_VERSION_PATTERN, _CODE_REVISION_PATTERN,
+    _pipeline_source_bytes,
 )
 
 CONFIG = {
@@ -799,7 +800,7 @@ def create_hypothesis_dataset(registry_path, hypothesis_id, version, output, *,
     raw = encoded(_hypothesis_dataset_raw_content(stored))
     capture = _hypothesis_dataset_capture_content(config, acquired_at, responses)
     capture_bytes = encoded(capture)
-    source = Path(__file__).read_bytes().replace(b"\r\n", b"\n")
+    source = _pipeline_source_bytes()
     payload = _hypothesis_dataset_capture_rows(raw, capture, config)
     rows, validation = _hypothesis_dataset_validation(payload, config)
     base_files = {
@@ -1325,7 +1326,7 @@ def _experiment_result_inputs(experiment, hypothesis, dataset, dataset_directory
 def _experiment_result_execution(code_revision):
     if not _hypothesis_code_revision_is_valid(code_revision):
         raise ValueError("Execution code revision must be a canonical full object identifier")
-    source = Path(__file__).read_bytes().replace(b"\r\n", b"\n")
+    source = _pipeline_source_bytes()
     return {"code_revision": code_revision, "pipeline_sha256": digest(source)}
 
 
@@ -1721,7 +1722,7 @@ def _research_materialization(materialized_at, materialization_code_revision):
     if (not _explicit_utc(materialized_at)
             or not _hypothesis_code_revision_is_valid(materialization_code_revision)):
         raise ValueError("Research materialization time and code revision are required")
-    source = Path(__file__).read_bytes().replace(b"\r\n", b"\n")
+    source = _pipeline_source_bytes()
     return {
         "constituted_at": materialized_at,
         "materialization_code_revision": materialization_code_revision,
@@ -2257,7 +2258,7 @@ def _disposition_materialization(disposed_at, disposition_code_revision):
     if (not _explicit_utc(disposed_at)
             or not _hypothesis_code_revision_is_valid(disposition_code_revision)):
         raise ValueError("Disposition time and code revision are required")
-    source = Path(__file__).read_bytes().replace(b"\r\n", b"\n")
+    source = _pipeline_source_bytes()
     return {
         "disposed_at": disposed_at, "disposition_code_revision": disposition_code_revision,
         "pipeline_sha256": digest(source),
@@ -2559,7 +2560,7 @@ def _knowledge_materialization(preserved_at, knowledge_code_revision):
     if (not _explicit_utc(preserved_at)
             or not _hypothesis_code_revision_is_valid(knowledge_code_revision)):
         raise ValueError("Knowledge preservation time and code revision are required")
-    source = Path(__file__).read_bytes().replace(b"\r\n", b"\n")
+    source = _pipeline_source_bytes()
     return {
         "preserved_at": preserved_at, "knowledge_code_revision": knowledge_code_revision,
         "pipeline_sha256": digest(source),
@@ -2887,7 +2888,7 @@ def _paper_evidence_materialization(linked_at, linking_code_revision):
     if (not _explicit_utc(linked_at)
             or not _hypothesis_code_revision_is_valid(linking_code_revision)):
         raise ValueError("PAPER Evidence linking time and code revision are required")
-    source = Path(__file__).read_bytes().replace(b"\r\n", b"\n")
+    source = _pipeline_source_bytes()
     return {
         "linked_at": linked_at, "linking_code_revision": linking_code_revision,
         "pipeline_sha256": digest(source),
@@ -3141,7 +3142,7 @@ def _recommendation_materialization(proposed_at, recommendation_code_revision):
     if (not _explicit_utc(proposed_at)
             or not _hypothesis_code_revision_is_valid(recommendation_code_revision)):
         raise ValueError("Recommendation proposal time and code revision are required")
-    source = Path(__file__).read_bytes().replace(b"\r\n", b"\n")
+    source = _pipeline_source_bytes()
     return {
         "proposed_at": proposed_at, "recommendation_code_revision": recommendation_code_revision,
         "pipeline_sha256": digest(source),
@@ -3384,7 +3385,7 @@ def _governance_authorization_materialization(decided_at, decision_code_revision
     if (not _explicit_utc(decided_at)
             or not _hypothesis_code_revision_is_valid(decision_code_revision)):
         raise ValueError("Governance decision time and code revision are required")
-    source = Path(__file__).read_bytes().replace(b"\r\n", b"\n")
+    source = _pipeline_source_bytes()
     return {
         "decided_at": decided_at, "decision_code_revision": decision_code_revision,
         "pipeline_sha256": digest(source),
@@ -3677,7 +3678,7 @@ def _walk_forward_partition_materialization(partitioned_at, partition_code_revis
     if (not _explicit_utc(partitioned_at)
             or not _hypothesis_code_revision_is_valid(partition_code_revision)):
         raise ValueError("Walk-forward partition time and code revision are required")
-    source = Path(__file__).read_bytes().replace(b"\r\n", b"\n")
+    source = _pipeline_source_bytes()
     return {
         "partitioned_at": partitioned_at, "partition_code_revision": partition_code_revision,
         "pipeline_sha256": digest(source),
@@ -3895,7 +3896,7 @@ def _walk_forward_fold_materialization(computed_at, computation_code_revision):
     if (not _explicit_utc(computed_at)
             or not _hypothesis_code_revision_is_valid(computation_code_revision)):
         raise ValueError("Walk-forward fold computation time and code revision are required")
-    source = Path(__file__).read_bytes().replace(b"\r\n", b"\n")
+    source = _pipeline_source_bytes()
     return {
         "computed_at": computed_at, "computation_code_revision": computation_code_revision,
         "pipeline_sha256": digest(source),
@@ -4183,7 +4184,7 @@ def _statistical_validation_materialization(validated_at, validation_code_revisi
     if (not _explicit_utc(validated_at)
             or not _hypothesis_code_revision_is_valid(validation_code_revision)):
         raise ValueError("Statistical validation time and code revision are required")
-    source = Path(__file__).read_bytes().replace(b"\r\n", b"\n")
+    source = _pipeline_source_bytes()
     return {
         "validated_at": validated_at, "validation_code_revision": validation_code_revision,
         "pipeline_sha256": digest(source),

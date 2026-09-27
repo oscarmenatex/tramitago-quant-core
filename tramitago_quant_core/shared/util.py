@@ -85,3 +85,16 @@ def _hypothesis_system_version_is_valid(value):
 def _hypothesis_code_revision_is_valid(value):
     """Accept only canonical full Git object identifiers supplied by the caller."""
     return _hypothesis_text_is_valid(value) and bool(_CODE_REVISION_PATTERN.fullmatch(value))
+
+
+def _pipeline_source_bytes():
+    """The exact bytes of the top-level pipeline.py entry point -- the
+    reproducibility baseline this project has always captured (README:
+    "cada ejecucion conserva una copia exacta de pipeline.py y su
+    SHA256"). Resolved from the imported `pipeline` module's own
+    __file__, not from wherever this helper itself lives, so every
+    Capacidad's materialization keeps hashing pipeline.py -- never its own
+    submodule -- no matter which module calls it (M4.1 module
+    decomposition, Etapa 4)."""
+    import pipeline as _pipeline_module
+    return Path(_pipeline_module.__file__).read_bytes().replace(b"\r\n", b"\n")
