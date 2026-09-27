@@ -20,6 +20,15 @@ import uuid
 from urllib.parse import quote, urlencode, urlsplit
 from urllib.request import Request, urlopen
 
+# M4.1 -- module decomposition (Etapa 4, DOC-014/DOC-015 adaptado): transversal
+# utilities moved to tramitago_quant_core/shared/util.py. Re-exported here so
+# `import pipeline as p; p.digest(...)` etc. keep working unmodified.
+from tramitago_quant_core.shared.util import (
+    digest, encoded, epoch, iso, publish, _atomic_write, _explicit_utc,
+    _hypothesis_text_is_valid, _hypothesis_system_version_is_valid,
+    _hypothesis_code_revision_is_valid, _SYSTEM_VERSION_PATTERN, _CODE_REVISION_PATTERN,
+)
+
 CONFIG = {
     "source": "Coinbase Exchange public candles",
     "instrument": "BTC-USD",
@@ -53,36 +62,6 @@ def _coinbase_public_request_headers():
 
 def _coinbase_public_request(url):
     return Request(url, headers=_coinbase_public_request_headers())
-
-
-def digest(data):
-    return hashlib.sha256(data).hexdigest()
-
-
-def encoded(value):
-    return (json.dumps(value, indent=2, sort_keys=True, allow_nan=False) + "\n").encode("utf-8")
-
-
-def epoch(value):
-    return int(datetime.fromisoformat(value.replace("Z", "+00:00")).timestamp())
-
-
-def iso(value):
-    return datetime.fromtimestamp(value, timezone.utc).isoformat().replace("+00:00", "Z")
-
-
-def publish(directory, files):
-    """Same bytes are a no-op; never overwrite a different or incomplete run."""
-    directory = Path(directory)
-    if directory.exists():
-        if set(p.name for p in directory.iterdir()) != set(files):
-            raise ValueError("Output exists with different/incomplete contents")
-        if any((directory / name).read_bytes() != data for name, data in files.items()):
-            raise ValueError("Output exists with different contents")
-        return
-    directory.mkdir(parents=True)
-    for name, data in files.items():
-        (directory / name).write_bytes(data)
 
 
 def save_capture(raw, output, *, kind, acquired_at, response_headers=None):
@@ -266,31 +245,11 @@ def compare(first, second):
     return {"status": "PASS" if all(checks.values()) else "FAIL", "checks": checks}
 
 
-def _atomic_write(path, data):
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(path.name + ".tmp")
-    temporary.write_bytes(data)
-    os.replace(temporary, path)
-
-
 HYPOTHESIS_REGISTRY_SCHEMA_VERSION = "2"
 HYPOTHESIS_ACCEPTANCE_COMPARISONS = {
     "INCREASE": {"GT", "GE"},
     "DECREASE": {"LT", "LE"},
 }
-_SEMVER_NUMERIC_IDENTIFIER = r"(?:0|[1-9][0-9]*)"
-_SEMVER_PRERELEASE_IDENTIFIER = r"(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)"
-_SYSTEM_VERSION_PATTERN = re.compile(
-    rf"^{_SEMVER_NUMERIC_IDENTIFIER}\.{_SEMVER_NUMERIC_IDENTIFIER}"
-    rf"\.{_SEMVER_NUMERIC_IDENTIFIER}"
-    rf"(?:-{_SEMVER_PRERELEASE_IDENTIFIER}(?:\.{_SEMVER_PRERELEASE_IDENTIFIER})*)?"
-    r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$")
-_CODE_REVISION_PATTERN = re.compile(r"^(?:[0-9a-f]{40}|[0-9a-f]{64})$")
-
-
-def _hypothesis_text_is_valid(value):
-    return isinstance(value, str) and bool(value) and value == value.strip()
 
 
 def _hypothesis_id_is_valid(value):
@@ -301,16 +260,6 @@ def _hypothesis_id_is_valid(value):
             "HYPOTHESIS|")
     except ValueError:
         return False
-
-
-def _hypothesis_system_version_is_valid(value):
-    """Accept an explicit SemVer value, never a ref or an object identifier."""
-    return _hypothesis_text_is_valid(value) and bool(_SYSTEM_VERSION_PATTERN.fullmatch(value))
-
-
-def _hypothesis_code_revision_is_valid(value):
-    """Accept only canonical full Git object identifiers supplied by the caller."""
-    return _hypothesis_text_is_valid(value) and bool(_CODE_REVISION_PATTERN.fullmatch(value))
 
 
 def _hypothesis_constraints_are_valid(constraints):
@@ -8634,18 +8583,6 @@ def _proposal_identity(proposal):
     mutable = {"proposal_identity", "status", "approval_record"}
     content = {key: value for key, value in proposal.items() if key not in mutable}
     return digest(encoded(content))
-
-
-def _explicit_utc(value):
-    if not isinstance(value, str) or not value or value != value.strip() \
-            or not value.endswith("Z"):
-        return False
-    try:
-        instant = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError:
-        return False
-    return instant.utcoffset() == timezone.utc.utcoffset(instant) \
-        and instant.isoformat().replace("+00:00", "Z") == value
 
 
 def proposal_is_manually_approved(proposal):
