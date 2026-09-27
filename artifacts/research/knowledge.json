@@ -1,0 +1,164 @@
+{
+  "records": [
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+          "threshold": "0"
+        },
+        "description": "For BTC-USD, the mean t+1 return when close_t > SMA3_t exceeds the mean t+1 return when close_t <= SMA3_t.",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|3345b100-db15-4aa2-976d-dbd797cbc4a3",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|3345b100-db15-4aa2-976d-dbd797cbc4a3|1|18a92fa7153e8fb0477a3ba0ca9b7d0fcf5deb0f8ea3ca484c2296065ad94f57",
+        "target_metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+        "version": 1
+      },
+      "interpretation": "SMA3(3) sobre BTC-USD 2025 no demuestra ventaja estadistica. Muestra completa (365 dias): metric=-0.000805, NOT_MET. Walk-forward independiente (5 folds de 73 dias, M2.6): consistencia real 60% (3/5 folds superan baseline), pero solo 1 de 5 folds (20%) produjo retorno absoluto positivo con la senal; los otros dos folds 'MET' solo superaron un baseline que tambien perdio. Ambas evaluaciones (muestra completa y walk-forward) coinciden: la hipotesis no alcanza el umbral de consistencia (70%) ni de retorno absoluto (4/5 folds) propuestos para autorizar Fase 1 (capital real).",
+      "knowledge_id": "KNOWLEDGE|b24a82d19df07cc039137d45da768abede4b3dfe8118f63c9e0c3c44e3b0bd03",
+      "limitations": [
+        "Un solo instrumento evaluado (BTC-USD)",
+        "Un solo periodo historico evaluado (2025)",
+        "Un solo parametro de SMA evaluado (periodo 3)",
+        "No se probaron variantes del parametro SMA ni otros instrumentos",
+        "El walk-forward no calcula Sharpe ni drawdown -- responsabilidad del Risk Engine, no construido",
+        "La decision se basa unicamente en consistencia entre folds y retorno absoluto por fold"
+      ],
+      "materialization": {
+        "knowledge_code_revision": "d3a1c7e9b5f24680a1c9e7f3b5d8a2c4e6f01234",
+        "pipeline_sha256": "81f0f602bfac4001046deb15a2afb86948514940052718ca316f88d90d3c6bb6",
+        "preserved_at": "2026-09-27T12:00:00Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= SMA3_t",
+          "upper_group": "close_t > SMA3_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > SMA3_t) - mean(return_t+1 | close_t <= SMA3_t)",
+          "name": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_SMA3_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "sma": {
+          "source": "close",
+          "window": 3
+        },
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|b24a82d19df07cc039137d45da768abede4b3dfe8118f63c9e0c3c44e3b0bd03|3550ea941d5255626aa7eca91c6db516d46f308e8f6125f2b5dca0b2c373842c",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|5cdb943e8be6a44b8169fb917c917a2656bb8ca710245efbee573425d84f5333",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|5cdb943e8be6a44b8169fb917c917a2656bb8ca710245efbee573425d84f5333|a8d8f5c248d10891eef12217f3f48e5c63607d6ad304945f6050e6c6007f63d6"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|23000efa-a18e-44cb-9a64-993cfb65200d",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|23000efa-a18e-44cb-9a64-993cfb65200d|1|b89a7a41531bed017d0cf96be1644f761ba5868a78ee6898b0a250d47357257a",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "00f40857faf517aca9939f6c5f66395eec09f8ee",
+          "hypothesis_id": "HYPOTHESIS|3345b100-db15-4aa2-976d-dbd797cbc4a3",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|3345b100-db15-4aa2-976d-dbd797cbc4a3|1|18a92fa7153e8fb0477a3ba0ca9b7d0fcf5deb0f8ea3ca484c2296065ad94f57",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|4c278b45dc5ecab7f71f00983b741d0872dcc7aaa91a23ccdabbaff1813c53fe|ef894bab1e535bf6aab2bd183ebd5e1a37481775f5a954e455e5775a4861a0d3",
+          "research_result_id": "RESEARCH_RESULT|4c278b45dc5ecab7f71f00983b741d0872dcc7aaa91a23ccdabbaff1813c53fe"
+        }
+      },
+      "results": {
+        "outcome": "REJECTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+            "threshold": "0"
+          },
+          "criterion_result": "NOT_MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 190,
+              "mean_return_t_plus_1": 0.0004574749161540121,
+              "rule": "close_t <= SMA3_t"
+            },
+            "upper": {
+              "count": 175,
+              "mean_return_t_plus_1": -0.000348009655170171,
+              "rule": "close_t > SMA3_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": -0.0008054845713241831,
+          "observation_count": 365,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    }
+  ],
+  "schema_version": "1"
+}
