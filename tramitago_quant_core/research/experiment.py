@@ -25,7 +25,7 @@ from tramitago_quant_core.research.historical_dataset import (
     HYPOTHESIS_DATASET_WARMUP_ROLE,
     HYPOTHESIS_DATASET_EVALUATION_ROLE, HYPOTHESIS_DATASET_FORWARD_ROLE,
     _hypothesis_dataset_columns, _hypothesis_dataset_warmup_role,
-    verified_hypothesis_dataset,
+    _hypothesis_dataset_forward_column, verified_hypothesis_dataset,
 )
 from tramitago_quant_core.strategy_contract.strategy import (
     sma_crossover_strategy, momentum_crossover_strategy, volume_surge_strategy,
@@ -105,7 +105,7 @@ def _discovery_snapshot(hypothesis):
     return snapshots[0]
 
 
-def _experiment_conditions(hypothesis, dataset, selection, strategy=None):
+def _experiment_conditions(hypothesis, dataset, selection, strategy=None, horizon=1):
     """Instrument extension (2026-09-28): the instrument is read from the
     dataset's own config, not fixed to "BTC-USD" -- generalized after
     finding it hardcoded while investigating a second instrument (ETH-USD)
@@ -118,6 +118,13 @@ def _experiment_conditions(hypothesis, dataset, selection, strategy=None):
     for that exact default, still emits the legacy "sma" field so those two
     sealed records keep reproducing byte-for-byte. Any other Strategy emits
     the generic "indicator" field instead.
+
+    Etapa 2.7 return-horizon extension (2026-09-28): `horizon` defaults to
+    1 -- the exact forward-return distance both already-sealed real
+    Experiments were constituted with -- for the same byte-for-byte reason.
+    Only when horizon != 1 is an additive "forward_horizon" field emitted;
+    the "outcome"/"metric.formula" text is always derived from horizon, so
+    it reproduces the legacy "return_t+1" text exactly at the default.
     """
     strategy = strategy or sma_crossover_strategy(3)
     reference = _experiment_reference(hypothesis, dataset, selection)
@@ -139,8 +146,8 @@ def _experiment_conditions(hypothesis, dataset, selection, strategy=None):
         "lower_or_equal_group": strategy["lower_or_equal_group_description"],
     }
     metric_formula = (
-        f"mean(return_t+1 | {strategy['upper_group_description']}) - "
-        f"mean(return_t+1 | {strategy['lower_or_equal_group_description']})")
+        f"mean(return_t+{horizon} | {strategy['upper_group_description']}) - "
+        f"mean(return_t+{horizon} | {strategy['lower_or_equal_group_description']})")
     indicator_field = (
         {"sma": {"source": "close", "window": strategy["parameters"]["window"]}}
         if is_legacy_default else
@@ -151,13 +158,13 @@ def _experiment_conditions(hypothesis, dataset, selection, strategy=None):
         }}
     )
     warmup_role = _hypothesis_dataset_warmup_role(strategy)
-    return {
+    conditions = {
         "schema_version": EXPERIMENT_CONDITIONS_SCHEMA_VERSION,
         "instrument": instrument,
         "frequency_seconds": 86400,
         "analytical_rule": analytical_rule,
         **indicator_field,
-        "outcome": {"name": "return_t+1", "formula": "(close_t+1 / close_t) - 1"},
+        "outcome": {"name": f"return_t+{horizon}", "formula": f"(close_t+{horizon} / close_t) - 1"},
         "metric": {
             "name": metric,
             "formula": metric_formula,
@@ -190,6 +197,16 @@ def _experiment_conditions(hypothesis, dataset, selection, strategy=None):
             "backtest_executed": False,
         },
     }
+    if horizon != 1:
+        conditions["forward_horizon"] = horizon
+    return conditions
+
+
+def _experiment_conditions_horizon(conditions):
+    """Etapa 2.7 return-horizon extension (2026-09-28): mirrors
+    _experiment_conditions_strategy -- `forward_horizon` is only ever
+    present (additive) when it differs from the legacy default of 1."""
+    return conditions.get("forward_horizon", 1)
 
 
 def _experiment_conditions_are_valid(conditions):
@@ -200,8 +217,17 @@ def _experiment_conditions_are_valid(conditions):
     }
     if not isinstance(conditions, dict):
         return False
-    is_legacy = set(conditions) == common_fields | {"sma"}
-    is_generic = set(conditions) == common_fields | {"indicator"}
+    has_horizon = "forward_horizon" in conditions
+    if has_horizon:
+        horizon = conditions["forward_horizon"]
+        if (not isinstance(horizon, int) or isinstance(horizon, bool)
+                or horizon < 1 or horizon == 1):
+            return False
+    else:
+        horizon = 1
+    base_fields = common_fields | ({"forward_horizon"} if has_horizon else set())
+    is_legacy = set(conditions) == base_fields | {"sma"}
+    is_generic = set(conditions) == base_fields | {"indicator"}
     if not (is_legacy or is_generic):
         return False
     analytical_rule = conditions.get("analytical_rule")
@@ -217,8 +243,6 @@ def _experiment_conditions_are_valid(conditions):
             return False
         warmup_role = HYPOTHESIS_DATASET_WARMUP_ROLE
         warmup_count = 2
-        expected_formula = ("mean(return_t+1 | close_t > SMA3_t) - "
-                            "mean(return_t+1 | close_t <= SMA3_t)")
     else:
         indicator = conditions.get("indicator")
         if (not isinstance(indicator, dict)
@@ -240,10 +264,11 @@ def _experiment_conditions_are_valid(conditions):
             return False
         warmup_role = _hypothesis_dataset_warmup_role(reconstructed)
         warmup_count = reconstructed["required_inputs"]["warmup_periods"]
-        expected_formula = (
-            f"mean(return_t+1 | {analytical_rule['upper_group']}) - "
-            f"mean(return_t+1 | {analytical_rule['lower_or_equal_group']})")
-    expected_support_roles = [warmup_role] * warmup_count + [HYPOTHESIS_DATASET_FORWARD_ROLE]
+    expected_formula = (
+        f"mean(return_t+{horizon} | {analytical_rule['upper_group']}) - "
+        f"mean(return_t+{horizon} | {analytical_rule['lower_or_equal_group']})")
+    expected_support_roles = (
+        [warmup_role] * warmup_count + [HYPOTHESIS_DATASET_FORWARD_ROLE] * horizon)
     period = conditions["temporal_split"].get("independent_evaluation_period") \
         if isinstance(conditions["temporal_split"], dict) else None
     support_rows = conditions["population"].get("support_rows") \
@@ -254,7 +279,7 @@ def _experiment_conditions_are_valid(conditions):
         and _hypothesis_text_is_valid(conditions.get("instrument"))
         and conditions.get("frequency_seconds") == 86400
         and conditions.get("outcome") == {
-            "name": "return_t+1", "formula": "(close_t+1 / close_t) - 1"}
+            "name": f"return_t+{horizon}", "formula": f"(close_t+{horizon} / close_t) - 1"}
         and isinstance(conditions.get("metric"), dict)
         and _hypothesis_text_is_valid(conditions["metric"].get("name"))
         and conditions["metric"].get("formula") == expected_formula
@@ -403,9 +428,10 @@ def _persist_experiment_conditions(registry_path, record):
 
 
 def _experiment_inputs(hypothesis_registry_path, dataset_directory, hypothesis_id,
-                       hypothesis_version, dataset_id, strategy=None):
+                       hypothesis_version, dataset_id, strategy=None, horizon=1):
     hypothesis = load_hypothesis(hypothesis_registry_path, hypothesis_id, hypothesis_version)
-    dataset = verified_hypothesis_dataset(dataset_directory, hypothesis_registry_path, strategy)
+    dataset = verified_hypothesis_dataset(
+        dataset_directory, hypothesis_registry_path, strategy, horizon)
     selection = json.loads((Path(dataset_directory) / "selection.json").read_bytes())
     if dataset["dataset_id"] != dataset_id:
         raise ValueError("Dataset identity does not match the experiment reference")
@@ -419,23 +445,26 @@ def _experiment_inputs(hypothesis_registry_path, dataset_directory, hypothesis_i
 
 def constitute_experiment_conditions(registry_path, *, hypothesis_registry_path,
                                      dataset_directory, hypothesis_id, hypothesis_version,
-                                     dataset_id, created_at, revision_reason, strategy=None):
+                                     dataset_id, created_at, revision_reason, strategy=None,
+                                     horizon=1):
     """Fix one real experiment definition without calculating or executing it."""
     if not _explicit_utc(created_at) or not _hypothesis_text_is_valid(revision_reason):
         raise ValueError("Experiment creation time and revision reason are required")
     hypothesis, dataset, selection, references = _experiment_inputs(
         hypothesis_registry_path, dataset_directory, hypothesis_id, hypothesis_version,
-        dataset_id, strategy)
+        dataset_id, strategy, horizon)
     experiment_id = "EXPERIMENT|" + str(uuid.uuid4())
     record = _experiment_record(
-        experiment_id, 1, references, _experiment_conditions(hypothesis, dataset, selection, strategy),
+        experiment_id, 1, references,
+        _experiment_conditions(hypothesis, dataset, selection, strategy, horizon),
         created_at, EXPERIMENT_CONDITIONS_STATUS, revision_reason)
     return _persist_experiment_conditions(registry_path, record)
 
 
 def revise_experiment_conditions(registry_path, experiment_id, *, hypothesis_registry_path,
                                  dataset_directory, hypothesis_id, hypothesis_version,
-                                 dataset_id, created_at, revision_reason, strategy=None):
+                                 dataset_id, created_at, revision_reason, strategy=None,
+                                 horizon=1):
     """Append a new sealed version while retaining every prior experiment definition."""
     if not _experiment_id_is_valid(experiment_id) or not _explicit_utc(created_at) \
             or not _hypothesis_text_is_valid(revision_reason):
@@ -447,10 +476,10 @@ def revise_experiment_conditions(registry_path, experiment_id, *, hypothesis_reg
         raise ValueError("Experiment identity is not registered")
     hypothesis, dataset, selection, references = _experiment_inputs(
         hypothesis_registry_path, dataset_directory, hypothesis_id, hypothesis_version,
-        dataset_id, strategy)
+        dataset_id, strategy, horizon)
     record = _experiment_record(
         experiment_id, len(prior) + 1, references,
-        _experiment_conditions(hypothesis, dataset, selection, strategy), created_at,
+        _experiment_conditions(hypothesis, dataset, selection, strategy, horizon), created_at,
         EXPERIMENT_CONDITIONS_STATUS, revision_reason)
     return _persist_experiment_conditions(registry_path, record)
 
@@ -474,11 +503,13 @@ def verified_experiment_conditions(registry_path, experiment_id, version, *,
     record = load_experiment_conditions(registry_path, experiment_id, version)
     reference = record["references"]
     strategy = _experiment_conditions_strategy(record["conditions"])
+    horizon = _experiment_conditions_horizon(record["conditions"])
     hypothesis, dataset, selection, expected_references = _experiment_inputs(
         hypothesis_registry_path, dataset_directory, reference["hypothesis"]["hypothesis_id"],
-        reference["hypothesis"]["version"], reference["dataset"]["dataset_id"], strategy)
+        reference["hypothesis"]["version"], reference["dataset"]["dataset_id"], strategy, horizon)
     if (reference != expected_references
-            or record["conditions"] != _experiment_conditions(hypothesis, dataset, selection, strategy)):
+            or record["conditions"] != _experiment_conditions(
+                hypothesis, dataset, selection, strategy, horizon)):
         raise ValueError("Experiment conditions references are incompatible")
     return record
 
@@ -546,11 +577,21 @@ def _experiment_result_dataset_rows(dataset_directory, conditions):
     itself (its own sealed strategy_id/parameters) and its own compute() is
     used, so this stays a genuine independent recalculation for any Strategy,
     not just the legacy default.
+
+    Etapa 2.7 return-horizon extension (2026-09-28): the forward-return
+    distance is likewise reconstructed from `conditions` itself (never
+    hardcoded to "next day"). "next_timestamp"/"next_close"/
+    "return_t_plus_1" evidence field NAMES stay fixed regardless of horizon
+    -- they mean "the row `horizon` days ahead", not literally day+1 -- to
+    avoid forking the evidence schema a second time on top of the
+    indicator-column fork M4.1 already introduced.
     """
     strategy = _experiment_conditions_strategy(conditions)
+    horizon = _experiment_conditions_horizon(conditions)
     column_name = strategy["column_name"]
+    forward_column = _hypothesis_dataset_forward_column(horizon)
     warmup = strategy["required_inputs"]["warmup_periods"]
-    columns = _hypothesis_dataset_columns(strategy)
+    columns = _hypothesis_dataset_columns(strategy, horizon)
     try:
         text = (Path(dataset_directory) / "dataset.csv").read_text(encoding="utf-8")
         reader = csv.DictReader(io.StringIO(text, newline=""))
@@ -573,8 +614,8 @@ def _experiment_result_dataset_rows(dataset_directory, conditions):
             close = float(row["close"])
             volume = float(row["volume"])
             indicator_value = None if row[column_name] == "" else float(row[column_name])
-            forward = (None if row["forward_return_1d"] == ""
-                       else float(row["forward_return_1d"]))
+            forward = (None if row[forward_column] == ""
+                       else float(row[forward_column]))
         except (TypeError, ValueError) as error:
             raise ValueError("Historical dataset has a nonnumeric experiment input") from error
         if (not _explicit_utc(row["timestamp"]) or not math.isfinite(close) or close <= 0
@@ -586,7 +627,7 @@ def _experiment_result_dataset_rows(dataset_directory, conditions):
         rows.append({
             "instrument": row["instrument"], "timestamp": row["timestamp"],
             "open": open_price, "high": high, "low": low, "close": close, "volume": volume,
-            column_name: indicator_value, "forward_return_1d": forward,
+            column_name: indicator_value, forward_column: forward,
             "row_role": row["row_role"], "source_row": number,
         })
 
@@ -612,19 +653,19 @@ def _experiment_result_dataset_rows(dataset_directory, conditions):
             raise ValueError("Historical dataset row role is incompatible with experiment period")
         if not is_evaluable:
             continue
-        if index < warmup or index + 1 >= len(rows):
+        if index < warmup or index + horizon >= len(rows):
             raise ValueError("Historical dataset lacks indicator or forward-return support")
         window_rows = rows[index - warmup:index + 1]
         if any(item["close"] <= 0 for item in window_rows):
             raise ValueError("Historical dataset has invalid indicator source values")
         signal = strategy["compute"](window_rows)
         indicator_value = signal["indicator_value"]
-        next_row = rows[index + 1]
+        next_row = rows[index + horizon]
         if (not math.isfinite(indicator_value) or row[column_name] != indicator_value
-                or epoch(next_row["timestamp"]) != timestamp + frequency):
+                or epoch(next_row["timestamp"]) != timestamp + horizon * frequency):
             raise ValueError("Historical dataset indicator or forward-return support is invalid")
         forward_return = next_row["close"] / row["close"] - 1
-        if not math.isfinite(forward_return) or row["forward_return_1d"] != forward_return:
+        if not math.isfinite(forward_return) or row[forward_column] != forward_return:
             raise ValueError("Historical dataset forward return is invalid")
         group = signal["group"]
         evidence.append({
@@ -795,6 +836,7 @@ def _experiment_result_record_is_valid(record):
             "return_t_plus_1", "group",
         }
         column_name = None
+        horizon_seconds = None
         if record["evidence"]:
             if not isinstance(record["evidence"][0], dict):
                 return False
@@ -802,11 +844,17 @@ def _experiment_result_record_is_valid(record):
             if len(extra_keys) != 1:
                 return False
             column_name = next(iter(extra_keys))
+            first = record["evidence"][0]
+            if (not _explicit_utc(first.get("timestamp")) or not _explicit_utc(first.get("next_timestamp"))):
+                return False
+            horizon_seconds = epoch(first["next_timestamp"]) - epoch(first["timestamp"])
+            if horizon_seconds <= 0 or horizon_seconds % 86400:
+                return False
         for expected_timestamp, item in zip(expected_timestamps, record["evidence"]):
             if (not isinstance(item, dict) or set(item) != base_evidence_fields | {column_name}
                     or item["timestamp"] != expected_timestamp
                     or item["row_role"] != HYPOTHESIS_DATASET_EVALUATION_ROLE
-                    or item["next_timestamp"] != iso(epoch(item["timestamp"]) + 86400)
+                    or item["next_timestamp"] != iso(epoch(item["timestamp"]) + horizon_seconds)
                     or item["group"] not in {"UPPER", "LOWER_OR_EQUAL"}
                     or not all(isinstance(item[name], float) and math.isfinite(item[name])
                                for name in ("close", column_name, "next_close", "return_t_plus_1"))
@@ -882,7 +930,9 @@ def _verified_experiment_result_inputs(experiment_registry_path, hypothesis_regi
         hypothesis_registry_path, experiment["references"]["hypothesis"]["hypothesis_id"],
         experiment["references"]["hypothesis"]["version"])
     strategy = _experiment_conditions_strategy(experiment["conditions"])
-    dataset = verified_hypothesis_dataset(dataset_directory, hypothesis_registry_path, strategy)
+    horizon = _experiment_conditions_horizon(experiment["conditions"])
+    dataset = verified_hypothesis_dataset(
+        dataset_directory, hypothesis_registry_path, strategy, horizon)
     references = _experiment_result_references(experiment)
     expected_hypothesis_reference = {
         "hypothesis_id": hypothesis["hypothesis_id"], "version": hypothesis["version"],

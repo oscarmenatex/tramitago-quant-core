@@ -430,6 +430,46 @@
       "system_version": "0.1.0",
       "target_metric": "mean_forward_return_1d(volume_t > VOLSURGE20_t) - mean_forward_return_1d(volume_t <= VOLSURGE20_t)",
       "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "GT",
+        "expected_direction": "INCREASE",
+        "metric": "mean_forward_return_5d(close_t > SMA3_t) - mean_forward_return_5d(close_t <= SMA3_t)",
+        "threshold": "0"
+      },
+      "code_revision": "e3d5cbe687d32724b7544cfd0bed219fb5395277",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2026-01-01T00:00:00Z",
+          "start_utc": "2025-01-01T00:00:00Z"
+        },
+        "universe": [
+          "BTC-USD"
+        ],
+        "variables": [
+          "close",
+          "sma_close_3",
+          "forward_return_5d"
+        ]
+      },
+      "creation_context": {
+        "created_by": "oscar+claude-analysis",
+        "provenance": [
+          "DISCOVERY|artifacts/live-run-1",
+          "SNAPSHOT_SHA256|a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f",
+          "ANALYSIS|tramitago-quant-core-docs/Investigacion de Dimensiones No Tocadas - Que Se Puede y Que Se Debe Tocar (2026-09-28).txt"
+        ]
+      },
+      "creation_timestamp": "2026-09-28T12:25:00Z",
+      "description": "For BTC-USD, the mean 5-day forward return when close_t > SMA3_t exceeds the mean 5-day forward return when close_t <= SMA3_t (same SMA3 signal as the original rejected Hypothesis, measured over a longer horizon: maybe the effect takes longer than 1 day to manifest).",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|bbfbdf80-99ad-404c-be78-686dd2c7b941",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|bbfbdf80-99ad-404c-be78-686dd2c7b941|1|601c00e3b44921583c932b881406c9d36312c31fe5ba4660498b158748c5bf31",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_return_5d(close_t > SMA3_t) - mean_forward_return_5d(close_t <= SMA3_t)",
+      "version": 1
     }
   ],
   "schema_version": "2"
