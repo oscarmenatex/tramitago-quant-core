@@ -28,7 +28,7 @@ from tramitago_quant_core.research.historical_dataset import (
     verified_hypothesis_dataset,
 )
 from tramitago_quant_core.strategy_contract.strategy import (
-    sma_crossover_strategy, momentum_crossover_strategy,
+    sma_crossover_strategy, momentum_crossover_strategy, volume_surge_strategy,
 )
 
 # M4.1 production wiring (2026-09-28): an Experiment's indicator is described
@@ -41,6 +41,7 @@ from tramitago_quant_core.strategy_contract.strategy import (
 _EXPERIMENT_STRATEGY_CONSTRUCTORS = {
     "SMA_CROSSOVER": lambda parameters: sma_crossover_strategy(parameters["window"]),
     "MOMENTUM_CROSSOVER": lambda parameters: momentum_crossover_strategy(parameters["lookback"]),
+    "VOLUME_SURGE": lambda parameters: volume_surge_strategy(parameters["window"]),
 }
 
 
@@ -566,19 +567,26 @@ def _experiment_result_dataset_rows(dataset_directory, conditions):
         if set(row) != set(columns):
             raise ValueError("Historical dataset row has unsupported fields")
         try:
+            open_price = float(row["open"])
+            high = float(row["high"])
+            low = float(row["low"])
             close = float(row["close"])
+            volume = float(row["volume"])
             indicator_value = None if row[column_name] == "" else float(row[column_name])
             forward = (None if row["forward_return_1d"] == ""
                        else float(row["forward_return_1d"]))
         except (TypeError, ValueError) as error:
             raise ValueError("Historical dataset has a nonnumeric experiment input") from error
         if (not _explicit_utc(row["timestamp"]) or not math.isfinite(close) or close <= 0
+                or not math.isfinite(open_price) or not math.isfinite(high)
+                or not math.isfinite(low) or not math.isfinite(volume)
                 or (indicator_value is not None and not math.isfinite(indicator_value))
                 or (forward is not None and not math.isfinite(forward))):
             raise ValueError("Historical dataset has an invalid experiment input")
         rows.append({
             "instrument": row["instrument"], "timestamp": row["timestamp"],
-            "close": close, column_name: indicator_value, "forward_return_1d": forward,
+            "open": open_price, "high": high, "low": low, "close": close, "volume": volume,
+            column_name: indicator_value, "forward_return_1d": forward,
             "row_role": row["row_role"], "source_row": number,
         })
 
@@ -802,10 +810,16 @@ def _experiment_result_record_is_valid(record):
                     or item["group"] not in {"UPPER", "LOWER_OR_EQUAL"}
                     or not all(isinstance(item[name], float) and math.isfinite(item[name])
                                for name in ("close", column_name, "next_close", "return_t_plus_1"))
-                    or item["return_t_plus_1"] != item["next_close"] / item["close"] - 1
-                    or item["group"] != ("UPPER" if item["close"] > item[column_name]
-                                          else "LOWER_OR_EQUAL")):
+                    or item["return_t_plus_1"] != item["next_close"] / item["close"] - 1):
                 return False
+            # M4.1 production wiring (2026-09-28): "group" is NOT re-derived
+            # here as close-vs-indicator -- that comparison is only correct
+            # for strategies whose classification variable IS close (SMA,
+            # Momentum). A strategy classifying by another base variable
+            # (e.g. VOLUME_SURGE, by volume) would fail this cheap check
+            # even when genuinely valid. Full grounding of "group" against
+            # the true Strategy still happens in verified_experiment_result,
+            # which recomputes it via the real conditions/compute().
         expected_evaluation = _experiment_result_evaluation(
             period, record["evidence"], evaluation["criterion"], analytical_rule)
         if evaluation != expected_evaluation or evaluation["criterion_result"] not in EXPERIMENT_RESULT_OUTCOMES:

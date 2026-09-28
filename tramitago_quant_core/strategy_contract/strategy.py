@@ -93,6 +93,45 @@ def momentum_crossover_strategy(lookback):
     }
 
 
+def volume_surge_strategy(window):
+    """A third Strategy family, structurally unrelated to SMA_CROSSOVER and
+    MOMENTUM_CROSSOVER: classifies each observation by whether its trading
+    volume exceeds its own trailing average volume over the prior `window`
+    days -- an information-flow hypothesis (unusual volume, not price
+    trend), never derived from `close`. Proposed 2026-09-28 after 9 real
+    SMA/Momentum variants all showed a full-sample effect an order of
+    magnitude smaller than the instrument's own daily volatility -- a
+    genuinely different signal source, not another parameter of the same
+    idea."""
+    if not isinstance(window, int) or isinstance(window, bool) or window < 2:
+        raise ValueError("Volume surge window must be an integer >= 2")
+    indicator_name = f"VOLSURGE{window}"
+    column_name = f"volume_avg_{window}"
+
+    def compute(window_rows):
+        if len(window_rows) != window + 1:
+            raise ValueError("Strategy compute window has the wrong length")
+        prior = window_rows[:-1]
+        indicator_value = math.fsum(row["volume"] for row in prior) / window
+        if not math.isfinite(indicator_value):
+            raise ValueError("Non-finite indicator")
+        current_volume = window_rows[-1]["volume"]
+        group = "UPPER" if current_volume > indicator_value else "LOWER_OR_EQUAL"
+        return {"indicator_value": indicator_value, "group": group}
+
+    return {
+        "schema_version": STRATEGY_SCHEMA_VERSION,
+        "strategy_id": "VOLUME_SURGE",
+        "parameters": {"window": window},
+        "indicator_name": indicator_name,
+        "column_name": column_name,
+        "required_inputs": {"variables": ["volume"], "warmup_periods": window},
+        "upper_group_description": f"volume_t > {indicator_name}_t",
+        "lower_or_equal_group_description": f"volume_t <= {indicator_name}_t",
+        "compute": compute,
+    }
+
+
 def _strategy_classify_rows(strategy, rows):
     """Generic classification runner: given ANY Strategy (via its contract)
     and raw rows (each with at least 'close'), produces one classified row
