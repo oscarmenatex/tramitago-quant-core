@@ -22,10 +22,37 @@ from tramitago_quant_core.shared.util import (
 )
 from tramitago_quant_core.research.hypothesis import _hypothesis_id_is_valid, load_hypothesis
 from tramitago_quant_core.research.historical_dataset import (
-    HYPOTHESIS_DATASET_COLUMNS, HYPOTHESIS_DATASET_WARMUP_ROLE,
+    HYPOTHESIS_DATASET_WARMUP_ROLE,
     HYPOTHESIS_DATASET_EVALUATION_ROLE, HYPOTHESIS_DATASET_FORWARD_ROLE,
+    _hypothesis_dataset_columns, _hypothesis_dataset_warmup_role,
     verified_hypothesis_dataset,
 )
+from tramitago_quant_core.strategy_contract.strategy import (
+    sma_crossover_strategy, momentum_crossover_strategy,
+)
+
+# M4.1 production wiring (2026-09-28): an Experiment's indicator is described
+# either by the legacy fixed "sma" field (the exact shape both already-sealed
+# real Experiments -- BTC-USD, ETH-USD -- were constituted and hashed with,
+# always sma_crossover_strategy(3)) or by the generic "indicator" field (any
+# other Strategy, reconstructed here from its own strategy_id/parameters so
+# results can be independently recalculated without trusting the persisted
+# evidence). Never a version flag: the field key present *is* the shape.
+_EXPERIMENT_STRATEGY_CONSTRUCTORS = {
+    "SMA_CROSSOVER": lambda parameters: sma_crossover_strategy(parameters["window"]),
+    "MOMENTUM_CROSSOVER": lambda parameters: momentum_crossover_strategy(parameters["lookback"]),
+}
+
+
+def _experiment_conditions_strategy(conditions):
+    """Reconstruct the exact Strategy a sealed Experiment's conditions describe."""
+    if "sma" in conditions:
+        return sma_crossover_strategy(conditions["sma"]["window"])
+    indicator = conditions["indicator"]
+    constructor = _EXPERIMENT_STRATEGY_CONSTRUCTORS.get(indicator["strategy_id"])
+    if constructor is None:
+        raise ValueError("Experiment indicator strategy is not recognized")
+    return constructor(indicator["parameters"])
 
 
 EXPERIMENT_CONDITIONS_REGISTRY_SCHEMA_VERSION = "1"
@@ -77,12 +104,21 @@ def _discovery_snapshot(hypothesis):
     return snapshots[0]
 
 
-def _experiment_conditions(hypothesis, dataset, selection):
+def _experiment_conditions(hypothesis, dataset, selection, strategy=None):
     """Instrument extension (2026-09-28): the instrument is read from the
     dataset's own config, not fixed to "BTC-USD" -- generalized after
     finding it hardcoded while investigating a second instrument (ETH-USD)
     for the same SMA3 Hypothesis, the same way M4.1 generalized the
-    indicator window."""
+    indicator window.
+
+    M4.1 production wiring (2026-09-28): `strategy` defaults to
+    sma_crossover_strategy(3) -- exactly the Strategy both already-sealed
+    real Experiments (BTC-USD, ETH-USD) were constituted with -- and, only
+    for that exact default, still emits the legacy "sma" field so those two
+    sealed records keep reproducing byte-for-byte. Any other Strategy emits
+    the generic "indicator" field instead.
+    """
+    strategy = strategy or sma_crossover_strategy(3)
     reference = _experiment_reference(hypothesis, dataset, selection)
     criterion = hypothesis["acceptance_criterion"]
     metric = hypothesis["target_metric"]
@@ -95,25 +131,41 @@ def _experiment_conditions(hypothesis, dataset, selection):
             or reference["dataset"]["evaluable_period"]
             != hypothesis["constraints"]["period"]):
         raise ValueError("Hypothesis and dataset conditions are incompatible")
+    is_legacy_default = (strategy["strategy_id"] == "SMA_CROSSOVER"
+                         and strategy["parameters"] == {"window": 3})
+    analytical_rule = {
+        "upper_group": strategy["upper_group_description"],
+        "lower_or_equal_group": strategy["lower_or_equal_group_description"],
+    }
+    metric_formula = (
+        f"mean(return_t+1 | {strategy['upper_group_description']}) - "
+        f"mean(return_t+1 | {strategy['lower_or_equal_group_description']})")
+    indicator_field = (
+        {"sma": {"source": "close", "window": strategy["parameters"]["window"]}}
+        if is_legacy_default else
+        {"indicator": {
+            "strategy_id": strategy["strategy_id"],
+            "parameters": strategy["parameters"],
+            "column_name": strategy["column_name"],
+        }}
+    )
+    warmup_role = _hypothesis_dataset_warmup_role(strategy)
     return {
         "schema_version": EXPERIMENT_CONDITIONS_SCHEMA_VERSION,
         "instrument": instrument,
         "frequency_seconds": 86400,
-        "analytical_rule": {
-            "upper_group": "close_t > SMA3_t",
-            "lower_or_equal_group": "close_t <= SMA3_t",
-        },
-        "sma": {"source": "close", "window": 3},
+        "analytical_rule": analytical_rule,
+        **indicator_field,
         "outcome": {"name": "return_t+1", "formula": "(close_t+1 / close_t) - 1"},
         "metric": {
             "name": metric,
-            "formula": "mean(return_t+1 | close_t > SMA3_t) - mean(return_t+1 | close_t <= SMA3_t)",
+            "formula": metric_formula,
         },
         "acceptance_criterion": criterion,
         "population": {
             "included_row_role": HYPOTHESIS_DATASET_EVALUATION_ROLE,
             "excluded_row_roles": [
-                HYPOTHESIS_DATASET_WARMUP_ROLE,
+                warmup_role,
                 HYPOTHESIS_DATASET_FORWARD_ROLE,
             ],
             "support_rows": selection["support_rows"],
@@ -140,13 +192,57 @@ def _experiment_conditions(hypothesis, dataset, selection):
 
 
 def _experiment_conditions_are_valid(conditions):
-    fields = {
-        "schema_version", "instrument", "frequency_seconds", "analytical_rule", "sma",
+    common_fields = {
+        "schema_version", "instrument", "frequency_seconds", "analytical_rule",
         "outcome", "metric", "acceptance_criterion", "population", "temporal_split",
         "costs", "execution_scope",
     }
-    if not isinstance(conditions, dict) or set(conditions) != fields:
+    if not isinstance(conditions, dict):
         return False
+    is_legacy = set(conditions) == common_fields | {"sma"}
+    is_generic = set(conditions) == common_fields | {"indicator"}
+    if not (is_legacy or is_generic):
+        return False
+    analytical_rule = conditions.get("analytical_rule")
+    if not (isinstance(analytical_rule, dict)
+            and set(analytical_rule) == {"upper_group", "lower_or_equal_group"}
+            and _hypothesis_text_is_valid(analytical_rule.get("upper_group"))
+            and _hypothesis_text_is_valid(analytical_rule.get("lower_or_equal_group"))):
+        return False
+    if is_legacy:
+        if (analytical_rule != {"upper_group": "close_t > SMA3_t",
+                                "lower_or_equal_group": "close_t <= SMA3_t"}
+                or conditions.get("sma") != {"source": "close", "window": 3}):
+            return False
+        warmup_role = HYPOTHESIS_DATASET_WARMUP_ROLE
+        warmup_count = 2
+        expected_formula = ("mean(return_t+1 | close_t > SMA3_t) - "
+                            "mean(return_t+1 | close_t <= SMA3_t)")
+    else:
+        indicator = conditions.get("indicator")
+        if (not isinstance(indicator, dict)
+                or set(indicator) != {"strategy_id", "parameters", "column_name"}
+                or not _hypothesis_text_is_valid(indicator.get("strategy_id"))
+                or not isinstance(indicator.get("parameters"), dict)
+                or not _hypothesis_text_is_valid(indicator.get("column_name"))):
+            return False
+        try:
+            reconstructed = _experiment_conditions_strategy(conditions)
+        except (KeyError, ValueError, TypeError):
+            return False
+        if (reconstructed["column_name"] != indicator["column_name"]
+                or reconstructed["parameters"] != indicator["parameters"]
+                or reconstructed["strategy_id"] != indicator["strategy_id"]
+                or analytical_rule != {
+                    "upper_group": reconstructed["upper_group_description"],
+                    "lower_or_equal_group": reconstructed["lower_or_equal_group_description"]}):
+            return False
+        warmup_role = _hypothesis_dataset_warmup_role(reconstructed)
+        warmup_count = reconstructed["required_inputs"]["warmup_periods"]
+        expected_formula = (
+            f"mean(return_t+1 | {analytical_rule['upper_group']}) - "
+            f"mean(return_t+1 | {analytical_rule['lower_or_equal_group']})")
+    expected_support_roles = [warmup_role] * warmup_count + [HYPOTHESIS_DATASET_FORWARD_ROLE]
     period = conditions["temporal_split"].get("independent_evaluation_period") \
         if isinstance(conditions["temporal_split"], dict) else None
     support_rows = conditions["population"].get("support_rows") \
@@ -156,15 +252,11 @@ def _experiment_conditions_are_valid(conditions):
         conditions.get("schema_version") == EXPERIMENT_CONDITIONS_SCHEMA_VERSION
         and _hypothesis_text_is_valid(conditions.get("instrument"))
         and conditions.get("frequency_seconds") == 86400
-        and conditions.get("analytical_rule") == {
-            "upper_group": "close_t > SMA3_t", "lower_or_equal_group": "close_t <= SMA3_t"}
-        and conditions.get("sma") == {"source": "close", "window": 3}
         and conditions.get("outcome") == {
             "name": "return_t+1", "formula": "(close_t+1 / close_t) - 1"}
         and isinstance(conditions.get("metric"), dict)
         and _hypothesis_text_is_valid(conditions["metric"].get("name"))
-        and conditions["metric"].get("formula")
-        == "mean(return_t+1 | close_t > SMA3_t) - mean(return_t+1 | close_t <= SMA3_t)"
+        and conditions["metric"].get("formula") == expected_formula
         and isinstance(criterion, dict)
         and set(criterion) == {"metric", "comparison", "threshold", "expected_direction"}
         and criterion.get("metric") == conditions["metric"]["name"]
@@ -173,13 +265,12 @@ def _experiment_conditions_are_valid(conditions):
         and isinstance(period, dict) and set(period) == {"start_utc", "end_exclusive_utc"}
         and _explicit_utc(period["start_utc"]) and _explicit_utc(period["end_exclusive_utc"])
         and epoch(period["start_utc"]) < epoch(period["end_exclusive_utc"])
-        and isinstance(support_rows, list) and len(support_rows) == 3
+        and isinstance(support_rows, list) and len(support_rows) == len(expected_support_roles)
         and [item.get("row_role") if isinstance(item, dict) else None for item in support_rows]
-        == [HYPOTHESIS_DATASET_WARMUP_ROLE, HYPOTHESIS_DATASET_WARMUP_ROLE,
-            HYPOTHESIS_DATASET_FORWARD_ROLE]
+        == expected_support_roles
         and conditions["population"].get("included_row_role") == HYPOTHESIS_DATASET_EVALUATION_ROLE
         and conditions["population"].get("excluded_row_roles") == [
-            HYPOTHESIS_DATASET_WARMUP_ROLE, HYPOTHESIS_DATASET_FORWARD_ROLE]
+            warmup_role, HYPOTHESIS_DATASET_FORWARD_ROLE]
         and isinstance(conditions["temporal_split"].get("discovery_evidence"), dict)
         and conditions["temporal_split"]["discovery_evidence"].get("path")
         == "artifacts/live-run-1"
@@ -311,9 +402,9 @@ def _persist_experiment_conditions(registry_path, record):
 
 
 def _experiment_inputs(hypothesis_registry_path, dataset_directory, hypothesis_id,
-                       hypothesis_version, dataset_id):
+                       hypothesis_version, dataset_id, strategy=None):
     hypothesis = load_hypothesis(hypothesis_registry_path, hypothesis_id, hypothesis_version)
-    dataset = verified_hypothesis_dataset(dataset_directory, hypothesis_registry_path)
+    dataset = verified_hypothesis_dataset(dataset_directory, hypothesis_registry_path, strategy)
     selection = json.loads((Path(dataset_directory) / "selection.json").read_bytes())
     if dataset["dataset_id"] != dataset_id:
         raise ValueError("Dataset identity does not match the experiment reference")
@@ -327,22 +418,23 @@ def _experiment_inputs(hypothesis_registry_path, dataset_directory, hypothesis_i
 
 def constitute_experiment_conditions(registry_path, *, hypothesis_registry_path,
                                      dataset_directory, hypothesis_id, hypothesis_version,
-                                     dataset_id, created_at, revision_reason):
+                                     dataset_id, created_at, revision_reason, strategy=None):
     """Fix one real experiment definition without calculating or executing it."""
     if not _explicit_utc(created_at) or not _hypothesis_text_is_valid(revision_reason):
         raise ValueError("Experiment creation time and revision reason are required")
     hypothesis, dataset, selection, references = _experiment_inputs(
-        hypothesis_registry_path, dataset_directory, hypothesis_id, hypothesis_version, dataset_id)
+        hypothesis_registry_path, dataset_directory, hypothesis_id, hypothesis_version,
+        dataset_id, strategy)
     experiment_id = "EXPERIMENT|" + str(uuid.uuid4())
     record = _experiment_record(
-        experiment_id, 1, references, _experiment_conditions(hypothesis, dataset, selection),
+        experiment_id, 1, references, _experiment_conditions(hypothesis, dataset, selection, strategy),
         created_at, EXPERIMENT_CONDITIONS_STATUS, revision_reason)
     return _persist_experiment_conditions(registry_path, record)
 
 
 def revise_experiment_conditions(registry_path, experiment_id, *, hypothesis_registry_path,
                                  dataset_directory, hypothesis_id, hypothesis_version,
-                                 dataset_id, created_at, revision_reason):
+                                 dataset_id, created_at, revision_reason, strategy=None):
     """Append a new sealed version while retaining every prior experiment definition."""
     if not _experiment_id_is_valid(experiment_id) or not _explicit_utc(created_at) \
             or not _hypothesis_text_is_valid(revision_reason):
@@ -353,10 +445,11 @@ def revise_experiment_conditions(registry_path, experiment_id, *, hypothesis_reg
     if not prior:
         raise ValueError("Experiment identity is not registered")
     hypothesis, dataset, selection, references = _experiment_inputs(
-        hypothesis_registry_path, dataset_directory, hypothesis_id, hypothesis_version, dataset_id)
+        hypothesis_registry_path, dataset_directory, hypothesis_id, hypothesis_version,
+        dataset_id, strategy)
     record = _experiment_record(
         experiment_id, len(prior) + 1, references,
-        _experiment_conditions(hypothesis, dataset, selection), created_at,
+        _experiment_conditions(hypothesis, dataset, selection, strategy), created_at,
         EXPERIMENT_CONDITIONS_STATUS, revision_reason)
     return _persist_experiment_conditions(registry_path, record)
 
@@ -379,11 +472,12 @@ def verified_experiment_conditions(registry_path, experiment_id, version, *,
     """Reload a sealed definition and prove that its external immutable references agree."""
     record = load_experiment_conditions(registry_path, experiment_id, version)
     reference = record["references"]
+    strategy = _experiment_conditions_strategy(record["conditions"])
     hypothesis, dataset, selection, expected_references = _experiment_inputs(
         hypothesis_registry_path, dataset_directory, reference["hypothesis"]["hypothesis_id"],
-        reference["hypothesis"]["version"], reference["dataset"]["dataset_id"])
+        reference["hypothesis"]["version"], reference["dataset"]["dataset_id"], strategy)
     if (reference != expected_references
-            or record["conditions"] != _experiment_conditions(hypothesis, dataset, selection)):
+            or record["conditions"] != _experiment_conditions(hypothesis, dataset, selection, strategy)):
         raise ValueError("Experiment conditions references are incompatible")
     return record
 
@@ -444,11 +538,22 @@ def _experiment_result_execution(code_revision):
 
 
 def _experiment_result_dataset_rows(dataset_directory, conditions):
-    """Parse the sealed CSV and derive only its independently evaluable observations."""
+    """Parse the sealed CSV and derive only its independently evaluable observations.
+
+    M4.1 production wiring (2026-09-28): the indicator is never recomputed
+    as a hardcoded SMA3 -- the Strategy is reconstructed from `conditions`
+    itself (its own sealed strategy_id/parameters) and its own compute() is
+    used, so this stays a genuine independent recalculation for any Strategy,
+    not just the legacy default.
+    """
+    strategy = _experiment_conditions_strategy(conditions)
+    column_name = strategy["column_name"]
+    warmup = strategy["required_inputs"]["warmup_periods"]
+    columns = _hypothesis_dataset_columns(strategy)
     try:
         text = (Path(dataset_directory) / "dataset.csv").read_text(encoding="utf-8")
         reader = csv.DictReader(io.StringIO(text, newline=""))
-        if reader.fieldnames != HYPOTHESIS_DATASET_COLUMNS:
+        if reader.fieldnames != columns:
             raise ValueError("Historical dataset columns are invalid for experiment execution")
         raw_rows = list(reader)
     except (OSError, UnicodeError, csv.Error) as error:
@@ -458,22 +563,22 @@ def _experiment_result_dataset_rows(dataset_directory, conditions):
 
     rows = []
     for number, row in enumerate(raw_rows, 1):
-        if set(row) != set(HYPOTHESIS_DATASET_COLUMNS):
+        if set(row) != set(columns):
             raise ValueError("Historical dataset row has unsupported fields")
         try:
             close = float(row["close"])
-            sma = None if row["sma_close_3"] == "" else float(row["sma_close_3"])
+            indicator_value = None if row[column_name] == "" else float(row[column_name])
             forward = (None if row["forward_return_1d"] == ""
                        else float(row["forward_return_1d"]))
         except (TypeError, ValueError) as error:
             raise ValueError("Historical dataset has a nonnumeric experiment input") from error
         if (not _explicit_utc(row["timestamp"]) or not math.isfinite(close) or close <= 0
-                or (sma is not None and not math.isfinite(sma))
+                or (indicator_value is not None and not math.isfinite(indicator_value))
                 or (forward is not None and not math.isfinite(forward))):
             raise ValueError("Historical dataset has an invalid experiment input")
         rows.append({
             "instrument": row["instrument"], "timestamp": row["timestamp"],
-            "close": close, "sma_close_3": sma, "forward_return_1d": forward,
+            "close": close, column_name: indicator_value, "forward_return_1d": forward,
             "row_role": row["row_role"], "source_row": number,
         })
 
@@ -499,25 +604,26 @@ def _experiment_result_dataset_rows(dataset_directory, conditions):
             raise ValueError("Historical dataset row role is incompatible with experiment period")
         if not is_evaluable:
             continue
-        if index < 2 or index + 1 >= len(rows):
-            raise ValueError("Historical dataset lacks SMA or forward-return support")
-        prior = rows[index - 2:index + 1]
-        if any(item["close"] <= 0 for item in prior):
-            raise ValueError("Historical dataset has invalid SMA source values")
-        sma = math.fsum(item["close"] / 3 for item in prior)
+        if index < warmup or index + 1 >= len(rows):
+            raise ValueError("Historical dataset lacks indicator or forward-return support")
+        window_rows = rows[index - warmup:index + 1]
+        if any(item["close"] <= 0 for item in window_rows):
+            raise ValueError("Historical dataset has invalid indicator source values")
+        signal = strategy["compute"](window_rows)
+        indicator_value = signal["indicator_value"]
         next_row = rows[index + 1]
-        if (not math.isfinite(sma) or row["sma_close_3"] != sma
+        if (not math.isfinite(indicator_value) or row[column_name] != indicator_value
                 or epoch(next_row["timestamp"]) != timestamp + frequency):
-            raise ValueError("Historical dataset SMA or forward-return support is invalid")
+            raise ValueError("Historical dataset indicator or forward-return support is invalid")
         forward_return = next_row["close"] / row["close"] - 1
         if not math.isfinite(forward_return) or row["forward_return_1d"] != forward_return:
             raise ValueError("Historical dataset forward return is invalid")
-        group = "UPPER" if row["close"] > sma else "LOWER_OR_EQUAL"
+        group = signal["group"]
         evidence.append({
             "timestamp": row["timestamp"],
             "row_role": HYPOTHESIS_DATASET_EVALUATION_ROLE,
             "close": row["close"],
-            "sma_close_3": sma,
+            column_name: indicator_value,
             "next_timestamp": next_row["timestamp"],
             "next_close": next_row["close"],
             "return_t_plus_1": forward_return,
@@ -528,16 +634,16 @@ def _experiment_result_dataset_rows(dataset_directory, conditions):
     return evidence
 
 
-def _experiment_result_summary(evidence, criterion):
+def _experiment_result_summary(evidence, criterion, analytical_rule):
     upper = [item["return_t_plus_1"] for item in evidence if item["group"] == "UPPER"]
     lower = [item["return_t_plus_1"] for item in evidence
              if item["group"] == "LOWER_OR_EQUAL"]
     upper_mean = math.fsum(upper) / len(upper) if upper else None
     lower_mean = math.fsum(lower) / len(lower) if lower else None
     groups = {
-        "upper": {"rule": "close_t > SMA3_t", "count": len(upper),
+        "upper": {"rule": analytical_rule["upper_group"], "count": len(upper),
                   "mean_return_t_plus_1": upper_mean},
-        "lower_or_equal": {"rule": "close_t <= SMA3_t", "count": len(lower),
+        "lower_or_equal": {"rule": analytical_rule["lower_or_equal_group"], "count": len(lower),
                            "mean_return_t_plus_1": lower_mean},
     }
     if (upper_mean is None or lower_mean is None
@@ -576,11 +682,11 @@ def _experiment_result_record(result_id, references, inputs, execution, evaluati
             + digest(encoded(content))}
 
 
-def _experiment_result_evaluation(period, evidence, criterion):
+def _experiment_result_evaluation(period, evidence, criterion, analytical_rule):
     return {
         "period": period,
         "observation_count": len(evidence),
-        **_experiment_result_summary(evidence, criterion),
+        **_experiment_result_summary(evidence, criterion, analytical_rule),
     }
 
 
@@ -658,22 +764,50 @@ def _experiment_result_record_is_valid(record):
             epoch(period["start_utc"]), epoch(period["end_exclusive_utc"]), 86400)]
         if len(record["evidence"]) != len(expected_timestamps):
             return False
+        # M4.1 production wiring (2026-09-28): this record carries no
+        # "conditions" (only a reference to the sealed Experiment that
+        # defines them), so the indicator column name and analytical-rule
+        # text can only be read from this record's own evidence/evaluation
+        # shape here, not independently re-derived -- that grounding against
+        # the true sealed Experiment happens in verified_experiment_result,
+        # which reloads conditions and fully recalculates the evidence.
+        groups = evaluation.get("groups")
+        if (not isinstance(groups, dict) or set(groups) != {"upper", "lower_or_equal"}
+                or not isinstance(groups.get("upper"), dict)
+                or not isinstance(groups.get("lower_or_equal"), dict)
+                or not _hypothesis_text_is_valid(groups["upper"].get("rule"))
+                or not _hypothesis_text_is_valid(groups["lower_or_equal"].get("rule"))):
+            return False
+        analytical_rule = {
+            "upper_group": groups["upper"]["rule"],
+            "lower_or_equal_group": groups["lower_or_equal"]["rule"],
+        }
+        base_evidence_fields = {
+            "timestamp", "row_role", "close", "next_timestamp", "next_close",
+            "return_t_plus_1", "group",
+        }
+        column_name = None
+        if record["evidence"]:
+            if not isinstance(record["evidence"][0], dict):
+                return False
+            extra_keys = set(record["evidence"][0]) - base_evidence_fields
+            if len(extra_keys) != 1:
+                return False
+            column_name = next(iter(extra_keys))
         for expected_timestamp, item in zip(expected_timestamps, record["evidence"]):
-            if (not isinstance(item, dict) or set(item) != {
-                    "timestamp", "row_role", "close", "sma_close_3", "next_timestamp",
-                    "next_close", "return_t_plus_1", "group"}
+            if (not isinstance(item, dict) or set(item) != base_evidence_fields | {column_name}
                     or item["timestamp"] != expected_timestamp
                     or item["row_role"] != HYPOTHESIS_DATASET_EVALUATION_ROLE
                     or item["next_timestamp"] != iso(epoch(item["timestamp"]) + 86400)
                     or item["group"] not in {"UPPER", "LOWER_OR_EQUAL"}
                     or not all(isinstance(item[name], float) and math.isfinite(item[name])
-                               for name in ("close", "sma_close_3", "next_close", "return_t_plus_1"))
+                               for name in ("close", column_name, "next_close", "return_t_plus_1"))
                     or item["return_t_plus_1"] != item["next_close"] / item["close"] - 1
-                    or item["group"] != ("UPPER" if item["close"] > item["sma_close_3"]
+                    or item["group"] != ("UPPER" if item["close"] > item[column_name]
                                           else "LOWER_OR_EQUAL")):
                 return False
         expected_evaluation = _experiment_result_evaluation(
-            period, record["evidence"], evaluation["criterion"])
+            period, record["evidence"], evaluation["criterion"], analytical_rule)
         if evaluation != expected_evaluation or evaluation["criterion_result"] not in EXPERIMENT_RESULT_OUTCOMES:
             return False
     except (KeyError, TypeError, ValueError, OverflowError, ZeroDivisionError):
@@ -733,7 +867,8 @@ def _verified_experiment_result_inputs(experiment_registry_path, hypothesis_regi
     hypothesis = load_hypothesis(
         hypothesis_registry_path, experiment["references"]["hypothesis"]["hypothesis_id"],
         experiment["references"]["hypothesis"]["version"])
-    dataset = verified_hypothesis_dataset(dataset_directory, hypothesis_registry_path)
+    strategy = _experiment_conditions_strategy(experiment["conditions"])
+    dataset = verified_hypothesis_dataset(dataset_directory, hypothesis_registry_path, strategy)
     references = _experiment_result_references(experiment)
     expected_hypothesis_reference = {
         "hypothesis_id": hypothesis["hypothesis_id"], "version": hypothesis["version"],
@@ -769,7 +904,7 @@ def execute_experiment_result(registry_path, *, experiment_registry_path,
     evidence = _experiment_result_dataset_rows(dataset_directory, experiment["conditions"])
     evaluation = _experiment_result_evaluation(
         experiment["conditions"]["temporal_split"]["independent_evaluation_period"], evidence,
-        experiment["conditions"]["acceptance_criterion"])
+        experiment["conditions"]["acceptance_criterion"], experiment["conditions"]["analytical_rule"])
     record = _experiment_result_record(
         result_id, references, _experiment_result_inputs(
             experiment, hypothesis, dataset, dataset_directory),
@@ -802,7 +937,7 @@ def verified_experiment_result(registry_path, result_id, *, experiment_registry_
     evidence = _experiment_result_dataset_rows(dataset_directory, experiment["conditions"])
     evaluation = _experiment_result_evaluation(
         experiment["conditions"]["temporal_split"]["independent_evaluation_period"], evidence,
-        experiment["conditions"]["acceptance_criterion"])
+        experiment["conditions"]["acceptance_criterion"], experiment["conditions"]["analytical_rule"])
     expected = _experiment_result_record(
         record["result_id"], references, record["inputs"], record["execution"],
         evaluation, evidence)

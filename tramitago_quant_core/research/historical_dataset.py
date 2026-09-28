@@ -25,12 +25,21 @@ from tramitago_quant_core.shared.util import (
     digest, encoded, epoch, iso, publish, _explicit_utc, _pipeline_source_bytes,
 )
 from tramitago_quant_core.data.acquisition import (
-    COLUMNS, SCHEMA, normalize, validate, indicators, _coinbase_public_request_headers,
+    COLUMNS, SCHEMA, normalize, validate, _coinbase_public_request_headers,
 )
 from tramitago_quant_core.research.hypothesis import load_hypothesis
+from tramitago_quant_core.strategy_contract.strategy import (
+    sma_crossover_strategy, _strategy_classify_rows,
+)
 
 HYPOTHESIS_DATASET_SCHEMA_VERSION = "1"
 HYPOTHESIS_DATASET_CAPTURE_SCHEMA_VERSION = "1"
+# M4.1 production wiring (2026-09-28): these three constants remain the
+# LITERAL values every already-sealed real Hypothesis Dataset (BTC-USD,
+# ETH-USD) was built and hashed with -- they describe the strategy-agnostic
+# functions' *default* strategy (sma_crossover_strategy(3)) only. Any other
+# Strategy derives its own columns/schema/warmup-role dynamically; see
+# _hypothesis_dataset_columns/_hypothesis_dataset_schema/_hypothesis_dataset_warmup_role.
 HYPOTHESIS_DATASET_COLUMNS = COLUMNS + ["row_role", "forward_return_1d"]
 HYPOTHESIS_DATASET_SCHEMA = {
     **SCHEMA,
@@ -41,6 +50,40 @@ HYPOTHESIS_DATASET_MAX_CANDLES_PER_REQUEST = 300
 HYPOTHESIS_DATASET_WARMUP_ROLE = "SUPPORT_SMA3_WARMUP"
 HYPOTHESIS_DATASET_EVALUATION_ROLE = "EVALUATION"
 HYPOTHESIS_DATASET_FORWARD_ROLE = "SUPPORT_FORWARD_RETURN"
+_HYPOTHESIS_DATASET_WARMUP_COUNT_WORDS = {
+    1: "one", 2: "two", 3: "three", 4: "four", 5: "five",
+    6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten",
+}
+
+
+def _hypothesis_dataset_default_strategy():
+    return sma_crossover_strategy(3)
+
+
+def _hypothesis_dataset_warmup_role(strategy):
+    return f"SUPPORT_{strategy['indicator_name']}_WARMUP"
+
+
+def _hypothesis_dataset_support_policy(strategy):
+    warmup = strategy["required_inputs"]["warmup_periods"]
+    count_word = _HYPOTHESIS_DATASET_WARMUP_COUNT_WORDS.get(warmup, str(warmup))
+    return (f"exactly {count_word} {strategy['indicator_name']} warm-up rows before and "
+            "one forward-return row after the evaluable period")
+
+
+def _hypothesis_dataset_columns(strategy):
+    return COLUMNS[:-1] + [strategy["column_name"], "row_role", "forward_return_1d"]
+
+
+def _hypothesis_dataset_schema(strategy):
+    base_schema = {key: value for key, value in SCHEMA.items() if key != "sma_close_3"}
+    return {
+        **base_schema,
+        strategy["column_name"]: "nullable finite float64",
+        "row_role": (f"SUPPORT_{strategy['indicator_name']}_WARMUP | EVALUATION | "
+                     "SUPPORT_FORWARD_RETURN"),
+        "forward_return_1d": "nullable finite float64; defined only for EVALUATION rows",
+    }
 
 
 def _hypothesis_dataset_endpoint(instrument):
@@ -53,12 +96,23 @@ def _hypothesis_dataset_endpoint(instrument):
     return f"https://api.exchange.coinbase.com/products/{instrument}/candles"
 
 
-def _hypothesis_dataset_config(hypothesis):
-    """Derive the only capture window permitted by one registered Hypothesis."""
+def _hypothesis_dataset_config(hypothesis, strategy=None):
+    """Derive the only capture window permitted by one registered Hypothesis.
+
+    M4.1 production wiring (2026-09-28): `strategy` defaults to
+    sma_crossover_strategy(3) -- the exact indicator every already-sealed
+    real Hypothesis Dataset (BTC-USD, ETH-USD) was built with -- so this
+    reproduces the prior fixed-SMA3 config byte-for-byte when called the
+    same way (no strategy argument) as before. Any other Strategy derives
+    its own warmup/required-variables/support-policy from its own contract.
+    """
+    strategy = strategy or _hypothesis_dataset_default_strategy()
     constraints = hypothesis["constraints"]
     period = constraints["period"]
     universe = constraints["universe"]
-    required_variables = {"close", "sma_close_3", "forward_return_1d"}
+    warmup = strategy["required_inputs"]["warmup_periods"]
+    required_variables = set(strategy["required_inputs"]["variables"]) | {
+        strategy["column_name"], "forward_return_1d"}
     if (not isinstance(universe, list) or len(universe) != 1
             or not isinstance(universe[0], str) or not universe[0]
             or not required_variables.issubset(constraints["variables"])
@@ -82,10 +136,10 @@ def _hypothesis_dataset_config(hypothesis):
             "end_exclusive_utc": iso(end),
         },
         "capture_period": {
-            "start_utc": iso(start - 2 * 86400),
+            "start_utc": iso(start - warmup * 86400),
             "end_exclusive_utc": iso(end + 86400),
         },
-        "support_policy": "exactly two SMA3 warm-up rows before and one forward-return row after the evaluable period",
+        "support_policy": _hypothesis_dataset_support_policy(strategy),
         "missing_policy": "reject entire dataset; no imputation",
         "duplicate_policy": "reject entire dataset",
         "temporal_policy": "reject rows outside the declared capture period",
@@ -205,15 +259,19 @@ def _hypothesis_dataset_capture_rows(raw_bytes, capture, config):
     return payload
 
 
-def _hypothesis_dataset_rows(rows, config):
-    derived = indicators(rows)
+def _hypothesis_dataset_rows(rows, config, strategy=None):
+    strategy = strategy or _hypothesis_dataset_default_strategy()
+    warmup_role = _hypothesis_dataset_warmup_role(strategy)
+    column_name = strategy["column_name"]
+    base_rows = [{key: row[key] for key in COLUMNS[:-1]} for row in rows]
+    derived = _strategy_classify_rows(strategy, base_rows)
     start = epoch(config["evaluable_period"]["start_utc"])
     end = epoch(config["evaluable_period"]["end_exclusive_utc"])
     result = []
     for index, row in enumerate(derived):
         timestamp = epoch(row["timestamp"])
         if timestamp < start:
-            role = HYPOTHESIS_DATASET_WARMUP_ROLE
+            role = warmup_role
         elif timestamp >= end:
             role = HYPOTHESIS_DATASET_FORWARD_ROLE
         else:
@@ -225,27 +283,38 @@ def _hypothesis_dataset_rows(rows, config):
             forward_return = derived[index + 1]["close"] / row["close"] - 1
             if not math.isfinite(forward_return):
                 raise ValueError("Forward return is non-finite")
-        result.append({**row, "row_role": role, "forward_return_1d": forward_return})
+        result.append({
+            "instrument": row["instrument"], "timestamp": row["timestamp"],
+            "open": row["open"], "high": row["high"], "low": row["low"],
+            "close": row["close"], "volume": row["volume"],
+            column_name: row[column_name],
+            "row_role": role, "forward_return_1d": forward_return,
+        })
     return result
 
 
-def _hypothesis_dataset_bytes(rows):
+def _hypothesis_dataset_bytes(rows, strategy=None):
+    strategy = strategy or _hypothesis_dataset_default_strategy()
     stream = io.StringIO(newline="")
-    writer = csv.DictWriter(stream, fieldnames=HYPOTHESIS_DATASET_COLUMNS, lineterminator="\n")
+    writer = csv.DictWriter(
+        stream, fieldnames=_hypothesis_dataset_columns(strategy), lineterminator="\n")
     writer.writeheader()
     writer.writerows(rows)
     return stream.getvalue().encode("utf-8")
 
 
-def _hypothesis_dataset_selection(hypothesis, config, rows):
+def _hypothesis_dataset_selection(hypothesis, config, rows, strategy=None):
+    strategy = strategy or _hypothesis_dataset_default_strategy()
+    warmup = strategy["required_inputs"]["warmup_periods"]
+    warmup_role = _hypothesis_dataset_warmup_role(strategy)
+    column_name = strategy["column_name"]
+    expected_support_roles = [warmup_role] * warmup + [HYPOTHESIS_DATASET_FORWARD_ROLE]
     support_rows = [{"timestamp": row["timestamp"], "row_role": row["row_role"]}
                     for row in rows if row["row_role"] != HYPOTHESIS_DATASET_EVALUATION_ROLE]
     evaluation_rows = [row for row in rows if row["row_role"] == HYPOTHESIS_DATASET_EVALUATION_ROLE]
-    if (len(support_rows) != 3 or len(evaluation_rows) != 365
-            or [item["row_role"] for item in support_rows] != [
-                HYPOTHESIS_DATASET_WARMUP_ROLE, HYPOTHESIS_DATASET_WARMUP_ROLE,
-                HYPOTHESIS_DATASET_FORWARD_ROLE]
-            or not all(row["sma_close_3"] is not None and row["forward_return_1d"] is not None
+    if (len(support_rows) != len(expected_support_roles) or len(evaluation_rows) != 365
+            or [item["row_role"] for item in support_rows] != expected_support_roles
+            or not all(row[column_name] is not None and row["forward_return_1d"] is not None
                        for row in evaluation_rows)):
         raise ValueError("Historical selection does not contain exactly the required support and evaluable rows")
     return {
@@ -256,7 +325,7 @@ def _hypothesis_dataset_selection(hypothesis, config, rows):
         "evaluable_row_count": len(evaluation_rows),
         "support_rows": support_rows,
         "row_roles": {
-            "support_sma3_warmup": HYPOTHESIS_DATASET_WARMUP_ROLE,
+            f"support_{strategy['indicator_name'].lower()}_warmup": warmup_role,
             "evaluable": HYPOTHESIS_DATASET_EVALUATION_ROLE,
             "support_forward_return": HYPOTHESIS_DATASET_FORWARD_ROLE,
         },
@@ -307,10 +376,11 @@ def _hypothesis_dataset_validation(payload, config):
 
 
 def create_hypothesis_dataset(registry_path, hypothesis_id, version, output, *,
-                              transport=None, acquired_at=None):
+                              transport=None, acquired_at=None, strategy=None):
     """Capture and publish a sealed historical dataset; never evaluate the Hypothesis."""
+    strategy = strategy or _hypothesis_dataset_default_strategy()
     hypothesis = load_hypothesis(registry_path, hypothesis_id, version)
-    config = _hypothesis_dataset_config(hypothesis)
+    config = _hypothesis_dataset_config(hypothesis, strategy)
     acquired_at = acquired_at or datetime.now(timezone.utc).isoformat(
         timespec="microseconds").replace("+00:00", "Z")
     if not _explicit_utc(acquired_at):
@@ -356,9 +426,9 @@ def create_hypothesis_dataset(registry_path, hypothesis_id, version, output, *,
             "code_sha256": digest(source),
         })})
         raise ValueError("Historical dataset rejected; see validation.json")
-    selected_rows = _hypothesis_dataset_rows(rows, config)
-    dataset = _hypothesis_dataset_bytes(selected_rows)
-    selection = _hypothesis_dataset_selection(hypothesis, config, selected_rows)
+    selected_rows = _hypothesis_dataset_rows(rows, config, strategy)
+    dataset = _hypothesis_dataset_bytes(selected_rows, strategy)
+    selection = _hypothesis_dataset_selection(hypothesis, config, selected_rows, strategy)
     selection_bytes = encoded(selection)
     hashes = {
         "dataset_sha256": digest(dataset),
@@ -376,8 +446,8 @@ def create_hypothesis_dataset(registry_path, hypothesis_id, version, output, *,
         "dataset_id": dataset_id,
         "identity": identity,
         "config": config,
-        "schema": HYPOTHESIS_DATASET_SCHEMA,
-        "columns": HYPOTHESIS_DATASET_COLUMNS,
+        "schema": _hypothesis_dataset_schema(strategy),
+        "columns": _hypothesis_dataset_columns(strategy),
         "rows": len(selected_rows),
         "range": [selected_rows[0]["timestamp"], selected_rows[-1]["timestamp"]],
         "audit_sha256": digest(audit_bytes),
@@ -395,8 +465,16 @@ def create_hypothesis_dataset(registry_path, hypothesis_id, version, output, *,
     return manifest
 
 
-def verified_hypothesis_dataset(directory, registry_path=None):
-    """Fail closed unless all dataset artifacts, selection, and linked Hypothesis agree."""
+def verified_hypothesis_dataset(directory, registry_path=None, strategy=None):
+    """Fail closed unless all dataset artifacts, selection, and linked Hypothesis agree.
+
+    M4.1 production wiring (2026-09-28): `strategy` defaults to
+    sma_crossover_strategy(3), reproducing the exact verification every
+    already-sealed real Hypothesis Dataset (BTC-USD, ETH-USD) already
+    passes. A dataset built with a different Strategy must be verified by
+    passing that same Strategy explicitly.
+    """
+    strategy = strategy or _hypothesis_dataset_default_strategy()
     directory = Path(directory)
     manifest = json.loads((directory / "manifest.json").read_bytes())
     required = {
@@ -426,28 +504,28 @@ def verified_hypothesis_dataset(directory, registry_path=None):
         raise ValueError("Historical dataset validation is invalid")
     identity = manifest["identity"]
     if (not isinstance(identity, dict) or identity.get("config") != config
-            or manifest["schema"] != HYPOTHESIS_DATASET_SCHEMA
-            or manifest["columns"] != HYPOTHESIS_DATASET_COLUMNS
+            or manifest["schema"] != _hypothesis_dataset_schema(strategy)
+            or manifest["columns"] != _hypothesis_dataset_columns(strategy)
             or manifest["rows"] != len(rows)):
         raise ValueError("Historical dataset identity is invalid")
     expected_id = "HISTORICAL_HYPOTHESIS_DATASET|" + digest(encoded(identity))
     if manifest["dataset_id"] != expected_id:
         raise ValueError("Historical dataset identifier is invalid")
-    selected_rows = _hypothesis_dataset_rows(rows, config)
-    if _hypothesis_dataset_bytes(selected_rows) != (directory / "dataset.csv").read_bytes():
+    selected_rows = _hypothesis_dataset_rows(rows, config, strategy)
+    if _hypothesis_dataset_bytes(selected_rows, strategy) != (directory / "dataset.csv").read_bytes():
         raise ValueError("Historical dataset rows are invalid")
     hypothesis = None
     if registry_path is not None:
         hypothesis = load_hypothesis(registry_path, identity["hypothesis_id"],
                                      identity["hypothesis_version"])
         expected_id, expected_identity = _hypothesis_dataset_identity(
-            hypothesis, _hypothesis_dataset_config(hypothesis), identity["hashes"])
+            hypothesis, _hypothesis_dataset_config(hypothesis, strategy), identity["hashes"])
         if expected_identity != identity or expected_id != manifest["dataset_id"]:
             raise ValueError("Historical dataset is not linked to its Hypothesis version")
     selection = json.loads((directory / "selection.json").read_bytes())
     expected_selection = _hypothesis_dataset_selection(
         hypothesis or {"hypothesis_id": identity["hypothesis_id"],
-                       "version": identity["hypothesis_version"]}, config, selected_rows)
+                       "version": identity["hypothesis_version"]}, config, selected_rows, strategy)
     if selection != expected_selection:
         raise ValueError("Historical dataset selection is invalid")
     audit = json.loads((directory / "audit.json").read_bytes())
