@@ -1,0 +1,1418 @@
+{
+  "records": [
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > SMA3_t) - mean_forward_return_1d(close_t <= SMA3_t)",
+          "threshold": "0"
+        },
+        "description": "For BTC-USD, the mean t+1 return when close_t > SMA3_t exceeds the mean t+1 return when close_t <= SMA3_t (Etapa 2.7 autonomous batch SEARCH_SPACE|2026-09-28|SMA_MOMENTUM_BTC_USD).",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|03993c58-d79c-438c-b956-4d46a9b7317b",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|03993c58-d79c-438c-b956-4d46a9b7317b|1|d40e11b91dd735a65121fff464099accb1c1793d111f4deea2b6c5c496b3ae30",
+        "target_metric": "mean_forward_return_1d(close_t > SMA3_t) - mean_forward_return_1d(close_t <= SMA3_t)",
+        "version": 1
+      },
+      "interpretation": "SMA3 sobre BTC-USD 2025, lote autonomo Etapa 2.7 (N=8, SEARCH_SPACE|2026-09-28|SMA_MOMENTUM_BTC_USD). Muestra completa (365 dias): metric=-0.000805, NOT_MET. Walk-forward independiente (5 folds de 73 dias, M2.6): consistencia real 60% (REJECTED en Disposition de muestra completa; NOT_VALIDATED en el veredicto walk-forward, razon=CONSISTENCY_BELOW_THRESHOLD). Correccion por comparaciones multiples (M2.7-T2, R-2.7-002): p-valor binomial exacto 0.50000 contra alpha corregido 0.00625 para un lote de N=8 -- no evaluado (fallo antes en el umbral basico de consistencia). Risk Analytics (M2.6-T4): Sharpe rango -1.98 a 1.90 (promedio -0.14), peor drawdown de fold 21.4%.",
+      "knowledge_id": "KNOWLEDGE|c4d8f502d5fa34e69390781010b4646ac2ff6ff23262d773c7d0a9bf6b79055c",
+      "limitations": [
+        "Un solo instrumento evaluado (BTC-USD)",
+        "Un solo periodo historico evaluado (2025), el mismo para las 8 hipotesis del lote",
+        "Parametro de SMA_CROSSOVER fijado por el espacio de busqueda declarado del lote (M2.7-T1), no reoptimizado para esta hipotesis individualmente",
+        "La Disposition (M2.4) juzga el criterio de muestra completa; el veredicto walk-forward (M2.6, corregido por Bonferroni) es una evaluacion independiente y puede diferir de la Disposition -- ambos se preservan aqui, ninguno reemplaza al otro",
+        "Con solo 5 folds, ningun resultado posible en este lote (N=8) puede alcanzar el alpha corregido de Bonferroni (0.00625) -- limitacion de potencia estadistica, no de la hipotesis en si",
+        "Risk Analytics (Sharpe/drawdown) es descriptivo -- no gatea ni la Disposition ni el veredicto walk-forward"
+      ],
+      "materialization": {
+        "knowledge_code_revision": "8e142d7a8ac2517a8e670e8e132b09b9d85f5d4f",
+        "pipeline_sha256": "a957d9303a85473c1a0360de099482bf0c8fef4ad85ac4dff9b3b20d7b4c6194",
+        "preserved_at": "2026-09-28T08:00:00Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > SMA3_t) - mean_forward_return_1d(close_t <= SMA3_t)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= SMA3_t",
+          "upper_group": "close_t > SMA3_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > SMA3_t) - mean(return_t+1 | close_t <= SMA3_t)",
+          "name": "mean_forward_return_1d(close_t > SMA3_t) - mean_forward_return_1d(close_t <= SMA3_t)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_SMA3_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "sma": {
+          "source": "close",
+          "window": 3
+        },
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|c4d8f502d5fa34e69390781010b4646ac2ff6ff23262d773c7d0a9bf6b79055c|91d2b967641b447883f287ef099360dd3db5c91db6a5842862c9149af45f10ed",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|1b70dc22bd1a3154a2e17b5a96d6a6c35b6423ee11fcfb58839784af0d1616bc",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|1b70dc22bd1a3154a2e17b5a96d6a6c35b6423ee11fcfb58839784af0d1616bc|f785589e3880bfcf38347cc1b63da15687fcb336b122d8fa0bcdac722225b61d"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|5bb0071f-9934-4347-9b80-ea719ccf279b",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|5bb0071f-9934-4347-9b80-ea719ccf279b|1|d28af237bd9e49c454d5c36468556da1b763fff08b3182d891f961848beb1471",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "417d1d6e7bbba70a7efadf2dc2ab20d786620c70",
+          "hypothesis_id": "HYPOTHESIS|03993c58-d79c-438c-b956-4d46a9b7317b",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|03993c58-d79c-438c-b956-4d46a9b7317b|1|d40e11b91dd735a65121fff464099accb1c1793d111f4deea2b6c5c496b3ae30",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|ab5cf4bfccf4dc489c1b31082e99d82f0b1d382b1eb9c6d1806f97a340a5744d|46ec6026e3ac08f961aef3024f3836607e1c697198af120f92473ce4c58c0b94",
+          "research_result_id": "RESEARCH_RESULT|ab5cf4bfccf4dc489c1b31082e99d82f0b1d382b1eb9c6d1806f97a340a5744d"
+        }
+      },
+      "results": {
+        "outcome": "REJECTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(close_t > SMA3_t) - mean_forward_return_1d(close_t <= SMA3_t)",
+            "threshold": "0"
+          },
+          "criterion_result": "NOT_MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 190,
+              "mean_return_t_plus_1": 0.0004574749161540121,
+              "rule": "close_t <= SMA3_t"
+            },
+            "upper": {
+              "count": 175,
+              "mean_return_t_plus_1": -0.000348009655170171,
+              "rule": "close_t > SMA3_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": -0.0008054845713241831,
+          "observation_count": 365,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    },
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > SMA5_t) - mean_forward_return_1d(close_t <= SMA5_t)",
+          "threshold": "0"
+        },
+        "description": "For BTC-USD, the mean t+1 return when close_t > SMA5_t exceeds the mean t+1 return when close_t <= SMA5_t (Etapa 2.7 autonomous batch SEARCH_SPACE|2026-09-28|SMA_MOMENTUM_BTC_USD).",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|fca02cf8-c0fd-4b0f-bd41-c08dfe365ab8",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|fca02cf8-c0fd-4b0f-bd41-c08dfe365ab8|1|2968eb824ae8f730205d1bed3ae204bf4a93ba49f8aeb0f064339bd56d20a308",
+        "target_metric": "mean_forward_return_1d(close_t > SMA5_t) - mean_forward_return_1d(close_t <= SMA5_t)",
+        "version": 1
+      },
+      "interpretation": "SMA5 sobre BTC-USD 2025, lote autonomo Etapa 2.7 (N=8, SEARCH_SPACE|2026-09-28|SMA_MOMENTUM_BTC_USD). Muestra completa (365 dias): metric=-0.001252, NOT_MET. Walk-forward independiente (5 folds de 73 dias, M2.6): consistencia real 20% (REJECTED en Disposition de muestra completa; NOT_VALIDATED en el veredicto walk-forward, razon=CONSISTENCY_BELOW_THRESHOLD). Correccion por comparaciones multiples (M2.7-T2, R-2.7-002): p-valor binomial exacto 0.96875 contra alpha corregido 0.00625 para un lote de N=8 -- no evaluado (fallo antes en el umbral basico de consistencia). Risk Analytics (M2.6-T4): Sharpe rango -2.49 a 0.82 (promedio -0.33), peor drawdown de fold 21.2%.",
+      "knowledge_id": "KNOWLEDGE|b6f8decf96840f1607068a0737042ab2fd5d32c545682784f3abab98d3cc7633",
+      "limitations": [
+        "Un solo instrumento evaluado (BTC-USD)",
+        "Un solo periodo historico evaluado (2025), el mismo para las 8 hipotesis del lote",
+        "Parametro de SMA_CROSSOVER fijado por el espacio de busqueda declarado del lote (M2.7-T1), no reoptimizado para esta hipotesis individualmente",
+        "La Disposition (M2.4) juzga el criterio de muestra completa; el veredicto walk-forward (M2.6, corregido por Bonferroni) es una evaluacion independiente y puede diferir de la Disposition -- ambos se preservan aqui, ninguno reemplaza al otro",
+        "Con solo 5 folds, ningun resultado posible en este lote (N=8) puede alcanzar el alpha corregido de Bonferroni (0.00625) -- limitacion de potencia estadistica, no de la hipotesis en si",
+        "Risk Analytics (Sharpe/drawdown) es descriptivo -- no gatea ni la Disposition ni el veredicto walk-forward"
+      ],
+      "materialization": {
+        "knowledge_code_revision": "8e142d7a8ac2517a8e670e8e132b09b9d85f5d4f",
+        "pipeline_sha256": "a957d9303a85473c1a0360de099482bf0c8fef4ad85ac4dff9b3b20d7b4c6194",
+        "preserved_at": "2026-09-28T08:00:00Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > SMA5_t) - mean_forward_return_1d(close_t <= SMA5_t)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= SMA5_t",
+          "upper_group": "close_t > SMA5_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "sma_close_5",
+          "parameters": {
+            "window": 5
+          },
+          "strategy_id": "SMA_CROSSOVER"
+        },
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > SMA5_t) - mean(return_t+1 | close_t <= SMA5_t)",
+          "name": "mean_forward_return_1d(close_t > SMA5_t) - mean_forward_return_1d(close_t <= SMA5_t)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_SMA5_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_SMA5_WARMUP",
+              "timestamp": "2024-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA5_WARMUP",
+              "timestamp": "2024-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA5_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA5_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|b6f8decf96840f1607068a0737042ab2fd5d32c545682784f3abab98d3cc7633|9c0d8723422318b29e88bf3453b6cfd4a0d8ba9354748012592d88a072a5aa21",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|ddaa89f7e82f9036c5e223ce8cb2ef7afaa9d44ffa7b5be4030a0b282bb55172",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|ddaa89f7e82f9036c5e223ce8cb2ef7afaa9d44ffa7b5be4030a0b282bb55172|b6e54ac5328b303c6d1f4fa541741c1ab41db3bbe1f3b2eb17b8cc1e68877e30"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|8c03f551-a04e-410f-9c20-a3c298e8f50b",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|8c03f551-a04e-410f-9c20-a3c298e8f50b|1|6e13bdf9fef2f3bbf928a0064847f6ba20e1cc6740fdf40c75031622c37cdd57",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "417d1d6e7bbba70a7efadf2dc2ab20d786620c70",
+          "hypothesis_id": "HYPOTHESIS|fca02cf8-c0fd-4b0f-bd41-c08dfe365ab8",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|fca02cf8-c0fd-4b0f-bd41-c08dfe365ab8|1|2968eb824ae8f730205d1bed3ae204bf4a93ba49f8aeb0f064339bd56d20a308",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|340d5c3f6c4d5a8eea3c1cc4b5de2020d597f45608d2ad76bf785887a9db839d|72d3319b6fa25c5376f512065585f47d9cea6e1360d2f5624a18f4917a4d36e2",
+          "research_result_id": "RESEARCH_RESULT|340d5c3f6c4d5a8eea3c1cc4b5de2020d597f45608d2ad76bf785887a9db839d"
+        }
+      },
+      "results": {
+        "outcome": "REJECTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(close_t > SMA5_t) - mean_forward_return_1d(close_t <= SMA5_t)",
+            "threshold": "0"
+          },
+          "criterion_result": "NOT_MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 182,
+              "mean_return_t_plus_1": 0.0006992391094057657,
+              "rule": "close_t <= SMA5_t"
+            },
+            "upper": {
+              "count": 183,
+              "mean_return_t_plus_1": -0.0005532402923353388,
+              "rule": "close_t > SMA5_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": -0.0012524794017411045,
+          "observation_count": 365,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    },
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > SMA7_t) - mean_forward_return_1d(close_t <= SMA7_t)",
+          "threshold": "0"
+        },
+        "description": "For BTC-USD, the mean t+1 return when close_t > SMA7_t exceeds the mean t+1 return when close_t <= SMA7_t (Etapa 2.7 autonomous batch SEARCH_SPACE|2026-09-28|SMA_MOMENTUM_BTC_USD).",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|485ba1ff-90bf-4628-b41f-67bd7e0ee795",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|485ba1ff-90bf-4628-b41f-67bd7e0ee795|1|1b28b2e49d53a117ca35818336075a88b07063c2a10f5cf18e412c8c988ac735",
+        "target_metric": "mean_forward_return_1d(close_t > SMA7_t) - mean_forward_return_1d(close_t <= SMA7_t)",
+        "version": 1
+      },
+      "interpretation": "SMA7 sobre BTC-USD 2025, lote autonomo Etapa 2.7 (N=8, SEARCH_SPACE|2026-09-28|SMA_MOMENTUM_BTC_USD). Muestra completa (365 dias): metric=-0.000611, NOT_MET. Walk-forward independiente (5 folds de 73 dias, M2.6): consistencia real 40% (REJECTED en Disposition de muestra completa; NOT_VALIDATED en el veredicto walk-forward, razon=CONSISTENCY_BELOW_THRESHOLD). Correccion por comparaciones multiples (M2.7-T2, R-2.7-002): p-valor binomial exacto 0.81250 contra alpha corregido 0.00625 para un lote de N=8 -- no evaluado (fallo antes en el umbral basico de consistencia). Risk Analytics (M2.6-T4): Sharpe rango -2.99 a 2.10 (promedio -0.00), peor drawdown de fold 18.9%.",
+      "knowledge_id": "KNOWLEDGE|83c111e46faf6535b649ede2bc08739b4023a3471d21cb6ff0c24bb0d58e403b",
+      "limitations": [
+        "Un solo instrumento evaluado (BTC-USD)",
+        "Un solo periodo historico evaluado (2025), el mismo para las 8 hipotesis del lote",
+        "Parametro de SMA_CROSSOVER fijado por el espacio de busqueda declarado del lote (M2.7-T1), no reoptimizado para esta hipotesis individualmente",
+        "La Disposition (M2.4) juzga el criterio de muestra completa; el veredicto walk-forward (M2.6, corregido por Bonferroni) es una evaluacion independiente y puede diferir de la Disposition -- ambos se preservan aqui, ninguno reemplaza al otro",
+        "Con solo 5 folds, ningun resultado posible en este lote (N=8) puede alcanzar el alpha corregido de Bonferroni (0.00625) -- limitacion de potencia estadistica, no de la hipotesis en si",
+        "Risk Analytics (Sharpe/drawdown) es descriptivo -- no gatea ni la Disposition ni el veredicto walk-forward"
+      ],
+      "materialization": {
+        "knowledge_code_revision": "8e142d7a8ac2517a8e670e8e132b09b9d85f5d4f",
+        "pipeline_sha256": "a957d9303a85473c1a0360de099482bf0c8fef4ad85ac4dff9b3b20d7b4c6194",
+        "preserved_at": "2026-09-28T08:00:00Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > SMA7_t) - mean_forward_return_1d(close_t <= SMA7_t)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= SMA7_t",
+          "upper_group": "close_t > SMA7_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "sma_close_7",
+          "parameters": {
+            "window": 7
+          },
+          "strategy_id": "SMA_CROSSOVER"
+        },
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > SMA7_t) - mean(return_t+1 | close_t <= SMA7_t)",
+          "name": "mean_forward_return_1d(close_t > SMA7_t) - mean_forward_return_1d(close_t <= SMA7_t)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_SMA7_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_SMA7_WARMUP",
+              "timestamp": "2024-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA7_WARMUP",
+              "timestamp": "2024-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA7_WARMUP",
+              "timestamp": "2024-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA7_WARMUP",
+              "timestamp": "2024-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA7_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA7_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|83c111e46faf6535b649ede2bc08739b4023a3471d21cb6ff0c24bb0d58e403b|eb601202b9797375419e2d230855af0c7e70dfa61a1e09db03347a22dc64d322",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|a6d83f1cbb6b84f904976c4a6bfbaa15d4e90d6475550bcb7cacf240954fcf69",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|a6d83f1cbb6b84f904976c4a6bfbaa15d4e90d6475550bcb7cacf240954fcf69|7b74192d8ec2800ce0eb0b2499675c0f22b481956002065a6aba76e2f30f3150"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|e2353dcd-bf31-476f-a418-0b926b01af3d",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|e2353dcd-bf31-476f-a418-0b926b01af3d|1|438ca85c6b60f4bceaf0582870521fdc9ff0ee88beaf74310219b9a7b5fb2b7f",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "417d1d6e7bbba70a7efadf2dc2ab20d786620c70",
+          "hypothesis_id": "HYPOTHESIS|485ba1ff-90bf-4628-b41f-67bd7e0ee795",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|485ba1ff-90bf-4628-b41f-67bd7e0ee795|1|1b28b2e49d53a117ca35818336075a88b07063c2a10f5cf18e412c8c988ac735",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|babf9571a0a077de8cbec769aa02749e75def0ea69aa24e44d2e6375e8fbc74c|d43a87619683a5840e606524bba303faf3f7443051bc527b047654fd86e9a8b5",
+          "research_result_id": "RESEARCH_RESULT|babf9571a0a077de8cbec769aa02749e75def0ea69aa24e44d2e6375e8fbc74c"
+        }
+      },
+      "results": {
+        "outcome": "REJECTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(close_t > SMA7_t) - mean_forward_return_1d(close_t <= SMA7_t)",
+            "threshold": "0"
+          },
+          "criterion_result": "NOT_MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 184,
+              "mean_return_t_plus_1": 0.0003740439406465283,
+              "rule": "close_t <= SMA7_t"
+            },
+            "upper": {
+              "count": 181,
+              "mean_return_t_plus_1": -0.00023649469980375047,
+              "rule": "close_t > SMA7_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": -0.0006105386404502787,
+          "observation_count": 365,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    },
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > SMA10_t) - mean_forward_return_1d(close_t <= SMA10_t)",
+          "threshold": "0"
+        },
+        "description": "For BTC-USD, the mean t+1 return when close_t > SMA10_t exceeds the mean t+1 return when close_t <= SMA10_t (Etapa 2.7 autonomous batch SEARCH_SPACE|2026-09-28|SMA_MOMENTUM_BTC_USD).",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|37ed3462-adca-4395-96ca-43b3c7adacbc",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|37ed3462-adca-4395-96ca-43b3c7adacbc|1|91abf8f8c93c729ef44527d488818868883a7ac03af32b266ab1311aa31254d7",
+        "target_metric": "mean_forward_return_1d(close_t > SMA10_t) - mean_forward_return_1d(close_t <= SMA10_t)",
+        "version": 1
+      },
+      "interpretation": "SMA10 sobre BTC-USD 2025, lote autonomo Etapa 2.7 (N=8, SEARCH_SPACE|2026-09-28|SMA_MOMENTUM_BTC_USD). Muestra completa (365 dias): metric=-0.000572, NOT_MET. Walk-forward independiente (5 folds de 73 dias, M2.6): consistencia real 20% (REJECTED en Disposition de muestra completa; NOT_VALIDATED en el veredicto walk-forward, razon=CONSISTENCY_BELOW_THRESHOLD). Correccion por comparaciones multiples (M2.7-T2, R-2.7-002): p-valor binomial exacto 0.96875 contra alpha corregido 0.00625 para un lote de N=8 -- no evaluado (fallo antes en el umbral basico de consistencia). Risk Analytics (M2.6-T4): Sharpe rango -3.29 a 2.44 (promedio -0.31), peor drawdown de fold 20.6%.",
+      "knowledge_id": "KNOWLEDGE|136c7b5bb2dfa3c46ba197fb7ec5013a30592331d29dca40ef590c9c6867ea63",
+      "limitations": [
+        "Un solo instrumento evaluado (BTC-USD)",
+        "Un solo periodo historico evaluado (2025), el mismo para las 8 hipotesis del lote",
+        "Parametro de SMA_CROSSOVER fijado por el espacio de busqueda declarado del lote (M2.7-T1), no reoptimizado para esta hipotesis individualmente",
+        "La Disposition (M2.4) juzga el criterio de muestra completa; el veredicto walk-forward (M2.6, corregido por Bonferroni) es una evaluacion independiente y puede diferir de la Disposition -- ambos se preservan aqui, ninguno reemplaza al otro",
+        "Con solo 5 folds, ningun resultado posible en este lote (N=8) puede alcanzar el alpha corregido de Bonferroni (0.00625) -- limitacion de potencia estadistica, no de la hipotesis en si",
+        "Risk Analytics (Sharpe/drawdown) es descriptivo -- no gatea ni la Disposition ni el veredicto walk-forward"
+      ],
+      "materialization": {
+        "knowledge_code_revision": "8e142d7a8ac2517a8e670e8e132b09b9d85f5d4f",
+        "pipeline_sha256": "a957d9303a85473c1a0360de099482bf0c8fef4ad85ac4dff9b3b20d7b4c6194",
+        "preserved_at": "2026-09-28T08:00:00Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > SMA10_t) - mean_forward_return_1d(close_t <= SMA10_t)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= SMA10_t",
+          "upper_group": "close_t > SMA10_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "sma_close_10",
+          "parameters": {
+            "window": 10
+          },
+          "strategy_id": "SMA_CROSSOVER"
+        },
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > SMA10_t) - mean(return_t+1 | close_t <= SMA10_t)",
+          "name": "mean_forward_return_1d(close_t > SMA10_t) - mean_forward_return_1d(close_t <= SMA10_t)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_SMA10_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_SMA10_WARMUP",
+              "timestamp": "2024-12-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10_WARMUP",
+              "timestamp": "2024-12-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10_WARMUP",
+              "timestamp": "2024-12-25T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10_WARMUP",
+              "timestamp": "2024-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10_WARMUP",
+              "timestamp": "2024-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10_WARMUP",
+              "timestamp": "2024-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10_WARMUP",
+              "timestamp": "2024-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|136c7b5bb2dfa3c46ba197fb7ec5013a30592331d29dca40ef590c9c6867ea63|f63e9fa6792f5aa485e714b9482dde9c4917101dba310665ddb206cfde5fe85d",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|5bf4334ac814f7faa75b38b010b851ad61623560d2d26a2e37158eef2da169cc",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|5bf4334ac814f7faa75b38b010b851ad61623560d2d26a2e37158eef2da169cc|6e41b8ff768808e3fb3196d26b400a0cfed5632330a07fccf224e877e3710f9a"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|c85edd54-2415-40bc-ad4d-4d2ecc4a614f",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|c85edd54-2415-40bc-ad4d-4d2ecc4a614f|1|df133e929ab79daba4d6efd803d790597e2ce46d46e256697bd7875965d5ba5b",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "417d1d6e7bbba70a7efadf2dc2ab20d786620c70",
+          "hypothesis_id": "HYPOTHESIS|37ed3462-adca-4395-96ca-43b3c7adacbc",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|37ed3462-adca-4395-96ca-43b3c7adacbc|1|91abf8f8c93c729ef44527d488818868883a7ac03af32b266ab1311aa31254d7",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|a8dd0150f62cbb7b10535aee3bb6844e3ab90c4d9bbbc1a11a8e4843706a83bc|d4d4ed36b8f50b5a7d720a67046564df00694b024d033143a511241a41806454",
+          "research_result_id": "RESEARCH_RESULT|a8dd0150f62cbb7b10535aee3bb6844e3ab90c4d9bbbc1a11a8e4843706a83bc"
+        }
+      },
+      "results": {
+        "outcome": "REJECTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(close_t > SMA10_t) - mean_forward_return_1d(close_t <= SMA10_t)",
+            "threshold": "0"
+          },
+          "criterion_result": "NOT_MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 186,
+              "mean_return_t_plus_1": 0.00035199713199749415,
+              "rule": "close_t <= SMA10_t"
+            },
+            "upper": {
+              "count": 179,
+              "mean_return_t_plus_1": -0.00022040738624051138,
+              "rule": "close_t > SMA10_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": -0.0005724045182380056,
+          "observation_count": 365,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    },
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > MOM3_t) - mean_forward_return_1d(close_t <= MOM3_t)",
+          "threshold": "0"
+        },
+        "description": "For BTC-USD, the mean t+1 return when close_t > MOM3_t exceeds the mean t+1 return when close_t <= MOM3_t (Etapa 2.7 autonomous batch SEARCH_SPACE|2026-09-28|SMA_MOMENTUM_BTC_USD).",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|dc423087-9fd4-4f43-8482-2395dc1b4757",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|dc423087-9fd4-4f43-8482-2395dc1b4757|1|0fab268fd3c86e792312559f9206fd6e5b1156c2aa6bd70c2a132aaa19a3295f",
+        "target_metric": "mean_forward_return_1d(close_t > MOM3_t) - mean_forward_return_1d(close_t <= MOM3_t)",
+        "version": 1
+      },
+      "interpretation": "MOM3 sobre BTC-USD 2025, lote autonomo Etapa 2.7 (N=8, SEARCH_SPACE|2026-09-28|SMA_MOMENTUM_BTC_USD). Muestra completa (365 dias): metric=0.000186, MET. Walk-forward independiente (5 folds de 73 dias, M2.6): consistencia real 40% (ACCEPTED en Disposition de muestra completa; NOT_VALIDATED en el veredicto walk-forward, razon=CONSISTENCY_BELOW_THRESHOLD). Correccion por comparaciones multiples (M2.7-T2, R-2.7-002): p-valor binomial exacto 0.81250 contra alpha corregido 0.00625 para un lote de N=8 -- no evaluado (fallo antes en el umbral basico de consistencia). Risk Analytics (M2.6-T4): Sharpe rango -2.66 a 0.99 (promedio -0.07), peor drawdown de fold 14.7%.",
+      "knowledge_id": "KNOWLEDGE|715ddad08d40037a4e8e1641ba6c63981ddfe32a4840974653f83680bf820737",
+      "limitations": [
+        "Un solo instrumento evaluado (BTC-USD)",
+        "Un solo periodo historico evaluado (2025), el mismo para las 8 hipotesis del lote",
+        "Parametro de MOMENTUM_CROSSOVER fijado por el espacio de busqueda declarado del lote (M2.7-T1), no reoptimizado para esta hipotesis individualmente",
+        "La Disposition (M2.4) juzga el criterio de muestra completa; el veredicto walk-forward (M2.6, corregido por Bonferroni) es una evaluacion independiente y puede diferir de la Disposition -- ambos se preservan aqui, ninguno reemplaza al otro",
+        "Con solo 5 folds, ningun resultado posible en este lote (N=8) puede alcanzar el alpha corregido de Bonferroni (0.00625) -- limitacion de potencia estadistica, no de la hipotesis en si",
+        "Risk Analytics (Sharpe/drawdown) es descriptivo -- no gatea ni la Disposition ni el veredicto walk-forward"
+      ],
+      "materialization": {
+        "knowledge_code_revision": "8e142d7a8ac2517a8e670e8e132b09b9d85f5d4f",
+        "pipeline_sha256": "a957d9303a85473c1a0360de099482bf0c8fef4ad85ac4dff9b3b20d7b4c6194",
+        "preserved_at": "2026-09-28T08:00:00Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > MOM3_t) - mean_forward_return_1d(close_t <= MOM3_t)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= MOM3_t",
+          "upper_group": "close_t > MOM3_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "close_lag_3",
+          "parameters": {
+            "lookback": 3
+          },
+          "strategy_id": "MOMENTUM_CROSSOVER"
+        },
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > MOM3_t) - mean(return_t+1 | close_t <= MOM3_t)",
+          "name": "mean_forward_return_1d(close_t > MOM3_t) - mean_forward_return_1d(close_t <= MOM3_t)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_MOM3_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_MOM3_WARMUP",
+              "timestamp": "2024-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM3_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM3_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|715ddad08d40037a4e8e1641ba6c63981ddfe32a4840974653f83680bf820737|844993b15780c69e6461921260385d93e67e8d9a0bcea8112560b125e26b94aa",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|b19cd6d2f3da9b125f089aca691f4467459a4f5a101ea32b82874385700f0b9b",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|b19cd6d2f3da9b125f089aca691f4467459a4f5a101ea32b82874385700f0b9b|3d00d70003ef5bad5834f8fe679623d185adaaca274f23ecc60fc68c1d019c64"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|432fa2a1-49f2-486b-8352-4f8494d679e4",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|432fa2a1-49f2-486b-8352-4f8494d679e4|1|cd2008d596b1edceb5b29043ae0adc5739be5931a2a56ceebd43fb63e8338744",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "417d1d6e7bbba70a7efadf2dc2ab20d786620c70",
+          "hypothesis_id": "HYPOTHESIS|dc423087-9fd4-4f43-8482-2395dc1b4757",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|dc423087-9fd4-4f43-8482-2395dc1b4757|1|0fab268fd3c86e792312559f9206fd6e5b1156c2aa6bd70c2a132aaa19a3295f",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|108470ec5f8b7606ae8286bd886757381bb8cd2b1804148d9271e5fda201c624|7f0a6afa643b867e82fc8656e5387c303c4a0127c1dd2a54b0a0e5d949b0b878",
+          "research_result_id": "RESEARCH_RESULT|108470ec5f8b7606ae8286bd886757381bb8cd2b1804148d9271e5fda201c624"
+        }
+      },
+      "results": {
+        "outcome": "ACCEPTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(close_t > MOM3_t) - mean_forward_return_1d(close_t <= MOM3_t)",
+            "threshold": "0"
+          },
+          "criterion_result": "MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 172,
+              "mean_return_t_plus_1": -2.7263837768912622e-05,
+              "rule": "close_t <= MOM3_t"
+            },
+            "upper": {
+              "count": 193,
+              "mean_return_t_plus_1": 0.0001591084171540691,
+              "rule": "close_t > MOM3_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": 0.00018637225492298173,
+          "observation_count": 365,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    },
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > MOM5_t) - mean_forward_return_1d(close_t <= MOM5_t)",
+          "threshold": "0"
+        },
+        "description": "For BTC-USD, the mean t+1 return when close_t > MOM5_t exceeds the mean t+1 return when close_t <= MOM5_t (Etapa 2.7 autonomous batch SEARCH_SPACE|2026-09-28|SMA_MOMENTUM_BTC_USD).",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|fa51faf8-cd68-43f5-a2f0-efa8a3ae3a65",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|fa51faf8-cd68-43f5-a2f0-efa8a3ae3a65|1|d3870474fd80a1b36483e51b6605d0d480556f68a4d293e8fa70ce3b1751c20a",
+        "target_metric": "mean_forward_return_1d(close_t > MOM5_t) - mean_forward_return_1d(close_t <= MOM5_t)",
+        "version": 1
+      },
+      "interpretation": "MOM5 sobre BTC-USD 2025, lote autonomo Etapa 2.7 (N=8, SEARCH_SPACE|2026-09-28|SMA_MOMENTUM_BTC_USD). Muestra completa (365 dias): metric=-0.000525, NOT_MET. Walk-forward independiente (5 folds de 73 dias, M2.6): consistencia real 20% (REJECTED en Disposition de muestra completa; NOT_VALIDATED en el veredicto walk-forward, razon=CONSISTENCY_BELOW_THRESHOLD). Correccion por comparaciones multiples (M2.7-T2, R-2.7-002): p-valor binomial exacto 0.96875 contra alpha corregido 0.00625 para un lote de N=8 -- no evaluado (fallo antes en el umbral basico de consistencia). Risk Analytics (M2.6-T4): Sharpe rango -2.63 a 2.38 (promedio -0.04), peor drawdown de fold 28.0%.",
+      "knowledge_id": "KNOWLEDGE|7803908300d428bdaa519239a6ca8673f4727c752fec4607ad257d45e8f05d5d",
+      "limitations": [
+        "Un solo instrumento evaluado (BTC-USD)",
+        "Un solo periodo historico evaluado (2025), el mismo para las 8 hipotesis del lote",
+        "Parametro de MOMENTUM_CROSSOVER fijado por el espacio de busqueda declarado del lote (M2.7-T1), no reoptimizado para esta hipotesis individualmente",
+        "La Disposition (M2.4) juzga el criterio de muestra completa; el veredicto walk-forward (M2.6, corregido por Bonferroni) es una evaluacion independiente y puede diferir de la Disposition -- ambos se preservan aqui, ninguno reemplaza al otro",
+        "Con solo 5 folds, ningun resultado posible en este lote (N=8) puede alcanzar el alpha corregido de Bonferroni (0.00625) -- limitacion de potencia estadistica, no de la hipotesis en si",
+        "Risk Analytics (Sharpe/drawdown) es descriptivo -- no gatea ni la Disposition ni el veredicto walk-forward"
+      ],
+      "materialization": {
+        "knowledge_code_revision": "8e142d7a8ac2517a8e670e8e132b09b9d85f5d4f",
+        "pipeline_sha256": "a957d9303a85473c1a0360de099482bf0c8fef4ad85ac4dff9b3b20d7b4c6194",
+        "preserved_at": "2026-09-28T08:00:00Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > MOM5_t) - mean_forward_return_1d(close_t <= MOM5_t)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= MOM5_t",
+          "upper_group": "close_t > MOM5_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "close_lag_5",
+          "parameters": {
+            "lookback": 5
+          },
+          "strategy_id": "MOMENTUM_CROSSOVER"
+        },
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > MOM5_t) - mean(return_t+1 | close_t <= MOM5_t)",
+          "name": "mean_forward_return_1d(close_t > MOM5_t) - mean_forward_return_1d(close_t <= MOM5_t)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_MOM5_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_MOM5_WARMUP",
+              "timestamp": "2024-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM5_WARMUP",
+              "timestamp": "2024-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM5_WARMUP",
+              "timestamp": "2024-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM5_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM5_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|7803908300d428bdaa519239a6ca8673f4727c752fec4607ad257d45e8f05d5d|fea0c0eb1b75545e7fcdf978ac4af010ac65dfb32aee828550db87cbe9231e74",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|b5a35b8c3db0c6bc2a3eb6483134a44266a98b9f54f03df4b77567e4c6db8900",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|b5a35b8c3db0c6bc2a3eb6483134a44266a98b9f54f03df4b77567e4c6db8900|b5c43d2196d4ff1ec099359c84e7746c8168eea7f423bb0001a70d6330e11ad9"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|f3cdb665-efd4-4035-9aaa-e829876dfdb7",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|f3cdb665-efd4-4035-9aaa-e829876dfdb7|1|37ea76e392c5411b019cd5759f196df441219cb78b8da170d5fd951f20cd21fd",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "417d1d6e7bbba70a7efadf2dc2ab20d786620c70",
+          "hypothesis_id": "HYPOTHESIS|fa51faf8-cd68-43f5-a2f0-efa8a3ae3a65",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|fa51faf8-cd68-43f5-a2f0-efa8a3ae3a65|1|d3870474fd80a1b36483e51b6605d0d480556f68a4d293e8fa70ce3b1751c20a",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|c7839f208a0e54c52cb320ea36f4a73cb8e6079a896194d5fbdb2d90977f9fbe|0a7293db74967a6d204740a9b4598367bdd37808b0a5442e57e55c56ae20694c",
+          "research_result_id": "RESEARCH_RESULT|c7839f208a0e54c52cb320ea36f4a73cb8e6079a896194d5fbdb2d90977f9fbe"
+        }
+      },
+      "results": {
+        "outcome": "REJECTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(close_t > MOM5_t) - mean_forward_return_1d(close_t <= MOM5_t)",
+            "threshold": "0"
+          },
+          "criterion_result": "NOT_MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 174,
+              "mean_return_t_plus_1": 0.00034620871327391614,
+              "rule": "close_t <= MOM5_t"
+            },
+            "upper": {
+              "count": 191,
+              "mean_return_t_plus_1": -0.00017917157955591118,
+              "rule": "close_t > MOM5_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": -0.0005253802928298273,
+          "observation_count": 365,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    },
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > MOM7_t) - mean_forward_return_1d(close_t <= MOM7_t)",
+          "threshold": "0"
+        },
+        "description": "For BTC-USD, the mean t+1 return when close_t > MOM7_t exceeds the mean t+1 return when close_t <= MOM7_t (Etapa 2.7 autonomous batch SEARCH_SPACE|2026-09-28|SMA_MOMENTUM_BTC_USD).",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|8ea79c3f-1d82-4870-a996-576b61b4d458",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|8ea79c3f-1d82-4870-a996-576b61b4d458|1|ccc9d554630aabc9fca37fa91e107bb413ef6eb611e6c0796a5338306d107c4f",
+        "target_metric": "mean_forward_return_1d(close_t > MOM7_t) - mean_forward_return_1d(close_t <= MOM7_t)",
+        "version": 1
+      },
+      "interpretation": "MOM7 sobre BTC-USD 2025, lote autonomo Etapa 2.7 (N=8, SEARCH_SPACE|2026-09-28|SMA_MOMENTUM_BTC_USD). Muestra completa (365 dias): metric=-0.003705, NOT_MET. Walk-forward independiente (5 folds de 73 dias, M2.6): consistencia real 40% (REJECTED en Disposition de muestra completa; NOT_VALIDATED en el veredicto walk-forward, razon=CONSISTENCY_BELOW_THRESHOLD). Correccion por comparaciones multiples (M2.7-T2, R-2.7-002): p-valor binomial exacto 0.81250 contra alpha corregido 0.00625 para un lote de N=8 -- no evaluado (fallo antes en el umbral basico de consistencia). Risk Analytics (M2.6-T4): Sharpe rango -4.24 a 1.34 (promedio -1.27), peor drawdown de fold 26.3%.",
+      "knowledge_id": "KNOWLEDGE|9e74c86ebc4304ecd9bfeebc3fd95bff0854ec7e1e21700842d46b57c3dd36cc",
+      "limitations": [
+        "Un solo instrumento evaluado (BTC-USD)",
+        "Un solo periodo historico evaluado (2025), el mismo para las 8 hipotesis del lote",
+        "Parametro de MOMENTUM_CROSSOVER fijado por el espacio de busqueda declarado del lote (M2.7-T1), no reoptimizado para esta hipotesis individualmente",
+        "La Disposition (M2.4) juzga el criterio de muestra completa; el veredicto walk-forward (M2.6, corregido por Bonferroni) es una evaluacion independiente y puede diferir de la Disposition -- ambos se preservan aqui, ninguno reemplaza al otro",
+        "Con solo 5 folds, ningun resultado posible en este lote (N=8) puede alcanzar el alpha corregido de Bonferroni (0.00625) -- limitacion de potencia estadistica, no de la hipotesis en si",
+        "Risk Analytics (Sharpe/drawdown) es descriptivo -- no gatea ni la Disposition ni el veredicto walk-forward"
+      ],
+      "materialization": {
+        "knowledge_code_revision": "8e142d7a8ac2517a8e670e8e132b09b9d85f5d4f",
+        "pipeline_sha256": "a957d9303a85473c1a0360de099482bf0c8fef4ad85ac4dff9b3b20d7b4c6194",
+        "preserved_at": "2026-09-28T08:00:00Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > MOM7_t) - mean_forward_return_1d(close_t <= MOM7_t)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= MOM7_t",
+          "upper_group": "close_t > MOM7_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "close_lag_7",
+          "parameters": {
+            "lookback": 7
+          },
+          "strategy_id": "MOMENTUM_CROSSOVER"
+        },
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > MOM7_t) - mean(return_t+1 | close_t <= MOM7_t)",
+          "name": "mean_forward_return_1d(close_t > MOM7_t) - mean_forward_return_1d(close_t <= MOM7_t)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_MOM7_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_MOM7_WARMUP",
+              "timestamp": "2024-12-25T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM7_WARMUP",
+              "timestamp": "2024-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM7_WARMUP",
+              "timestamp": "2024-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM7_WARMUP",
+              "timestamp": "2024-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM7_WARMUP",
+              "timestamp": "2024-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM7_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM7_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|9e74c86ebc4304ecd9bfeebc3fd95bff0854ec7e1e21700842d46b57c3dd36cc|50c4caaaed9a15fe4e493521142b8b3f3602a5709fbd630b665443d486c6947e",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|e15b5964d655dc03796ece0e2929495bc6d1409558a7f31a8be0e3e798782bac",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|e15b5964d655dc03796ece0e2929495bc6d1409558a7f31a8be0e3e798782bac|586f44a548d3040a541174c8c8258eca97ec91df117e4f77d295ba2edf1dda66"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|3044e0cf-649c-492a-8485-dd72aa6a87f8",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|3044e0cf-649c-492a-8485-dd72aa6a87f8|1|25048d42ead7d0528e5942df2477cec064f85fd714f4b9225b66cb6a9092bd7c",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "417d1d6e7bbba70a7efadf2dc2ab20d786620c70",
+          "hypothesis_id": "HYPOTHESIS|8ea79c3f-1d82-4870-a996-576b61b4d458",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|8ea79c3f-1d82-4870-a996-576b61b4d458|1|ccc9d554630aabc9fca37fa91e107bb413ef6eb611e6c0796a5338306d107c4f",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|f79214600c96264acafcd917725bbdeee7650488ed7b2770bcb2ec35e62047f3|ad74de3dfc403e78a976abdb6d460b50bd3f8965b406e49012dc3d48f73d5728",
+          "research_result_id": "RESEARCH_RESULT|f79214600c96264acafcd917725bbdeee7650488ed7b2770bcb2ec35e62047f3"
+        }
+      },
+      "results": {
+        "outcome": "REJECTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(close_t > MOM7_t) - mean_forward_return_1d(close_t <= MOM7_t)",
+            "threshold": "0"
+          },
+          "criterion_result": "NOT_MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 177,
+              "mean_return_t_plus_1": 0.0019794235554438594,
+              "rule": "close_t <= MOM7_t"
+            },
+            "upper": {
+              "count": 188,
+              "mean_return_t_plus_1": -0.001725209706910004,
+              "rule": "close_t > MOM7_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": -0.003704633262353863,
+          "observation_count": 365,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    },
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > MOM10_t) - mean_forward_return_1d(close_t <= MOM10_t)",
+          "threshold": "0"
+        },
+        "description": "For BTC-USD, the mean t+1 return when close_t > MOM10_t exceeds the mean t+1 return when close_t <= MOM10_t (Etapa 2.7 autonomous batch SEARCH_SPACE|2026-09-28|SMA_MOMENTUM_BTC_USD).",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|2727898e-bfac-4687-a046-936ad4e8443b",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|2727898e-bfac-4687-a046-936ad4e8443b|1|61170e9f7636b8024961ae4f44b24d78cd71e4b530123745089c0b3d739e673c",
+        "target_metric": "mean_forward_return_1d(close_t > MOM10_t) - mean_forward_return_1d(close_t <= MOM10_t)",
+        "version": 1
+      },
+      "interpretation": "MOM10 sobre BTC-USD 2025, lote autonomo Etapa 2.7 (N=8, SEARCH_SPACE|2026-09-28|SMA_MOMENTUM_BTC_USD). Muestra completa (365 dias): metric=-0.001897, NOT_MET. Walk-forward independiente (5 folds de 73 dias, M2.6): consistencia real 0% (REJECTED en Disposition de muestra completa; NOT_VALIDATED en el veredicto walk-forward, razon=CONSISTENCY_BELOW_THRESHOLD). Correccion por comparaciones multiples (M2.7-T2, R-2.7-002): p-valor binomial exacto 1.00000 contra alpha corregido 0.00625 para un lote de N=8 -- no evaluado (fallo antes en el umbral basico de consistencia). Risk Analytics (M2.6-T4): Sharpe rango -3.22 a 2.04 (promedio -0.76), peor drawdown de fold 20.9%.",
+      "knowledge_id": "KNOWLEDGE|4107c70a07b31b9018d00cdd407b6bcdcc36432527c97534770d2b75283113ff",
+      "limitations": [
+        "Un solo instrumento evaluado (BTC-USD)",
+        "Un solo periodo historico evaluado (2025), el mismo para las 8 hipotesis del lote",
+        "Parametro de MOMENTUM_CROSSOVER fijado por el espacio de busqueda declarado del lote (M2.7-T1), no reoptimizado para esta hipotesis individualmente",
+        "La Disposition (M2.4) juzga el criterio de muestra completa; el veredicto walk-forward (M2.6, corregido por Bonferroni) es una evaluacion independiente y puede diferir de la Disposition -- ambos se preservan aqui, ninguno reemplaza al otro",
+        "Con solo 5 folds, ningun resultado posible en este lote (N=8) puede alcanzar el alpha corregido de Bonferroni (0.00625) -- limitacion de potencia estadistica, no de la hipotesis en si",
+        "Risk Analytics (Sharpe/drawdown) es descriptivo -- no gatea ni la Disposition ni el veredicto walk-forward"
+      ],
+      "materialization": {
+        "knowledge_code_revision": "8e142d7a8ac2517a8e670e8e132b09b9d85f5d4f",
+        "pipeline_sha256": "a957d9303a85473c1a0360de099482bf0c8fef4ad85ac4dff9b3b20d7b4c6194",
+        "preserved_at": "2026-09-28T08:00:00Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > MOM10_t) - mean_forward_return_1d(close_t <= MOM10_t)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= MOM10_t",
+          "upper_group": "close_t > MOM10_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "close_lag_10",
+          "parameters": {
+            "lookback": 10
+          },
+          "strategy_id": "MOMENTUM_CROSSOVER"
+        },
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > MOM10_t) - mean(return_t+1 | close_t <= MOM10_t)",
+          "name": "mean_forward_return_1d(close_t > MOM10_t) - mean_forward_return_1d(close_t <= MOM10_t)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_MOM10_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2024-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2024-12-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2024-12-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2024-12-25T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2024-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2024-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2024-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2024-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|4107c70a07b31b9018d00cdd407b6bcdcc36432527c97534770d2b75283113ff|4af588d1dcc97af5c5f0f4f050fe0729edd0d13f79bd904931a3f2d0759fe4d4",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|961e32cec136c1e0fc3150aa8848b5e99acb5f083cdbca38c93305df59b2883b",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|961e32cec136c1e0fc3150aa8848b5e99acb5f083cdbca38c93305df59b2883b|b269ced409b2b2a4d1188b3419165733aefed18cad459534fd11b7d0ceb6957f"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|3391de49-a1ba-44f4-9e50-59b54cacd2e3",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|3391de49-a1ba-44f4-9e50-59b54cacd2e3|1|892b2a521a24c295ff062359baf6834fea2b3edc7ee406c1164a7eb946064a97",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "417d1d6e7bbba70a7efadf2dc2ab20d786620c70",
+          "hypothesis_id": "HYPOTHESIS|2727898e-bfac-4687-a046-936ad4e8443b",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|2727898e-bfac-4687-a046-936ad4e8443b|1|61170e9f7636b8024961ae4f44b24d78cd71e4b530123745089c0b3d739e673c",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|70408cac17743c556ef50e145412496fb81f9acb6d9eb87c08f6751b01f305a8|aa4a9e1deaad88191c0aa98b87b2ccf031454babf23607f6817bf86f9b5d6e94",
+          "research_result_id": "RESEARCH_RESULT|70408cac17743c556ef50e145412496fb81f9acb6d9eb87c08f6751b01f305a8"
+        }
+      },
+      "results": {
+        "outcome": "REJECTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(close_t > MOM10_t) - mean_forward_return_1d(close_t <= MOM10_t)",
+            "threshold": "0"
+          },
+          "criterion_result": "NOT_MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 189,
+              "mean_return_t_plus_1": 0.000985797701069131,
+              "rule": "close_t <= MOM10_t"
+            },
+            "upper": {
+              "count": 176,
+              "mean_return_t_plus_1": -0.0009107796652703601,
+              "rule": "close_t > MOM10_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": -0.001896577366339491,
+          "observation_count": 365,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    }
+  ],
+  "schema_version": "1"
+}
