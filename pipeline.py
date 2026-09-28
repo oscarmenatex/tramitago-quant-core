@@ -155,6 +155,11 @@ from tramitago_quant_core.research.walk_forward import (
 from tramitago_quant_core.strategy_contract.strategy import (
     sma_crossover_strategy, momentum_crossover_strategy, _strategy_classify_rows,
 )
+from tramitago_quant_core.research.hypothesis_generation import (
+    HYPOTHESIS_GENERATION_SEARCH_SPACE_ID, HYPOTHESIS_GENERATION_INSTRUMENT,
+    HYPOTHESIS_GENERATION_SMA_WINDOWS, HYPOTHESIS_GENERATION_MOMENTUM_LOOKBACKS,
+    hypothesis_generation_search_space,
+)
 
 def save_capture(raw, output, *, kind, acquired_at, response_headers=None):
     if kind not in ("live", "synthetic-test"):
