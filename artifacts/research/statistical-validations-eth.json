@@ -1,0 +1,142 @@
+{
+  "schema_version": "1",
+  "validations": [
+    {
+      "consistency_ratio": 0.6,
+      "consistency_threshold": "0.6",
+      "fold_summaries": [
+        {
+          "beats_baseline": false,
+          "criterion_result": "NOT_MET",
+          "fold_index": 0,
+          "metric": -0.01583348731054307,
+          "period": {
+            "end_exclusive_utc": "2025-03-15T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.5729398117708843,
+            "max_drawdown": 0.46832759543472546,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": -4.2446270329245115
+          }
+        },
+        {
+          "beats_baseline": false,
+          "criterion_result": "NOT_MET",
+          "fold_index": 1,
+          "metric": -0.011235391747537233,
+          "period": {
+            "end_exclusive_utc": "2025-05-27T00:00:00Z",
+            "start_utc": "2025-03-15T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.48822398676112183,
+            "max_drawdown": 0.18905708979311478,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": -0.05275908340511496
+          }
+        },
+        {
+          "beats_baseline": true,
+          "criterion_result": "MET",
+          "fold_index": 2,
+          "metric": 0.006571829742285573,
+          "period": {
+            "end_exclusive_utc": "2025-08-08T00:00:00Z",
+            "start_utc": "2025-05-27T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.5054168338535796,
+            "max_drawdown": 0.15118001745569218,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": 3.859830035390315
+          }
+        },
+        {
+          "beats_baseline": true,
+          "criterion_result": "MET",
+          "fold_index": 3,
+          "metric": 0.00707808801166831,
+          "period": {
+            "end_exclusive_utc": "2025-10-20T00:00:00Z",
+            "start_utc": "2025-08-08T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.47245942381007855,
+            "max_drawdown": 0.10038269849852978,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": 1.625183131818999
+          }
+        },
+        {
+          "beats_baseline": true,
+          "criterion_result": "MET",
+          "fold_index": 4,
+          "metric": 0.00911640879246711,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-10-20T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.3984960488797622,
+            "max_drawdown": 0.1419423747386657,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": 0.6107778182969055
+          }
+        }
+      ],
+      "materialization": {
+        "pipeline_sha256": "dd90d06ed0e0d31562e137e6966b2e21c81a9d85f22e15b1f9229ca617a1bd4b",
+        "validated_at": "2026-09-28T10:30:00Z",
+        "validation_code_revision": "cc660ccd655f95e8dd85fa9c9b0efe65a4282c9f"
+      },
+      "minimum_folds_required": 5,
+      "outcome": "VALIDATED",
+      "outcome_reason": null,
+      "record_id": "STATISTICAL_VALIDATION_RECORD|STATISTICAL_VALIDATION|d5d2f12463f58d2e99a2eef5f3045544be22a63be5c02e998cdeb03041963ad1|a8bfd79da4170d934e24b25546ac697c25b87bf098d23e1cbe346286edd63495",
+      "reference": {
+        "fold_results": [
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|5ca32b82b6fa83296ee1e1fb115330e9c7da10e530846ba5806086e5343ddff9",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|5ca32b82b6fa83296ee1e1fb115330e9c7da10e530846ba5806086e5343ddff9|35dcb251788bf40a01ebc39c8d514d3e1c12cc41f3afb007923030bccbb3efab"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|e5f3fb7cd136544e777ee5d58046cfe80aed83cc9ba6a3d6eee0a580492622bf",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|e5f3fb7cd136544e777ee5d58046cfe80aed83cc9ba6a3d6eee0a580492622bf|bbfea2d7e57b9a215cc4a3afb414a32a48af3c61bbf745e2e6420a928af15421"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|cc68c8a33097eb10efbd83bb2788b23748b013c978d09bbe45e363d91020f517",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|cc68c8a33097eb10efbd83bb2788b23748b013c978d09bbe45e363d91020f517|00f2e1b8e9d8804d2853ce55d27d86de7ad7fa9e263fe3e11c1eacaceb88b380"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|18fceda55868f89f00b6a49b87cf98305c074a89b8a4c686d0f84364e8295927",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|18fceda55868f89f00b6a49b87cf98305c074a89b8a4c686d0f84364e8295927|ec95552de1fad0e6aa0713bc549ce795ef366e51024541bf534d006071d0c30b"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|d4d81bb4dbab41609a2699ce379667a32e8b6c7788d6079299c6b578848b09ca",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|d4d81bb4dbab41609a2699ce379667a32e8b6c7788d6079299c6b578848b09ca|3ea75f884e8f709a157374372a7adf17f6431ff156f7ac5e36d859fa0465dfbc"
+          }
+        ],
+        "partition": {
+          "partition_id": "WALK_FORWARD_PARTITION|c554f4bd8a05fa5c206dd6e3c225d2712ffd739d576ad0ea75b28d878e63a062",
+          "record_id": "WALK_FORWARD_PARTITION_RECORD|WALK_FORWARD_PARTITION|c554f4bd8a05fa5c206dd6e3c225d2712ffd739d576ad0ea75b28d878e63a062|99cf1158e045b356662109bb9b7fdc48fc30e97a4010ec895ffa9c4f109be7dd"
+        }
+      },
+      "risk_analytics_summary": {
+        "max_drawdown_worst": 0.46832759543472546,
+        "sharpe_ratio_max": 3.859830035390315,
+        "sharpe_ratio_mean": 0.35968097383531866,
+        "sharpe_ratio_min": -4.2446270329245115
+      },
+      "schema_version": "1",
+      "sensitivity": {
+        "fold_metric_max": 0.00911640879246711,
+        "fold_metric_mean": -0.000860510502331862,
+        "fold_metric_min": -0.01583348731054307
+      },
+      "status": "ISSUED",
+      "validation_id": "STATISTICAL_VALIDATION|d5d2f12463f58d2e99a2eef5f3045544be22a63be5c02e998cdeb03041963ad1"
+    }
+  ]
+}

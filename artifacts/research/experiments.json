@@ -111,6 +111,118 @@
       "revision_reason": "INITIAL_CONDITIONS_FIXED",
       "status": "CONDITIONS_FIXED",
       "version": 1
+    },
+    {
+      "conditions": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= SMA3_t",
+          "upper_group": "close_t > SMA3_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "instrument": "ETH-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > SMA3_t) - mean(return_t+1 | close_t <= SMA3_t)",
+          "name": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_SMA3_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "sma": {
+          "source": "close",
+          "window": 3
+        },
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "created_at": "2026-09-28T10:15:00Z",
+      "experiment_id": "EXPERIMENT|7c7c8ec7-41f4-4934-8f4a-0963b13deaf1",
+      "record_id": "EXPERIMENT_VERSION|EXPERIMENT|7c7c8ec7-41f4-4934-8f4a-0963b13deaf1|1|aefb33e772e0489577b8b6e754a94147312c9094bc52e7ab9546bd80972b1d5f",
+      "references": {
+        "dataset": {
+          "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|67bba0f758e189768f81d62934b49220d0fe49d2e6e363e8b4229b3faad28056",
+          "dataset_sha256": "217dc57cf10b25e5ed343d6374979d5bffa9126dd9795e038a7b2ebb679d7aa0",
+          "evaluable_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "hypothesis_id": "HYPOTHESIS|d07ada22-c0cb-46f4-8837-cfa01d7c0231",
+          "hypothesis_version": 1,
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "hypothesis": {
+          "code_revision": "cc660ccd655f95e8dd85fa9c9b0efe65a4282c9f",
+          "hypothesis_id": "HYPOTHESIS|d07ada22-c0cb-46f4-8837-cfa01d7c0231",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|d07ada22-c0cb-46f4-8837-cfa01d7c0231|1|20e9abbeb55ec44b8943a5ac66bc6453e82ffbcb2468137b00895f454714e9ee",
+          "system_version": "0.1.0",
+          "version": 1
+        }
+      },
+      "revision_reason": "Initial fixed experiment definition for ETH-USD SMA3 hypothesis",
+      "status": "CONDITIONS_FIXED",
+      "version": 1
     }
   ],
   "schema_version": "1"

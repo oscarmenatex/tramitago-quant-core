@@ -78,20 +78,26 @@ def _discovery_snapshot(hypothesis):
 
 
 def _experiment_conditions(hypothesis, dataset, selection):
+    """Instrument extension (2026-09-28): the instrument is read from the
+    dataset's own config, not fixed to "BTC-USD" -- generalized after
+    finding it hardcoded while investigating a second instrument (ETH-USD)
+    for the same SMA3 Hypothesis, the same way M4.1 generalized the
+    indicator window."""
     reference = _experiment_reference(hypothesis, dataset, selection)
     criterion = hypothesis["acceptance_criterion"]
     metric = hypothesis["target_metric"]
+    instrument = dataset["config"]["instrument"]
     if (criterion != {
             "metric": metric, "comparison": "GT", "threshold": "0",
             "expected_direction": "INCREASE"}
-            or dataset["config"]["instrument"] != "BTC-USD"
+            or not isinstance(instrument, str) or not instrument
             or dataset["config"]["frequency_seconds"] != 86400
             or reference["dataset"]["evaluable_period"]
             != hypothesis["constraints"]["period"]):
         raise ValueError("Hypothesis and dataset conditions are incompatible")
     return {
         "schema_version": EXPERIMENT_CONDITIONS_SCHEMA_VERSION,
-        "instrument": "BTC-USD",
+        "instrument": instrument,
         "frequency_seconds": 86400,
         "analytical_rule": {
             "upper_group": "close_t > SMA3_t",
@@ -148,7 +154,7 @@ def _experiment_conditions_are_valid(conditions):
     criterion = conditions.get("acceptance_criterion")
     return (
         conditions.get("schema_version") == EXPERIMENT_CONDITIONS_SCHEMA_VERSION
-        and conditions.get("instrument") == "BTC-USD"
+        and _hypothesis_text_is_valid(conditions.get("instrument"))
         and conditions.get("frequency_seconds") == 86400
         and conditions.get("analytical_rule") == {
             "upper_group": "close_t > SMA3_t", "lower_or_equal_group": "close_t <= SMA3_t"}
