@@ -155,7 +155,8 @@ from tramitago_quant_core.research.walk_forward import (
     _statistical_validation_bonferroni_correction,
 )
 from tramitago_quant_core.strategy_contract.strategy import (
-    sma_crossover_strategy, momentum_crossover_strategy, _strategy_classify_rows,
+    sma_crossover_strategy, momentum_crossover_strategy, volume_surge_strategy,
+    _strategy_classify_rows,
 )
 from tramitago_quant_core.research.hypothesis_generation import (
     HYPOTHESIS_GENERATION_SEARCH_SPACE_ID, HYPOTHESIS_GENERATION_INSTRUMENT,

@@ -28,7 +28,7 @@ from tramitago_quant_core.research.historical_dataset import (
     verified_hypothesis_dataset,
 )
 from tramitago_quant_core.strategy_contract.strategy import (
-    sma_crossover_strategy, momentum_crossover_strategy,
+    sma_crossover_strategy, momentum_crossover_strategy, volume_surge_strategy,
 )
 
 # M4.1 production wiring (2026-09-28): an Experiment's indicator is described
@@ -41,6 +41,7 @@ from tramitago_quant_core.strategy_contract.strategy import (
 _EXPERIMENT_STRATEGY_CONSTRUCTORS = {
     "SMA_CROSSOVER": lambda parameters: sma_crossover_strategy(parameters["window"]),
     "MOMENTUM_CROSSOVER": lambda parameters: momentum_crossover_strategy(parameters["lookback"]),
+    "VOLUME_SURGE": lambda parameters: volume_surge_strategy(parameters["window"]),
 }
 
 
