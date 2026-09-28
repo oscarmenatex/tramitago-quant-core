@@ -274,6 +274,75 @@ def _walk_forward_fold_evidence(dataset_directory, conditions, fold_period):
     return [item for item in all_evidence if start <= epoch(item["timestamp"]) < end]
 
 
+RISK_ANALYTICS_RULE = "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE"
+RISK_ANALYTICS_PERIODS_PER_YEAR = 365
+
+
+def _risk_analytics_strategy_returns(evidence):
+    """Daily returns a long-only implementation of the Hypothesis's own
+    criterion would have actually captured: long (captures
+    return_t_plus_1) while close_t > SMA3_t (group == UPPER), flat (0
+    return) otherwise.
+
+    M2.6-T4 (Risk Analytics, extension of M2.6): purely descriptive --
+    reports the risk side of DOC-003 §8's "Retorno esperado / Riesgo
+    asumido" relationship. Never changes the Hypothesis's acceptance
+    criterion, never gates the VALIDATED/NOT_VALIDATED/
+    INSUFFICIENT_EVIDENCE verdict, never blocks or authorizes anything --
+    that is Risk Control (Etapa 4.5), a distinct, unbuilt capability that
+    requires real capital and a Broker Adapter. This requires neither.
+    """
+    return [item["return_t_plus_1"] if item["group"] == "UPPER" else 0.0
+            for item in evidence]
+
+
+def _risk_analytics_sharpe_ratio(returns, periods_per_year=RISK_ANALYTICS_PERIODS_PER_YEAR):
+    """Annualized Sharpe ratio assuming a zero risk-free rate (no natural
+    risk-free benchmark declared for a daily BTC-USD series). None when
+    there is no variance to normalize by."""
+    if not returns:
+        return None
+    mean_return = math.fsum(returns) / len(returns)
+    variance = math.fsum((r - mean_return) ** 2 for r in returns) / len(returns)
+    std_dev = math.sqrt(variance)
+    if std_dev == 0:
+        return None
+    return (mean_return / std_dev) * math.sqrt(periods_per_year)
+
+
+def _risk_analytics_annualized_volatility(returns, periods_per_year=RISK_ANALYTICS_PERIODS_PER_YEAR):
+    if not returns:
+        return None
+    mean_return = math.fsum(returns) / len(returns)
+    variance = math.fsum((r - mean_return) ** 2 for r in returns) / len(returns)
+    return math.sqrt(variance) * math.sqrt(periods_per_year)
+
+
+def _risk_analytics_max_drawdown(returns):
+    """Maximum peak-to-trough decline of the cumulative equity curve
+    implied by `returns`, starting at 1.0. 0.0 when the curve never
+    declines (including an empty series)."""
+    equity = 1.0
+    peak = 1.0
+    max_drawdown = 0.0
+    for r in returns:
+        equity *= (1.0 + r)
+        peak = max(peak, equity)
+        if peak > 0:
+            max_drawdown = max(max_drawdown, (peak - equity) / peak)
+    return max_drawdown
+
+
+def _risk_analytics_summary(evidence):
+    returns = _risk_analytics_strategy_returns(evidence)
+    return {
+        "rule": RISK_ANALYTICS_RULE,
+        "sharpe_ratio": _risk_analytics_sharpe_ratio(returns),
+        "annualized_volatility": _risk_analytics_annualized_volatility(returns),
+        "max_drawdown": _risk_analytics_max_drawdown(returns),
+    }
+
+
 def _walk_forward_fold_evaluation(fold_period, evidence, criterion):
     """Apply the experiment's own sealed criterion to one fold, plus the fixed
     baseline rule declared once in code -- never chosen after seeing results."""
@@ -289,6 +358,7 @@ def _walk_forward_fold_evaluation(fold_period, evidence, criterion):
         **summary,
         "baseline": {"rule": WALK_FORWARD_BASELINE_RULE, "mean_return_t_plus_1": baseline_mean},
         "beats_baseline": beats_baseline,
+        "risk_analytics": _risk_analytics_summary(evidence),
     }
 
 
@@ -360,6 +430,8 @@ def _walk_forward_fold_result_record_is_valid(record):
             or evaluation.get("criterion_result") not in EXPERIMENT_RESULT_OUTCOMES
             or not isinstance(evaluation.get("baseline"), dict)
             or evaluation["baseline"].get("rule") != WALK_FORWARD_BASELINE_RULE
+            or not isinstance(evaluation.get("risk_analytics"), dict)
+            or evaluation["risk_analytics"].get("rule") != RISK_ANALYTICS_RULE
             or not isinstance(materialization, dict) or set(materialization) != {
                 "computed_at", "computation_code_revision", "pipeline_sha256"}
             or not _explicit_utc(materialization.get("computed_at"))
@@ -549,6 +621,7 @@ def _statistical_validation_fold_summary(fold_result):
         "criterion_result": evaluation["criterion_result"],
         "metric": evaluation["metric"],
         "beats_baseline": evaluation["beats_baseline"],
+        "risk_analytics": evaluation["risk_analytics"],
     }
 
 
@@ -561,6 +634,24 @@ def _statistical_validation_sensitivity(fold_summaries):
     return {
         "fold_metric_min": min(metrics), "fold_metric_max": max(metrics),
         "fold_metric_mean": math.fsum(metrics) / len(metrics),
+    }
+
+
+def _statistical_validation_risk_analytics_summary(fold_summaries):
+    """M2.6-T4 (Risk Analytics, extension of M2.6): descriptive aggregate of
+    the risk side of DOC-003 §8's Retorno/Riesgo relationship across folds
+    -- reported alongside the verdict, exactly like sensitivity, never
+    gates VALIDATED/NOT_VALIDATED/INSUFFICIENT_EVIDENCE. Distinct from Risk
+    Control (Etapa 4.5): purely descriptive, never blocks or authorizes
+    anything."""
+    sharpes = [item["risk_analytics"]["sharpe_ratio"] for item in fold_summaries
+               if item["risk_analytics"]["sharpe_ratio"] is not None]
+    drawdowns = [item["risk_analytics"]["max_drawdown"] for item in fold_summaries]
+    return {
+        "sharpe_ratio_min": min(sharpes) if sharpes else None,
+        "sharpe_ratio_max": max(sharpes) if sharpes else None,
+        "sharpe_ratio_mean": math.fsum(sharpes) / len(sharpes) if sharpes else None,
+        "max_drawdown_worst": max(drawdowns) if drawdowns else None,
     }
 
 
@@ -592,8 +683,9 @@ def _statistical_validation_materialization(validated_at, validation_code_revisi
 
 
 def _statistical_validation_content(validation_id, reference, minimum_folds_required,
-                                    consistency_threshold, fold_summaries, sensitivity, outcome,
-                                    outcome_reason, consistency_ratio, materialization):
+                                    consistency_threshold, fold_summaries, sensitivity,
+                                    risk_analytics_summary, outcome, outcome_reason,
+                                    consistency_ratio, materialization):
     return {
         "validation_id": validation_id,
         "schema_version": STATISTICAL_VALIDATION_SCHEMA_VERSION,
@@ -602,6 +694,7 @@ def _statistical_validation_content(validation_id, reference, minimum_folds_requ
         "consistency_threshold": consistency_threshold,
         "fold_summaries": fold_summaries,
         "sensitivity": sensitivity,
+        "risk_analytics_summary": risk_analytics_summary,
         "outcome": outcome,
         "outcome_reason": outcome_reason,
         "consistency_ratio": consistency_ratio,
@@ -611,11 +704,13 @@ def _statistical_validation_content(validation_id, reference, minimum_folds_requ
 
 
 def _statistical_validation_record(validation_id, reference, minimum_folds_required,
-                                   consistency_threshold, fold_summaries, sensitivity, outcome,
-                                   outcome_reason, consistency_ratio, materialization):
+                                   consistency_threshold, fold_summaries, sensitivity,
+                                   risk_analytics_summary, outcome, outcome_reason,
+                                   consistency_ratio, materialization):
     content = _statistical_validation_content(
         validation_id, reference, minimum_folds_required, consistency_threshold, fold_summaries,
-        sensitivity, outcome, outcome_reason, consistency_ratio, materialization)
+        sensitivity, risk_analytics_summary, outcome, outcome_reason, consistency_ratio,
+        materialization)
     return {**content, "record_id": "STATISTICAL_VALIDATION_RECORD|" + validation_id + "|"
             + digest(encoded(content))}
 
@@ -623,8 +718,9 @@ def _statistical_validation_record(validation_id, reference, minimum_folds_requi
 def _statistical_validation_record_is_valid(record):
     fields = {
         "validation_id", "schema_version", "reference", "minimum_folds_required",
-        "consistency_threshold", "fold_summaries", "sensitivity", "outcome", "outcome_reason",
-        "consistency_ratio", "materialization", "status", "record_id"}
+        "consistency_threshold", "fold_summaries", "sensitivity", "risk_analytics_summary",
+        "outcome", "outcome_reason", "consistency_ratio", "materialization", "status",
+        "record_id"}
     if not isinstance(record, dict) or set(record) != fields:
         return False
     reference = record.get("reference")
@@ -658,6 +754,9 @@ def _statistical_validation_record_is_valid(record):
                 and not _hypothesis_text_is_valid(record["outcome_reason"]))
             or (outcome == "INSUFFICIENT_EVIDENCE") != (record.get("consistency_ratio") is None)
             or not isinstance(record.get("sensitivity"), dict)
+            or not isinstance(record.get("risk_analytics_summary"), dict)
+            or record["risk_analytics_summary"] != _statistical_validation_risk_analytics_summary(
+                fold_summaries)
             or not isinstance(materialization, dict) or set(materialization) != {
                 "validated_at", "validation_code_revision", "pipeline_sha256"}
             or not _explicit_utc(materialization.get("validated_at"))
@@ -677,8 +776,8 @@ def _statistical_validation_record_is_valid(record):
         return False
     expected = _statistical_validation_record(
         record["validation_id"], reference, minimum, threshold, fold_summaries,
-        record["sensitivity"], outcome, record.get("outcome_reason"),
-        record.get("consistency_ratio"), materialization)
+        record["sensitivity"], record["risk_analytics_summary"], outcome,
+        record.get("outcome_reason"), record.get("consistency_ratio"), materialization)
     return record == expected
 
 
@@ -801,11 +900,12 @@ def constitute_statistical_validation(registry_path, *, partition_registry_path,
 
     fold_summaries = [_statistical_validation_fold_summary(item) for item in fold_results]
     sensitivity = _statistical_validation_sensitivity(fold_summaries)
+    risk_analytics_summary = _statistical_validation_risk_analytics_summary(fold_summaries)
     outcome, outcome_reason, consistency_ratio = _statistical_validation_outcome(
         fold_summaries, minimum_folds_required, consistency_threshold)
     record = _statistical_validation_record(
         validation_id, reference, minimum_folds_required, consistency_threshold, fold_summaries,
-        sensitivity, outcome, outcome_reason, consistency_ratio,
+        sensitivity, risk_analytics_summary, outcome, outcome_reason, consistency_ratio,
         _statistical_validation_materialization(validated_at, validation_code_revision))
     return _persist_statistical_validation(registry_path, record)
 
@@ -852,14 +952,15 @@ def verified_statistical_validation(registry_path, validation_id, *, partition_r
         raise ValueError("Statistical Validation fold result references are invalid")
     fold_summaries = [_statistical_validation_fold_summary(item) for item in fold_results]
     sensitivity = _statistical_validation_sensitivity(fold_summaries)
+    risk_analytics_summary = _statistical_validation_risk_analytics_summary(fold_summaries)
     outcome, outcome_reason, consistency_ratio = _statistical_validation_outcome(
         fold_summaries, record["minimum_folds_required"], record["consistency_threshold"])
     expected = _statistical_validation_record(
         record["validation_id"], reference, record["minimum_folds_required"],
-        record["consistency_threshold"], fold_summaries, sensitivity, outcome, outcome_reason,
-        consistency_ratio, record["materialization"])
+        record["consistency_threshold"], fold_summaries, sensitivity, risk_analytics_summary,
+        outcome, outcome_reason, consistency_ratio, record["materialization"])
     if record != expected:
-        raise ValueError("Statistical Validation verdict, folds, or sensitivity is invalid")
+        raise ValueError("Statistical Validation verdict, folds, sensitivity, or risk analytics is invalid")
     return record
 
 
