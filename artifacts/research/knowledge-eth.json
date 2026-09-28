@@ -1,0 +1,163 @@
+{
+  "records": [
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+          "threshold": "0"
+        },
+        "description": "For ETH-USD, the mean t+1 return when close_t > SMA3_t exceeds the mean t+1 return when close_t <= SMA3_t.",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|d07ada22-c0cb-46f4-8837-cfa01d7c0231",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|d07ada22-c0cb-46f4-8837-cfa01d7c0231|1|20e9abbeb55ec44b8943a5ac66bc6453e82ffbcb2468137b00895f454714e9ee",
+        "target_metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+        "version": 1
+      },
+      "interpretation": "For ETH-USD (2025), SMA3 full-sample: criterion=MET, metric=0.0001801349820158916. Walk-forward (M2.6, 5 folds of 73 days): consistency 60% (3/5 folds MET and beat baseline), Sharpe ratio ranges -4.24 to +3.86 across folds (mean +0.36, positive on average but wildly inconsistent), worst fold max drawdown 46.8% (M2.6-T4, Risk Analytics). Compare to BTC-USD: same instrument family and criterion, consistency 60% there too, but BTC-USD mean Sharpe was negative (-0.14) and worst drawdown only 21.4%. ETH-USD shows a marginally more positive return signal but a substantially worse and more volatile risk profile.",
+      "knowledge_id": "KNOWLEDGE|f4b03bd1906034bb42460250142da7c098c5d003738380b325c424b5f6df2651",
+      "limitations": [
+        "Single instrument evaluated per hypothesis (BTC-USD and ETH-USD are separate Hypothesis records, not a portfolio)",
+        "Same historical period as the BTC-USD hypothesis (2025), not independently chosen for ETH-USD",
+        "Same SMA(3) parameter as BTC-USD -- no parameter re-optimization for this instrument",
+        "Consistency threshold (0.6) used here is a demonstration value, not a formally authorized threshold",
+        "Risk Analytics (Sharpe/drawdown) is descriptive only -- does not gate this Disposition or the walk-forward verdict"
+      ],
+      "materialization": {
+        "knowledge_code_revision": "cc660ccd655f95e8dd85fa9c9b0efe65a4282c9f",
+        "pipeline_sha256": "dd90d06ed0e0d31562e137e6966b2e21c81a9d85f22e15b1f9229ca617a1bd4b",
+        "preserved_at": "2026-09-28T10:45:00Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= SMA3_t",
+          "upper_group": "close_t > SMA3_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "instrument": "ETH-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > SMA3_t) - mean(return_t+1 | close_t <= SMA3_t)",
+          "name": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_SMA3_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "sma": {
+          "source": "close",
+          "window": 3
+        },
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|f4b03bd1906034bb42460250142da7c098c5d003738380b325c424b5f6df2651|578bc8d66bb22d2601691f6ed334770f61e7abe86e9d725f68fb13f56a306a86",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|e0bd173c5ebc4d69cc71dd920b968272b4f0a773fcd13c83430e9945e66a334e",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|e0bd173c5ebc4d69cc71dd920b968272b4f0a773fcd13c83430e9945e66a334e|2ee56fc392d133e885786bfadb7405f4784b7057c715445838c9968b049aec70"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|7c7c8ec7-41f4-4934-8f4a-0963b13deaf1",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|7c7c8ec7-41f4-4934-8f4a-0963b13deaf1|1|aefb33e772e0489577b8b6e754a94147312c9094bc52e7ab9546bd80972b1d5f",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "cc660ccd655f95e8dd85fa9c9b0efe65a4282c9f",
+          "hypothesis_id": "HYPOTHESIS|d07ada22-c0cb-46f4-8837-cfa01d7c0231",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|d07ada22-c0cb-46f4-8837-cfa01d7c0231|1|20e9abbeb55ec44b8943a5ac66bc6453e82ffbcb2468137b00895f454714e9ee",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|c0e87802620449d008c3b40cd458b61eb52042129ad7ab157d651ce83152863f|746ebfbb57b29cbdbfdb646264f161c156770f0788c4f6c86706bfac79d40c52",
+          "research_result_id": "RESEARCH_RESULT|c0e87802620449d008c3b40cd458b61eb52042129ad7ab157d651ce83152863f"
+        }
+      },
+      "results": {
+        "outcome": "ACCEPTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+            "threshold": "0"
+          },
+          "criterion_result": "MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 181,
+              "mean_return_t_plus_1": 0.0003680983285932609,
+              "rule": "close_t <= SMA3_t"
+            },
+            "upper": {
+              "count": 184,
+              "mean_return_t_plus_1": 0.0005482333106091525,
+              "rule": "close_t > SMA3_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": 0.0001801349820158916,
+          "observation_count": 365,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    }
+  ],
+  "schema_version": "1"
+}

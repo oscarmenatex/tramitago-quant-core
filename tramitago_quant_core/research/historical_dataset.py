@@ -296,7 +296,7 @@ def _hypothesis_dataset_validation(payload, config):
     start = epoch(config["capture_period"]["start_utc"])
     end = epoch(config["capture_period"]["end_exclusive_utc"])
     rows, report = normalize(json.dumps(payload, separators=(",", ":")).encode("utf-8"),
-                             start=start, end=end)
+                             start=start, end=end, instrument=config["instrument"])
     if report["excluded_outside_range"]:
         report["errors"].append({
             "row": None,

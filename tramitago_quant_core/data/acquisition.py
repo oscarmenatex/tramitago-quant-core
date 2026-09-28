@@ -51,11 +51,20 @@ def _coinbase_public_request(url):
     return Request(url, headers=_coinbase_public_request_headers())
 
 
-def normalize(raw, start=None, end=None):
-    """Parse source order [time, low, high, open, close, volume], sort in UTC."""
+def normalize(raw, start=None, end=None, instrument=None):
+    """Parse source order [time, low, high, open, close, volume], sort in UTC.
+
+    Instrument extension (2026-09-28): `instrument` defaults to CONFIG's
+    fixed "BTC-USD" (preserving the original M1.1 CLI demo unchanged) but
+    can be overridden -- generalized after finding it hardcoded while
+    investigating a second instrument (ETH-USD) for the M2.2-T1 Hypothesis
+    Dataset, which calls this function for any instrument its Hypothesis
+    declares.
+    """
     if start is None and end is None:
         start = epoch(CONFIG["start"])
         end = epoch(CONFIG["end_exclusive"])
+    instrument = instrument if instrument is not None else CONFIG["instrument"]
     report = {"status": "FAIL", "received": 0, "accepted": 0, "rejected": 0,
               "excluded_outside_range": 0, "errors": [], "warnings": []}
     rows = []
@@ -83,7 +92,7 @@ def normalize(raw, start=None, end=None):
             if start is not None and stamp < start or end is not None and stamp >= end:
                 report["excluded_outside_range"] += 1
                 continue
-            rows.append({"instrument": CONFIG["instrument"], "timestamp": timestamp,
+            rows.append({"instrument": instrument, "timestamp": timestamp,
                          "open": opening, "high": high, "low": low, "close": close,
                          "volume": volume, "_source_row": number})
         except (ValueError, OverflowError, OSError) as exc:
