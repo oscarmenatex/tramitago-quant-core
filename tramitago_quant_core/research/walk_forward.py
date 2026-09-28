@@ -343,10 +343,10 @@ def _risk_analytics_summary(evidence):
     }
 
 
-def _walk_forward_fold_evaluation(fold_period, evidence, criterion):
+def _walk_forward_fold_evaluation(fold_period, evidence, criterion, analytical_rule):
     """Apply the experiment's own sealed criterion to one fold, plus the fixed
     baseline rule declared once in code -- never chosen after seeing results."""
-    summary = _experiment_result_summary(evidence, criterion)
+    summary = _experiment_result_summary(evidence, criterion, analytical_rule)
     returns = [item["return_t_plus_1"] for item in evidence]
     baseline_mean = math.fsum(returns) / len(returns) if returns else None
     upper_mean = summary["groups"]["upper"]["mean_return_t_plus_1"]
@@ -515,7 +515,8 @@ def constitute_walk_forward_fold_result(registry_path, *, partition_registry_pat
 
     evidence = _walk_forward_fold_evidence(dataset_directory, experiment["conditions"], fold_period)
     evaluation = _walk_forward_fold_evaluation(
-        fold_period, evidence, experiment["conditions"]["acceptance_criterion"])
+        fold_period, evidence, experiment["conditions"]["acceptance_criterion"],
+        experiment["conditions"]["analytical_rule"])
 
     reference = _walk_forward_fold_reference(partition, experiment)
     fold_result_id = _walk_forward_fold_id(reference, fold_index)
@@ -572,7 +573,8 @@ def verified_walk_forward_fold_result(registry_path, fold_result_id, *, partitio
         raise ValueError("Walk-Forward Fold Result fold period is invalid")
     evidence = _walk_forward_fold_evidence(dataset_directory, experiment["conditions"], fold_period)
     evaluation = _walk_forward_fold_evaluation(
-        fold_period, evidence, experiment["conditions"]["acceptance_criterion"])
+        fold_period, evidence, experiment["conditions"]["acceptance_criterion"],
+        experiment["conditions"]["analytical_rule"])
     reference = _walk_forward_fold_reference(partition, experiment)
     expected = _walk_forward_fold_result_record(
         record["fold_result_id"], reference, record["fold_index"], fold_period,
