@@ -10,8 +10,10 @@ M2.7-T1 (search space, below) declares the bounded batch. M2.7-T2 (the
 multiple-comparisons correction) lives in walk_forward.py's
 _statistical_validation_outcome. M2.7-T3 (below, batch registry) audits
 every hypothesis GENERATED and TESTED in one batch, not just the ones that
-validated (R-2.7-003). M2.7-T4 (the autonomous orchestration that actually
-runs a batch end to end) is a separate microciclo.
+validated (R-2.7-003). M2.7-T4 (below, autonomous orchestration) runs a
+batch end to end -- only after T1/T2/T3 exist, per the Etapa's own rule
+that automating the orchestration without the safeguards would automate
+the risk, not resolve it.
 """
 
 import json
@@ -22,10 +24,15 @@ from tramitago_quant_core.shared.util import (
     digest, encoded, _atomic_write, _explicit_utc, _hypothesis_text_is_valid,
     _hypothesis_code_revision_is_valid, _pipeline_source_bytes,
 )
-from tramitago_quant_core.research.hypothesis import _hypothesis_id_is_valid
+from tramitago_quant_core.research.hypothesis import _hypothesis_id_is_valid, constitute_hypothesis
+from tramitago_quant_core.research.historical_dataset import create_hypothesis_dataset
+from tramitago_quant_core.research.experiment import (
+    constitute_experiment_conditions, execute_experiment_result,
+)
 from tramitago_quant_core.research.walk_forward import (
     STATISTICAL_VALIDATION_OUTCOMES, _statistical_validation_id_is_valid,
-    verified_statistical_validation,
+    verified_statistical_validation, constitute_walk_forward_partition,
+    constitute_walk_forward_fold_result, constitute_statistical_validation,
 )
 from tramitago_quant_core.strategy_contract.strategy import (
     sma_crossover_strategy, momentum_crossover_strategy,
@@ -57,6 +64,16 @@ HYPOTHESIS_GENERATION_SEARCH_SPACE_ID = "SEARCH_SPACE|2026-09-28|SMA_MOMENTUM_BT
 HYPOTHESIS_GENERATION_INSTRUMENT = "BTC-USD"
 HYPOTHESIS_GENERATION_SMA_WINDOWS = (3, 5, 7, 10)
 HYPOTHESIS_GENERATION_MOMENTUM_LOOKBACKS = (3, 5, 7, 10)
+HYPOTHESIS_GENERATION_PERIOD = {
+    "start_utc": "2025-01-01T00:00:00Z", "end_exclusive_utc": "2026-01-01T00:00:00Z"}
+# Every Hypothesis in this batch is a systematic variation of the SAME
+# originally-discovered SMA3 pattern (widening/narrowing its window,
+# swapping the averaging for a lag) -- not a fresh, independent discovery --
+# so it honestly traces back to the same discovery evidence snapshot every
+# prior real Hypothesis (BTC-USD, ETH-USD) has used, rather than a new one
+# invented to justify each variant after the fact.
+HYPOTHESIS_GENERATION_DISCOVERY_SNAPSHOT_SHA256 = (
+    "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f")
 
 
 def hypothesis_generation_search_space():
@@ -345,3 +362,131 @@ def verified_hypothesis_generation_batch(registry_path, batch_id, *, validation_
     if record != expected:
         raise ValueError("Hypothesis Generation Batch summary or membership is invalid")
     return record
+
+
+def _hypothesis_generation_dataset_slug(strategy):
+    parameter_value = next(iter(strategy["parameters"].values()))
+    return f"{strategy['strategy_id'].lower()}_{parameter_value}"
+
+
+def _hypothesis_generation_target_metric(strategy):
+    return (f"mean_forward_return_1d({strategy['upper_group_description']}) - "
+            f"mean_forward_return_1d({strategy['lower_or_equal_group_description']})")
+
+
+def run_hypothesis_generation_batch(*, hypothesis_registry_path, dataset_root,
+                                    experiment_registry_path, result_registry_path,
+                                    partition_registry_path, fold_result_registry_path,
+                                    validation_registry_path, batch_registry_path, created_at,
+                                    code_revision, created_by="autonomous-hypothesis-generation",
+                                    fold_count=5, minimum_folds_required=5,
+                                    consistency_threshold="0.7", transport=None,
+                                    acquired_at=None):
+    """M2.7-T4: the autonomous orchestration this Etapa exists to build.
+
+    For every Strategy in the declared search space (M2.7-T1): constitutes a
+    Hypothesis, captures its sealed Dataset, defines and executes its
+    Experiment, partitions and evaluates its Walk-Forward, then seals its
+    Statistical Validation Bonferroni-corrected for this batch's size
+    (M2.7-T2). Finally seals one aggregate Batch record (M2.7-T3) auditing
+    every member, not just the ones that validated.
+
+    Deliberately runs only after M2.7-T1/T2/T3 exist: automating the
+    orchestration itself without those safeguards would automate the data-
+    snooping risk this Etapa exists to neutralize, not resolve it.
+
+    NOT idempotent: constitute_hypothesis always registers a genuinely new
+    Hypothesis identity (no dedup key), matching how every Hypothesis in
+    this project has always been constituted -- so calling this twice with
+    the same `dataset_root` fails on the second run's dataset directory
+    collision rather than silently duplicating the batch. Each real batch
+    is a one-time act, exactly like constituting any other single Hypothesis.
+    """
+    strategies = hypothesis_generation_search_space()
+    batch_size = len(strategies)
+    dataset_root = Path(dataset_root)
+    members = []
+    for strategy in strategies:
+        upper = strategy["upper_group_description"]
+        lower = strategy["lower_or_equal_group_description"]
+        target_metric = _hypothesis_generation_target_metric(strategy)
+        constraints = {
+            "variables": ["close", strategy["column_name"], "forward_return_1d"],
+            "period": dict(HYPOTHESIS_GENERATION_PERIOD),
+            "universe": [HYPOTHESIS_GENERATION_INSTRUMENT],
+        }
+        acceptance_criterion = {
+            "metric": target_metric, "comparison": "GT", "threshold": "0",
+            "expected_direction": "INCREASE",
+        }
+        hypothesis = constitute_hypothesis(
+            hypothesis_registry_path,
+            description=(
+                f"For {HYPOTHESIS_GENERATION_INSTRUMENT}, the mean t+1 return when {upper} "
+                f"exceeds the mean t+1 return when {lower} (Etapa 2.7 autonomous batch "
+                f"{HYPOTHESIS_GENERATION_SEARCH_SPACE_ID})."),
+            target_metric=target_metric, expected_direction="INCREASE", constraints=constraints,
+            acceptance_criterion=acceptance_criterion, creation_timestamp=created_at,
+            status="CONSTITUTED", created_by=created_by,
+            provenance=["DISCOVERY|artifacts/live-run-1",
+                       "SNAPSHOT_SHA256|" + HYPOTHESIS_GENERATION_DISCOVERY_SNAPSHOT_SHA256],
+            system_version="0.1.0", code_revision=code_revision)
+
+        output = dataset_root / _hypothesis_generation_dataset_slug(strategy)
+        manifest = create_hypothesis_dataset(
+            hypothesis_registry_path, hypothesis["hypothesis_id"], 1, output,
+            transport=transport, acquired_at=acquired_at, strategy=strategy)
+
+        exp_record = constitute_experiment_conditions(
+            experiment_registry_path, hypothesis_registry_path=hypothesis_registry_path,
+            dataset_directory=output, hypothesis_id=hypothesis["hypothesis_id"],
+            hypothesis_version=1, dataset_id=manifest["dataset_id"], created_at=created_at,
+            revision_reason=f"AUTONOMOUS_BATCH_{HYPOTHESIS_GENERATION_SEARCH_SPACE_ID}",
+            strategy=strategy)
+
+        execute_experiment_result(
+            result_registry_path, experiment_registry_path=experiment_registry_path,
+            hypothesis_registry_path=hypothesis_registry_path, dataset_directory=output,
+            experiment_id=exp_record["experiment_id"], experiment_version=1,
+            experiment_record_id=exp_record["record_id"], execution_code_revision=code_revision)
+
+        partition = constitute_walk_forward_partition(
+            partition_registry_path, dataset_directory=output,
+            hypothesis_registry_path=hypothesis_registry_path, fold_count=fold_count,
+            partitioned_at=created_at, partition_code_revision=code_revision, strategy=strategy)
+
+        for index in range(fold_count):
+            constitute_walk_forward_fold_result(
+                fold_result_registry_path, partition_registry_path=partition_registry_path,
+                partition_id=partition["partition_id"], partition_record_id=partition["record_id"],
+                fold_index=index, experiment_registry_path=experiment_registry_path,
+                experiment_id=exp_record["experiment_id"], experiment_version=1,
+                experiment_record_id=exp_record["record_id"],
+                hypothesis_registry_path=hypothesis_registry_path, dataset_directory=output,
+                computed_at=created_at, computation_code_revision=code_revision, strategy=strategy)
+
+        validation = constitute_statistical_validation(
+            validation_registry_path, partition_registry_path=partition_registry_path,
+            partition_id=partition["partition_id"], partition_record_id=partition["record_id"],
+            fold_result_registry_path=fold_result_registry_path,
+            experiment_registry_path=experiment_registry_path,
+            hypothesis_registry_path=hypothesis_registry_path, dataset_directory=output,
+            minimum_folds_required=minimum_folds_required,
+            consistency_threshold=consistency_threshold, validated_at=created_at,
+            validation_code_revision=code_revision, batch_size=batch_size, strategy=strategy)
+
+        members.append({
+            "strategy_id": strategy["strategy_id"], "parameters": strategy["parameters"],
+            "hypothesis_id": hypothesis["hypothesis_id"], "hypothesis_version": 1,
+            "validation_id": validation["validation_id"], "dataset_directory": str(output),
+        })
+
+    return constitute_hypothesis_generation_batch(
+        batch_registry_path, search_space_id=HYPOTHESIS_GENERATION_SEARCH_SPACE_ID,
+        instrument=HYPOTHESIS_GENERATION_INSTRUMENT, members=members,
+        validation_registry_path=validation_registry_path,
+        partition_registry_path=partition_registry_path,
+        fold_result_registry_path=fold_result_registry_path,
+        experiment_registry_path=experiment_registry_path,
+        hypothesis_registry_path=hypothesis_registry_path,
+        created_at=created_at, batch_code_revision=code_revision)

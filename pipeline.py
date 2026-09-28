@@ -160,6 +160,7 @@ from tramitago_quant_core.strategy_contract.strategy import (
 from tramitago_quant_core.research.hypothesis_generation import (
     HYPOTHESIS_GENERATION_SEARCH_SPACE_ID, HYPOTHESIS_GENERATION_INSTRUMENT,
     HYPOTHESIS_GENERATION_SMA_WINDOWS, HYPOTHESIS_GENERATION_MOMENTUM_LOOKBACKS,
+    HYPOTHESIS_GENERATION_PERIOD, HYPOTHESIS_GENERATION_DISCOVERY_SNAPSHOT_SHA256,
     hypothesis_generation_search_space,
     HYPOTHESIS_GENERATION_BATCH_REGISTRY_SCHEMA_VERSION, HYPOTHESIS_GENERATION_BATCH_SCHEMA_VERSION,
     HYPOTHESIS_GENERATION_BATCH_STATUS, _hypothesis_generation_batch_id_is_valid,
@@ -170,6 +171,8 @@ from tramitago_quant_core.research.hypothesis_generation import (
     _hypothesis_generation_batch_registry_is_valid, _load_hypothesis_generation_batch_registry,
     _persist_hypothesis_generation_batch, constitute_hypothesis_generation_batch,
     load_hypothesis_generation_batch, verified_hypothesis_generation_batch,
+    _hypothesis_generation_batch_member_strategy, _hypothesis_generation_dataset_slug,
+    _hypothesis_generation_target_metric, run_hypothesis_generation_batch,
 )
 
 def save_capture(raw, output, *, kind, acquired_at, response_headers=None):
