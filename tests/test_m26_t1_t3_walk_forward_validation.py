@@ -270,7 +270,7 @@ class M26WalkForwardValidationTests(unittest.TestCase):
             {"fold_index": 1, "period": {}, "criterion_result": "MET",
              "metric": 0.1, "beats_baseline": True},
         ]
-        outcome, reason, ratio = p._statistical_validation_outcome(summaries, 2, "0.5")
+        outcome, reason, ratio, _p_value = p._statistical_validation_outcome(summaries, 2, "0.5")
         self.assertEqual(outcome, "INSUFFICIENT_EVIDENCE")
         self.assertEqual(reason, "USABLE_FOLDS_BELOW_MINIMUM")
         self.assertIsNone(ratio)
@@ -282,7 +282,7 @@ class M26WalkForwardValidationTests(unittest.TestCase):
             for i in range(3)
         ] + [{"fold_index": 3, "period": {}, "criterion_result": "NOT_MET",
              "metric": -0.1, "beats_baseline": False}]
-        outcome, reason, ratio = p._statistical_validation_outcome(summaries, 2, "0.75")
+        outcome, reason, ratio, _p_value = p._statistical_validation_outcome(summaries, 2, "0.75")
         self.assertEqual(outcome, "VALIDATED")
         self.assertIsNone(reason)
         self.assertEqual(ratio, 0.75)
@@ -294,7 +294,7 @@ class M26WalkForwardValidationTests(unittest.TestCase):
             {"fold_index": 1, "period": {}, "criterion_result": "NOT_MET",
              "metric": -0.1, "beats_baseline": False},
         ]
-        outcome, reason, ratio = p._statistical_validation_outcome(summaries, 2, "0.9")
+        outcome, reason, ratio, _p_value = p._statistical_validation_outcome(summaries, 2, "0.9")
         self.assertEqual(outcome, "NOT_VALIDATED")
         self.assertEqual(reason, "CONSISTENCY_BELOW_THRESHOLD")
         self.assertEqual(ratio, 0.5)

@@ -187,11 +187,17 @@ def _persist_walk_forward_partition(registry_path, record):
 
 def constitute_walk_forward_partition(registry_path, *, dataset_directory,
                                       hypothesis_registry_path, fold_count, partitioned_at,
-                                      partition_code_revision):
+                                      partition_code_revision, strategy=None):
     """M2.6-T1: seal an immutable walk-forward partition of a sealed Hypothesis
     Dataset. Never mutates the dataset and never redefines the Hypothesis's
-    acceptance criterion (HY-AC-002) -- folds are pure boundaries."""
-    manifest = verified_hypothesis_dataset(dataset_directory, hypothesis_registry_path)
+    acceptance criterion (HY-AC-002) -- folds are pure boundaries.
+
+    Etapa 2.7 (M2.7-T4): `strategy` defaults to sma_crossover_strategy(3),
+    reproducing the exact M2.6 behavior every already-sealed real Partition
+    (BTC-USD, ETH-USD) was built with. A Partition over a dataset built with
+    a different Strategy must pass that same Strategy explicitly.
+    """
+    manifest = verified_hypothesis_dataset(dataset_directory, hypothesis_registry_path, strategy)
     reference = _walk_forward_partition_reference(manifest)
     folds = _walk_forward_folds(manifest["config"]["evaluable_period"], fold_count)
     partition_id = _walk_forward_partition_id(reference, fold_count)
@@ -205,7 +211,7 @@ def constitute_walk_forward_partition(registry_path, *, dataset_directory,
                 raise ValueError("Walk-Forward Partition identity is ambiguous")
             return verified_walk_forward_partition(
                 registry_path, partition_id, dataset_directory=dataset_directory,
-                hypothesis_registry_path=hypothesis_registry_path)
+                hypothesis_registry_path=hypothesis_registry_path, strategy=strategy)
     record = _walk_forward_partition_record(
         partition_id, reference, fold_count, folds,
         _walk_forward_partition_materialization(partitioned_at, partition_code_revision))
@@ -223,10 +229,10 @@ def load_walk_forward_partition(registry_path, partition_id):
 
 
 def verified_walk_forward_partition(registry_path, partition_id, *, dataset_directory,
-                                    hypothesis_registry_path):
+                                    hypothesis_registry_path, strategy=None):
     """Reload a Walk-Forward Partition and reproduce its folds from the sealed dataset."""
     record = load_walk_forward_partition(registry_path, partition_id)
-    manifest = verified_hypothesis_dataset(dataset_directory, hypothesis_registry_path)
+    manifest = verified_hypothesis_dataset(dataset_directory, hypothesis_registry_path, strategy)
     reference = _walk_forward_partition_reference(manifest)
     folds = _walk_forward_folds(manifest["config"]["evaluable_period"], record["fold_count"])
     expected = _walk_forward_partition_record(
@@ -491,17 +497,22 @@ def constitute_walk_forward_fold_result(registry_path, *, partition_registry_pat
                                         partition_record_id, fold_index, experiment_registry_path,
                                         experiment_id, experiment_version, experiment_record_id,
                                         hypothesis_registry_path, dataset_directory, computed_at,
-                                        computation_code_revision):
+                                        computation_code_revision, strategy=None):
     """M2.6-T2: execute one walk-forward fold against its declared baseline.
 
     Reuses the already-sealed Experiment (M2.2-T2) unmodified -- never
     redefines its criterion or period. The baseline rule
     (BUY_AND_HOLD_MEAN_FORWARD_RETURN_1D) is fixed in code, applied
     identically to every fold, declared before any fold is computed.
+
+    Etapa 2.7 (M2.7-T4): `strategy` is only needed to verify the Partition
+    itself (see verified_walk_forward_partition); the Experiment/dataset
+    resolution below already reconstructs its own Strategy from the
+    Experiment's sealed conditions (M4.1 production wiring).
     """
     partition = verified_walk_forward_partition(
         partition_registry_path, partition_id, dataset_directory=dataset_directory,
-        hypothesis_registry_path=hypothesis_registry_path)
+        hypothesis_registry_path=hypothesis_registry_path, strategy=strategy)
     if partition["record_id"] != partition_record_id:
         raise ValueError("Walk-Forward Partition seal does not match the requested fold result")
     if (not isinstance(fold_index, int) or isinstance(fold_index, bool)
@@ -532,7 +543,7 @@ def constitute_walk_forward_fold_result(registry_path, *, partition_registry_pat
                 registry_path, fold_result_id, partition_registry_path=partition_registry_path,
                 experiment_registry_path=experiment_registry_path,
                 hypothesis_registry_path=hypothesis_registry_path,
-                dataset_directory=dataset_directory)
+                dataset_directory=dataset_directory, strategy=strategy)
     record = _walk_forward_fold_result_record(
         fold_result_id, reference, fold_index, fold_period,
         _experiment_result_inputs(experiment, hypothesis, dataset, dataset_directory), evaluation,
@@ -553,14 +564,15 @@ def load_walk_forward_fold_result(registry_path, fold_result_id):
 
 def verified_walk_forward_fold_result(registry_path, fold_result_id, *, partition_registry_path,
                                       experiment_registry_path, hypothesis_registry_path,
-                                      dataset_directory):
+                                      dataset_directory, strategy=None):
     """Reload a fold result and reproduce its evidence and baseline from the
     sealed partition, experiment, and dataset."""
     record = load_walk_forward_fold_result(registry_path, fold_result_id)
     partition_reference = record["reference"]["partition"]
     partition = verified_walk_forward_partition(
         partition_registry_path, partition_reference["partition_id"],
-        dataset_directory=dataset_directory, hypothesis_registry_path=hypothesis_registry_path)
+        dataset_directory=dataset_directory, hypothesis_registry_path=hypothesis_registry_path,
+        strategy=strategy)
     if partition["record_id"] != partition_reference["record_id"]:
         raise ValueError("Walk-Forward Fold Result partition reference is invalid")
     experiment_reference = record["reference"]["experiment"]
@@ -605,13 +617,19 @@ def _statistical_validation_reference(partition, fold_results):
     }
 
 
-def _statistical_validation_id(reference, minimum_folds_required, consistency_threshold):
+STATISTICAL_VALIDATION_BASE_SIGNIFICANCE_LEVEL = "0.05"
+
+
+def _statistical_validation_id(reference, minimum_folds_required, consistency_threshold,
+                               batch_size=None):
     content = {
         "schema_version": STATISTICAL_VALIDATION_SCHEMA_VERSION,
         "reference": reference,
         "minimum_folds_required": minimum_folds_required,
         "consistency_threshold": consistency_threshold,
     }
+    if batch_size is not None:
+        content["batch_size"] = batch_size
     return "STATISTICAL_VALIDATION|" + digest(encoded(content))
 
 
@@ -657,20 +675,54 @@ def _statistical_validation_risk_analytics_summary(fold_summaries):
     }
 
 
-def _statistical_validation_outcome(fold_summaries, minimum_folds_required, consistency_threshold):
+def _statistical_validation_binomial_p_value(passing, usable_count):
+    """Exact one-sided binomial test p-value under H0 (no real edge: each
+    usable fold's pass/fail is a fair coin flip, p=0.5). Etapa 2.7, M2.7-T2
+    (R-2.7-002): the statistic a Bonferroni correction is applied to."""
+    return sum(math.comb(usable_count, k) for k in range(passing, usable_count + 1)) / (2 ** usable_count)
+
+
+def _statistical_validation_bonferroni_correction(
+        batch_size, base_significance_level=STATISTICAL_VALIDATION_BASE_SIGNIFICANCE_LEVEL):
+    """R-2.7-002: the significance level a single hypothesis's binomial
+    p-value must clear shrinks with the batch size N it was tested
+    alongside -- never the same fixed bar used to evaluate one hypothesis
+    in isolation."""
+    if not isinstance(batch_size, int) or isinstance(batch_size, bool) or batch_size < 1:
+        raise ValueError("Batch size must be a positive integer")
+    return float(base_significance_level) / batch_size
+
+
+def _statistical_validation_outcome(fold_summaries, minimum_folds_required, consistency_threshold,
+                                    batch_size=None):
     """Never leaves a validation unclassified (DOC-004 REQ-004-005): usable
     folds below the declared minimum is INSUFFICIENT_EVIDENCE, not a
-    quiet pass on whatever happened to be available."""
+    quiet pass on whatever happened to be available.
+
+    Etapa 2.7, M2.7-T2 (R-2.7-002): `batch_size=None` preserves the exact
+    single-hypothesis verdict this function already produced (M2.6) -- the
+    already-sealed real Statistical Validations (BTC-USD, ETH-USD) were
+    both computed this way and must keep reproducing unchanged. An explicit
+    `batch_size` (>1) additionally requires the exact binomial p-value of
+    the observed fold pass count to clear a Bonferroni-corrected
+    significance level, layered on top of -- never replacing -- the
+    existing consistency_ratio>=consistency_threshold check.
+    """
     usable = [item for item in fold_summaries if item["criterion_result"] != "INCONCLUSIVE"]
     if len(usable) < minimum_folds_required:
-        return "INSUFFICIENT_EVIDENCE", "USABLE_FOLDS_BELOW_MINIMUM", None
+        return "INSUFFICIENT_EVIDENCE", "USABLE_FOLDS_BELOW_MINIMUM", None, None
     passing = sum(
         1 for item in usable
         if item["criterion_result"] == "MET" and item["beats_baseline"] is True)
     consistency_ratio = passing / len(usable)
-    if consistency_ratio >= float(consistency_threshold):
-        return "VALIDATED", None, consistency_ratio
-    return "NOT_VALIDATED", "CONSISTENCY_BELOW_THRESHOLD", consistency_ratio
+    binomial_p_value = _statistical_validation_binomial_p_value(passing, len(usable))
+    if consistency_ratio < float(consistency_threshold):
+        return "NOT_VALIDATED", "CONSISTENCY_BELOW_THRESHOLD", consistency_ratio, binomial_p_value
+    if batch_size is not None:
+        corrected_alpha = _statistical_validation_bonferroni_correction(batch_size)
+        if binomial_p_value > corrected_alpha:
+            return "NOT_VALIDATED", "BONFERRONI_CORRECTION_NOT_MET", consistency_ratio, binomial_p_value
+    return "VALIDATED", None, consistency_ratio, binomial_p_value
 
 
 def _statistical_validation_materialization(validated_at, validation_code_revision):
@@ -687,8 +739,8 @@ def _statistical_validation_materialization(validated_at, validation_code_revisi
 def _statistical_validation_content(validation_id, reference, minimum_folds_required,
                                     consistency_threshold, fold_summaries, sensitivity,
                                     risk_analytics_summary, outcome, outcome_reason,
-                                    consistency_ratio, materialization):
-    return {
+                                    consistency_ratio, materialization, batch=None):
+    content = {
         "validation_id": validation_id,
         "schema_version": STATISTICAL_VALIDATION_SCHEMA_VERSION,
         "reference": reference,
@@ -703,27 +755,33 @@ def _statistical_validation_content(validation_id, reference, minimum_folds_requ
         "materialization": materialization,
         "status": STATISTICAL_VALIDATION_STATUS,
     }
+    if batch is not None:
+        content["batch"] = batch
+    return content
 
 
 def _statistical_validation_record(validation_id, reference, minimum_folds_required,
                                    consistency_threshold, fold_summaries, sensitivity,
                                    risk_analytics_summary, outcome, outcome_reason,
-                                   consistency_ratio, materialization):
+                                   consistency_ratio, materialization, batch=None):
     content = _statistical_validation_content(
         validation_id, reference, minimum_folds_required, consistency_threshold, fold_summaries,
         sensitivity, risk_analytics_summary, outcome, outcome_reason, consistency_ratio,
-        materialization)
+        materialization, batch)
     return {**content, "record_id": "STATISTICAL_VALIDATION_RECORD|" + validation_id + "|"
             + digest(encoded(content))}
 
 
 def _statistical_validation_record_is_valid(record):
-    fields = {
+    base_fields = {
         "validation_id", "schema_version", "reference", "minimum_folds_required",
         "consistency_threshold", "fold_summaries", "sensitivity", "risk_analytics_summary",
         "outcome", "outcome_reason", "consistency_ratio", "materialization", "status",
         "record_id"}
-    if not isinstance(record, dict) or set(record) != fields:
+    if not isinstance(record, dict):
+        return False
+    has_batch = "batch" in record
+    if set(record) != (base_fields | {"batch"} if has_batch else base_fields):
         return False
     reference = record.get("reference")
     fold_summaries = record.get("fold_summaries")
@@ -731,6 +789,26 @@ def _statistical_validation_record_is_valid(record):
     minimum = record.get("minimum_folds_required")
     threshold = record.get("consistency_threshold")
     outcome = record.get("outcome")
+    batch = record.get("batch")
+    batch_size = None
+    if has_batch:
+        if (not isinstance(batch, dict) or set(batch) != {
+                "batch_size", "base_significance_level", "bonferroni_corrected_alpha",
+                "binomial_p_value"}
+                or not isinstance(batch.get("batch_size"), int)
+                or isinstance(batch.get("batch_size"), bool) or batch["batch_size"] < 1
+                or not _hypothesis_text_is_valid(batch.get("base_significance_level"))
+                or not isinstance(batch.get("binomial_p_value"), float)):
+            return False
+        try:
+            if not Decimal(batch["base_significance_level"]).is_finite():
+                return False
+        except (InvalidOperation, ValueError, TypeError):
+            return False
+        batch_size = batch["batch_size"]
+        if batch.get("bonferroni_corrected_alpha") != _statistical_validation_bonferroni_correction(
+                batch_size, batch["base_significance_level"]):
+            return False
     if (not _statistical_validation_id_is_valid(record.get("validation_id"))
             or record.get("schema_version") != STATISTICAL_VALIDATION_SCHEMA_VERSION
             or not isinstance(reference, dict) or set(reference) != {"partition", "fold_results"}
@@ -747,7 +825,8 @@ def _statistical_validation_record_is_valid(record):
             or not isinstance(minimum, int) or isinstance(minimum, bool) or minimum < 1
             or minimum > len(reference["fold_results"])
             or not _hypothesis_text_is_valid(threshold)
-            or record["validation_id"] != _statistical_validation_id(reference, minimum, threshold)
+            or record["validation_id"] != _statistical_validation_id(
+                reference, minimum, threshold, batch_size)
             or not isinstance(fold_summaries, list)
             or len(fold_summaries) != len(reference["fold_results"])
             or outcome not in STATISTICAL_VALIDATION_OUTCOMES
@@ -771,15 +850,16 @@ def _statistical_validation_record_is_valid(record):
         Decimal(threshold)
     except (InvalidOperation, ValueError, TypeError):
         return False
-    expected_outcome, expected_reason, expected_ratio = _statistical_validation_outcome(
-        fold_summaries, minimum, threshold)
+    expected_outcome, expected_reason, expected_ratio, expected_p_value = _statistical_validation_outcome(
+        fold_summaries, minimum, threshold, batch_size)
     if (outcome != expected_outcome or record.get("outcome_reason") != expected_reason
-            or record.get("consistency_ratio") != expected_ratio):
+            or record.get("consistency_ratio") != expected_ratio
+            or (has_batch and batch.get("binomial_p_value") != expected_p_value)):
         return False
     expected = _statistical_validation_record(
         record["validation_id"], reference, minimum, threshold, fold_summaries,
         record["sensitivity"], record["risk_analytics_summary"], outcome,
-        record.get("outcome_reason"), record.get("consistency_ratio"), materialization)
+        record.get("outcome_reason"), record.get("consistency_ratio"), materialization, batch)
     return record == expected
 
 
@@ -826,7 +906,8 @@ def _persist_statistical_validation(registry_path, record):
 
 def _statistical_validation_all_fold_results(fold_result_registry_path, partition, *,
                                              partition_registry_path, experiment_registry_path,
-                                             hypothesis_registry_path, dataset_directory):
+                                             hypothesis_registry_path, dataset_directory,
+                                             strategy=None):
     """Resolve and independently reverify every fold of one partition -- fails
     closed unless exactly one verified result exists per fold index."""
     registry = _load_walk_forward_fold_result_registry(fold_result_registry_path)
@@ -845,7 +926,7 @@ def _statistical_validation_all_fold_results(fold_result_registry_path, partitio
             partition_registry_path=partition_registry_path,
             experiment_registry_path=experiment_registry_path,
             hypothesis_registry_path=hypothesis_registry_path,
-            dataset_directory=dataset_directory)
+            dataset_directory=dataset_directory, strategy=strategy)
         for index in range(partition["fold_count"])]
 
 
@@ -854,22 +935,31 @@ def constitute_statistical_validation(registry_path, *, partition_registry_path,
                                       experiment_registry_path, hypothesis_registry_path,
                                       dataset_directory, minimum_folds_required,
                                       consistency_threshold, validated_at,
-                                      validation_code_revision):
+                                      validation_code_revision, batch_size=None, strategy=None):
     """M2.6-T3: aggregate every fold of one partition into one traceable
     verdict -- VALIDATED, NOT_VALIDATED, or INSUFFICIENT_EVIDENCE, never
     unclassified (DOC-004 REQ-004-005). Purely additive: never touches the
     single-sample Disposition already issued for this Hypothesis (M2.4-T1),
     any PAPER state, or T9.
+
+    Etapa 2.7, M2.7-T2 (R-2.7-002): `batch_size` declares how many
+    hypotheses were tested in the same batch as this one, so the
+    Bonferroni-corrected significance level in _statistical_validation_outcome
+    reflects the real number of comparisons -- omit it (default None) for a
+    single hypothesis evaluated on its own, exactly as M2.6 always has.
+    Etapa 2.7, M2.7-T4: `strategy` is only needed to verify the underlying
+    Partition/dataset for a non-default Strategy.
     """
     partition = verified_walk_forward_partition(
         partition_registry_path, partition_id, dataset_directory=dataset_directory,
-        hypothesis_registry_path=hypothesis_registry_path)
+        hypothesis_registry_path=hypothesis_registry_path, strategy=strategy)
     if partition["record_id"] != partition_record_id:
         raise ValueError("Walk-Forward Partition seal does not match the requested validation")
     fold_results = _statistical_validation_all_fold_results(
         fold_result_registry_path, partition, partition_registry_path=partition_registry_path,
         experiment_registry_path=experiment_registry_path,
-        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory)
+        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory,
+        strategy=strategy)
 
     if not _hypothesis_text_is_valid(consistency_threshold):
         raise ValueError("Consistency threshold is required")
@@ -882,9 +972,13 @@ def constitute_statistical_validation(registry_path, *, partition_registry_path,
             or not 1 <= minimum_folds_required <= len(fold_results)):
         raise ValueError("Minimum folds required must be between 1 and the fold count")
 
+    if batch_size is not None and (
+            not isinstance(batch_size, int) or isinstance(batch_size, bool) or batch_size < 1):
+        raise ValueError("Batch size must be a positive integer")
+
     reference = _statistical_validation_reference(partition, fold_results)
     validation_id = _statistical_validation_id(
-        reference, minimum_folds_required, consistency_threshold)
+        reference, minimum_folds_required, consistency_threshold, batch_size)
     path = Path(registry_path)
     if path.exists():
         registry = _load_statistical_validation_registry(path)
@@ -898,17 +992,25 @@ def constitute_statistical_validation(registry_path, *, partition_registry_path,
                 fold_result_registry_path=fold_result_registry_path,
                 experiment_registry_path=experiment_registry_path,
                 hypothesis_registry_path=hypothesis_registry_path,
-                dataset_directory=dataset_directory)
+                dataset_directory=dataset_directory, strategy=strategy)
 
     fold_summaries = [_statistical_validation_fold_summary(item) for item in fold_results]
     sensitivity = _statistical_validation_sensitivity(fold_summaries)
     risk_analytics_summary = _statistical_validation_risk_analytics_summary(fold_summaries)
-    outcome, outcome_reason, consistency_ratio = _statistical_validation_outcome(
-        fold_summaries, minimum_folds_required, consistency_threshold)
+    outcome, outcome_reason, consistency_ratio, binomial_p_value = _statistical_validation_outcome(
+        fold_summaries, minimum_folds_required, consistency_threshold, batch_size)
+    batch = None
+    if batch_size is not None:
+        batch = {
+            "batch_size": batch_size,
+            "base_significance_level": STATISTICAL_VALIDATION_BASE_SIGNIFICANCE_LEVEL,
+            "bonferroni_corrected_alpha": _statistical_validation_bonferroni_correction(batch_size),
+            "binomial_p_value": binomial_p_value,
+        }
     record = _statistical_validation_record(
         validation_id, reference, minimum_folds_required, consistency_threshold, fold_summaries,
         sensitivity, risk_analytics_summary, outcome, outcome_reason, consistency_ratio,
-        _statistical_validation_materialization(validated_at, validation_code_revision))
+        _statistical_validation_materialization(validated_at, validation_code_revision), batch)
     return _persist_statistical_validation(registry_path, record)
 
 
@@ -935,32 +1037,48 @@ def query_statistical_validation(registry_path, *, outcome=None):
 
 def verified_statistical_validation(registry_path, validation_id, *, partition_registry_path,
                                     fold_result_registry_path, experiment_registry_path,
-                                    hypothesis_registry_path, dataset_directory):
+                                    hypothesis_registry_path, dataset_directory, strategy=None):
     """Reload a Statistical Validation and reproduce its verdict from every
     fold, re-verified fresh from the sealed partition/experiment/dataset."""
     record = load_statistical_validation(registry_path, validation_id)
     partition_reference = record["reference"]["partition"]
     partition = verified_walk_forward_partition(
         partition_registry_path, partition_reference["partition_id"],
-        dataset_directory=dataset_directory, hypothesis_registry_path=hypothesis_registry_path)
+        dataset_directory=dataset_directory, hypothesis_registry_path=hypothesis_registry_path,
+        strategy=strategy)
     if partition["record_id"] != partition_reference["record_id"]:
         raise ValueError("Statistical Validation partition reference is invalid")
     fold_results = _statistical_validation_all_fold_results(
         fold_result_registry_path, partition, partition_registry_path=partition_registry_path,
         experiment_registry_path=experiment_registry_path,
-        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory)
+        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory,
+        strategy=strategy)
     reference = _statistical_validation_reference(partition, fold_results)
     if reference != record["reference"]:
         raise ValueError("Statistical Validation fold result references are invalid")
     fold_summaries = [_statistical_validation_fold_summary(item) for item in fold_results]
     sensitivity = _statistical_validation_sensitivity(fold_summaries)
     risk_analytics_summary = _statistical_validation_risk_analytics_summary(fold_summaries)
-    outcome, outcome_reason, consistency_ratio = _statistical_validation_outcome(
-        fold_summaries, record["minimum_folds_required"], record["consistency_threshold"])
+    stored_batch = record.get("batch")
+    batch_size = stored_batch["batch_size"] if stored_batch is not None else None
+    outcome, outcome_reason, consistency_ratio, binomial_p_value = _statistical_validation_outcome(
+        fold_summaries, record["minimum_folds_required"], record["consistency_threshold"],
+        batch_size)
+    batch = None
+    if stored_batch is not None:
+        base_significance_level = stored_batch.get(
+            "base_significance_level", STATISTICAL_VALIDATION_BASE_SIGNIFICANCE_LEVEL)
+        batch = {
+            "batch_size": batch_size,
+            "base_significance_level": base_significance_level,
+            "bonferroni_corrected_alpha": _statistical_validation_bonferroni_correction(
+                batch_size, base_significance_level),
+            "binomial_p_value": binomial_p_value,
+        }
     expected = _statistical_validation_record(
         record["validation_id"], reference, record["minimum_folds_required"],
         record["consistency_threshold"], fold_summaries, sensitivity, risk_analytics_summary,
-        outcome, outcome_reason, consistency_ratio, record["materialization"])
+        outcome, outcome_reason, consistency_ratio, record["materialization"], batch)
     if record != expected:
         raise ValueError("Statistical Validation verdict, folds, sensitivity, or risk analytics is invalid")
     return record

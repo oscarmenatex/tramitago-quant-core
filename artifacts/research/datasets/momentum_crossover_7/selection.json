@@ -1,0 +1,49 @@
+{
+  "evaluable_period": {
+    "end_exclusive_utc": "2026-01-01T00:00:00Z",
+    "start_utc": "2025-01-01T00:00:00Z"
+  },
+  "evaluable_row_count": 365,
+  "hypothesis_id": "HYPOTHESIS|8ea79c3f-1d82-4870-a996-576b61b4d458",
+  "hypothesis_version": 1,
+  "row_roles": {
+    "evaluable": "EVALUATION",
+    "support_forward_return": "SUPPORT_FORWARD_RETURN",
+    "support_mom7_warmup": "SUPPORT_MOM7_WARMUP"
+  },
+  "schema_version": "1",
+  "support_rows": [
+    {
+      "row_role": "SUPPORT_MOM7_WARMUP",
+      "timestamp": "2024-12-25T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_MOM7_WARMUP",
+      "timestamp": "2024-12-26T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_MOM7_WARMUP",
+      "timestamp": "2024-12-27T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_MOM7_WARMUP",
+      "timestamp": "2024-12-28T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_MOM7_WARMUP",
+      "timestamp": "2024-12-29T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_MOM7_WARMUP",
+      "timestamp": "2024-12-30T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_MOM7_WARMUP",
+      "timestamp": "2024-12-31T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_FORWARD_RETURN",
+      "timestamp": "2026-01-01T00:00:00Z"
+    }
+  ]
+}

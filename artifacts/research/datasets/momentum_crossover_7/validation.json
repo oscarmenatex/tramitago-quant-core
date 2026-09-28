@@ -1,0 +1,11 @@
+{
+  "accepted": 373,
+  "errors": [],
+  "excluded_outside_range": 0,
+  "received": 373,
+  "rejected": 0,
+  "status": "PASS",
+  "valid_rows_before_batch_gate": 373,
+  "warnings": [],
+  "withheld_by_batch_gate": 0
+}

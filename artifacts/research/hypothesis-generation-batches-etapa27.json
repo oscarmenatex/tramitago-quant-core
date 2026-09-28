@@ -1,0 +1,106 @@
+{
+  "batches": [
+    {
+      "batch_id": "HYPOTHESIS_GENERATION_BATCH|2f7fbb49fa0d964a5dd72534a462805a056ecd8659a81748d0fdadbfd0ffb547",
+      "instrument": "BTC-USD",
+      "materialization": {
+        "batch_code_revision": "417d1d6e7bbba70a7efadf2dc2ab20d786620c70",
+        "created_at": "2026-09-28T06:48:53Z",
+        "pipeline_sha256": "a957d9303a85473c1a0360de099482bf0c8fef4ad85ac4dff9b3b20d7b4c6194"
+      },
+      "members": [
+        {
+          "dataset_directory": "artifacts\\research\\datasets\\sma_crossover_3",
+          "hypothesis_id": "HYPOTHESIS|03993c58-d79c-438c-b956-4d46a9b7317b",
+          "hypothesis_version": 1,
+          "parameters": {
+            "window": 3
+          },
+          "strategy_id": "SMA_CROSSOVER",
+          "validation_id": "STATISTICAL_VALIDATION|08f2383ebae7c1c6b74fc1ee6f4d7eb06ac4d0f4f8d695f633bebcf82faeee4e"
+        },
+        {
+          "dataset_directory": "artifacts\\research\\datasets\\sma_crossover_5",
+          "hypothesis_id": "HYPOTHESIS|fca02cf8-c0fd-4b0f-bd41-c08dfe365ab8",
+          "hypothesis_version": 1,
+          "parameters": {
+            "window": 5
+          },
+          "strategy_id": "SMA_CROSSOVER",
+          "validation_id": "STATISTICAL_VALIDATION|fd8c04e175dcb0e1430e7528fd48473239acbaa60b4799b57801e29b52ce3554"
+        },
+        {
+          "dataset_directory": "artifacts\\research\\datasets\\sma_crossover_7",
+          "hypothesis_id": "HYPOTHESIS|485ba1ff-90bf-4628-b41f-67bd7e0ee795",
+          "hypothesis_version": 1,
+          "parameters": {
+            "window": 7
+          },
+          "strategy_id": "SMA_CROSSOVER",
+          "validation_id": "STATISTICAL_VALIDATION|25eda255e65acadacf718f75cd0f34188cc8dafc940c73deb921f0013b72d7d1"
+        },
+        {
+          "dataset_directory": "artifacts\\research\\datasets\\sma_crossover_10",
+          "hypothesis_id": "HYPOTHESIS|37ed3462-adca-4395-96ca-43b3c7adacbc",
+          "hypothesis_version": 1,
+          "parameters": {
+            "window": 10
+          },
+          "strategy_id": "SMA_CROSSOVER",
+          "validation_id": "STATISTICAL_VALIDATION|ef1f832a341ed9685caf3e324b3e8c6c19364bf463aaa26648f234cd6ba9c922"
+        },
+        {
+          "dataset_directory": "artifacts\\research\\datasets\\momentum_crossover_3",
+          "hypothesis_id": "HYPOTHESIS|dc423087-9fd4-4f43-8482-2395dc1b4757",
+          "hypothesis_version": 1,
+          "parameters": {
+            "lookback": 3
+          },
+          "strategy_id": "MOMENTUM_CROSSOVER",
+          "validation_id": "STATISTICAL_VALIDATION|3a3275941628b24d28cd80e546dfc4fe52a64cf7045686acf16caee66248ffdd"
+        },
+        {
+          "dataset_directory": "artifacts\\research\\datasets\\momentum_crossover_5",
+          "hypothesis_id": "HYPOTHESIS|fa51faf8-cd68-43f5-a2f0-efa8a3ae3a65",
+          "hypothesis_version": 1,
+          "parameters": {
+            "lookback": 5
+          },
+          "strategy_id": "MOMENTUM_CROSSOVER",
+          "validation_id": "STATISTICAL_VALIDATION|bf6a408da353a629ff337d053df80f2c80e43667c0a674863e04a3a3ae7cf1f1"
+        },
+        {
+          "dataset_directory": "artifacts\\research\\datasets\\momentum_crossover_7",
+          "hypothesis_id": "HYPOTHESIS|8ea79c3f-1d82-4870-a996-576b61b4d458",
+          "hypothesis_version": 1,
+          "parameters": {
+            "lookback": 7
+          },
+          "strategy_id": "MOMENTUM_CROSSOVER",
+          "validation_id": "STATISTICAL_VALIDATION|5cbf199f97c2afbfe48f1e0fbbad0b5dfb97148c5c06d01295402503a43fd7b8"
+        },
+        {
+          "dataset_directory": "artifacts\\research\\datasets\\momentum_crossover_10",
+          "hypothesis_id": "HYPOTHESIS|2727898e-bfac-4687-a046-936ad4e8443b",
+          "hypothesis_version": 1,
+          "parameters": {
+            "lookback": 10
+          },
+          "strategy_id": "MOMENTUM_CROSSOVER",
+          "validation_id": "STATISTICAL_VALIDATION|b054fa8437a4f9b0f25d65f2cca725d03e11a88f1f3f8bb5bf6ce28345a90ec8"
+        }
+      ],
+      "record_id": "HYPOTHESIS_GENERATION_BATCH_RECORD|HYPOTHESIS_GENERATION_BATCH|2f7fbb49fa0d964a5dd72534a462805a056ecd8659a81748d0fdadbfd0ffb547|3ff34d92f9a0a621aeb3a9db2e634036fc24a7228ed5f79b27749c07d59d5b6c",
+      "schema_version": "1",
+      "search_space_id": "SEARCH_SPACE|2026-09-28|SMA_MOMENTUM_BTC_USD",
+      "status": "SEALED",
+      "summary": {
+        "batch_size": 8,
+        "insufficient_evidence_count": 0,
+        "not_validated_count": 8,
+        "validated_count": 0
+      }
+    }
+  ],
+  "schema_version": "1"
+}
