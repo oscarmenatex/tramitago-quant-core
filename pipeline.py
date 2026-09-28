@@ -54,6 +54,9 @@ from tramitago_quant_core.research.historical_dataset import (
     _hypothesis_dataset_capture_rows, _hypothesis_dataset_rows, _hypothesis_dataset_bytes,
     _hypothesis_dataset_selection, _hypothesis_dataset_identity, _hypothesis_dataset_audit,
     _hypothesis_dataset_validation, create_hypothesis_dataset, verified_hypothesis_dataset,
+    _hypothesis_dataset_default_strategy, _hypothesis_dataset_warmup_role,
+    _hypothesis_dataset_support_policy, _hypothesis_dataset_columns, _hypothesis_dataset_schema,
+    _hypothesis_dataset_forward_column,
 )
 from tramitago_quant_core.research.experiment import (
     EXPERIMENT_CONDITIONS_REGISTRY_SCHEMA_VERSION, EXPERIMENT_CONDITIONS_SCHEMA_VERSION, EXPERIMENT_CONDITIONS_STATUS, EXPERIMENT_COSTS_NOT_APPLICABLE,
@@ -67,6 +70,7 @@ from tramitago_quant_core.research.experiment import (
     _experiment_result_record, _experiment_result_evaluation, _experiment_result_record_is_valid, _experiment_result_registry_is_valid,
     _load_experiment_result_registry, _persist_experiment_result, _verified_experiment_result_inputs, execute_experiment_result,
     load_experiment_result, verified_experiment_result,
+    _experiment_conditions_strategy, _experiment_conditions_horizon,
 )
 from tramitago_quant_core.research.research_execution import (
     RESEARCH_EXECUTION_REGISTRY_SCHEMA_VERSION, RESEARCH_EXECUTION_SCHEMA_VERSION,
