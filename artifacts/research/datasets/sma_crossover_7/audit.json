@@ -1,0 +1,45 @@
+{
+  "backtest_executed": false,
+  "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|15309b978c057e1c3a41b84fbfb87e306013730ca5733cfb9999a5637b2d64fe",
+  "evaluable_period": {
+    "end_exclusive_utc": "2026-01-01T00:00:00Z",
+    "start_utc": "2025-01-01T00:00:00Z"
+  },
+  "hypothesis_id": "HYPOTHESIS|485ba1ff-90bf-4628-b41f-67bd7e0ee795",
+  "hypothesis_version": 1,
+  "integrity": "VERIFIED",
+  "metric_evaluated": false,
+  "milestone": "M2.2-T1",
+  "status": "VERIFIED",
+  "support_rows": [
+    {
+      "row_role": "SUPPORT_SMA7_WARMUP",
+      "timestamp": "2024-12-26T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_SMA7_WARMUP",
+      "timestamp": "2024-12-27T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_SMA7_WARMUP",
+      "timestamp": "2024-12-28T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_SMA7_WARMUP",
+      "timestamp": "2024-12-29T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_SMA7_WARMUP",
+      "timestamp": "2024-12-30T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_SMA7_WARMUP",
+      "timestamp": "2024-12-31T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_FORWARD_RETURN",
+      "timestamp": "2026-01-01T00:00:00Z"
+    }
+  ],
+  "validation": "PASS"
+}
