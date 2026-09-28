@@ -1,0 +1,239 @@
+{
+  "records": [
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(volume_t > VOLSURGE20_t) - mean_forward_return_1d(volume_t <= VOLSURGE20_t)",
+          "threshold": "0"
+        },
+        "description": "For BTC-USD, the mean t+1 return following a day whose trading volume exceeds its own trailing 20-day average volume differs from the mean t+1 return following a day with average-or-below volume (VOLUME_SURGE, information-flow hypothesis, structurally unrelated to price-lag/averaging families already tested).",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|fcf357de-27ba-453a-93fa-72702f128298",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|fcf357de-27ba-453a-93fa-72702f128298|1|78b1da77cc52eb673d4b89a371fe9c82b4b4f8143750194d58a8b0cd969ac6e2",
+        "target_metric": "mean_forward_return_1d(volume_t > VOLSURGE20_t) - mean_forward_return_1d(volume_t <= VOLSURGE20_t)",
+        "version": 1
+      },
+      "interpretation": "VOLUME_SURGE(20) sobre BTC-USD 2025 -- primera hipotesis de una familia de indicador nueva (volumen, no precio), N=1 sin correccion de Bonferroni, potencia estadistica completa del walk-forward de 5 folds. Muestra completa (365 dias): metric=0.000005, MET. Walk-forward independiente (M2.6): consistencia real 40% (NOT_VALIDATED, razon=CONSISTENCY_BELOW_THRESHOLD). Risk Analytics (M2.6-T4): Sharpe rango -1.83 a 2.71 (promedio 0.15), peor drawdown de fold 22.0%.",
+      "knowledge_id": "KNOWLEDGE|d33cca3e28fd1813491c69ae51917883b29c07ed5423ec3dc096087a839d7d2c",
+      "limitations": [
+        "Un solo instrumento evaluado (BTC-USD)",
+        "Un solo periodo historico evaluado (2025), el mismo que las 9 hipotesis de precio ya probadas, para aislar unicamente el cambio de familia de indicador",
+        "Un solo parametro de ventana evaluado (20 dias), no reoptimizado ni barrido",
+        "Primera hipotesis real de esta familia (volumen) -- no hay replicacion en otro instrumento/periodo todavia",
+        "Risk Analytics (Sharpe/drawdown) es descriptivo -- no gatea ni la Disposition ni el veredicto walk-forward",
+        "El motivo de esta hipotesis es analitico (diagnostico de 9 hipotesis previas), no una observacion de descubrimiento nueva -- ver provenance ANALYSIS en el registro de Hypothesis"
+      ],
+      "materialization": {
+        "knowledge_code_revision": "667e8212108e1bb0d08b01b3783d02906de7e21e",
+        "pipeline_sha256": "718677c18e77cd4b90e5830f1db560265380eb4a1f603c29b4c27ca75e21f5b3",
+        "preserved_at": "2026-09-28T07:50:00Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(volume_t > VOLSURGE20_t) - mean_forward_return_1d(volume_t <= VOLSURGE20_t)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "volume_t <= VOLSURGE20_t",
+          "upper_group": "volume_t > VOLSURGE20_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "volume_avg_20",
+          "parameters": {
+            "window": 20
+          },
+          "strategy_id": "VOLUME_SURGE"
+        },
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | volume_t > VOLSURGE20_t) - mean(return_t+1 | volume_t <= VOLSURGE20_t)",
+          "name": "mean_forward_return_1d(volume_t > VOLSURGE20_t) - mean_forward_return_1d(volume_t <= VOLSURGE20_t)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_VOLSURGE20_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2024-12-12T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2024-12-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2024-12-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2024-12-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2024-12-16T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2024-12-17T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2024-12-18T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2024-12-19T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2024-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2024-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2024-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2024-12-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2024-12-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2024-12-25T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2024-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2024-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2024-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2024-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|d33cca3e28fd1813491c69ae51917883b29c07ed5423ec3dc096087a839d7d2c|6d97e12e628ced499aff5865cb661388d54bbf52e33a5dae356870678507f042",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|bca6e4a470c5cca69315bf8d4cb1fbf76801be43b36fbe5ca64a017d5621050d",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|bca6e4a470c5cca69315bf8d4cb1fbf76801be43b36fbe5ca64a017d5621050d|bdb882f23aa280b9df9d35bd4dfe7005ab4ce723b260dcd65fd68c3dceb9e170"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|dd51d3c6-b26a-45bb-8182-581878e8ab6a",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|dd51d3c6-b26a-45bb-8182-581878e8ab6a|1|ccae95c1b86d8522935a986dca131703333b25d0b4333c2c98943449d7172ab9",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "667e8212108e1bb0d08b01b3783d02906de7e21e",
+          "hypothesis_id": "HYPOTHESIS|fcf357de-27ba-453a-93fa-72702f128298",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|fcf357de-27ba-453a-93fa-72702f128298|1|78b1da77cc52eb673d4b89a371fe9c82b4b4f8143750194d58a8b0cd969ac6e2",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|5277e814eedbda91ae39ac40d68c72083f70f91f19daec49623a216575e6d89c|eb20e71c761b68ab0553723e09c2de04539582ef04f40500ccb63a8db092a16f",
+          "research_result_id": "RESEARCH_RESULT|5277e814eedbda91ae39ac40d68c72083f70f91f19daec49623a216575e6d89c"
+        }
+      },
+      "results": {
+        "outcome": "ACCEPTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(volume_t > VOLSURGE20_t) - mean_forward_return_1d(volume_t <= VOLSURGE20_t)",
+            "threshold": "0"
+          },
+          "criterion_result": "MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 211,
+              "mean_return_t_plus_1": 6.901601283799232e-05,
+              "rule": "volume_t <= VOLSURGE20_t"
+            },
+            "upper": {
+              "count": 154,
+              "mean_return_t_plus_1": 7.439068640042849e-05,
+              "rule": "volume_t > VOLSURGE20_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": 5.374673562436166e-06,
+          "observation_count": 365,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    }
+  ],
+  "schema_version": "1"
+}
