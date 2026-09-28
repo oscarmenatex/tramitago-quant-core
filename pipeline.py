@@ -161,6 +161,15 @@ from tramitago_quant_core.research.hypothesis_generation import (
     HYPOTHESIS_GENERATION_SEARCH_SPACE_ID, HYPOTHESIS_GENERATION_INSTRUMENT,
     HYPOTHESIS_GENERATION_SMA_WINDOWS, HYPOTHESIS_GENERATION_MOMENTUM_LOOKBACKS,
     hypothesis_generation_search_space,
+    HYPOTHESIS_GENERATION_BATCH_REGISTRY_SCHEMA_VERSION, HYPOTHESIS_GENERATION_BATCH_SCHEMA_VERSION,
+    HYPOTHESIS_GENERATION_BATCH_STATUS, _hypothesis_generation_batch_id_is_valid,
+    _hypothesis_generation_batch_member_is_valid, _hypothesis_generation_batch_id,
+    _hypothesis_generation_batch_materialization, _hypothesis_generation_batch_summary,
+    _hypothesis_generation_batch_member_outcomes, _hypothesis_generation_batch_content,
+    _hypothesis_generation_batch_record, _hypothesis_generation_batch_record_is_valid,
+    _hypothesis_generation_batch_registry_is_valid, _load_hypothesis_generation_batch_registry,
+    _persist_hypothesis_generation_batch, constitute_hypothesis_generation_batch,
+    load_hypothesis_generation_batch, verified_hypothesis_generation_batch,
 )
 
 def save_capture(raw, output, *, kind, acquired_at, response_headers=None):
