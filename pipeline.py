@@ -46,7 +46,7 @@ from tramitago_quant_core.research.hypothesis import (
 from tramitago_quant_core.research.historical_dataset import (
     HYPOTHESIS_DATASET_SCHEMA_VERSION, HYPOTHESIS_DATASET_CAPTURE_SCHEMA_VERSION,
     HYPOTHESIS_DATASET_COLUMNS, HYPOTHESIS_DATASET_SCHEMA,
-    HYPOTHESIS_DATASET_MAX_CANDLES_PER_REQUEST, HYPOTHESIS_DATASET_ENDPOINT,
+    HYPOTHESIS_DATASET_MAX_CANDLES_PER_REQUEST, _hypothesis_dataset_endpoint,
     HYPOTHESIS_DATASET_WARMUP_ROLE, HYPOTHESIS_DATASET_EVALUATION_ROLE,
     HYPOTHESIS_DATASET_FORWARD_ROLE, _hypothesis_dataset_config, _hypothesis_dataset_windows,
     _hypothesis_dataset_url, _hypothesis_dataset_live_get, _hypothesis_dataset_response,

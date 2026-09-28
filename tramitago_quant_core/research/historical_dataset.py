@@ -38,24 +38,35 @@ HYPOTHESIS_DATASET_SCHEMA = {
     "forward_return_1d": "nullable finite float64; defined only for EVALUATION rows",
 }
 HYPOTHESIS_DATASET_MAX_CANDLES_PER_REQUEST = 300
-HYPOTHESIS_DATASET_ENDPOINT = "https://api.exchange.coinbase.com/products/BTC-USD/candles"
 HYPOTHESIS_DATASET_WARMUP_ROLE = "SUPPORT_SMA3_WARMUP"
 HYPOTHESIS_DATASET_EVALUATION_ROLE = "EVALUATION"
 HYPOTHESIS_DATASET_FORWARD_ROLE = "SUPPORT_FORWARD_RETURN"
+
+
+def _hypothesis_dataset_endpoint(instrument):
+    """M2.2-T1 extension (2026-09-28): the instrument is a parameter of the
+    Hypothesis's own declared universe, not a fixed constant -- generalized
+    the same way M4.1 generalized the indicator window, after finding
+    "BTC-USD" hardcoded in 6 places while investigating a second
+    instrument (ETH-USD) for the same SMA3 Hypothesis. Preserves the exact
+    endpoint for BTC-USD."""
+    return f"https://api.exchange.coinbase.com/products/{instrument}/candles"
 
 
 def _hypothesis_dataset_config(hypothesis):
     """Derive the only capture window permitted by one registered Hypothesis."""
     constraints = hypothesis["constraints"]
     period = constraints["period"]
+    universe = constraints["universe"]
     required_variables = {"close", "sma_close_3", "forward_return_1d"}
-    if (constraints["universe"] != ["BTC-USD"]
+    if (not isinstance(universe, list) or len(universe) != 1
+            or not isinstance(universe[0], str) or not universe[0]
             or not required_variables.issubset(constraints["variables"])
             or not _explicit_utc(period["start_utc"])
             or not _explicit_utc(period["end_exclusive_utc"])
             or epoch(period["start_utc"]) % 86400
             or epoch(period["end_exclusive_utc"]) % 86400):
-        raise ValueError("Hypothesis is incompatible with the historical BTC-USD daily dataset")
+        raise ValueError("Hypothesis is incompatible with the historical daily dataset")
     start = epoch(period["start_utc"])
     end = epoch(period["end_exclusive_utc"])
     if end <= start:
@@ -63,7 +74,7 @@ def _hypothesis_dataset_config(hypothesis):
     return {
         "schema_version": HYPOTHESIS_DATASET_SCHEMA_VERSION,
         "source": "Coinbase Exchange public candles",
-        "instrument": "BTC-USD",
+        "instrument": universe[0],
         "frequency_seconds": 86400,
         "timezone": "UTC",
         "evaluable_period": {
@@ -88,11 +99,11 @@ def _hypothesis_dataset_windows(config):
     return [(iso(left), iso(min(left + width, end))) for left in range(start, end, width)]
 
 
-def _hypothesis_dataset_url(start_utc, end_exclusive_utc):
+def _hypothesis_dataset_url(instrument, start_utc, end_exclusive_utc):
     # Coinbase's ``end`` candle bound is inclusive.  The dataset contract remains
     # half-open, so request the final included candle rather than its successor.
     endpoint_end = iso(epoch(end_exclusive_utc) - 86400)
-    return HYPOTHESIS_DATASET_ENDPOINT + "?" + urlencode({
+    return _hypothesis_dataset_endpoint(instrument) + "?" + urlencode({
         "granularity": 86400,
         "start": start_utc,
         "end": endpoint_end,
@@ -178,7 +189,8 @@ def _hypothesis_dataset_capture_rows(raw_bytes, capture, config):
                 or metadata["sequence"] != number or stored["sequence"] != number
                 or metadata["start_utc"] != start_utc
                 or metadata["end_exclusive_utc"] != end_exclusive_utc
-                or metadata["url"] != _hypothesis_dataset_url(start_utc, end_exclusive_utc)
+                or metadata["url"] != _hypothesis_dataset_url(
+                    config["instrument"], start_utc, end_exclusive_utc)
                 or metadata["response_sha256"] != stored["response_sha256"]
                 or not isinstance(metadata["response_headers"], dict)):
             raise ValueError("Historical capture request identity is invalid")
@@ -306,7 +318,7 @@ def create_hypothesis_dataset(registry_path, hypothesis_id, version, output, *,
     responses, stored = [], []
     for sequence, (start_utc, end_exclusive_utc) in enumerate(
             _hypothesis_dataset_windows(config), 1):
-        url = _hypothesis_dataset_url(start_utc, end_exclusive_utc)
+        url = _hypothesis_dataset_url(config["instrument"], start_utc, end_exclusive_utc)
         response, headers = _hypothesis_dataset_response(transport, url)
         response_sha256 = digest(response)
         responses.append({
