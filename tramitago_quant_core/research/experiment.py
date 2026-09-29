@@ -651,7 +651,7 @@ def _experiment_result_dataset_rows(dataset_directory, conditions):
     outcome = strategy_outcome(strategy)
     horizon = _experiment_conditions_horizon(conditions)
     column_name = strategy["column_name"]
-    forward_column = _hypothesis_dataset_forward_column(horizon)
+    forward_column = _hypothesis_dataset_forward_column(horizon, strategy)
     auxiliary_variables = _hypothesis_dataset_auxiliary_variables(strategy)
     warmup = strategy["required_inputs"]["warmup_periods"]
     columns = _hypothesis_dataset_columns(strategy, horizon)

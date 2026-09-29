@@ -1118,6 +1118,47 @@
       "system_version": "0.1.0",
       "target_metric": "mean_forward_return_1d(portfolio_votes >= 3) - mean_forward_return_1d(portfolio_votes < 3)",
       "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "LT",
+        "expected_direction": "DECREASE",
+        "metric": "mean_forward_spread_return_1d(ETH/BTC > PAIRRATIO20) - mean_forward_spread_return_1d(ETH/BTC <= PAIRRATIO20)",
+        "threshold": "0"
+      },
+      "code_revision": "e0ee1a342f401b7bf7ca99781c111e30f0a599f2",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2026-01-01T00:00:00Z",
+          "start_utc": "2025-01-01T00:00:00Z"
+        },
+        "universe": [
+          "ETH-USD"
+        ],
+        "variables": [
+          "close",
+          "pair_close",
+          "pair_ratio_avg_20",
+          "forward_spread_return_1d"
+        ]
+      },
+      "creation_context": {
+        "created_by": "oscar+claude-analysis",
+        "provenance": [
+          "DISCOVERY|artifacts/live-run-1",
+          "SNAPSHOT_SHA256|a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f",
+          "ANALYSIS|tramitago-quant-core-docs/Via C - Valor Relativo ETH-BTC, Pre-declaracion (2026-09-29).txt"
+        ]
+      },
+      "creation_timestamp": "2026-09-29T14:00:00Z",
+      "description": "For the ETH-USD / BTC-USD pair, the mean t+1 return of a market-neutral position (long ETH, short BTC) when the ETH/BTC ratio is above its own trailing 20-day average is LOWER than when it is below -- PAIR_RATIO_REVERSION, the first relative-value Hypothesis: it predicts a SPREAD, not one instrument direction. Direction DECREASE pre-declared on the pairs-trading reversion prior, with the honest caveat that ETH and BTC are not strongly cointegrated.",
+      "expected_direction": "DECREASE",
+      "hypothesis_id": "HYPOTHESIS|38b2461c-b3f5-4b2d-8045-c5f69fe1ff26",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|38b2461c-b3f5-4b2d-8045-c5f69fe1ff26|1|319b17fa6c5daa8f7c0e46d6ce5a5af001a754abc6f74eaaa64c79c7a8df3521",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_spread_return_1d(ETH/BTC > PAIRRATIO20) - mean_forward_spread_return_1d(ETH/BTC <= PAIRRATIO20)",
+      "version": 1
     }
   ],
   "schema_version": "2"

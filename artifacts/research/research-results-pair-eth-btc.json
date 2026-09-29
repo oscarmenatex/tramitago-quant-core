@@ -1,0 +1,69 @@
+{
+  "results": [
+    {
+      "costs": {
+        "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution",
+        "source_experiment": {
+          "experiment_id": "EXPERIMENT|34753513-7228-4d25-ac02-a7e98da49458",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|34753513-7228-4d25-ac02-a7e98da49458|1|30e25fd97210adc30fb7cad89259628d60e18af3c3587ca771d73122a9482218",
+          "version": 1
+        }
+      },
+      "materialization": {
+        "constituted_at": "2026-09-29T12:34:23.207227Z",
+        "materialization_code_revision": "e0ee1a342f401b7bf7ca99781c111e30f0a599f2",
+        "original_execution_time": "NOT_RECORDED",
+        "pipeline_sha256": "15a27889506edfd4dd140693f4cfa264d49a67e57de3e6fd6540216fb7614730",
+        "provenance": "CONSTITUTED_AFTER_ORIGINAL_EXECUTION_FROM_LEGACY_SEALED_RESULT"
+      },
+      "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|c29e067ed0645c599d113fa7401629a6685e9d84ec7dfba33d6ca17d11d93c42|d178c7cde6742b83a681d38cbf21229a9f8dafb91b0d5bc4f323a2d2eee45cc4",
+      "references": {
+        "experiment": {
+          "experiment_id": "EXPERIMENT|34753513-7228-4d25-ac02-a7e98da49458",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|34753513-7228-4d25-ac02-a7e98da49458|1|30e25fd97210adc30fb7cad89259628d60e18af3c3587ca771d73122a9482218",
+          "version": 1
+        },
+        "legacy_result": {
+          "record_id": "EXPERIMENT_RESULT_RECORD|EXPERIMENT_RESULT|9a7e81ee3e68f6374aecfb014cbe59dc6c44b78dc72b92e2d56e89ede55249be|2961baf327d290955e7e7e490e95bc214083bd993b154f91aee50641cd64ce69",
+          "result_id": "EXPERIMENT_RESULT|9a7e81ee3e68f6374aecfb014cbe59dc6c44b78dc72b92e2d56e89ede55249be"
+        },
+        "research_execution": {
+          "execution_id": "RESEARCH_EXECUTION|f8bc1ced56520d934e33cc86a686e611e2dee1791080d6d07c89f7dd8127178f",
+          "record_id": "RESEARCH_EXECUTION_RECORD|RESEARCH_EXECUTION|f8bc1ced56520d934e33cc86a686e611e2dee1791080d6d07c89f7dd8127178f|dbd746df53f34fcab9f8caae64cec1e9f2ab2129a9ffdf4a44bbc1daa54f1fc6"
+        }
+      },
+      "research_result_id": "RESEARCH_RESULT|c29e067ed0645c599d113fa7401629a6685e9d84ec7dfba33d6ca17d11d93c42",
+      "schema_version": "1",
+      "scientific_result": {
+        "criterion": {
+          "comparison": "LT",
+          "expected_direction": "DECREASE",
+          "metric": "mean_forward_spread_return_1d(ETH/BTC > PAIRRATIO20) - mean_forward_spread_return_1d(ETH/BTC <= PAIRRATIO20)",
+          "threshold": "0"
+        },
+        "criterion_result": "NOT_MET",
+        "groups": {
+          "lower_or_equal": {
+            "count": 226,
+            "mean_return_t_plus_1": -1.1365220675414181e-05,
+            "rule": "close_t / pair_close_t <= PAIRRATIO20_t"
+          },
+          "upper": {
+            "count": 139,
+            "mean_return_t_plus_1": 0.0010363361301124138,
+            "rule": "close_t / pair_close_t > PAIRRATIO20_t"
+          }
+        },
+        "inconclusive_reason": null,
+        "metric": 0.0010477013507878279,
+        "observation_count": 365,
+        "period": {
+          "end_exclusive_utc": "2026-01-01T00:00:00Z",
+          "start_utc": "2025-01-01T00:00:00Z"
+        }
+      },
+      "status": "PRESERVED_SCIENTIFIC_RESULT"
+    }
+  ],
+  "schema_version": "1"
+}

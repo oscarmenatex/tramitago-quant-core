@@ -1,0 +1,69 @@
+{
+  "dispositions": [
+    {
+      "criterion_applied": {
+        "comparison": "LT",
+        "expected_direction": "DECREASE",
+        "metric": "mean_forward_spread_return_1d(ETH/BTC > PAIRRATIO20) - mean_forward_spread_return_1d(ETH/BTC <= PAIRRATIO20)",
+        "threshold": "0"
+      },
+      "disposition_id": "DISPOSITION|c606b9fde3761e8f7a88247a10eff1d15cbf66f78eccdd1314f0991a6999792d",
+      "materialization": {
+        "disposed_at": "2026-09-29T12:34:23.319368Z",
+        "disposition_code_revision": "e0ee1a342f401b7bf7ca99781c111e30f0a599f2",
+        "pipeline_sha256": "15a27889506edfd4dd140693f4cfa264d49a67e57de3e6fd6540216fb7614730"
+      },
+      "outcome": "REJECTED",
+      "outcome_reason": null,
+      "record_id": "DISPOSITION_RECORD|DISPOSITION|c606b9fde3761e8f7a88247a10eff1d15cbf66f78eccdd1314f0991a6999792d|12a95d3db0f1996cd7a0285edbd9046852f4339cf2b2db067586b5f6d7b6b68d",
+      "references": {
+        "hypothesis": {
+          "code_revision": "e0ee1a342f401b7bf7ca99781c111e30f0a599f2",
+          "hypothesis_id": "HYPOTHESIS|38b2461c-b3f5-4b2d-8045-c5f69fe1ff26",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|38b2461c-b3f5-4b2d-8045-c5f69fe1ff26|1|319b17fa6c5daa8f7c0e46d6ce5a5af001a754abc6f74eaaa64c79c7a8df3521",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_execution": {
+          "execution_id": "RESEARCH_EXECUTION|f8bc1ced56520d934e33cc86a686e611e2dee1791080d6d07c89f7dd8127178f",
+          "record_id": "RESEARCH_EXECUTION_RECORD|RESEARCH_EXECUTION|f8bc1ced56520d934e33cc86a686e611e2dee1791080d6d07c89f7dd8127178f|dbd746df53f34fcab9f8caae64cec1e9f2ab2129a9ffdf4a44bbc1daa54f1fc6"
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|c29e067ed0645c599d113fa7401629a6685e9d84ec7dfba33d6ca17d11d93c42|d178c7cde6742b83a681d38cbf21229a9f8dafb91b0d5bc4f323a2d2eee45cc4",
+          "research_result_id": "RESEARCH_RESULT|c29e067ed0645c599d113fa7401629a6685e9d84ec7dfba33d6ca17d11d93c42"
+        }
+      },
+      "schema_version": "1",
+      "scientific_result": {
+        "criterion": {
+          "comparison": "LT",
+          "expected_direction": "DECREASE",
+          "metric": "mean_forward_spread_return_1d(ETH/BTC > PAIRRATIO20) - mean_forward_spread_return_1d(ETH/BTC <= PAIRRATIO20)",
+          "threshold": "0"
+        },
+        "criterion_result": "NOT_MET",
+        "groups": {
+          "lower_or_equal": {
+            "count": 226,
+            "mean_return_t_plus_1": -1.1365220675414181e-05,
+            "rule": "close_t / pair_close_t <= PAIRRATIO20_t"
+          },
+          "upper": {
+            "count": 139,
+            "mean_return_t_plus_1": 0.0010363361301124138,
+            "rule": "close_t / pair_close_t > PAIRRATIO20_t"
+          }
+        },
+        "inconclusive_reason": null,
+        "metric": 0.0010477013507878279,
+        "observation_count": 365,
+        "period": {
+          "end_exclusive_utc": "2026-01-01T00:00:00Z",
+          "start_utc": "2025-01-01T00:00:00Z"
+        }
+      },
+      "status": "ISSUED"
+    }
+  ],
+  "schema_version": "1"
+}
