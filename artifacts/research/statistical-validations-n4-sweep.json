@@ -1,0 +1,577 @@
+{
+  "schema_version": "1",
+  "validations": [
+    {
+      "batch": {
+        "base_significance_level": "0.05",
+        "batch_size": 4,
+        "binomial_p_value": 0.8125,
+        "bonferroni_corrected_alpha": 0.0125
+      },
+      "consistency_ratio": 0.4,
+      "consistency_threshold": "0.7",
+      "fold_summaries": [
+        {
+          "beats_baseline": true,
+          "criterion_result": "MET",
+          "fold_index": 0,
+          "metric": 0.015758715323597784,
+          "period": {
+            "end_exclusive_utc": "2025-03-15T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.645319977320487,
+            "max_drawdown": 0.17228557511429518,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": 0.2723656049549015
+          }
+        },
+        {
+          "beats_baseline": false,
+          "criterion_result": "NOT_MET",
+          "fold_index": 1,
+          "metric": -0.0010977753178826374,
+          "period": {
+            "end_exclusive_utc": "2025-05-27T00:00:00Z",
+            "start_utc": "2025-03-15T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.6417406607279912,
+            "max_drawdown": 0.1974869534425859,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": -0.05102603506846874
+          }
+        },
+        {
+          "beats_baseline": true,
+          "criterion_result": "MET",
+          "fold_index": 2,
+          "metric": 0.007310785576533663,
+          "period": {
+            "end_exclusive_utc": "2025-08-08T00:00:00Z",
+            "start_utc": "2025-05-27T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.5417130044826548,
+            "max_drawdown": 0.1791504329521015,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": 1.3774014593301596
+          }
+        },
+        {
+          "beats_baseline": false,
+          "criterion_result": "NOT_MET",
+          "fold_index": 3,
+          "metric": -0.004663463396656264,
+          "period": {
+            "end_exclusive_utc": "2025-10-20T00:00:00Z",
+            "start_utc": "2025-08-08T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.9958815824093394,
+            "max_drawdown": 0.31518345802361863,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": -0.5477111290488879
+          }
+        },
+        {
+          "beats_baseline": false,
+          "criterion_result": "NOT_MET",
+          "fold_index": 4,
+          "metric": -0.005100300303045204,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-10-20T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.5195840571415705,
+            "max_drawdown": 0.26298249480404745,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": -2.509917592362408
+          }
+        }
+      ],
+      "materialization": {
+        "pipeline_sha256": "cdd3d4e132782f34acd578894d450fa1851ca233690c0c181786f4b7572f14de",
+        "validated_at": "2026-09-29T04:28:27.197103Z",
+        "validation_code_revision": "0ae5aa4ae7d59337f8ed28a7d6a0833e13f3baac"
+      },
+      "minimum_folds_required": 5,
+      "outcome": "NOT_VALIDATED",
+      "outcome_reason": "CONSISTENCY_BELOW_THRESHOLD",
+      "record_id": "STATISTICAL_VALIDATION_RECORD|STATISTICAL_VALIDATION|f514521e3920d2a39dad38a1e42d8920b0e01f2db6be3638df5f260b78990086|8c10147cdd2d39db6658974c9f52316bfebb210503fd71dafc1bc6569765c6c8",
+      "reference": {
+        "fold_results": [
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|9e80396c338fd9e2e5247222637583e1b0a5be0ad31ce21ebee87aac9ee68428",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|9e80396c338fd9e2e5247222637583e1b0a5be0ad31ce21ebee87aac9ee68428|7a230682f17c7deedab66af6d84a79b272fffd045446f876917bcba85725ae5e"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|87f5fa8e27900e7e670ac2d53de088d9231e5c08be265326edb78415dce85a53",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|87f5fa8e27900e7e670ac2d53de088d9231e5c08be265326edb78415dce85a53|70bfd6351864d4a7a63aff452ee01c0e6a11c12531a0b053ef711422244aa265"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|2a70878f6373f0f35fd913d7b31dc06a9d37c6c09703f6fe736de25cfa10dd14",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|2a70878f6373f0f35fd913d7b31dc06a9d37c6c09703f6fe736de25cfa10dd14|f592d55d5fb3e7b5082bd6e6597d46bd2c4be1a8776fb001c1ac27af1c645d32"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|0d40c08f1510140ea76a43d2cbb004d2126e7dbaed626dedfb04325a903ecf72",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|0d40c08f1510140ea76a43d2cbb004d2126e7dbaed626dedfb04325a903ecf72|abb88908c0d7a7304792cc89d0276b91c9e84559619ca96bf5e27fb369d18830"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|39358a36239c356c3a891515d48ca32ca691d1ce9f0be60ada8b6093f178de88",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|39358a36239c356c3a891515d48ca32ca691d1ce9f0be60ada8b6093f178de88|375eb4bb3acd833692988ffd60de80b56a8194643413f08bac70d49315042e9a"
+          }
+        ],
+        "partition": {
+          "partition_id": "WALK_FORWARD_PARTITION|a6d1d59ac33e1c9a0d4aeb977ff1fca3dff0a1a0322664bcb6d8003a5ffe7dff",
+          "record_id": "WALK_FORWARD_PARTITION_RECORD|WALK_FORWARD_PARTITION|a6d1d59ac33e1c9a0d4aeb977ff1fca3dff0a1a0322664bcb6d8003a5ffe7dff|d0b9f4cb88c72c0227ecb3c1ce8fc54c085d7f20609faf8a572f3d36bc2a354c"
+        }
+      },
+      "risk_analytics_summary": {
+        "max_drawdown_worst": 0.31518345802361863,
+        "sharpe_ratio_max": 1.3774014593301596,
+        "sharpe_ratio_mean": -0.2917775384389408,
+        "sharpe_ratio_min": -2.509917592362408
+      },
+      "schema_version": "1",
+      "sensitivity": {
+        "fold_metric_max": 0.015758715323597784,
+        "fold_metric_mean": 0.002441592376509468,
+        "fold_metric_min": -0.005100300303045204
+      },
+      "status": "ISSUED",
+      "validation_id": "STATISTICAL_VALIDATION|f514521e3920d2a39dad38a1e42d8920b0e01f2db6be3638df5f260b78990086"
+    },
+    {
+      "batch": {
+        "base_significance_level": "0.05",
+        "batch_size": 4,
+        "binomial_p_value": 0.8125,
+        "bonferroni_corrected_alpha": 0.0125
+      },
+      "consistency_ratio": 0.4,
+      "consistency_threshold": "0.7",
+      "fold_summaries": [
+        {
+          "beats_baseline": false,
+          "criterion_result": "NOT_MET",
+          "fold_index": 0,
+          "metric": -0.020439467797971827,
+          "period": {
+            "end_exclusive_utc": "2025-03-15T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.6154823481053237,
+            "max_drawdown": 0.5621457811033208,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": -4.485555824900166
+          }
+        },
+        {
+          "beats_baseline": true,
+          "criterion_result": "MET",
+          "fold_index": 1,
+          "metric": 0.0017935701730064555,
+          "period": {
+            "end_exclusive_utc": "2025-05-27T00:00:00Z",
+            "start_utc": "2025-03-15T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.43263986945731675,
+            "max_drawdown": 0.1285291756732459,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": 0.9074094008491714
+          }
+        },
+        {
+          "beats_baseline": true,
+          "criterion_result": "MET",
+          "fold_index": 2,
+          "metric": 0.03397573803226904,
+          "period": {
+            "end_exclusive_utc": "2025-08-08T00:00:00Z",
+            "start_utc": "2025-05-27T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 2.281888160866526,
+            "max_drawdown": 0.2544589347967005,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": 1.863173331893155
+          }
+        },
+        {
+          "beats_baseline": false,
+          "criterion_result": "NOT_MET",
+          "fold_index": 3,
+          "metric": -0.0014060794911312834,
+          "period": {
+            "end_exclusive_utc": "2025-10-20T00:00:00Z",
+            "start_utc": "2025-08-08T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.4674309650497078,
+            "max_drawdown": 0.3000878931159656,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": -1.436896236120756
+          }
+        },
+        {
+          "beats_baseline": false,
+          "criterion_result": "NOT_MET",
+          "fold_index": 4,
+          "metric": -0.00531420362792052,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-10-20T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.3587412056115171,
+            "max_drawdown": 0.1928397590079064,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": -2.73476196248802
+          }
+        }
+      ],
+      "materialization": {
+        "pipeline_sha256": "cdd3d4e132782f34acd578894d450fa1851ca233690c0c181786f4b7572f14de",
+        "validated_at": "2026-09-29T04:28:27.493722Z",
+        "validation_code_revision": "0ae5aa4ae7d59337f8ed28a7d6a0833e13f3baac"
+      },
+      "minimum_folds_required": 5,
+      "outcome": "NOT_VALIDATED",
+      "outcome_reason": "CONSISTENCY_BELOW_THRESHOLD",
+      "record_id": "STATISTICAL_VALIDATION_RECORD|STATISTICAL_VALIDATION|62d74f25de293c4824a42a44b471f256384fb8a1a304a3421624b67322fd5353|b8d808ea09295ef45b29d15be50b5c6316e435d5487af05706c44671aa066849",
+      "reference": {
+        "fold_results": [
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|8167282c85ccb1facdee65cb749770be4501cf741ed829f34f63622c10be515f",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|8167282c85ccb1facdee65cb749770be4501cf741ed829f34f63622c10be515f|bf971acead648b67170185e0860c4ff1dd2080a05aab08d0ccf83ebd3d66a634"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|330c5cbc670e8c9f2414fb092f315f1dda891c962ef48761f2425c93dd84be3c",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|330c5cbc670e8c9f2414fb092f315f1dda891c962ef48761f2425c93dd84be3c|f5c51e9251a8a8603036612d23af24bc7f40b738e5b3301bf1c3d2e05798c52b"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|36f4bcea2a411dc7c97157cdd46ffb273ebc2761be94797dfa346625e32d34bf",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|36f4bcea2a411dc7c97157cdd46ffb273ebc2761be94797dfa346625e32d34bf|545052527acd628323b47d6ea1694d01e7c86b30272840e8a6ae280ce00b6717"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|6af24ce7c671cbb4742035d48fb039d50821bb667e4e5b5c5ed5fda041824150",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|6af24ce7c671cbb4742035d48fb039d50821bb667e4e5b5c5ed5fda041824150|52cc03d8270e17fe281750eecc37889eac6e0d433e5f2868908640eff02da660"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|12537028f186621b3e68e6eaaffe4ed4ced717915720539496fbb6cce6a1e437",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|12537028f186621b3e68e6eaaffe4ed4ced717915720539496fbb6cce6a1e437|37aaf679b34126970f7d4f4a395b749f6e2619386aa02ad0c1316c2fcf724d5d"
+          }
+        ],
+        "partition": {
+          "partition_id": "WALK_FORWARD_PARTITION|7ed808e66c196fada0275f9c1a9759b717028446a1a15479295badd46c077c58",
+          "record_id": "WALK_FORWARD_PARTITION_RECORD|WALK_FORWARD_PARTITION|7ed808e66c196fada0275f9c1a9759b717028446a1a15479295badd46c077c58|b344238d0b7401dc04e3e8c888071923a93753ed9c256bfb3fede7c4a73d0b91"
+        }
+      },
+      "risk_analytics_summary": {
+        "max_drawdown_worst": 0.5621457811033208,
+        "sharpe_ratio_max": 1.863173331893155,
+        "sharpe_ratio_mean": -1.177326258153323,
+        "sharpe_ratio_min": -4.485555824900166
+      },
+      "schema_version": "1",
+      "sensitivity": {
+        "fold_metric_max": 0.03397573803226904,
+        "fold_metric_mean": 0.0017219114576503731,
+        "fold_metric_min": -0.020439467797971827
+      },
+      "status": "ISSUED",
+      "validation_id": "STATISTICAL_VALIDATION|62d74f25de293c4824a42a44b471f256384fb8a1a304a3421624b67322fd5353"
+    },
+    {
+      "batch": {
+        "base_significance_level": "0.05",
+        "batch_size": 4,
+        "binomial_p_value": 0.8125,
+        "bonferroni_corrected_alpha": 0.0125
+      },
+      "consistency_ratio": 0.4,
+      "consistency_threshold": "0.7",
+      "fold_summaries": [
+        {
+          "beats_baseline": false,
+          "criterion_result": "NOT_MET",
+          "fold_index": 0,
+          "metric": -0.009344058200178865,
+          "period": {
+            "end_exclusive_utc": "2025-03-15T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.5014974483094428,
+            "max_drawdown": 0.30338458203440055,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": -2.6324799393944582
+          }
+        },
+        {
+          "beats_baseline": true,
+          "criterion_result": "MET",
+          "fold_index": 1,
+          "metric": 0.0033625565473526255,
+          "period": {
+            "end_exclusive_utc": "2025-05-27T00:00:00Z",
+            "start_utc": "2025-03-15T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.5268238369259072,
+            "max_drawdown": 0.16802844342250056,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": 0.7229423589447715
+          }
+        },
+        {
+          "beats_baseline": true,
+          "criterion_result": "MET",
+          "fold_index": 2,
+          "metric": 0.00870083636193436,
+          "period": {
+            "end_exclusive_utc": "2025-08-08T00:00:00Z",
+            "start_utc": "2025-05-27T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.6080874075185558,
+            "max_drawdown": 0.1856060577294225,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": 0.5033690679157418
+          }
+        },
+        {
+          "beats_baseline": false,
+          "criterion_result": "NOT_MET",
+          "fold_index": 3,
+          "metric": -0.0057482750306510925,
+          "period": {
+            "end_exclusive_utc": "2025-10-20T00:00:00Z",
+            "start_utc": "2025-08-08T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.4176247046671315,
+            "max_drawdown": 0.29107134097884213,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": -2.7848452640470143
+          }
+        },
+        {
+          "beats_baseline": false,
+          "criterion_result": "NOT_MET",
+          "fold_index": 4,
+          "metric": -0.0032382164235345225,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-10-20T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.4763930220255372,
+            "max_drawdown": 0.16938673239970728,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": -1.580403201381402
+          }
+        }
+      ],
+      "materialization": {
+        "pipeline_sha256": "cdd3d4e132782f34acd578894d450fa1851ca233690c0c181786f4b7572f14de",
+        "validated_at": "2026-09-29T04:28:27.792167Z",
+        "validation_code_revision": "0ae5aa4ae7d59337f8ed28a7d6a0833e13f3baac"
+      },
+      "minimum_folds_required": 5,
+      "outcome": "NOT_VALIDATED",
+      "outcome_reason": "CONSISTENCY_BELOW_THRESHOLD",
+      "record_id": "STATISTICAL_VALIDATION_RECORD|STATISTICAL_VALIDATION|1c44261f7d95ff113e4bc955fd10a1c38ff5aff15955dfee31361cd833015bd1|2e2d4908694320534ffecfef1c4e3883141c91c1155a39100240d11b600ed8db",
+      "reference": {
+        "fold_results": [
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|b3bc6b4295c1a18cf87e999b8c7d9bcdb3e127cfcb0ab7c62a6e791f944317fe",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|b3bc6b4295c1a18cf87e999b8c7d9bcdb3e127cfcb0ab7c62a6e791f944317fe|dc8354a98cf7bc93630b6e4762a77578c41a860086b99941b4b7ee42d446fd7f"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|fb0a66017273f146e2b9c6915e045250a59255c301a0555eadae9be231c97318",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|fb0a66017273f146e2b9c6915e045250a59255c301a0555eadae9be231c97318|79a5b1a9f003b00ecc9a2ab1927950014af091d7f2caff7bc65b0c8b62d0fff1"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|c18b13982ceccaff18d4516b74923b1ed6b85eb35c0673fb3b11292db37a414f",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|c18b13982ceccaff18d4516b74923b1ed6b85eb35c0673fb3b11292db37a414f|453128a19a1468549986bc61f39b82bddb4b181177c8878db3ff8ec0fa556e23"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|fb5402edad6fdfe118c1484e918840a74d892fac2ea1e314af78afe82d7c7229",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|fb5402edad6fdfe118c1484e918840a74d892fac2ea1e314af78afe82d7c7229|c9cbc6fe789af68a6476a71e3388b1a0b9527b2498a0029ba2ed9c31c3ffca60"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|45676c2c2a0c0851a31f280f2cbeadceb649539ac05fb520974085318fc0de1d",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|45676c2c2a0c0851a31f280f2cbeadceb649539ac05fb520974085318fc0de1d|8de51016dc7c57b1347056182475118f8c2dc164ea74967c785ce1975b8d48f7"
+          }
+        ],
+        "partition": {
+          "partition_id": "WALK_FORWARD_PARTITION|31d1601adc5cbe5ebf8cae06a6e729f2ae66d54b5079576b4197c65f9ae2c9a2",
+          "record_id": "WALK_FORWARD_PARTITION_RECORD|WALK_FORWARD_PARTITION|31d1601adc5cbe5ebf8cae06a6e729f2ae66d54b5079576b4197c65f9ae2c9a2|3820e61632b1979e314c186407b3151210162cd6c08deb823cad1697c00b0aa5"
+        }
+      },
+      "risk_analytics_summary": {
+        "max_drawdown_worst": 0.30338458203440055,
+        "sharpe_ratio_max": 0.7229423589447715,
+        "sharpe_ratio_mean": -1.1542833955924723,
+        "sharpe_ratio_min": -2.7848452640470143
+      },
+      "schema_version": "1",
+      "sensitivity": {
+        "fold_metric_max": 0.00870083636193436,
+        "fold_metric_mean": -0.0012534313490154992,
+        "fold_metric_min": -0.009344058200178865
+      },
+      "status": "ISSUED",
+      "validation_id": "STATISTICAL_VALIDATION|1c44261f7d95ff113e4bc955fd10a1c38ff5aff15955dfee31361cd833015bd1"
+    },
+    {
+      "batch": {
+        "base_significance_level": "0.05",
+        "batch_size": 4,
+        "binomial_p_value": 0.8125,
+        "bonferroni_corrected_alpha": 0.0125
+      },
+      "consistency_ratio": 0.4,
+      "consistency_threshold": "0.7",
+      "fold_summaries": [
+        {
+          "beats_baseline": false,
+          "criterion_result": "NOT_MET",
+          "fold_index": 0,
+          "metric": -0.011725380453051885,
+          "period": {
+            "end_exclusive_utc": "2025-03-15T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.5751199339704108,
+            "max_drawdown": 0.4573414416218822,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": -3.6400499046820594
+          }
+        },
+        {
+          "beats_baseline": true,
+          "criterion_result": "MET",
+          "fold_index": 1,
+          "metric": 0.00014569274518229586,
+          "period": {
+            "end_exclusive_utc": "2025-05-27T00:00:00Z",
+            "start_utc": "2025-03-15T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.6311989508249908,
+            "max_drawdown": 0.15675014874706888,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": 0.2875464946107167
+          }
+        },
+        {
+          "beats_baseline": true,
+          "criterion_result": "MET",
+          "fold_index": 2,
+          "metric": 0.013305694376194941,
+          "period": {
+            "end_exclusive_utc": "2025-08-08T00:00:00Z",
+            "start_utc": "2025-05-27T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.39222694232256644,
+            "max_drawdown": 0.12122374402576364,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": 2.797017745112987
+          }
+        },
+        {
+          "beats_baseline": false,
+          "criterion_result": "NOT_MET",
+          "fold_index": 3,
+          "metric": -0.007862796493275908,
+          "period": {
+            "end_exclusive_utc": "2025-10-20T00:00:00Z",
+            "start_utc": "2025-08-08T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.42825287891321656,
+            "max_drawdown": 0.32536827432194226,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": -3.7576423244701647
+          }
+        },
+        {
+          "beats_baseline": false,
+          "criterion_result": "NOT_MET",
+          "fold_index": 4,
+          "metric": -0.0063284901205102745,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-10-20T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.45050720941468536,
+            "max_drawdown": 0.24856265119851384,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": -2.891717336507206
+          }
+        }
+      ],
+      "materialization": {
+        "pipeline_sha256": "cdd3d4e132782f34acd578894d450fa1851ca233690c0c181786f4b7572f14de",
+        "validated_at": "2026-09-29T04:28:28.087801Z",
+        "validation_code_revision": "0ae5aa4ae7d59337f8ed28a7d6a0833e13f3baac"
+      },
+      "minimum_folds_required": 5,
+      "outcome": "NOT_VALIDATED",
+      "outcome_reason": "CONSISTENCY_BELOW_THRESHOLD",
+      "record_id": "STATISTICAL_VALIDATION_RECORD|STATISTICAL_VALIDATION|ac9cc67ee1f4be7ff04ac01a6868cc8896c28524a4e7e1f2c591fd42046c7855|e4ddd648d74df61e31c552fe0899087a5776f46ec885a8569023db6483d69394",
+      "reference": {
+        "fold_results": [
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|719aa8664ff2905560c9222a033337008f576a0e50ad2afbc805438ea97f8aa7",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|719aa8664ff2905560c9222a033337008f576a0e50ad2afbc805438ea97f8aa7|6344fecb496916548b317fada9b404851276dbeaebadf3c5e2c00b593bc7bbea"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|1b3ca30e97840485522db0e74ef7728f404aea9c5df64bc1804b5d6e9bb28e32",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|1b3ca30e97840485522db0e74ef7728f404aea9c5df64bc1804b5d6e9bb28e32|33893919f7bdb1204a5646af79e0c59ac5522e43772d235b8143b7b90cc82abe"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|657a72b15ef99318262ec07924cecd4253ad741712c1bef22d10fd5ea3a03a7d",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|657a72b15ef99318262ec07924cecd4253ad741712c1bef22d10fd5ea3a03a7d|e1b67c698783f093a646e6105a97a730c5dd26418b7fb1eebc0cd8a58b13dcb2"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|02cb8b79874a7dec2a387a4a889113f529a007d6bcf1031b3aee8cb1924a7b77",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|02cb8b79874a7dec2a387a4a889113f529a007d6bcf1031b3aee8cb1924a7b77|8e6ae3956fa30fcf659855978655db8590652323c75f8df0b8d7f7a7215ef0cc"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|e01cebe0b714ccb20312030a4ff38f7377ef46ccbf5b4ec08f75488f73e1b612",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|e01cebe0b714ccb20312030a4ff38f7377ef46ccbf5b4ec08f75488f73e1b612|86d3af085a4fb1d2437a6e13e2a7c1637d3fed721843bc8df5b30f646e96ba72"
+          }
+        ],
+        "partition": {
+          "partition_id": "WALK_FORWARD_PARTITION|35fa155eccafc54b5deabe1ed3998a5579e1759d8313be67624815a778bfffe7",
+          "record_id": "WALK_FORWARD_PARTITION_RECORD|WALK_FORWARD_PARTITION|35fa155eccafc54b5deabe1ed3998a5579e1759d8313be67624815a778bfffe7|f2b2dea451145e5edd66f1c8a269b151048ea57412bf50fd3ef302ae1c714171"
+        }
+      },
+      "risk_analytics_summary": {
+        "max_drawdown_worst": 0.4573414416218822,
+        "sharpe_ratio_max": 2.797017745112987,
+        "sharpe_ratio_mean": -1.4409690651871452,
+        "sharpe_ratio_min": -3.7576423244701647
+      },
+      "schema_version": "1",
+      "sensitivity": {
+        "fold_metric_max": 0.013305694376194941,
+        "fold_metric_mean": -0.002493055989092166,
+        "fold_metric_min": -0.011725380453051885
+      },
+      "status": "ISSUED",
+      "validation_id": "STATISTICAL_VALIDATION|ac9cc67ee1f4be7ff04ac01a6868cc8896c28524a4e7e1f2c591fd42046c7855"
+    }
+  ]
+}
