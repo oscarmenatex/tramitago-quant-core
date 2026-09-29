@@ -34,6 +34,13 @@ from tramitago_quant_core.data.acquisition import (
     _coinbase_public_request_headers, _coinbase_public_request,
     normalize, validate, indicators, dataset_bytes,
 )
+from tramitago_quant_core.research.finding import (
+    FINDING_REGISTRY_SCHEMA_VERSION, FINDING_STATUS_OPEN, FINDING_STATUS_PROMOTED,
+    FINDING_STATUS_DISCARDED, FINDING_STATUSES, _finding_id_is_valid, _new_finding_id,
+    _finding_supporting_evidence_is_valid, _finding_record_is_valid,
+    _finding_registry_is_valid, _load_finding_registry, _persist_finding_registry,
+    constitute_finding, load_finding, promote_finding, discard_finding, query_findings,
+)
 from tramitago_quant_core.research.hypothesis import (
     HYPOTHESIS_REGISTRY_SCHEMA_VERSION, HYPOTHESIS_ACCEPTANCE_COMPARISONS,
     _hypothesis_id_is_valid, _hypothesis_constraints_are_valid,
