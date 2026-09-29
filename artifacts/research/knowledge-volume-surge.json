@@ -16,7 +16,7 @@
         "version": 1
       },
       "interpretation": "VOLUME_SURGE(20) sobre BTC-USD 2025 -- primera hipotesis de una familia de indicador nueva (volumen, no precio), N=1 sin correccion de Bonferroni, potencia estadistica completa del walk-forward de 5 folds. Muestra completa (365 dias): metric=0.000005, MET. Walk-forward independiente (M2.6): consistencia real 40% (NOT_VALIDATED, razon=CONSISTENCY_BELOW_THRESHOLD). Risk Analytics (M2.6-T4): Sharpe rango -1.83 a 2.71 (promedio 0.15), peor drawdown de fold 22.0%.",
-      "knowledge_id": "KNOWLEDGE|d33cca3e28fd1813491c69ae51917883b29c07ed5423ec3dc096087a839d7d2c",
+      "knowledge_id": "KNOWLEDGE|11a879f4f8734302efffec6756f906485c0555546bb44891ba351fb6d2e7bc72",
       "limitations": [
         "Un solo instrumento evaluado (BTC-USD)",
         "Un solo periodo historico evaluado (2025), el mismo que las 9 hipotesis de precio ya probadas, para aislar unicamente el cambio de familia de indicador",
@@ -27,7 +27,7 @@
       ],
       "materialization": {
         "knowledge_code_revision": "667e8212108e1bb0d08b01b3783d02906de7e21e",
-        "pipeline_sha256": "718677c18e77cd4b90e5830f1db560265380eb4a1f603c29b4c27ca75e21f5b3",
+        "pipeline_sha256": "cdd3d4e132782f34acd578894d450fa1851ca233690c0c181786f4b7572f14de",
         "preserved_at": "2026-09-28T07:50:00Z"
       },
       "methodology": {
@@ -176,11 +176,11 @@
           "training": "NOT_USED"
         }
       },
-      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|d33cca3e28fd1813491c69ae51917883b29c07ed5423ec3dc096087a839d7d2c|6d97e12e628ced499aff5865cb661388d54bbf52e33a5dae356870678507f042",
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|11a879f4f8734302efffec6756f906485c0555546bb44891ba351fb6d2e7bc72|1c6ed1780fe0b48f0c6c53b8de63e7d3440fc05036db74b58c789cda86e9c8bb",
       "references": {
         "disposition": {
-          "disposition_id": "DISPOSITION|bca6e4a470c5cca69315bf8d4cb1fbf76801be43b36fbe5ca64a017d5621050d",
-          "record_id": "DISPOSITION_RECORD|DISPOSITION|bca6e4a470c5cca69315bf8d4cb1fbf76801be43b36fbe5ca64a017d5621050d|bdb882f23aa280b9df9d35bd4dfe7005ab4ce723b260dcd65fd68c3dceb9e170"
+          "disposition_id": "DISPOSITION|2b423c7b2571cb8893e569f0587aad8c81f32df4cfbe8374cdeaa0c05161d89e",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|2b423c7b2571cb8893e569f0587aad8c81f32df4cfbe8374cdeaa0c05161d89e|2fc34dac4331db0e38e904cf6350e581f309ff16906cde83faf940f7e39cf0fc"
         },
         "experiment": {
           "experiment_id": "EXPERIMENT|dd51d3c6-b26a-45bb-8182-581878e8ab6a",
@@ -195,8 +195,8 @@
           "version": 1
         },
         "research_result": {
-          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|5277e814eedbda91ae39ac40d68c72083f70f91f19daec49623a216575e6d89c|eb20e71c761b68ab0553723e09c2de04539582ef04f40500ccb63a8db092a16f",
-          "research_result_id": "RESEARCH_RESULT|5277e814eedbda91ae39ac40d68c72083f70f91f19daec49623a216575e6d89c"
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|798c2c5c81c89a1e0e0c9b3c3d6031065c5088cbeefb82cb95db93a1c764a363|f445e1fabfabe7d3010f3d4e306855b35ff0491588608ab228e9e792a4524011",
+          "research_result_id": "RESEARCH_RESULT|798c2c5c81c89a1e0e0c9b3c3d6031065c5088cbeefb82cb95db93a1c764a363"
         }
       },
       "results": {

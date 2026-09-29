@@ -13,10 +13,10 @@
         "constituted_at": "2026-09-28T07:50:00Z",
         "materialization_code_revision": "667e8212108e1bb0d08b01b3783d02906de7e21e",
         "original_execution_time": "NOT_RECORDED",
-        "pipeline_sha256": "718677c18e77cd4b90e5830f1db560265380eb4a1f603c29b4c27ca75e21f5b3",
+        "pipeline_sha256": "cdd3d4e132782f34acd578894d450fa1851ca233690c0c181786f4b7572f14de",
         "provenance": "CONSTITUTED_AFTER_ORIGINAL_EXECUTION_FROM_LEGACY_SEALED_RESULT"
       },
-      "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|5277e814eedbda91ae39ac40d68c72083f70f91f19daec49623a216575e6d89c|eb20e71c761b68ab0553723e09c2de04539582ef04f40500ccb63a8db092a16f",
+      "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|798c2c5c81c89a1e0e0c9b3c3d6031065c5088cbeefb82cb95db93a1c764a363|f445e1fabfabe7d3010f3d4e306855b35ff0491588608ab228e9e792a4524011",
       "references": {
         "experiment": {
           "experiment_id": "EXPERIMENT|dd51d3c6-b26a-45bb-8182-581878e8ab6a",
@@ -29,10 +29,10 @@
         },
         "research_execution": {
           "execution_id": "RESEARCH_EXECUTION|0470b4a89346d3103772e44ec2fefd30f1e778d57da813b8efe8bba704d9e841",
-          "record_id": "RESEARCH_EXECUTION_RECORD|RESEARCH_EXECUTION|0470b4a89346d3103772e44ec2fefd30f1e778d57da813b8efe8bba704d9e841|5999293de75c2d3b279aa04a33ba04290ff95cfb23c12b903c6ceb1263d2727d"
+          "record_id": "RESEARCH_EXECUTION_RECORD|RESEARCH_EXECUTION|0470b4a89346d3103772e44ec2fefd30f1e778d57da813b8efe8bba704d9e841|dd889d949789d491045f6ee58d011f8ca6dc17b1927a719dbad30fffded52898"
         }
       },
-      "research_result_id": "RESEARCH_RESULT|5277e814eedbda91ae39ac40d68c72083f70f91f19daec49623a216575e6d89c",
+      "research_result_id": "RESEARCH_RESULT|798c2c5c81c89a1e0e0c9b3c3d6031065c5088cbeefb82cb95db93a1c764a363",
       "schema_version": "1",
       "scientific_result": {
         "criterion": {
