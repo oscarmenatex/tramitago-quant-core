@@ -20,7 +20,9 @@ from tramitago_quant_core.shared.util import (
     _hypothesis_system_version_is_valid, _hypothesis_code_revision_is_valid,
     _pipeline_source_bytes,
 )
-from tramitago_quant_core.research.hypothesis import _hypothesis_id_is_valid, load_hypothesis
+from tramitago_quant_core.research.hypothesis import (
+    _hypothesis_id_is_valid, load_hypothesis, HYPOTHESIS_ACCEPTANCE_COMPARISONS,
+)
 from tramitago_quant_core.research.historical_dataset import (
     HYPOTHESIS_DATASET_WARMUP_ROLE,
     HYPOTHESIS_DATASET_EVALUATION_ROLE, HYPOTHESIS_DATASET_FORWARD_ROLE,
@@ -97,6 +99,49 @@ def _experiment_reference(hypothesis, dataset, selection):
     }
 
 
+_EXPERIMENT_CRITERION_COMPARATORS = {
+    "GT": lambda metric, threshold: metric > threshold,
+    "GE": lambda metric, threshold: metric >= threshold,
+    "LT": lambda metric, threshold: metric < threshold,
+    "LE": lambda metric, threshold: metric <= threshold,
+}
+
+
+def _experiment_threshold_is_valid(threshold):
+    if not isinstance(threshold, str):
+        return False
+    try:
+        return Decimal(threshold).is_finite()
+    except InvalidOperation:
+        return False
+
+
+def _experiment_criterion_is_compatible(criterion, metric_name):
+    """Reversal extension (2026-09-29): any GT/GE (INCREASE) or LT/LE
+    (DECREASE) criterion is compatible, not only GT/threshold=0/INCREASE --
+    mirrors hypothesis.py's own _hypothesis_acceptance_criterion_is_valid,
+    which already supported this. Every already-sealed real Experiment used
+    exactly GT/"0"/INCREASE, which is exactly why this still accepts only
+    that shape unchanged when nothing else is passed."""
+    return (
+        isinstance(criterion, dict)
+        and set(criterion) == {"metric", "comparison", "threshold", "expected_direction"}
+        and criterion.get("metric") == metric_name
+        and criterion.get("comparison") in HYPOTHESIS_ACCEPTANCE_COMPARISONS.get(
+            criterion.get("expected_direction"), ())
+        and _experiment_threshold_is_valid(criterion.get("threshold"))
+    )
+
+
+def _experiment_criterion_result(metric, criterion):
+    """Derive MET/NOT_MET from the criterion's own comparison/threshold,
+    not a hardcoded `metric > 0` -- every already-sealed real Experiment
+    Result used GT/threshold="0", which is exactly why this reproduces the
+    same MET/NOT_MET unchanged for them."""
+    comparator = _EXPERIMENT_CRITERION_COMPARATORS[criterion["comparison"]]
+    return "MET" if comparator(metric, float(criterion["threshold"])) else "NOT_MET"
+
+
 def _discovery_snapshot(hypothesis):
     values = hypothesis["creation_context"]["provenance"]
     snapshots = [value.removeprefix("SNAPSHOT_SHA256|") for value in values
@@ -134,9 +179,7 @@ def _experiment_conditions(hypothesis, dataset, selection, strategy=None, horizo
     criterion = hypothesis["acceptance_criterion"]
     metric = hypothesis["target_metric"]
     instrument = dataset["config"]["instrument"]
-    if (criterion != {
-            "metric": metric, "comparison": "GT", "threshold": "0",
-            "expected_direction": "INCREASE"}
+    if (not _experiment_criterion_is_compatible(criterion, metric)
             or not isinstance(instrument, str) or not instrument
             or dataset["config"]["frequency_seconds"] != 86400
             or reference["dataset"]["evaluable_period"]
@@ -286,11 +329,7 @@ def _experiment_conditions_are_valid(conditions):
         and isinstance(conditions.get("metric"), dict)
         and _hypothesis_text_is_valid(conditions["metric"].get("name"))
         and conditions["metric"].get("formula") == expected_formula
-        and isinstance(criterion, dict)
-        and set(criterion) == {"metric", "comparison", "threshold", "expected_direction"}
-        and criterion.get("metric") == conditions["metric"]["name"]
-        and criterion.get("comparison") == "GT" and criterion.get("threshold") == "0"
-        and criterion.get("expected_direction") == "INCREASE"
+        and _experiment_criterion_is_compatible(criterion, conditions["metric"]["name"])
         and isinstance(period, dict) and set(period) == {"start_utc", "end_exclusive_utc"}
         and _explicit_utc(period["start_utc"]) and _explicit_utc(period["end_exclusive_utc"])
         and epoch(period["start_utc"]) < epoch(period["end_exclusive_utc"])
@@ -713,11 +752,10 @@ def _experiment_result_summary(evidence, criterion, analytical_rule):
     if not math.isfinite(metric):
         return {"groups": groups, "metric": None, "criterion": criterion,
                 "criterion_result": "INCONCLUSIVE", "inconclusive_reason": "NONFINITE_METRIC"}
-    if criterion != {"metric": criterion["metric"], "comparison": "GT", "threshold": "0",
-                     "expected_direction": "INCREASE"}:
+    if not _experiment_criterion_is_compatible(criterion, criterion["metric"]):
         raise ValueError("Experiment acceptance criterion is unsupported")
     return {"groups": groups, "metric": metric, "criterion": criterion,
-            "criterion_result": "MET" if metric > 0 else "NOT_MET",
+            "criterion_result": _experiment_criterion_result(metric, criterion),
             "inconclusive_reason": None}
 
 

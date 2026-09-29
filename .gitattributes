@@ -1,2 +1,2 @@
 *.py text eol=lf
-artifacts/research/datasets/** -text
+artifacts/research/** -text

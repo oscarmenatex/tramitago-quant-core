@@ -1,0 +1,69 @@
+{
+  "dispositions": [
+    {
+      "criterion_applied": {
+        "comparison": "LT",
+        "expected_direction": "DECREASE",
+        "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+        "threshold": "0"
+      },
+      "disposition_id": "DISPOSITION|a63f54e0444eea0802cee28823fbbeb2c4a03e33a89920fb17a14f13fa0e25ab",
+      "materialization": {
+        "disposed_at": "2026-09-29T03:50:24.782628Z",
+        "disposition_code_revision": "b95ee1b7ef35482fa0b5f939fd22298985028cdf",
+        "pipeline_sha256": "cdd3d4e132782f34acd578894d450fa1851ca233690c0c181786f4b7572f14de"
+      },
+      "outcome": "ACCEPTED",
+      "outcome_reason": null,
+      "record_id": "DISPOSITION_RECORD|DISPOSITION|a63f54e0444eea0802cee28823fbbeb2c4a03e33a89920fb17a14f13fa0e25ab|bdae3e9b35753e4bf8b09219d5ebab27cb4f70ee380e356a786352537792acd9",
+      "references": {
+        "hypothesis": {
+          "code_revision": "b95ee1b7ef35482fa0b5f939fd22298985028cdf",
+          "hypothesis_id": "HYPOTHESIS|a31ef17d-ce17-4763-a735-9759a5c3a444",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|a31ef17d-ce17-4763-a735-9759a5c3a444|1|b4b1c8a6bb40c1fc0d83c01f88ca1bbe5300bfbcfc6ac5665d8f200224b64e30",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_execution": {
+          "execution_id": "RESEARCH_EXECUTION|7cd786444bfd392689eae03761134810bc972460d4b7a7113156e6b4a28cf1ca",
+          "record_id": "RESEARCH_EXECUTION_RECORD|RESEARCH_EXECUTION|7cd786444bfd392689eae03761134810bc972460d4b7a7113156e6b4a28cf1ca|f712147f1298265dbb6ad85db713cee86958120e672f7c516196e5716e923cab"
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|424cf061056042fccab022cb6474a52e4ba9cf99e338c52ee31b842b637a73b2|adcc2aaa682ad20180e17773b474ee7722f229d6e7caef4eb100fb633140b3dd",
+          "research_result_id": "RESEARCH_RESULT|424cf061056042fccab022cb6474a52e4ba9cf99e338c52ee31b842b637a73b2"
+        }
+      },
+      "schema_version": "1",
+      "scientific_result": {
+        "criterion": {
+          "comparison": "LT",
+          "expected_direction": "DECREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+          "threshold": "0"
+        },
+        "criterion_result": "MET",
+        "groups": {
+          "lower_or_equal": {
+            "count": 190,
+            "mean_return_t_plus_1": 0.0004574749161540121,
+            "rule": "close_t <= SMA3_t"
+          },
+          "upper": {
+            "count": 175,
+            "mean_return_t_plus_1": -0.000348009655170171,
+            "rule": "close_t > SMA3_t"
+          }
+        },
+        "inconclusive_reason": null,
+        "metric": -0.0008054845713241831,
+        "observation_count": 365,
+        "period": {
+          "end_exclusive_utc": "2026-01-01T00:00:00Z",
+          "start_utc": "2025-01-01T00:00:00Z"
+        }
+      },
+      "status": "ISSUED"
+    }
+  ],
+  "schema_version": "1"
+}
