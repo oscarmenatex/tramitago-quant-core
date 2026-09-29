@@ -1,0 +1,96 @@
+{
+  "audit_sha256": "bf1f13148de0be351e1f9cb2f58f45449cc407bd6c789466578b44f946f8eb2e",
+  "capture_sha256": "52e00d35fc956efef89c7fe4343fa698d995853c4bf2ac9dff1812ba5f64332e",
+  "code_sha256": "cdd3d4e132782f34acd578894d450fa1851ca233690c0c181786f4b7572f14de",
+  "columns": [
+    "instrument",
+    "timestamp",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "sma_close_3",
+    "row_role",
+    "forward_return_1d"
+  ],
+  "config": {
+    "capture_period": {
+      "end_exclusive_utc": "2024-01-02T00:00:00Z",
+      "start_utc": "2022-12-30T00:00:00Z"
+    },
+    "duplicate_policy": "reject entire dataset",
+    "evaluable_period": {
+      "end_exclusive_utc": "2024-01-01T00:00:00Z",
+      "start_utc": "2023-01-01T00:00:00Z"
+    },
+    "frequency_seconds": 86400,
+    "instrument": "BTC-USD",
+    "missing_policy": "reject entire dataset; no imputation",
+    "schema_version": "1",
+    "source": "Coinbase Exchange public candles",
+    "support_policy": "exactly two SMA3 warm-up rows before and one forward-return row after the evaluable period",
+    "temporal_policy": "reject rows outside the declared capture period",
+    "timezone": "UTC"
+  },
+  "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|cbb63ee7da1e25cf0cdf238578d17fc8c9e7e5afc25c4f81c4b19db597ba3c2c",
+  "dataset_sha256": "cc79cac314ba297aaf527f12a583b2f3e0c4f2a84519c228e575ecf3c51fd030",
+  "identity": {
+    "code_revision": "da8bcbdff0d601295e764c3a22677db0c71e0c5a",
+    "config": {
+      "capture_period": {
+        "end_exclusive_utc": "2024-01-02T00:00:00Z",
+        "start_utc": "2022-12-30T00:00:00Z"
+      },
+      "duplicate_policy": "reject entire dataset",
+      "evaluable_period": {
+        "end_exclusive_utc": "2024-01-01T00:00:00Z",
+        "start_utc": "2023-01-01T00:00:00Z"
+      },
+      "frequency_seconds": 86400,
+      "instrument": "BTC-USD",
+      "missing_policy": "reject entire dataset; no imputation",
+      "schema_version": "1",
+      "source": "Coinbase Exchange public candles",
+      "support_policy": "exactly two SMA3 warm-up rows before and one forward-return row after the evaluable period",
+      "temporal_policy": "reject rows outside the declared capture period",
+      "timezone": "UTC"
+    },
+    "hashes": {
+      "capture_sha256": "52e00d35fc956efef89c7fe4343fa698d995853c4bf2ac9dff1812ba5f64332e",
+      "code_sha256": "cdd3d4e132782f34acd578894d450fa1851ca233690c0c181786f4b7572f14de",
+      "dataset_sha256": "cc79cac314ba297aaf527f12a583b2f3e0c4f2a84519c228e575ecf3c51fd030",
+      "raw_sha256": "0aa6afa87f9d8b08fa8e9c1ae7caa33927a102f1b7e23f4fcdf02de5000a9417",
+      "selection_sha256": "65688cb852e8ca9b1ab1052f6df0f53370a2da21f88ea954f14c7a23b3a349d8",
+      "validation_sha256": "b69d203bc3d046375ee323eeef47eee5feb7a4918f16b4680eb42ebeea76077a"
+    },
+    "hypothesis_id": "HYPOTHESIS|074608d7-8234-4ec4-9241-cabb271a0290",
+    "hypothesis_version": 1,
+    "schema_version": "1",
+    "system_version": "0.1.0"
+  },
+  "input_kind": "historical-hypothesis-dataset",
+  "range": [
+    "2022-12-30T00:00:00Z",
+    "2024-01-01T00:00:00Z"
+  ],
+  "raw_sha256": "0aa6afa87f9d8b08fa8e9c1ae7caa33927a102f1b7e23f4fcdf02de5000a9417",
+  "replay": "create_hypothesis_dataset(<registry>, <hypothesis_id>, <version>, <output>)",
+  "rows": 368,
+  "runtime": "3.11.9",
+  "schema": {
+    "close": "finite float64",
+    "forward_return_1d": "nullable finite float64; defined only for EVALUATION rows",
+    "high": "finite float64",
+    "instrument": "string",
+    "low": "finite float64",
+    "open": "finite float64",
+    "row_role": "SUPPORT_SMA3_WARMUP | EVALUATION | SUPPORT_FORWARD_RETURN",
+    "sma_close_3": "nullable finite float64",
+    "timestamp": "UTC ISO8601 bucket start",
+    "volume": "finite float64"
+  },
+  "selection_sha256": "65688cb852e8ca9b1ab1052f6df0f53370a2da21f88ea954f14c7a23b3a349d8",
+  "status": "PASS",
+  "validation_sha256": "b69d203bc3d046375ee323eeef47eee5feb7a4918f16b4680eb42ebeea76077a"
+}
