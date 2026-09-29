@@ -163,7 +163,7 @@ from tramitago_quant_core.research.walk_forward import (
 from tramitago_quant_core.strategy_contract.strategy import (
     sma_crossover_strategy, momentum_crossover_strategy, volume_surge_strategy,
     funding_rate_sign_strategy, sma_volume_confirmation_strategy, intraday_range_strategy,
-    _strategy_classify_rows,
+    funding_rate_surge_strategy, _strategy_classify_rows,
 )
 from tramitago_quant_core.data.binance_funding_rate import (
     BINANCE_FUNDING_RATE_CAPTURE_SCHEMA_VERSION, BINANCE_FUNDING_RATE_SOURCE,
@@ -182,6 +182,16 @@ from tramitago_quant_core.data.okx_funding_rate import (
     _okx_funding_rate_url, _okx_funding_rate_live_get, _okx_funding_rate_response,
     _okx_funding_rate_parse, _okx_funding_rate_daily_series, _okx_funding_rate_capture_content,
     _okx_funding_rate_raw_content, capture_okx_funding_rate, verified_okx_funding_rate_capture,
+)
+from tramitago_quant_core.data.hyperliquid_funding_rate import (
+    HYPERLIQUID_FUNDING_RATE_CAPTURE_SCHEMA_VERSION, HYPERLIQUID_FUNDING_RATE_SOURCE,
+    HYPERLIQUID_FUNDING_RATE_MAX_RECORDS_PER_REQUEST, HYPERLIQUID_FUNDING_RATE_INTERVAL_SECONDS,
+    HYPERLIQUID_FUNDING_RATE_REQUEST_HEADERS, _hyperliquid_funding_rate_headers,
+    _hyperliquid_funding_rate_endpoint, _hyperliquid_funding_rate_body,
+    _hyperliquid_funding_rate_live_post, _hyperliquid_funding_rate_response,
+    _hyperliquid_funding_rate_parse, _hyperliquid_funding_rate_daily_series,
+    _hyperliquid_funding_rate_capture_content, _hyperliquid_funding_rate_raw_content,
+    capture_hyperliquid_funding_rate, verified_hyperliquid_funding_rate_capture,
 )
 from tramitago_quant_core.research.hypothesis_generation import (
     HYPOTHESIS_GENERATION_SEARCH_SPACE_ID, HYPOTHESIS_GENERATION_INSTRUMENT,
