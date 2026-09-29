@@ -1,0 +1,637 @@
+{
+  "records": [
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+          "threshold": "0"
+        },
+        "description": "For BAND-USD, the mean t+1 return when close_t > SMA3_t exceeds the mean t+1 return when close_t <= SMA3_t (N=4 low-liquidity instrument sweep, bounded search space, Bonferroni-corrected).",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|688d258d-ea63-402f-813c-a1139f3ffcc4",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|688d258d-ea63-402f-813c-a1139f3ffcc4|1|e062db5dde5445eacd04f29e504f293eee760caffda00581462f4dfeb528e28a",
+        "target_metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+        "version": 1
+      },
+      "interpretation": "SMA3 sobre BAND-USD, 2025 completo -- uno de N=4 instrumentos de baja liquidez probados en el mismo lote acotado (BAND-USD, KNC-USD, MASK-USD, ANKR-USD; ~30-100x menos liquidos que ATOM-USD, ~1000x menos que BTC-USD/ETH-USD), aislando unicamente el instrumento. Muestra completa: metric=0.0026249, MET. Walk-forward independiente (M2.6, 5 folds, N=4 con correccion de Bonferroni R-2.7-002): consistencia real 40% en los 4 instrumentos del lote (identica entre si) -- NOT_VALIDATED, razon=CONSISTENCY_BELOW_THRESHOLD, muy por debajo del alpha corregido por Bonferroni ademas de por debajo del umbral de consistencia. Risk Analytics (descriptivo): Sharpe promedio -0.292, peor drawdown de fold 31.5% -- perfil de riesgo MARCADAMENTE PEOR que ATOM-USD (Sharpe -0.652, drawdown 44.4%) y que BTC-USD/ETH-USD, para los 4 instrumentos del lote sin excepcion. Bajar mas en liquidez no solo no revela una senal mas robusta -- empeora sistematicamente el perfil de riesgo.",
+      "knowledge_id": "KNOWLEDGE|6bd3d740b3943ca907d10faba3c92ee3daa81ffdaf8f6971ddeab60c7c955df7",
+      "limitations": [
+        "Parte de un lote acotado N=4 (KNC-USD, MASK-USD, ANKR-USD son los otros 3 miembros, mismo diseno, mismo periodo, corregidos juntos por Bonferroni) -- no se debe interpretar el resultado de este instrumento de forma aislada sin considerar el patron del lote completo (los 4 muestran 40% de consistencia y perfiles de riesgo muy negativos, sin excepcion).",
+        "Un solo periodo historico evaluado (2025), el mismo que las 16 hipotesis previas.",
+        "La eleccion de 'menor liquidez' se baso en volumen de 24h de un solo momento (2026-09-29), no en una serie historica de liquidez a lo largo de 2025.",
+        "Risk Analytics (Sharpe/drawdown) es descriptivo -- no gatea ni la Disposition ni el veredicto walk-forward.",
+        "Este lote, junto con ATOM-USD (PR #52), completa dos rondas del eje de liquidez -- ambas muestran el mismo patron: bajar en liquidez empeora el perfil de riesgo sin mejorar la consistencia. No confirma la hipotesis motivadora de que un activo menos arbitrado tendria una senal SMA3 mas robusta."
+      ],
+      "materialization": {
+        "knowledge_code_revision": "0ae5aa4ae7d59337f8ed28a7d6a0833e13f3baac",
+        "pipeline_sha256": "cdd3d4e132782f34acd578894d450fa1851ca233690c0c181786f4b7572f14de",
+        "preserved_at": "2026-09-29T04:29:25.908292Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= SMA3_t",
+          "upper_group": "close_t > SMA3_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "instrument": "BAND-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > SMA3_t) - mean(return_t+1 | close_t <= SMA3_t)",
+          "name": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_SMA3_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "sma": {
+          "source": "close",
+          "window": 3
+        },
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|6bd3d740b3943ca907d10faba3c92ee3daa81ffdaf8f6971ddeab60c7c955df7|236c5460f058c1556b92b030b6e5309032514e5a36aeb0297895f747563a7a23",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|6b26206da8ec94b1f41757d9b24227d9efbfe0a88dc5837c9ebfbcbf3395fb1f",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|6b26206da8ec94b1f41757d9b24227d9efbfe0a88dc5837c9ebfbcbf3395fb1f|ceda9aac85ce203b9e023e3e34e0da27c7b9c6305af52c7d5e923bfff9d0b1c7"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|b3eef8a8-a908-47a6-9c0d-5c2acf54109c",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|b3eef8a8-a908-47a6-9c0d-5c2acf54109c|1|aabe5ca15f6e87287db682864301934a6dddcff7821edbc0c1e5334ee27da0d1",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "0ae5aa4ae7d59337f8ed28a7d6a0833e13f3baac",
+          "hypothesis_id": "HYPOTHESIS|688d258d-ea63-402f-813c-a1139f3ffcc4",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|688d258d-ea63-402f-813c-a1139f3ffcc4|1|e062db5dde5445eacd04f29e504f293eee760caffda00581462f4dfeb528e28a",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|7cc9528e549bc1345251fc7236d647ef6f75afc07923e208a142076b004580de|065cc53dd731533cadda797d2a8c8b93a651f98a1c6720f6065597fdbd22f7ab",
+          "research_result_id": "RESEARCH_RESULT|7cc9528e549bc1345251fc7236d647ef6f75afc07923e208a142076b004580de"
+        }
+      },
+      "results": {
+        "outcome": "ACCEPTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+            "threshold": "0"
+          },
+          "criterion_result": "MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 192,
+              "mean_return_t_plus_1": -0.0037352073496102933,
+              "rule": "close_t <= SMA3_t"
+            },
+            "upper": {
+              "count": 173,
+              "mean_return_t_plus_1": -0.0011102830337171468,
+              "rule": "close_t > SMA3_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": 0.0026249243158931465,
+          "observation_count": 365,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    },
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+          "threshold": "0"
+        },
+        "description": "For KNC-USD, the mean t+1 return when close_t > SMA3_t exceeds the mean t+1 return when close_t <= SMA3_t (N=4 low-liquidity instrument sweep, bounded search space, Bonferroni-corrected).",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|504b0247-502b-48f2-975e-327787c4cdbb",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|504b0247-502b-48f2-975e-327787c4cdbb|1|a5acb82f3aaa5bb4fe7b2464f70b3c390bc91782fe3270a705699a4d6c92de11",
+        "target_metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+        "version": 1
+      },
+      "interpretation": "SMA3 sobre KNC-USD, 2025 completo -- uno de N=4 instrumentos de baja liquidez probados en el mismo lote acotado (BAND-USD, KNC-USD, MASK-USD, ANKR-USD; ~30-100x menos liquidos que ATOM-USD, ~1000x menos que BTC-USD/ETH-USD), aislando unicamente el instrumento. Muestra completa: metric=0.0015665, MET. Walk-forward independiente (M2.6, 5 folds, N=4 con correccion de Bonferroni R-2.7-002): consistencia real 40% en los 4 instrumentos del lote (identica entre si) -- NOT_VALIDATED, razon=CONSISTENCY_BELOW_THRESHOLD, muy por debajo del alpha corregido por Bonferroni ademas de por debajo del umbral de consistencia. Risk Analytics (descriptivo): Sharpe promedio -1.177, peor drawdown de fold 56.2% -- perfil de riesgo MARCADAMENTE PEOR que ATOM-USD (Sharpe -0.652, drawdown 44.4%) y que BTC-USD/ETH-USD, para los 4 instrumentos del lote sin excepcion. Bajar mas en liquidez no solo no revela una senal mas robusta -- empeora sistematicamente el perfil de riesgo.",
+      "knowledge_id": "KNOWLEDGE|a10d10dd4ec2ee975c5852c2499ffc89afaa02a81d6e2cb799308619a87e31ff",
+      "limitations": [
+        "Parte de un lote acotado N=4 (BAND-USD, MASK-USD, ANKR-USD son los otros 3 miembros, mismo diseno, mismo periodo, corregidos juntos por Bonferroni) -- no se debe interpretar el resultado de este instrumento de forma aislada sin considerar el patron del lote completo (los 4 muestran 40% de consistencia y perfiles de riesgo muy negativos, sin excepcion).",
+        "Un solo periodo historico evaluado (2025), el mismo que las 16 hipotesis previas.",
+        "La eleccion de 'menor liquidez' se baso en volumen de 24h de un solo momento (2026-09-29), no en una serie historica de liquidez a lo largo de 2025.",
+        "Risk Analytics (Sharpe/drawdown) es descriptivo -- no gatea ni la Disposition ni el veredicto walk-forward.",
+        "Este lote, junto con ATOM-USD (PR #52), completa dos rondas del eje de liquidez -- ambas muestran el mismo patron: bajar en liquidez empeora el perfil de riesgo sin mejorar la consistencia. No confirma la hipotesis motivadora de que un activo menos arbitrado tendria una senal SMA3 mas robusta."
+      ],
+      "materialization": {
+        "knowledge_code_revision": "0ae5aa4ae7d59337f8ed28a7d6a0833e13f3baac",
+        "pipeline_sha256": "cdd3d4e132782f34acd578894d450fa1851ca233690c0c181786f4b7572f14de",
+        "preserved_at": "2026-09-29T04:29:26.266244Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= SMA3_t",
+          "upper_group": "close_t > SMA3_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "instrument": "KNC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > SMA3_t) - mean(return_t+1 | close_t <= SMA3_t)",
+          "name": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_SMA3_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "sma": {
+          "source": "close",
+          "window": 3
+        },
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|a10d10dd4ec2ee975c5852c2499ffc89afaa02a81d6e2cb799308619a87e31ff|442662a4876a56d05085811e3cb66707cd28ac7470365fc768b399d0e3f276ef",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|648c2cdc978955826849b7b5113e8e321c2218411d55dfbd0eeaf0622c963734",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|648c2cdc978955826849b7b5113e8e321c2218411d55dfbd0eeaf0622c963734|367c8d0fa6a7b274497cf1a97fdc586564829f3b02c487f5236a3f8e0b7beb7a"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|34d4cc40-cfb3-4e64-989c-4bce9e30866e",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|34d4cc40-cfb3-4e64-989c-4bce9e30866e|1|330b8f4c53f6e4b0280f0767702f71f9b910acbd1d4f7fc62538bcbe483bbd2c",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "0ae5aa4ae7d59337f8ed28a7d6a0833e13f3baac",
+          "hypothesis_id": "HYPOTHESIS|504b0247-502b-48f2-975e-327787c4cdbb",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|504b0247-502b-48f2-975e-327787c4cdbb|1|a5acb82f3aaa5bb4fe7b2464f70b3c390bc91782fe3270a705699a4d6c92de11",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|3a572cf0fe0828a98b3a1f13e679a69f7a16cec4c8352bc68b76f2488fcf4e2c|07a1d7f8873fb7d4efc83570f5d6cc8782443ddd3e2a39cbdf57548dec106f54",
+          "research_result_id": "RESEARCH_RESULT|3a572cf0fe0828a98b3a1f13e679a69f7a16cec4c8352bc68b76f2488fcf4e2c"
+        }
+      },
+      "results": {
+        "outcome": "ACCEPTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+            "threshold": "0"
+          },
+          "criterion_result": "MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 205,
+              "mean_return_t_plus_1": -0.001278170172828429,
+              "rule": "close_t <= SMA3_t"
+            },
+            "upper": {
+              "count": 160,
+              "mean_return_t_plus_1": 0.00028829077867525076,
+              "rule": "close_t > SMA3_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": 0.0015664609515036797,
+          "observation_count": 365,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    },
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+          "threshold": "0"
+        },
+        "description": "For MASK-USD, the mean t+1 return when close_t > SMA3_t exceeds the mean t+1 return when close_t <= SMA3_t (N=4 low-liquidity instrument sweep, bounded search space, Bonferroni-corrected).",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|f6800063-5123-4c67-bc6b-a0130d3962af",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|f6800063-5123-4c67-bc6b-a0130d3962af|1|00edda7fb8c40b4d5e49645b6795fde8b5320ae64fa173e6a55240c1743695b2",
+        "target_metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+        "version": 1
+      },
+      "interpretation": "SMA3 sobre MASK-USD, 2025 completo -- uno de N=4 instrumentos de baja liquidez probados en el mismo lote acotado (BAND-USD, KNC-USD, MASK-USD, ANKR-USD; ~30-100x menos liquidos que ATOM-USD, ~1000x menos que BTC-USD/ETH-USD), aislando unicamente el instrumento. Muestra completa: metric=-0.0009115, NOT_MET. Walk-forward independiente (M2.6, 5 folds, N=4 con correccion de Bonferroni R-2.7-002): consistencia real 40% en los 4 instrumentos del lote (identica entre si) -- NOT_VALIDATED, razon=CONSISTENCY_BELOW_THRESHOLD, muy por debajo del alpha corregido por Bonferroni ademas de por debajo del umbral de consistencia. Risk Analytics (descriptivo): Sharpe promedio -1.154, peor drawdown de fold 30.3% -- perfil de riesgo MARCADAMENTE PEOR que ATOM-USD (Sharpe -0.652, drawdown 44.4%) y que BTC-USD/ETH-USD, para los 4 instrumentos del lote sin excepcion. Bajar mas en liquidez no solo no revela una senal mas robusta -- empeora sistematicamente el perfil de riesgo.",
+      "knowledge_id": "KNOWLEDGE|c15356b94789277e6caaf8a3797c46620473c9903e40987e574395069ee4955e",
+      "limitations": [
+        "Parte de un lote acotado N=4 (BAND-USD, KNC-USD, ANKR-USD son los otros 3 miembros, mismo diseno, mismo periodo, corregidos juntos por Bonferroni) -- no se debe interpretar el resultado de este instrumento de forma aislada sin considerar el patron del lote completo (los 4 muestran 40% de consistencia y perfiles de riesgo muy negativos, sin excepcion).",
+        "Un solo periodo historico evaluado (2025), el mismo que las 16 hipotesis previas.",
+        "La eleccion de 'menor liquidez' se baso en volumen de 24h de un solo momento (2026-09-29), no en una serie historica de liquidez a lo largo de 2025.",
+        "Risk Analytics (Sharpe/drawdown) es descriptivo -- no gatea ni la Disposition ni el veredicto walk-forward.",
+        "Este lote, junto con ATOM-USD (PR #52), completa dos rondas del eje de liquidez -- ambas muestran el mismo patron: bajar en liquidez empeora el perfil de riesgo sin mejorar la consistencia. No confirma la hipotesis motivadora de que un activo menos arbitrado tendria una senal SMA3 mas robusta."
+      ],
+      "materialization": {
+        "knowledge_code_revision": "0ae5aa4ae7d59337f8ed28a7d6a0833e13f3baac",
+        "pipeline_sha256": "cdd3d4e132782f34acd578894d450fa1851ca233690c0c181786f4b7572f14de",
+        "preserved_at": "2026-09-29T04:29:26.629163Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= SMA3_t",
+          "upper_group": "close_t > SMA3_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "instrument": "MASK-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > SMA3_t) - mean(return_t+1 | close_t <= SMA3_t)",
+          "name": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_SMA3_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "sma": {
+          "source": "close",
+          "window": 3
+        },
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|c15356b94789277e6caaf8a3797c46620473c9903e40987e574395069ee4955e|e6d56306cca0b81f258a1151fb6654c56980d5da9d44c4c8df38ad75241a5ee2",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|60dd49071a264b992d2ceae861c22cce0b9b2b76e63af4fffb0436533c254c7e",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|60dd49071a264b992d2ceae861c22cce0b9b2b76e63af4fffb0436533c254c7e|f98927862773372fab4250a39240af13e10a8cccbcdab40ba53832c18e4ec55b"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|78712788-4992-4614-9531-54269dd45ec6",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|78712788-4992-4614-9531-54269dd45ec6|1|5bc3bab075f5d3326a250fcc4eacb8fadc1fa4d73701da73f577cedcd4ba65cd",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "0ae5aa4ae7d59337f8ed28a7d6a0833e13f3baac",
+          "hypothesis_id": "HYPOTHESIS|f6800063-5123-4c67-bc6b-a0130d3962af",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|f6800063-5123-4c67-bc6b-a0130d3962af|1|00edda7fb8c40b4d5e49645b6795fde8b5320ae64fa173e6a55240c1743695b2",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|1b956c16c604aab6670f551dbd4fdb61a3dd80602ad9e4025ddf149da1daddc0|d35950df61ec399b985a9b63d3dccbdf538ddacad356e3c2f7488cb9f4dfbd86",
+          "research_result_id": "RESEARCH_RESULT|1b956c16c604aab6670f551dbd4fdb61a3dd80602ad9e4025ddf149da1daddc0"
+        }
+      },
+      "results": {
+        "outcome": "REJECTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+            "threshold": "0"
+          },
+          "criterion_result": "NOT_MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 209,
+              "mean_return_t_plus_1": -0.002356637368630407,
+              "rule": "close_t <= SMA3_t"
+            },
+            "upper": {
+              "count": 156,
+              "mean_return_t_plus_1": -0.0032681276300626475,
+              "rule": "close_t > SMA3_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": -0.0009114902614322405,
+          "observation_count": 365,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    },
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+          "threshold": "0"
+        },
+        "description": "For ANKR-USD, the mean t+1 return when close_t > SMA3_t exceeds the mean t+1 return when close_t <= SMA3_t (N=4 low-liquidity instrument sweep, bounded search space, Bonferroni-corrected).",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|af5f7247-d986-45a2-aaf2-ce48d538086b",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|af5f7247-d986-45a2-aaf2-ce48d538086b|1|d10492b642665494bb0ba5515e8fb25a0e5c3681b278f94e89c39baea11b2eb6",
+        "target_metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+        "version": 1
+      },
+      "interpretation": "SMA3 sobre ANKR-USD, 2025 completo -- uno de N=4 instrumentos de baja liquidez probados en el mismo lote acotado (BAND-USD, KNC-USD, MASK-USD, ANKR-USD; ~30-100x menos liquidos que ATOM-USD, ~1000x menos que BTC-USD/ETH-USD), aislando unicamente el instrumento. Muestra completa: metric=-0.0017140, NOT_MET. Walk-forward independiente (M2.6, 5 folds, N=4 con correccion de Bonferroni R-2.7-002): consistencia real 40% en los 4 instrumentos del lote (identica entre si) -- NOT_VALIDATED, razon=CONSISTENCY_BELOW_THRESHOLD, muy por debajo del alpha corregido por Bonferroni ademas de por debajo del umbral de consistencia. Risk Analytics (descriptivo): Sharpe promedio -1.441, peor drawdown de fold 45.7% -- perfil de riesgo MARCADAMENTE PEOR que ATOM-USD (Sharpe -0.652, drawdown 44.4%) y que BTC-USD/ETH-USD, para los 4 instrumentos del lote sin excepcion. Bajar mas en liquidez no solo no revela una senal mas robusta -- empeora sistematicamente el perfil de riesgo.",
+      "knowledge_id": "KNOWLEDGE|2f7e048476dc9fe16a137a6d0a22e192f518a03bbbd3ab156a36587aee3f6a9a",
+      "limitations": [
+        "Parte de un lote acotado N=4 (BAND-USD, KNC-USD, MASK-USD son los otros 3 miembros, mismo diseno, mismo periodo, corregidos juntos por Bonferroni) -- no se debe interpretar el resultado de este instrumento de forma aislada sin considerar el patron del lote completo (los 4 muestran 40% de consistencia y perfiles de riesgo muy negativos, sin excepcion).",
+        "Un solo periodo historico evaluado (2025), el mismo que las 16 hipotesis previas.",
+        "La eleccion de 'menor liquidez' se baso en volumen de 24h de un solo momento (2026-09-29), no en una serie historica de liquidez a lo largo de 2025.",
+        "Risk Analytics (Sharpe/drawdown) es descriptivo -- no gatea ni la Disposition ni el veredicto walk-forward.",
+        "Este lote, junto con ATOM-USD (PR #52), completa dos rondas del eje de liquidez -- ambas muestran el mismo patron: bajar en liquidez empeora el perfil de riesgo sin mejorar la consistencia. No confirma la hipotesis motivadora de que un activo menos arbitrado tendria una senal SMA3 mas robusta."
+      ],
+      "materialization": {
+        "knowledge_code_revision": "0ae5aa4ae7d59337f8ed28a7d6a0833e13f3baac",
+        "pipeline_sha256": "cdd3d4e132782f34acd578894d450fa1851ca233690c0c181786f4b7572f14de",
+        "preserved_at": "2026-09-29T04:29:26.999860Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= SMA3_t",
+          "upper_group": "close_t > SMA3_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "instrument": "ANKR-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > SMA3_t) - mean(return_t+1 | close_t <= SMA3_t)",
+          "name": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_SMA3_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "sma": {
+          "source": "close",
+          "window": 3
+        },
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|2f7e048476dc9fe16a137a6d0a22e192f518a03bbbd3ab156a36587aee3f6a9a|cba45a410ba93eb4a00e5544301216408a5c7e3be9b6b6a6354fc43e8c1fccdf",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|e16965b6d6d828eea6cdf7d92ca0d99bef070cd9a05981747cd29b889de44c19",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|e16965b6d6d828eea6cdf7d92ca0d99bef070cd9a05981747cd29b889de44c19|e058762aaa40ce7477bfe5726306b93295cbd654e45be8cfdf2b473b992ed14f"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|a35f47e5-f4d8-4fa6-916f-53c637448184",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|a35f47e5-f4d8-4fa6-916f-53c637448184|1|021c8b7b93390d532fd91dcb6d49a0635712b54dc117ed04afc6cf2cc7fe8e3a",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "0ae5aa4ae7d59337f8ed28a7d6a0833e13f3baac",
+          "hypothesis_id": "HYPOTHESIS|af5f7247-d986-45a2-aaf2-ce48d538086b",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|af5f7247-d986-45a2-aaf2-ce48d538086b|1|d10492b642665494bb0ba5515e8fb25a0e5c3681b278f94e89c39baea11b2eb6",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|3f5de63d2e866547709ccf19152da5c793c53d7c04257d228c4ee679aea946b6|729d867b6ae5384f35cb266b9774c8b3f0754cd2eb589792632b9ae53e79f823",
+          "research_result_id": "RESEARCH_RESULT|3f5de63d2e866547709ccf19152da5c793c53d7c04257d228c4ee679aea946b6"
+        }
+      },
+      "results": {
+        "outcome": "REJECTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+            "threshold": "0"
+          },
+          "criterion_result": "NOT_MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 207,
+              "mean_return_t_plus_1": -0.003003519924585633,
+              "rule": "close_t <= SMA3_t"
+            },
+            "upper": {
+              "count": 158,
+              "mean_return_t_plus_1": -0.004717545757464379,
+              "rule": "close_t > SMA3_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": -0.0017140258328787457,
+          "observation_count": 365,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    }
+  ],
+  "schema_version": "1"
+}
