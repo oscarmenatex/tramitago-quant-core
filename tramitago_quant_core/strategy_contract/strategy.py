@@ -170,6 +170,91 @@ def funding_rate_sign_strategy():
     }
 
 
+def signal_portfolio_strategy(sma_window, volume_window, range_window, funding_window):
+    """A weak-signal PORTFOLIO: a majority vote across four structurally
+    different signal families, rather than one signal evaluated alone.
+
+    Proposed 2026-09-29 after the aggregate measurement showed the
+    project's acceptance criterion (>= 70% fold consistency) is a
+    whole-strategy bar being applied to individual components -- a bar no
+    genuinely weak signal ever clears alone, while real systems combine
+    many such signals. Measurement backs the mechanism here: the eight
+    price variants already tested are redundant (mean pairwise correlation
+    0.753, effective breadth 1.28 of 8), but these four families are
+    genuinely diverse (0.131, effective breadth 2.87 of 4).
+
+    Votes, each keeping the exact direction its own original Hypothesis
+    was declared with, before any result was known:
+        close_t              > SMA_t          (momentum)
+        volume_t             > VOLAVG_t       (information flow)
+        (high_t-low_t)/close > RANGEAVG_t     (volatility expansion)
+        funding_rate_{t-1}   > FUNDAVG_t      (positioning; keeps lag-1)
+    UPPER when at least 3 of 4 agree; ties (2-2) fall to LOWER_OR_EQUAL,
+    matching the ">" convention used throughout.
+
+    A vote, not a weighted average: there is no scale to standardize and
+    no weight to fit. Fitting weights would introduce four free parameters
+    and collapse the anti-data-snooping apparatus; equal votes cannot be
+    overfitted because nothing is fitted.
+
+    Known, deliberately accepted limitation: the volume and range votes
+    correlate 0.772 with each other, so "market agitation" carries two of
+    the four votes. Dropping one of them by comparing their in-sample IC
+    would itself be a snooped choice, so both are kept and the imbalance
+    is documented instead.
+    """
+    for name, window in (("SMA", sma_window), ("Volume", volume_window),
+                         ("Range", range_window), ("Funding", funding_window)):
+        if not isinstance(window, int) or isinstance(window, bool) or window < 2:
+            raise ValueError(name + " window must be an integer >= 2")
+    indicator_name = f"PORTFOLIO{sma_window}_{volume_window}_{range_window}_{funding_window}"
+    column_name = "portfolio_votes"
+    warmup = max(sma_window - 1, volume_window, range_window, funding_window + 1)
+
+    def compute(window_rows):
+        if len(window_rows) != warmup + 1:
+            raise ValueError("Strategy compute window has the wrong length")
+        today = window_rows[-1]
+
+        sma = math.fsum(row["close"] / sma_window for row in window_rows[-sma_window:])
+        volume_avg = math.fsum(
+            row["volume"] for row in window_rows[-(volume_window + 1):-1]) / volume_window
+        normalized_range = lambda row: (row["high"] - row["low"]) / row["close"]
+        range_avg = math.fsum(
+            normalized_range(row) for row in window_rows[-(range_window + 1):-1]) / range_window
+        funding_avg = math.fsum(
+            row["funding_rate"]
+            for row in window_rows[-(funding_window + 2):-2]) / funding_window
+        yesterday_funding = window_rows[-2]["funding_rate"]
+
+        for value in (sma, volume_avg, range_avg, funding_avg, yesterday_funding):
+            if not math.isfinite(value):
+                raise ValueError("Non-finite indicator")
+
+        votes = sum((today["close"] > sma,
+                     today["volume"] > volume_avg,
+                     normalized_range(today) > range_avg,
+                     yesterday_funding > funding_avg))
+        return {"indicator_value": float(votes),
+                "group": "UPPER" if votes >= 3 else "LOWER_OR_EQUAL"}
+
+    upper = (f"at least 3 of 4 votes: close>SMA{sma_window}, volume>VOLAVG{volume_window}, "
+             f"range>RANGEAVG{range_window}, funding_t-1>FUNDAVG{funding_window}")
+    return {
+        "schema_version": STRATEGY_SCHEMA_VERSION,
+        "strategy_id": "SIGNAL_PORTFOLIO",
+        "parameters": {"sma_window": sma_window, "volume_window": volume_window,
+                       "range_window": range_window, "funding_window": funding_window},
+        "indicator_name": indicator_name,
+        "column_name": column_name,
+        "required_inputs": {"variables": ["close", "volume", "high", "low", "funding_rate"],
+                            "warmup_periods": warmup},
+        "upper_group_description": upper,
+        "lower_or_equal_group_description": f"NOT ({upper})",
+        "compute": compute,
+    }
+
+
 def funding_rate_surge_strategy(window):
     """A seventh Strategy family: classifies each day by whether the PRIOR
     day's mean perpetual-futures funding rate exceeds the trailing average

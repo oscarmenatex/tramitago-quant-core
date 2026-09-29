@@ -163,7 +163,7 @@ from tramitago_quant_core.research.walk_forward import (
 from tramitago_quant_core.strategy_contract.strategy import (
     sma_crossover_strategy, momentum_crossover_strategy, volume_surge_strategy,
     funding_rate_sign_strategy, sma_volume_confirmation_strategy, intraday_range_strategy,
-    funding_rate_surge_strategy, _strategy_classify_rows,
+    funding_rate_surge_strategy, signal_portfolio_strategy, _strategy_classify_rows,
 )
 from tramitago_quant_core.data.binance_funding_rate import (
     BINANCE_FUNDING_RATE_CAPTURE_SCHEMA_VERSION, BINANCE_FUNDING_RATE_SOURCE,
