@@ -1,7 +1,35 @@
 {
-  "executions": [
+  "results": [
     {
-      "causal_evidence": [
+      "evaluation": {
+        "criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(volume_t > VOLSURGE20_t) - mean_forward_return_1d(volume_t <= VOLSURGE20_t)",
+          "threshold": "0"
+        },
+        "criterion_result": "MET",
+        "groups": {
+          "lower_or_equal": {
+            "count": 211,
+            "mean_return_t_plus_1": 6.901601283799232e-05,
+            "rule": "volume_t <= VOLSURGE20_t"
+          },
+          "upper": {
+            "count": 154,
+            "mean_return_t_plus_1": 7.439068640042849e-05,
+            "rule": "volume_t > VOLSURGE20_t"
+          }
+        },
+        "inconclusive_reason": null,
+        "metric": 5.374673562436166e-06,
+        "observation_count": 365,
+        "period": {
+          "end_exclusive_utc": "2026-01-01T00:00:00Z",
+          "start_utc": "2025-01-01T00:00:00Z"
+        }
+      },
+      "evidence": [
         {
           "close": 94383.59,
           "group": "LOWER_OR_EQUAL",
@@ -3653,98 +3681,11 @@
           "volume_avg_20": 6276.6583841855
         }
       ],
-      "evaluated_period": {
-        "end_exclusive_utc": "2026-01-01T00:00:00Z",
-        "start_utc": "2025-01-01T00:00:00Z"
+      "execution": {
+        "code_revision": "667e8212108e1bb0d08b01b3783d02906de7e21e",
+        "pipeline_sha256": "718677c18e77cd4b90e5830f1db560265380eb4a1f603c29b4c27ca75e21f5b3"
       },
-      "excluded_support_rows": [
-        {
-          "row_role": "SUPPORT_VOLSURGE20_WARMUP",
-          "timestamp": "2024-12-12T00:00:00Z"
-        },
-        {
-          "row_role": "SUPPORT_VOLSURGE20_WARMUP",
-          "timestamp": "2024-12-13T00:00:00Z"
-        },
-        {
-          "row_role": "SUPPORT_VOLSURGE20_WARMUP",
-          "timestamp": "2024-12-14T00:00:00Z"
-        },
-        {
-          "row_role": "SUPPORT_VOLSURGE20_WARMUP",
-          "timestamp": "2024-12-15T00:00:00Z"
-        },
-        {
-          "row_role": "SUPPORT_VOLSURGE20_WARMUP",
-          "timestamp": "2024-12-16T00:00:00Z"
-        },
-        {
-          "row_role": "SUPPORT_VOLSURGE20_WARMUP",
-          "timestamp": "2024-12-17T00:00:00Z"
-        },
-        {
-          "row_role": "SUPPORT_VOLSURGE20_WARMUP",
-          "timestamp": "2024-12-18T00:00:00Z"
-        },
-        {
-          "row_role": "SUPPORT_VOLSURGE20_WARMUP",
-          "timestamp": "2024-12-19T00:00:00Z"
-        },
-        {
-          "row_role": "SUPPORT_VOLSURGE20_WARMUP",
-          "timestamp": "2024-12-20T00:00:00Z"
-        },
-        {
-          "row_role": "SUPPORT_VOLSURGE20_WARMUP",
-          "timestamp": "2024-12-21T00:00:00Z"
-        },
-        {
-          "row_role": "SUPPORT_VOLSURGE20_WARMUP",
-          "timestamp": "2024-12-22T00:00:00Z"
-        },
-        {
-          "row_role": "SUPPORT_VOLSURGE20_WARMUP",
-          "timestamp": "2024-12-23T00:00:00Z"
-        },
-        {
-          "row_role": "SUPPORT_VOLSURGE20_WARMUP",
-          "timestamp": "2024-12-24T00:00:00Z"
-        },
-        {
-          "row_role": "SUPPORT_VOLSURGE20_WARMUP",
-          "timestamp": "2024-12-25T00:00:00Z"
-        },
-        {
-          "row_role": "SUPPORT_VOLSURGE20_WARMUP",
-          "timestamp": "2024-12-26T00:00:00Z"
-        },
-        {
-          "row_role": "SUPPORT_VOLSURGE20_WARMUP",
-          "timestamp": "2024-12-27T00:00:00Z"
-        },
-        {
-          "row_role": "SUPPORT_VOLSURGE20_WARMUP",
-          "timestamp": "2024-12-28T00:00:00Z"
-        },
-        {
-          "row_role": "SUPPORT_VOLSURGE20_WARMUP",
-          "timestamp": "2024-12-29T00:00:00Z"
-        },
-        {
-          "row_role": "SUPPORT_VOLSURGE20_WARMUP",
-          "timestamp": "2024-12-30T00:00:00Z"
-        },
-        {
-          "row_role": "SUPPORT_VOLSURGE20_WARMUP",
-          "timestamp": "2024-12-31T00:00:00Z"
-        },
-        {
-          "row_role": "SUPPORT_FORWARD_RETURN",
-          "timestamp": "2026-01-01T00:00:00Z"
-        }
-      ],
-      "execution_id": "RESEARCH_EXECUTION|0470b4a89346d3103772e44ec2fefd30f1e778d57da813b8efe8bba704d9e841",
-      "input_hashes": {
+      "inputs": {
         "dataset_hashes": {
           "capture_sha256": "46457ee425bb757e00a2932d263388b7b5ff938a2c2451ec05dcb47b8aa5b874",
           "code_sha256": "718677c18e77cd4b90e5830f1db560265380eb4a1f603c29b4c27ca75e21f5b3",
@@ -3755,22 +3696,9 @@
         },
         "dataset_manifest_sha256": "5e868d451a655b6bc357dad0f71833828f6448c7e2057238140bc5c508e55e40",
         "experiment_record_sha256": "9e9c40cb6c979123fa6d00f4349990d8b5d63513e31243297ed898dd2cb4b96b",
-        "hypothesis_record_sha256": "35d057ef2c2c958cf46dfad0e560854385393d71f44315335055d0820306a000",
-        "legacy_result_record_sha256": "55a42838746961b2d0944ee802ac4a682636d2cf9e4fa9330c94234a0606f524",
-        "legacy_result_registry_sha256": "ab6cba3de3551b18aefcb4849e4b002248ee33994ae89603616468afbbeb3df6"
+        "hypothesis_record_sha256": "35d057ef2c2c958cf46dfad0e560854385393d71f44315335055d0820306a000"
       },
-      "materialization": {
-        "constituted_at": "2026-09-28T07:50:00Z",
-        "materialization_code_revision": "667e8212108e1bb0d08b01b3783d02906de7e21e",
-        "original_execution_time": "NOT_RECORDED",
-        "pipeline_sha256": "cdd3d4e132782f34acd578894d450fa1851ca233690c0c181786f4b7572f14de",
-        "provenance": "CONSTITUTED_AFTER_ORIGINAL_EXECUTION_FROM_LEGACY_SEALED_RESULT"
-      },
-      "original_execution": {
-        "code_revision": "667e8212108e1bb0d08b01b3783d02906de7e21e",
-        "pipeline_sha256": "718677c18e77cd4b90e5830f1db560265380eb4a1f603c29b4c27ca75e21f5b3"
-      },
-      "record_id": "RESEARCH_EXECUTION_RECORD|RESEARCH_EXECUTION|0470b4a89346d3103772e44ec2fefd30f1e778d57da813b8efe8bba704d9e841|dd889d949789d491045f6ee58d011f8ca6dc17b1927a719dbad30fffded52898",
+      "record_id": "EXPERIMENT_RESULT_RECORD|EXPERIMENT_RESULT|ea626af359d800b7e034a50093f7fec4e14a4dca8d8694a5c0f20674dea17291|6e8a4a4340c9dd7a8a1d7d09752217812d46c602e7b219d56b783cf618f3a22b",
       "references": {
         "dataset": {
           "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|e8a0442185278c9d53911cecfcb66efa61ecbfaa60ca4f9aea75132057202f79",
@@ -3879,43 +3807,11 @@
           "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|fcf357de-27ba-453a-93fa-72702f128298|1|78b1da77cc52eb673d4b89a371fe9c82b4b4f8143750194d58a8b0cd969ac6e2",
           "system_version": "0.1.0",
           "version": 1
-        },
-        "legacy_result": {
-          "record_id": "EXPERIMENT_RESULT_RECORD|EXPERIMENT_RESULT|ea626af359d800b7e034a50093f7fec4e14a4dca8d8694a5c0f20674dea17291|6e8a4a4340c9dd7a8a1d7d09752217812d46c602e7b219d56b783cf618f3a22b",
-          "result_id": "EXPERIMENT_RESULT|ea626af359d800b7e034a50093f7fec4e14a4dca8d8694a5c0f20674dea17291"
         }
       },
+      "result_id": "EXPERIMENT_RESULT|ea626af359d800b7e034a50093f7fec4e14a4dca8d8694a5c0f20674dea17291",
       "schema_version": "1",
-      "scientific_result": {
-        "criterion": {
-          "comparison": "GT",
-          "expected_direction": "INCREASE",
-          "metric": "mean_forward_return_1d(volume_t > VOLSURGE20_t) - mean_forward_return_1d(volume_t <= VOLSURGE20_t)",
-          "threshold": "0"
-        },
-        "criterion_result": "MET",
-        "groups": {
-          "lower_or_equal": {
-            "count": 211,
-            "mean_return_t_plus_1": 6.901601283799232e-05,
-            "rule": "volume_t <= VOLSURGE20_t"
-          },
-          "upper": {
-            "count": 154,
-            "mean_return_t_plus_1": 7.439068640042849e-05,
-            "rule": "volume_t > VOLSURGE20_t"
-          }
-        },
-        "inconclusive_reason": null,
-        "metric": 5.374673562436166e-06,
-        "observation_count": 365,
-        "period": {
-          "end_exclusive_utc": "2026-01-01T00:00:00Z",
-          "start_utc": "2025-01-01T00:00:00Z"
-        }
-      },
-      "status": "MATERIALIZED_FROM_LEGACY_RESULT",
-      "terminal_result": "MET"
+      "status": "COMPLETED"
     }
   ],
   "schema_version": "1"
