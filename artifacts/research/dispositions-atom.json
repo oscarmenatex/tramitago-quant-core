@@ -1,0 +1,69 @@
+{
+  "dispositions": [
+    {
+      "criterion_applied": {
+        "comparison": "GT",
+        "expected_direction": "INCREASE",
+        "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+        "threshold": "0"
+      },
+      "disposition_id": "DISPOSITION|32590e612ede14afa9400aec3acaa508e3bfc5aa82f53841fc409dcba91de815",
+      "materialization": {
+        "disposed_at": "2026-09-29T03:18:45.185211Z",
+        "disposition_code_revision": "85ea1d56d9bd42aceb4ca03613be457164d9ea12",
+        "pipeline_sha256": "6b1994cfa8541d3affb47eeb82af2902885d2c30d74090a1b06301680a5762d0"
+      },
+      "outcome": "REJECTED",
+      "outcome_reason": null,
+      "record_id": "DISPOSITION_RECORD|DISPOSITION|32590e612ede14afa9400aec3acaa508e3bfc5aa82f53841fc409dcba91de815|906fb900c696c802bb3decec6a495cf1af99a5b564a193e4ac0b12f4c9ab9c31",
+      "references": {
+        "hypothesis": {
+          "code_revision": "85ea1d56d9bd42aceb4ca03613be457164d9ea12",
+          "hypothesis_id": "HYPOTHESIS|ca1d3cca-ae72-4a16-a159-b504cad89790",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|ca1d3cca-ae72-4a16-a159-b504cad89790|1|e28dbfb8710d70f364fcc18ae97eed58361103f5865e5c3c211f599bb19f899f",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_execution": {
+          "execution_id": "RESEARCH_EXECUTION|04f71ba8d98f9bb5ab3ac4981121de1b5d263923453ba5bc5102c51b083cf875",
+          "record_id": "RESEARCH_EXECUTION_RECORD|RESEARCH_EXECUTION|04f71ba8d98f9bb5ab3ac4981121de1b5d263923453ba5bc5102c51b083cf875|0c932d5c8ae7ed33e84f8cd736d0357342324e1591b4b6f0bf0388ea356dbd7f"
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|dc907c5483503515fdae12f386178966b10446248e0f98966270c425999225b7|172a52642c83795eca748ccae8d8a549e2db5dea6887cccb520a684baf54fe28",
+          "research_result_id": "RESEARCH_RESULT|dc907c5483503515fdae12f386178966b10446248e0f98966270c425999225b7"
+        }
+      },
+      "schema_version": "1",
+      "scientific_result": {
+        "criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+          "threshold": "0"
+        },
+        "criterion_result": "NOT_MET",
+        "groups": {
+          "lower_or_equal": {
+            "count": 197,
+            "mean_return_t_plus_1": -0.0018177855956071694,
+            "rule": "close_t <= SMA3_t"
+          },
+          "upper": {
+            "count": 168,
+            "mean_return_t_plus_1": -0.0028012055346440636,
+            "rule": "close_t > SMA3_t"
+          }
+        },
+        "inconclusive_reason": null,
+        "metric": -0.0009834199390368942,
+        "observation_count": 365,
+        "period": {
+          "end_exclusive_utc": "2026-01-01T00:00:00Z",
+          "start_utc": "2025-01-01T00:00:00Z"
+        }
+      },
+      "status": "ISSUED"
+    }
+  ],
+  "schema_version": "1"
+}
