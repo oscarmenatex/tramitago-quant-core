@@ -1,0 +1,69 @@
+{
+  "dispositions": [
+    {
+      "criterion_applied": {
+        "comparison": "GT",
+        "expected_direction": "INCREASE",
+        "metric": "mean_forward_return_1d(funding_rate_t-1 > FUNDSURGE20) - mean_forward_return_1d(funding_rate_t-1 <= FUNDSURGE20)",
+        "threshold": "0"
+      },
+      "disposition_id": "DISPOSITION|4f786f265211dbeae805902ebaa639c6199f3a3c8d9ac31756a634f6a268d7b6",
+      "materialization": {
+        "disposed_at": "2026-09-29T05:23:36.180470Z",
+        "disposition_code_revision": "7e14372db318d730e4aabb3beaed175a0844f794",
+        "pipeline_sha256": "a364837ee0f988286e144a9a8e95dfef525d02ca08c99079533bf70cbb7e5826"
+      },
+      "outcome": "REJECTED",
+      "outcome_reason": null,
+      "record_id": "DISPOSITION_RECORD|DISPOSITION|4f786f265211dbeae805902ebaa639c6199f3a3c8d9ac31756a634f6a268d7b6|e718e4cce7f6121711119664fb5aa6325ae107a03f0679be15f4a1741b93faef",
+      "references": {
+        "hypothesis": {
+          "code_revision": "7e14372db318d730e4aabb3beaed175a0844f794",
+          "hypothesis_id": "HYPOTHESIS|1b0cca86-2410-41dc-9ffd-9ab5403effb5",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|1b0cca86-2410-41dc-9ffd-9ab5403effb5|1|d5a3d40a0089211486a6b007c0a154672bc3f26dc7215d0a95caecaedf102157",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_execution": {
+          "execution_id": "RESEARCH_EXECUTION|b215082f3d8f736554686ed5714c3ff231971ace9c090fed08f58b08fa2a32c7",
+          "record_id": "RESEARCH_EXECUTION_RECORD|RESEARCH_EXECUTION|b215082f3d8f736554686ed5714c3ff231971ace9c090fed08f58b08fa2a32c7|900b46fe18aa1cf29752b9eee8d4d76e76793abc61da5d071e7c76eade392cc7"
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|168d32006dfaad706ab07e8ed03cf4cab0bd7c449995f89fe6ffa4d9b460efe9|55cf682e7ed5c7bcc4758e30a5e54d51bf86346fde4dbd6e9b50f2194a964278",
+          "research_result_id": "RESEARCH_RESULT|168d32006dfaad706ab07e8ed03cf4cab0bd7c449995f89fe6ffa4d9b460efe9"
+        }
+      },
+      "schema_version": "1",
+      "scientific_result": {
+        "criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(funding_rate_t-1 > FUNDSURGE20) - mean_forward_return_1d(funding_rate_t-1 <= FUNDSURGE20)",
+          "threshold": "0"
+        },
+        "criterion_result": "NOT_MET",
+        "groups": {
+          "lower_or_equal": {
+            "count": 200,
+            "mean_return_t_plus_1": 0.0013267092730944007,
+            "rule": "funding_rate_t-1 <= FUNDSURGE20_t"
+          },
+          "upper": {
+            "count": 165,
+            "mean_return_t_plus_1": -0.0014504443042690776,
+            "rule": "funding_rate_t-1 > FUNDSURGE20_t"
+          }
+        },
+        "inconclusive_reason": null,
+        "metric": -0.0027771535773634783,
+        "observation_count": 365,
+        "period": {
+          "end_exclusive_utc": "2026-01-01T00:00:00Z",
+          "start_utc": "2025-01-01T00:00:00Z"
+        }
+      },
+      "status": "ISSUED"
+    }
+  ],
+  "schema_version": "1"
+}

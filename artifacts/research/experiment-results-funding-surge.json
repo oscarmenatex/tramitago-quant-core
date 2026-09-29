@@ -1,0 +1,3822 @@
+{
+  "results": [
+    {
+      "evaluation": {
+        "criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(funding_rate_t-1 > FUNDSURGE20) - mean_forward_return_1d(funding_rate_t-1 <= FUNDSURGE20)",
+          "threshold": "0"
+        },
+        "criterion_result": "NOT_MET",
+        "groups": {
+          "lower_or_equal": {
+            "count": 200,
+            "mean_return_t_plus_1": 0.0013267092730944007,
+            "rule": "funding_rate_t-1 <= FUNDSURGE20_t"
+          },
+          "upper": {
+            "count": 165,
+            "mean_return_t_plus_1": -0.0014504443042690776,
+            "rule": "funding_rate_t-1 > FUNDSURGE20_t"
+          }
+        },
+        "inconclusive_reason": null,
+        "metric": -0.0027771535773634783,
+        "observation_count": 365,
+        "period": {
+          "end_exclusive_utc": "2026-01-01T00:00:00Z",
+          "start_utc": "2025-01-01T00:00:00Z"
+        }
+      },
+      "evidence": [
+        {
+          "close": 94383.59,
+          "funding_rate_avg_20": 2.2719218541666667e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 96903.19,
+          "next_timestamp": "2025-01-02T00:00:00Z",
+          "return_t_plus_1": 0.02669531854001317,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-01T00:00:00Z"
+        },
+        {
+          "close": 96903.19,
+          "funding_rate_avg_20": 2.2389519583333334e-05,
+          "group": "UPPER",
+          "next_close": 98136.51,
+          "next_timestamp": "2025-01-03T00:00:00Z",
+          "return_t_plus_1": 0.012727341587000396,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-02T00:00:00Z"
+        },
+        {
+          "close": 98136.51,
+          "funding_rate_avg_20": 2.3129584166666667e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 98209.85,
+          "next_timestamp": "2025-01-04T00:00:00Z",
+          "return_t_plus_1": 0.0007473263518338324,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-03T00:00:00Z"
+        },
+        {
+          "close": 98209.85,
+          "funding_rate_avg_20": 2.3027383958333337e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 98345.33,
+          "next_timestamp": "2025-01-05T00:00:00Z",
+          "return_t_plus_1": 0.001379495030284561,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-04T00:00:00Z"
+        },
+        {
+          "close": 98345.33,
+          "funding_rate_avg_20": 2.213544125e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 102279.41,
+          "next_timestamp": "2025-01-06T00:00:00Z",
+          "return_t_plus_1": 0.04000271288936652,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-05T00:00:00Z"
+        },
+        {
+          "close": 102279.41,
+          "funding_rate_avg_20": 1.9643750208333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 96941.98,
+          "next_timestamp": "2025-01-07T00:00:00Z",
+          "return_t_plus_1": -0.052184794574000826,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-06T00:00:00Z"
+        },
+        {
+          "close": 96941.98,
+          "funding_rate_avg_20": 1.7349655416666665e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 95036.63,
+          "next_timestamp": "2025-01-08T00:00:00Z",
+          "return_t_plus_1": -0.019654539756666756,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-07T00:00:00Z"
+        },
+        {
+          "close": 95036.63,
+          "funding_rate_avg_20": 1.6464879583333337e-05,
+          "group": "UPPER",
+          "next_close": 92547.44,
+          "next_timestamp": "2025-01-09T00:00:00Z",
+          "return_t_plus_1": -0.026191900954400493,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-08T00:00:00Z"
+        },
+        {
+          "close": 92547.44,
+          "funding_rate_avg_20": 1.629600791666667e-05,
+          "group": "UPPER",
+          "next_close": 94701.18,
+          "next_timestamp": "2025-01-10T00:00:00Z",
+          "return_t_plus_1": 0.023271740417670994,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-09T00:00:00Z"
+        },
+        {
+          "close": 94701.18,
+          "funding_rate_avg_20": 1.6947150416666666e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 94565.02,
+          "next_timestamp": "2025-01-11T00:00:00Z",
+          "return_t_plus_1": -0.0014377856748984952,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-10T00:00:00Z"
+        },
+        {
+          "close": 94565.02,
+          "funding_rate_avg_20": 1.7006701666666667e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 94509.62,
+          "next_timestamp": "2025-01-12T00:00:00Z",
+          "return_t_plus_1": -0.0005858403033173198,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-11T00:00:00Z"
+        },
+        {
+          "close": 94509.62,
+          "funding_rate_avg_20": 1.6910587708333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 94506.45,
+          "next_timestamp": "2025-01-13T00:00:00Z",
+          "return_t_plus_1": -3.354155904977674e-05,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-12T00:00:00Z"
+        },
+        {
+          "close": 94506.45,
+          "funding_rate_avg_20": 1.6923669791666666e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 96534.96,
+          "next_timestamp": "2025-01-14T00:00:00Z",
+          "return_t_plus_1": 0.02146424926552637,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-13T00:00:00Z"
+        },
+        {
+          "close": 96534.96,
+          "funding_rate_avg_20": 1.724542354166667e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 100510.23,
+          "next_timestamp": "2025-01-15T00:00:00Z",
+          "return_t_plus_1": 0.0411795892389657,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-14T00:00:00Z"
+        },
+        {
+          "close": 100510.23,
+          "funding_rate_avg_20": 1.7360465625e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 99981.78,
+          "next_timestamp": "2025-01-16T00:00:00Z",
+          "return_t_plus_1": -0.0052576737711176325,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-15T00:00:00Z"
+        },
+        {
+          "close": 99981.78,
+          "funding_rate_avg_20": 1.7384618333333335e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 104107.0,
+          "next_timestamp": "2025-01-17T00:00:00Z",
+          "return_t_plus_1": 0.04125971752053226,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-16T00:00:00Z"
+        },
+        {
+          "close": 104107.0,
+          "funding_rate_avg_20": 1.699086354166667e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 104435.0,
+          "next_timestamp": "2025-01-18T00:00:00Z",
+          "return_t_plus_1": 0.003150604666352974,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-17T00:00:00Z"
+        },
+        {
+          "close": 104435.0,
+          "funding_rate_avg_20": 1.6710013541666667e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 101211.13,
+          "next_timestamp": "2025-01-19T00:00:00Z",
+          "return_t_plus_1": -0.03086963182840996,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-18T00:00:00Z"
+        },
+        {
+          "close": 101211.13,
+          "funding_rate_avg_20": 1.6817786666666668e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 102145.43,
+          "next_timestamp": "2025-01-20T00:00:00Z",
+          "return_t_plus_1": 0.009231198189368905,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-19T00:00:00Z"
+        },
+        {
+          "close": 102145.43,
+          "funding_rate_avg_20": 1.6810559583333335e-05,
+          "group": "UPPER",
+          "next_close": 106159.26,
+          "next_timestamp": "2025-01-21T00:00:00Z",
+          "return_t_plus_1": 0.03929524796165618,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-20T00:00:00Z"
+        },
+        {
+          "close": 106159.26,
+          "funding_rate_avg_20": 1.7717538958333332e-05,
+          "group": "UPPER",
+          "next_close": 103667.11,
+          "next_timestamp": "2025-01-22T00:00:00Z",
+          "return_t_plus_1": -0.023475578107835293,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-21T00:00:00Z"
+        },
+        {
+          "close": 103667.11,
+          "funding_rate_avg_20": 2.105308479166667e-05,
+          "group": "UPPER",
+          "next_close": 103926.36,
+          "next_timestamp": "2025-01-23T00:00:00Z",
+          "return_t_plus_1": 0.0025007931638105774,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-22T00:00:00Z"
+        },
+        {
+          "close": 103926.36,
+          "funding_rate_avg_20": 2.0646476875e-05,
+          "group": "UPPER",
+          "next_close": 104850.27,
+          "next_timestamp": "2025-01-24T00:00:00Z",
+          "return_t_plus_1": 0.008890044835593303,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-23T00:00:00Z"
+        },
+        {
+          "close": 104850.27,
+          "funding_rate_avg_20": 2.0831527708333334e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 104733.56,
+          "next_timestamp": "2025-01-25T00:00:00Z",
+          "return_t_plus_1": -0.0011131111059610177,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-24T00:00:00Z"
+        },
+        {
+          "close": 104733.56,
+          "funding_rate_avg_20": 2.0831527708333334e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 102563.0,
+          "next_timestamp": "2025-01-26T00:00:00Z",
+          "return_t_plus_1": -0.020724589138381266,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-25T00:00:00Z"
+        },
+        {
+          "close": 102563.0,
+          "funding_rate_avg_20": 2.0831527708333334e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 102062.42,
+          "next_timestamp": "2025-01-27T00:00:00Z",
+          "return_t_plus_1": -0.004880707467605272,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-26T00:00:00Z"
+        },
+        {
+          "close": 102062.42,
+          "funding_rate_avg_20": 2.0831527708333334e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 101290.0,
+          "next_timestamp": "2025-01-28T00:00:00Z",
+          "return_t_plus_1": -0.007568113709237934,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-27T00:00:00Z"
+        },
+        {
+          "close": 101290.0,
+          "funding_rate_avg_20": 2.0818375000000002e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 103747.25,
+          "next_timestamp": "2025-01-29T00:00:00Z",
+          "return_t_plus_1": 0.024259551782012112,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-28T00:00:00Z"
+        },
+        {
+          "close": 103747.25,
+          "funding_rate_avg_20": 1.9856676666666666e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 104742.64,
+          "next_timestamp": "2025-01-30T00:00:00Z",
+          "return_t_plus_1": 0.009594374790657056,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-29T00:00:00Z"
+        },
+        {
+          "close": 104742.64,
+          "funding_rate_avg_20": 1.88555025e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 102411.26,
+          "next_timestamp": "2025-01-31T00:00:00Z",
+          "return_t_plus_1": -0.022258174894197902,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-30T00:00:00Z"
+        },
+        {
+          "close": 102411.26,
+          "funding_rate_avg_20": 1.853245375e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 100623.85,
+          "next_timestamp": "2025-02-01T00:00:00Z",
+          "return_t_plus_1": -0.017453256604791245,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-01-31T00:00:00Z"
+        },
+        {
+          "close": 100623.85,
+          "funding_rate_avg_20": 1.8523807291666667e-05,
+          "group": "UPPER",
+          "next_close": 97676.52,
+          "next_timestamp": "2025-02-02T00:00:00Z",
+          "return_t_plus_1": -0.029290570774225033,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-01T00:00:00Z"
+        },
+        {
+          "close": 97676.52,
+          "funding_rate_avg_20": 1.8866707708333334e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 101460.2,
+          "next_timestamp": "2025-02-03T00:00:00Z",
+          "return_t_plus_1": 0.03873684279497258,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-02T00:00:00Z"
+        },
+        {
+          "close": 101460.2,
+          "funding_rate_avg_20": 1.8691945208333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 97795.05,
+          "next_timestamp": "2025-02-04T00:00:00Z",
+          "return_t_plus_1": -0.03612401710227253,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-03T00:00:00Z"
+        },
+        {
+          "close": 97795.05,
+          "funding_rate_avg_20": 1.866907229166667e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 96638.33,
+          "next_timestamp": "2025-02-05T00:00:00Z",
+          "return_t_plus_1": -0.01182800151950436,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-04T00:00:00Z"
+        },
+        {
+          "close": 96638.33,
+          "funding_rate_avg_20": 1.891170770833333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 96564.62,
+          "next_timestamp": "2025-02-06T00:00:00Z",
+          "return_t_plus_1": -0.000762740829648112,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-05T00:00:00Z"
+        },
+        {
+          "close": 96564.62,
+          "funding_rate_avg_20": 1.923900875e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 96537.08,
+          "next_timestamp": "2025-02-07T00:00:00Z",
+          "return_t_plus_1": -0.0002851976220690222,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-06T00:00:00Z"
+        },
+        {
+          "close": 96537.08,
+          "funding_rate_avg_20": 1.9262229166666668e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 96476.25,
+          "next_timestamp": "2025-02-08T00:00:00Z",
+          "return_t_plus_1": -0.000630120571287196,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-07T00:00:00Z"
+        },
+        {
+          "close": 96476.25,
+          "funding_rate_avg_20": 1.9074432916666668e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 96475.82,
+          "next_timestamp": "2025-02-09T00:00:00Z",
+          "return_t_plus_1": -4.457055492901318e-06,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-08T00:00:00Z"
+        },
+        {
+          "close": 96475.82,
+          "funding_rate_avg_20": 1.9059991875e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 97444.41,
+          "next_timestamp": "2025-02-10T00:00:00Z",
+          "return_t_plus_1": 0.010039717724088737,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-09T00:00:00Z"
+        },
+        {
+          "close": 97444.41,
+          "funding_rate_avg_20": 1.7855134583333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 95774.08,
+          "next_timestamp": "2025-02-11T00:00:00Z",
+          "return_t_plus_1": -0.017141362957608375,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-10T00:00:00Z"
+        },
+        {
+          "close": 95774.08,
+          "funding_rate_avg_20": 1.420159125e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 97862.53,
+          "next_timestamp": "2025-02-12T00:00:00Z",
+          "return_t_plus_1": 0.02180600429677848,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-11T00:00:00Z"
+        },
+        {
+          "close": 97862.53,
+          "funding_rate_avg_20": 1.3178024583333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 96625.29,
+          "next_timestamp": "2025-02-13T00:00:00Z",
+          "return_t_plus_1": -0.01264263247639319,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-12T00:00:00Z"
+        },
+        {
+          "close": 96625.29,
+          "funding_rate_avg_20": 1.2768908750000001e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 97509.03,
+          "next_timestamp": "2025-02-14T00:00:00Z",
+          "return_t_plus_1": 0.00914605275699576,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-13T00:00:00Z"
+        },
+        {
+          "close": 97509.03,
+          "funding_rate_avg_20": 1.2768908750000001e-05,
+          "group": "UPPER",
+          "next_close": 97596.94,
+          "next_timestamp": "2025-02-15T00:00:00Z",
+          "return_t_plus_1": 0.0009015575275439502,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-14T00:00:00Z"
+        },
+        {
+          "close": 97596.94,
+          "funding_rate_avg_20": 1.2784925416666666e-05,
+          "group": "UPPER",
+          "next_close": 96119.88,
+          "next_timestamp": "2025-02-16T00:00:00Z",
+          "return_t_plus_1": -0.015134285972490558,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-15T00:00:00Z"
+        },
+        {
+          "close": 96119.88,
+          "funding_rate_avg_20": 1.2881895208333334e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 95781.8,
+          "next_timestamp": "2025-02-17T00:00:00Z",
+          "return_t_plus_1": -0.003517274470172027,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-16T00:00:00Z"
+        },
+        {
+          "close": 95781.8,
+          "funding_rate_avg_20": 1.2881895208333334e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 95607.4,
+          "next_timestamp": "2025-02-18T00:00:00Z",
+          "return_t_plus_1": -0.0018208052051643664,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-17T00:00:00Z"
+        },
+        {
+          "close": 95607.4,
+          "funding_rate_avg_20": 1.2973420000000002e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 96632.03,
+          "next_timestamp": "2025-02-19T00:00:00Z",
+          "return_t_plus_1": 0.010717057466263169,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-18T00:00:00Z"
+        },
+        {
+          "close": 96632.03,
+          "funding_rate_avg_20": 1.2979088958333334e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 98347.2,
+          "next_timestamp": "2025-02-20T00:00:00Z",
+          "return_t_plus_1": 0.017749497759697253,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-19T00:00:00Z"
+        },
+        {
+          "close": 98347.2,
+          "funding_rate_avg_20": 1.319505416666667e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 96157.03,
+          "next_timestamp": "2025-02-21T00:00:00Z",
+          "return_t_plus_1": -0.02226977483853121,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-20T00:00:00Z"
+        },
+        {
+          "close": 96157.03,
+          "funding_rate_avg_20": 1.3214702291666669e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 96582.12,
+          "next_timestamp": "2025-02-22T00:00:00Z",
+          "return_t_plus_1": 0.004420789618814203,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-21T00:00:00Z"
+        },
+        {
+          "close": 96582.12,
+          "funding_rate_avg_20": 1.2726357291666667e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 96265.98,
+          "next_timestamp": "2025-02-23T00:00:00Z",
+          "return_t_plus_1": -0.0032732766686007775,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-22T00:00:00Z"
+        },
+        {
+          "close": 96265.98,
+          "funding_rate_avg_20": 1.2697598125000003e-05,
+          "group": "UPPER",
+          "next_close": 91510.82,
+          "next_timestamp": "2025-02-24T00:00:00Z",
+          "return_t_plus_1": -0.04939605871149899,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-23T00:00:00Z"
+        },
+        {
+          "close": 91510.82,
+          "funding_rate_avg_20": 1.3272812708333334e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 88583.74,
+          "next_timestamp": "2025-02-25T00:00:00Z",
+          "return_t_plus_1": -0.031986162947725716,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-24T00:00:00Z"
+        },
+        {
+          "close": 88583.74,
+          "funding_rate_avg_20": 1.2454008541666668e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 84111.78,
+          "next_timestamp": "2025-02-26T00:00:00Z",
+          "return_t_plus_1": -0.050482853851056664,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-25T00:00:00Z"
+        },
+        {
+          "close": 84111.78,
+          "funding_rate_avg_20": 1.2250062708333334e-05,
+          "group": "UPPER",
+          "next_close": 84625.19,
+          "next_timestamp": "2025-02-27T00:00:00Z",
+          "return_t_plus_1": 0.0061039012609174215,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-26T00:00:00Z"
+        },
+        {
+          "close": 84625.19,
+          "funding_rate_avg_20": 1.2271859375e-05,
+          "group": "UPPER",
+          "next_close": 84297.73,
+          "next_timestamp": "2025-02-28T00:00:00Z",
+          "return_t_plus_1": -0.0038695334096148226,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-27T00:00:00Z"
+        },
+        {
+          "close": 84297.73,
+          "funding_rate_avg_20": 1.2271859375e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 86018.76,
+          "next_timestamp": "2025-03-01T00:00:00Z",
+          "return_t_plus_1": 0.020416089496122947,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-02-28T00:00:00Z"
+        },
+        {
+          "close": 86018.76,
+          "funding_rate_avg_20": 1.2238395416666668e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 94265.48,
+          "next_timestamp": "2025-03-02T00:00:00Z",
+          "return_t_plus_1": 0.09587117972870107,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-01T00:00:00Z"
+        },
+        {
+          "close": 94265.48,
+          "funding_rate_avg_20": 1.1993851875e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 86161.1,
+          "next_timestamp": "2025-03-03T00:00:00Z",
+          "return_t_plus_1": -0.08597399599514044,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-02T00:00:00Z"
+        },
+        {
+          "close": 86161.1,
+          "funding_rate_avg_20": 1.0996262916666666e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 87249.96,
+          "next_timestamp": "2025-03-04T00:00:00Z",
+          "return_t_plus_1": 0.012637489539943259,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-03T00:00:00Z"
+        },
+        {
+          "close": 87249.96,
+          "funding_rate_avg_20": 1.0862188125e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 90603.73,
+          "next_timestamp": "2025-03-05T00:00:00Z",
+          "return_t_plus_1": 0.03843864226413385,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-04T00:00:00Z"
+        },
+        {
+          "close": 90603.73,
+          "funding_rate_avg_20": 1.0676521875000001e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 89921.85,
+          "next_timestamp": "2025-03-06T00:00:00Z",
+          "return_t_plus_1": -0.007525959472087895,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-05T00:00:00Z"
+        },
+        {
+          "close": 89921.85,
+          "funding_rate_avg_20": 9.698493125e-06,
+          "group": "UPPER",
+          "next_close": 86756.98,
+          "next_timestamp": "2025-03-07T00:00:00Z",
+          "return_t_plus_1": -0.03519578389457079,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-06T00:00:00Z"
+        },
+        {
+          "close": 86756.98,
+          "funding_rate_avg_20": 9.617975416666667e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 86206.69,
+          "next_timestamp": "2025-03-08T00:00:00Z",
+          "return_t_plus_1": -0.006342890220475517,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-07T00:00:00Z"
+        },
+        {
+          "close": 86206.69,
+          "funding_rate_avg_20": 9.344537500000001e-06,
+          "group": "UPPER",
+          "next_close": 80699.17,
+          "next_timestamp": "2025-03-09T00:00:00Z",
+          "return_t_plus_1": -0.06388738507417469,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-08T00:00:00Z"
+        },
+        {
+          "close": 80699.17,
+          "funding_rate_avg_20": 9.237872708333334e-06,
+          "group": "UPPER",
+          "next_close": 78544.71,
+          "next_timestamp": "2025-03-10T00:00:00Z",
+          "return_t_plus_1": -0.026697424521218593,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-09T00:00:00Z"
+        },
+        {
+          "close": 78544.71,
+          "funding_rate_avg_20": 9.237872708333334e-06,
+          "group": "UPPER",
+          "next_close": 82914.51,
+          "next_timestamp": "2025-03-11T00:00:00Z",
+          "return_t_plus_1": 0.05563455514699833,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-10T00:00:00Z"
+        },
+        {
+          "close": 82914.51,
+          "funding_rate_avg_20": 9.237872708333334e-06,
+          "group": "UPPER",
+          "next_close": 83659.43,
+          "next_timestamp": "2025-03-12T00:00:00Z",
+          "return_t_plus_1": 0.008984193478318803,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-11T00:00:00Z"
+        },
+        {
+          "close": 83659.43,
+          "funding_rate_avg_20": 9.243733333333334e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 81073.43,
+          "next_timestamp": "2025-03-13T00:00:00Z",
+          "return_t_plus_1": -0.030911040154110503,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-12T00:00:00Z"
+        },
+        {
+          "close": 81073.43,
+          "funding_rate_avg_20": 9.055283958333334e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 83980.49,
+          "next_timestamp": "2025-03-14T00:00:00Z",
+          "return_t_plus_1": 0.03585712359770654,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-13T00:00:00Z"
+        },
+        {
+          "close": 83980.49,
+          "funding_rate_avg_20": 8.903733958333335e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 84351.46,
+          "next_timestamp": "2025-03-15T00:00:00Z",
+          "return_t_plus_1": 0.004417335502567399,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-14T00:00:00Z"
+        },
+        {
+          "close": 84351.46,
+          "funding_rate_avg_20": 8.735299166666666e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 82562.57,
+          "next_timestamp": "2025-03-16T00:00:00Z",
+          "return_t_plus_1": -0.02120757601587453,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-15T00:00:00Z"
+        },
+        {
+          "close": 82562.57,
+          "funding_rate_avg_20": 7.847726041666666e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 84011.4,
+          "next_timestamp": "2025-03-17T00:00:00Z",
+          "return_t_plus_1": 0.01754826672667753,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-16T00:00:00Z"
+        },
+        {
+          "close": 84011.4,
+          "funding_rate_avg_20": 6.6760741666666675e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 82698.76,
+          "next_timestamp": "2025-03-18T00:00:00Z",
+          "return_t_plus_1": -0.0156245461925405,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-17T00:00:00Z"
+        },
+        {
+          "close": 82698.76,
+          "funding_rate_avg_20": 5.0251533333333335e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 86877.96,
+          "next_timestamp": "2025-03-19T00:00:00Z",
+          "return_t_plus_1": 0.050535219633281114,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-18T00:00:00Z"
+        },
+        {
+          "close": 86877.96,
+          "funding_rate_avg_20": 3.97888625e-06,
+          "group": "UPPER",
+          "next_close": 84183.42,
+          "next_timestamp": "2025-03-20T00:00:00Z",
+          "return_t_plus_1": -0.031015231020617984,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-19T00:00:00Z"
+        },
+        {
+          "close": 84183.42,
+          "funding_rate_avg_20": 3.562428541666667e-06,
+          "group": "UPPER",
+          "next_close": 84061.96,
+          "next_timestamp": "2025-03-21T00:00:00Z",
+          "return_t_plus_1": -0.0014428019199028697,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-20T00:00:00Z"
+        },
+        {
+          "close": 84061.96,
+          "funding_rate_avg_20": 3.5958925e-06,
+          "group": "UPPER",
+          "next_close": 83852.03,
+          "next_timestamp": "2025-03-22T00:00:00Z",
+          "return_t_plus_1": -0.002497324592479311,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-21T00:00:00Z"
+        },
+        {
+          "close": 83852.03,
+          "funding_rate_avg_20": 3.6376272916666667e-06,
+          "group": "UPPER",
+          "next_close": 86092.94,
+          "next_timestamp": "2025-03-23T00:00:00Z",
+          "return_t_plus_1": 0.02672457661430494,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-22T00:00:00Z"
+        },
+        {
+          "close": 86092.94,
+          "funding_rate_avg_20": 4.422868125000001e-06,
+          "group": "UPPER",
+          "next_close": 87523.62,
+          "next_timestamp": "2025-03-24T00:00:00Z",
+          "return_t_plus_1": 0.016617855076153765,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-23T00:00:00Z"
+        },
+        {
+          "close": 87523.62,
+          "funding_rate_avg_20": 4.479647916666667e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 87427.88,
+          "next_timestamp": "2025-03-25T00:00:00Z",
+          "return_t_plus_1": -0.001093876144519501,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-24T00:00:00Z"
+        },
+        {
+          "close": 87427.88,
+          "funding_rate_avg_20": 3.861525208333334e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 86926.01,
+          "next_timestamp": "2025-03-26T00:00:00Z",
+          "return_t_plus_1": -0.00574038853509895,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-25T00:00:00Z"
+        },
+        {
+          "close": 86926.01,
+          "funding_rate_avg_20": 4.395867708333334e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 87217.48,
+          "next_timestamp": "2025-03-27T00:00:00Z",
+          "return_t_plus_1": 0.0033530815460183216,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-26T00:00:00Z"
+        },
+        {
+          "close": 87217.48,
+          "funding_rate_avg_20": 3.560444583333334e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 84381.8,
+          "next_timestamp": "2025-03-28T00:00:00Z",
+          "return_t_plus_1": -0.03251274859122266,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-27T00:00:00Z"
+        },
+        {
+          "close": 84381.8,
+          "funding_rate_avg_20": 3.1387427083333333e-06,
+          "group": "UPPER",
+          "next_close": 82616.83,
+          "next_timestamp": "2025-03-29T00:00:00Z",
+          "return_t_plus_1": -0.020916477249833476,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-28T00:00:00Z"
+        },
+        {
+          "close": 82616.83,
+          "funding_rate_avg_20": 2.7848033333333334e-06,
+          "group": "UPPER",
+          "next_close": 82379.98,
+          "next_timestamp": "2025-03-30T00:00:00Z",
+          "return_t_plus_1": -0.002866849284824946,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-29T00:00:00Z"
+        },
+        {
+          "close": 82379.98,
+          "funding_rate_avg_20": 2.482100625e-06,
+          "group": "UPPER",
+          "next_close": 82534.32,
+          "next_timestamp": "2025-03-31T00:00:00Z",
+          "return_t_plus_1": 0.0018735134434362255,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-30T00:00:00Z"
+        },
+        {
+          "close": 82534.32,
+          "funding_rate_avg_20": 2.032810625e-06,
+          "group": "UPPER",
+          "next_close": 85170.37,
+          "next_timestamp": "2025-04-01T00:00:00Z",
+          "return_t_plus_1": 0.031938834656903836,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-03-31T00:00:00Z"
+        },
+        {
+          "close": 85170.37,
+          "funding_rate_avg_20": 1.7740402083333333e-06,
+          "group": "UPPER",
+          "next_close": 82490.08,
+          "next_timestamp": "2025-04-02T00:00:00Z",
+          "return_t_plus_1": -0.031469747049355234,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-01T00:00:00Z"
+        },
+        {
+          "close": 82490.08,
+          "funding_rate_avg_20": 1.6297881249999999e-06,
+          "group": "UPPER",
+          "next_close": 83174.33,
+          "next_timestamp": "2025-04-03T00:00:00Z",
+          "return_t_plus_1": 0.008294936797248909,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-02T00:00:00Z"
+        },
+        {
+          "close": 83174.33,
+          "funding_rate_avg_20": 1.4797066666666666e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 83860.16,
+          "next_timestamp": "2025-04-04T00:00:00Z",
+          "return_t_plus_1": 0.008245693112286068,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-03T00:00:00Z"
+        },
+        {
+          "close": 83860.16,
+          "funding_rate_avg_20": 1.0342256249999999e-06,
+          "group": "UPPER",
+          "next_close": 83498.25,
+          "next_timestamp": "2025-04-05T00:00:00Z",
+          "return_t_plus_1": -0.004315636888839736,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-04T00:00:00Z"
+        },
+        {
+          "close": 83498.25,
+          "funding_rate_avg_20": 9.773508333333333e-07,
+          "group": "UPPER",
+          "next_close": 78370.75,
+          "next_timestamp": "2025-04-06T00:00:00Z",
+          "return_t_plus_1": -0.061408472632659916,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-05T00:00:00Z"
+        },
+        {
+          "close": 78370.75,
+          "funding_rate_avg_20": 2.627725208333333e-06,
+          "group": "UPPER",
+          "next_close": 79140.01,
+          "next_timestamp": "2025-04-07T00:00:00Z",
+          "return_t_plus_1": 0.0098156518854291,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-06T00:00:00Z"
+        },
+        {
+          "close": 79140.01,
+          "funding_rate_avg_20": 4.367663333333333e-06,
+          "group": "UPPER",
+          "next_close": 76251.64,
+          "next_timestamp": "2025-04-08T00:00:00Z",
+          "return_t_plus_1": -0.036496962787848974,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-07T00:00:00Z"
+        },
+        {
+          "close": 76251.64,
+          "funding_rate_avg_20": 5.077255416666667e-06,
+          "group": "UPPER",
+          "next_close": 82594.75,
+          "next_timestamp": "2025-04-09T00:00:00Z",
+          "return_t_plus_1": 0.08318653867641412,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-08T00:00:00Z"
+        },
+        {
+          "close": 82594.75,
+          "funding_rate_avg_20": 5.39127375e-06,
+          "group": "UPPER",
+          "next_close": 79552.34,
+          "next_timestamp": "2025-04-10T00:00:00Z",
+          "return_t_plus_1": -0.03683539208000508,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-09T00:00:00Z"
+        },
+        {
+          "close": 79552.34,
+          "funding_rate_avg_20": 5.39127375e-06,
+          "group": "UPPER",
+          "next_close": 83380.47,
+          "next_timestamp": "2025-04-11T00:00:00Z",
+          "return_t_plus_1": 0.048120897512254235,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-10T00:00:00Z"
+        },
+        {
+          "close": 83380.47,
+          "funding_rate_avg_20": 5.799833958333334e-06,
+          "group": "UPPER",
+          "next_close": 85271.01,
+          "next_timestamp": "2025-04-12T00:00:00Z",
+          "return_t_plus_1": 0.022673654873857085,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-11T00:00:00Z"
+        },
+        {
+          "close": 85271.01,
+          "funding_rate_avg_20": 6.1230152083333335e-06,
+          "group": "UPPER",
+          "next_close": 83733.07,
+          "next_timestamp": "2025-04-13T00:00:00Z",
+          "return_t_plus_1": -0.018035906927805656,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-12T00:00:00Z"
+        },
+        {
+          "close": 83733.07,
+          "funding_rate_avg_20": 6.200310208333333e-06,
+          "group": "UPPER",
+          "next_close": 84590.36,
+          "next_timestamp": "2025-04-14T00:00:00Z",
+          "return_t_plus_1": 0.010238368185950808,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-13T00:00:00Z"
+        },
+        {
+          "close": 84590.36,
+          "funding_rate_avg_20": 7.018341875000001e-06,
+          "group": "UPPER",
+          "next_close": 83629.78,
+          "next_timestamp": "2025-04-15T00:00:00Z",
+          "return_t_plus_1": -0.011355667477949027,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-14T00:00:00Z"
+        },
+        {
+          "close": 83629.78,
+          "funding_rate_avg_20": 7.452233541666667e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 84028.72,
+          "next_timestamp": "2025-04-16T00:00:00Z",
+          "return_t_plus_1": 0.0047703102889904425,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-15T00:00:00Z"
+        },
+        {
+          "close": 84028.72,
+          "funding_rate_avg_20": 8.07896125e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 84961.97,
+          "next_timestamp": "2025-04-17T00:00:00Z",
+          "return_t_plus_1": 0.011106321743327818,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-16T00:00:00Z"
+        },
+        {
+          "close": 84961.97,
+          "funding_rate_avg_20": 8.197608541666668e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 84466.47,
+          "next_timestamp": "2025-04-18T00:00:00Z",
+          "return_t_plus_1": -0.0058320210795488325,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-17T00:00:00Z"
+        },
+        {
+          "close": 84466.47,
+          "funding_rate_avg_20": 8.409579791666667e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 85074.99,
+          "next_timestamp": "2025-04-19T00:00:00Z",
+          "return_t_plus_1": 0.007204278810278186,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-18T00:00:00Z"
+        },
+        {
+          "close": 85074.99,
+          "funding_rate_avg_20": 8.084772708333334e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 85177.34,
+          "next_timestamp": "2025-04-20T00:00:00Z",
+          "return_t_plus_1": 0.0012030562683580381,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-19T00:00:00Z"
+        },
+        {
+          "close": 85177.34,
+          "funding_rate_avg_20": 7.584724166666667e-06,
+          "group": "UPPER",
+          "next_close": 87522.07,
+          "next_timestamp": "2025-04-21T00:00:00Z",
+          "return_t_plus_1": 0.027527626479061373,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-20T00:00:00Z"
+        },
+        {
+          "close": 87522.07,
+          "funding_rate_avg_20": 7.655990208333334e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 93489.1,
+          "next_timestamp": "2025-04-22T00:00:00Z",
+          "return_t_plus_1": 0.0681774322750821,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-21T00:00:00Z"
+        },
+        {
+          "close": 93489.1,
+          "funding_rate_avg_20": 7.232807291666667e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 93740.92,
+          "next_timestamp": "2025-04-23T00:00:00Z",
+          "return_t_plus_1": 0.002693576042554602,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-22T00:00:00Z"
+        },
+        {
+          "close": 93740.92,
+          "funding_rate_avg_20": 7.0821993750000005e-06,
+          "group": "UPPER",
+          "next_close": 94021.96,
+          "next_timestamp": "2025-04-24T00:00:00Z",
+          "return_t_plus_1": 0.0029980503711719564,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-23T00:00:00Z"
+        },
+        {
+          "close": 94021.96,
+          "funding_rate_avg_20": 7.4597264583333345e-06,
+          "group": "UPPER",
+          "next_close": 94708.79,
+          "next_timestamp": "2025-04-25T00:00:00Z",
+          "return_t_plus_1": 0.007304995556357108,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-24T00:00:00Z"
+        },
+        {
+          "close": 94708.79,
+          "funding_rate_avg_20": 7.664511875000001e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 94666.64,
+          "next_timestamp": "2025-04-26T00:00:00Z",
+          "return_t_plus_1": -0.0004450484479845418,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-25T00:00:00Z"
+        },
+        {
+          "close": 94666.64,
+          "funding_rate_avg_20": 7.215085625e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 93780.57,
+          "next_timestamp": "2025-04-27T00:00:00Z",
+          "return_t_plus_1": -0.009359897002787831,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-26T00:00:00Z"
+        },
+        {
+          "close": 93780.57,
+          "funding_rate_avg_20": 6.6347037500000005e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 95042.57,
+          "next_timestamp": "2025-04-28T00:00:00Z",
+          "return_t_plus_1": 0.013456945292612321,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-27T00:00:00Z"
+        },
+        {
+          "close": 95042.57,
+          "funding_rate_avg_20": 5.5809860416666675e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 94271.09,
+          "next_timestamp": "2025-04-29T00:00:00Z",
+          "return_t_plus_1": -0.00811720474309574,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-28T00:00:00Z"
+        },
+        {
+          "close": 94271.09,
+          "funding_rate_avg_20": 4.985680416666667e-06,
+          "group": "UPPER",
+          "next_close": 94182.54,
+          "next_timestamp": "2025-04-30T00:00:00Z",
+          "return_t_plus_1": -0.0009393123597064568,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-29T00:00:00Z"
+        },
+        {
+          "close": 94182.54,
+          "funding_rate_avg_20": 4.7396875000000005e-06,
+          "group": "UPPER",
+          "next_close": 96524.98,
+          "next_timestamp": "2025-05-01T00:00:00Z",
+          "return_t_plus_1": 0.024871276565698874,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-04-30T00:00:00Z"
+        },
+        {
+          "close": 96524.98,
+          "funding_rate_avg_20": 4.554761875000001e-06,
+          "group": "UPPER",
+          "next_close": 96929.81,
+          "next_timestamp": "2025-05-02T00:00:00Z",
+          "return_t_plus_1": 0.004194043863049668,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-01T00:00:00Z"
+        },
+        {
+          "close": 96929.81,
+          "funding_rate_avg_20": 4.554761875000001e-06,
+          "group": "UPPER",
+          "next_close": 95861.33,
+          "next_timestamp": "2025-05-03T00:00:00Z",
+          "return_t_plus_1": -0.011023234235164603,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-02T00:00:00Z"
+        },
+        {
+          "close": 95861.33,
+          "funding_rate_avg_20": 4.554761875000001e-06,
+          "group": "UPPER",
+          "next_close": 94272.55,
+          "next_timestamp": "2025-05-04T00:00:00Z",
+          "return_t_plus_1": -0.016573732077366343,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-03T00:00:00Z"
+        },
+        {
+          "close": 94272.55,
+          "funding_rate_avg_20": 4.529320833333333e-06,
+          "group": "UPPER",
+          "next_close": 94733.99,
+          "next_timestamp": "2025-05-05T00:00:00Z",
+          "return_t_plus_1": 0.004894744016153085,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-04T00:00:00Z"
+        },
+        {
+          "close": 94733.99,
+          "funding_rate_avg_20": 4.539115416666667e-06,
+          "group": "UPPER",
+          "next_close": 96839.17,
+          "next_timestamp": "2025-05-06T00:00:00Z",
+          "return_t_plus_1": 0.022222013450504896,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-05T00:00:00Z"
+        },
+        {
+          "close": 96839.17,
+          "funding_rate_avg_20": 4.454926458333333e-06,
+          "group": "UPPER",
+          "next_close": 97058.32,
+          "next_timestamp": "2025-05-07T00:00:00Z",
+          "return_t_plus_1": 0.002263030548485867,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-06T00:00:00Z"
+        },
+        {
+          "close": 97058.32,
+          "funding_rate_avg_20": 4.888784166666667e-06,
+          "group": "UPPER",
+          "next_close": 103253.49,
+          "next_timestamp": "2025-05-08T00:00:00Z",
+          "return_t_plus_1": 0.06382935538138312,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-07T00:00:00Z"
+        },
+        {
+          "close": 103253.49,
+          "funding_rate_avg_20": 4.837876250000001e-06,
+          "group": "UPPER",
+          "next_close": 102986.96,
+          "next_timestamp": "2025-05-09T00:00:00Z",
+          "return_t_plus_1": -0.0025813171060852236,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-08T00:00:00Z"
+        },
+        {
+          "close": 102986.96,
+          "funding_rate_avg_20": 5.295454583333334e-06,
+          "group": "UPPER",
+          "next_close": 104821.19,
+          "next_timestamp": "2025-05-10T00:00:00Z",
+          "return_t_plus_1": 0.017810313072645245,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-09T00:00:00Z"
+        },
+        {
+          "close": 104821.19,
+          "funding_rate_avg_20": 6.791298958333334e-06,
+          "group": "UPPER",
+          "next_close": 104137.62,
+          "next_timestamp": "2025-05-11T00:00:00Z",
+          "return_t_plus_1": -0.006521295932625848,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-10T00:00:00Z"
+        },
+        {
+          "close": 104137.62,
+          "funding_rate_avg_20": 7.396890833333333e-06,
+          "group": "UPPER",
+          "next_close": 102800.21,
+          "next_timestamp": "2025-05-12T00:00:00Z",
+          "return_t_plus_1": -0.012842717165996165,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-11T00:00:00Z"
+        },
+        {
+          "close": 102800.21,
+          "funding_rate_avg_20": 8.201380625e-06,
+          "group": "UPPER",
+          "next_close": 104131.06,
+          "next_timestamp": "2025-05-13T00:00:00Z",
+          "return_t_plus_1": 0.012945985227072798,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-12T00:00:00Z"
+        },
+        {
+          "close": 104131.06,
+          "funding_rate_avg_20": 1.0794755833333333e-05,
+          "group": "UPPER",
+          "next_close": 103545.38,
+          "next_timestamp": "2025-05-14T00:00:00Z",
+          "return_t_plus_1": -0.005624450572192297,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-13T00:00:00Z"
+        },
+        {
+          "close": 103545.38,
+          "funding_rate_avg_20": 1.2826285833333333e-05,
+          "group": "UPPER",
+          "next_close": 103786.43,
+          "next_timestamp": "2025-05-15T00:00:00Z",
+          "return_t_plus_1": 0.002327964801519755,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-14T00:00:00Z"
+        },
+        {
+          "close": 103786.43,
+          "funding_rate_avg_20": 1.3061280625000001e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 103500.03,
+          "next_timestamp": "2025-05-16T00:00:00Z",
+          "return_t_plus_1": -0.002759512972938749,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-15T00:00:00Z"
+        },
+        {
+          "close": 103500.03,
+          "funding_rate_avg_20": 1.3614101875e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 103161.07,
+          "next_timestamp": "2025-05-17T00:00:00Z",
+          "return_t_plus_1": -0.0032749748961424796,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-16T00:00:00Z"
+        },
+        {
+          "close": 103161.07,
+          "funding_rate_avg_20": 1.4193639375000001e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 106473.46,
+          "next_timestamp": "2025-05-18T00:00:00Z",
+          "return_t_plus_1": 0.03210891472917066,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-17T00:00:00Z"
+        },
+        {
+          "close": 106473.46,
+          "funding_rate_avg_20": 1.5446226041666668e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 105616.18,
+          "next_timestamp": "2025-05-19T00:00:00Z",
+          "return_t_plus_1": -0.008051583934625683,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-18T00:00:00Z"
+        },
+        {
+          "close": 105616.18,
+          "funding_rate_avg_20": 1.6143971041666666e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 106883.24,
+          "next_timestamp": "2025-05-20T00:00:00Z",
+          "return_t_plus_1": 0.011996836090834018,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-19T00:00:00Z"
+        },
+        {
+          "close": 106883.24,
+          "funding_rate_avg_20": 1.6411986458333336e-05,
+          "group": "UPPER",
+          "next_close": 109699.54,
+          "next_timestamp": "2025-05-21T00:00:00Z",
+          "return_t_plus_1": 0.026349313512576744,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-20T00:00:00Z"
+        },
+        {
+          "close": 109699.54,
+          "funding_rate_avg_20": 1.7357571666666665e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 111722.53,
+          "next_timestamp": "2025-05-22T00:00:00Z",
+          "return_t_plus_1": 0.018441189452572004,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-21T00:00:00Z"
+        },
+        {
+          "close": 111722.53,
+          "funding_rate_avg_20": 1.7256387500000002e-05,
+          "group": "UPPER",
+          "next_close": 107329.61,
+          "next_timestamp": "2025-05-23T00:00:00Z",
+          "return_t_plus_1": -0.039319911570208754,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-22T00:00:00Z"
+        },
+        {
+          "close": 107329.61,
+          "funding_rate_avg_20": 1.7654603541666667e-05,
+          "group": "UPPER",
+          "next_close": 107794.01,
+          "next_timestamp": "2025-05-24T00:00:00Z",
+          "return_t_plus_1": 0.004326858170825343,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-23T00:00:00Z"
+        },
+        {
+          "close": 107794.01,
+          "funding_rate_avg_20": 1.9981230208333333e-05,
+          "group": "UPPER",
+          "next_close": 109048.68,
+          "next_timestamp": "2025-05-25T00:00:00Z",
+          "return_t_plus_1": 0.01163951503427696,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-24T00:00:00Z"
+        },
+        {
+          "close": 109048.68,
+          "funding_rate_avg_20": 2.2260185e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 109464.32,
+          "next_timestamp": "2025-05-26T00:00:00Z",
+          "return_t_plus_1": 0.0038115087683776583,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-25T00:00:00Z"
+        },
+        {
+          "close": 109464.32,
+          "funding_rate_avg_20": 2.272298625e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 108978.46,
+          "next_timestamp": "2025-05-27T00:00:00Z",
+          "return_t_plus_1": -0.004438523895274771,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-26T00:00:00Z"
+        },
+        {
+          "close": 108978.46,
+          "funding_rate_avg_20": 2.1790485416666667e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 107819.29,
+          "next_timestamp": "2025-05-28T00:00:00Z",
+          "return_t_plus_1": -0.01063668912186877,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-27T00:00:00Z"
+        },
+        {
+          "close": 107819.29,
+          "funding_rate_avg_20": 2.2104553958333334e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 105572.58,
+          "next_timestamp": "2025-05-29T00:00:00Z",
+          "return_t_plus_1": -0.020837736920730876,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-28T00:00:00Z"
+        },
+        {
+          "close": 105572.58,
+          "funding_rate_avg_20": 2.2400889583333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 104033.26,
+          "next_timestamp": "2025-05-30T00:00:00Z",
+          "return_t_plus_1": -0.014580679945493502,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-29T00:00:00Z"
+        },
+        {
+          "close": 104033.26,
+          "funding_rate_avg_20": 2.1856825833333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 104645.87,
+          "next_timestamp": "2025-05-31T00:00:00Z",
+          "return_t_plus_1": 0.005888597550437247,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-30T00:00:00Z"
+        },
+        {
+          "close": 104645.87,
+          "funding_rate_avg_20": 2.1796046875000002e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 105697.94,
+          "next_timestamp": "2025-06-01T00:00:00Z",
+          "return_t_plus_1": 0.01005362180084135,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-05-31T00:00:00Z"
+        },
+        {
+          "close": 105697.94,
+          "funding_rate_avg_20": 2.1665924166666666e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 105904.94,
+          "next_timestamp": "2025-06-02T00:00:00Z",
+          "return_t_plus_1": 0.001958410920780418,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-01T00:00:00Z"
+        },
+        {
+          "close": 105904.94,
+          "funding_rate_avg_20": 1.9665060833333334e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 105447.82,
+          "next_timestamp": "2025-06-03T00:00:00Z",
+          "return_t_plus_1": -0.004316323676685885,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-02T00:00:00Z"
+        },
+        {
+          "close": 105447.82,
+          "funding_rate_avg_20": 1.7899966458333334e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 104753.38,
+          "next_timestamp": "2025-06-04T00:00:00Z",
+          "return_t_plus_1": -0.006585626900584618,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-03T00:00:00Z"
+        },
+        {
+          "close": 104753.38,
+          "funding_rate_avg_20": 1.78354275e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 101570.2,
+          "next_timestamp": "2025-06-05T00:00:00Z",
+          "return_t_plus_1": -0.030387372703391646,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-04T00:00:00Z"
+        },
+        {
+          "close": 101570.2,
+          "funding_rate_avg_20": 1.7685082083333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 104397.99,
+          "next_timestamp": "2025-06-06T00:00:00Z",
+          "return_t_plus_1": 0.027840744627853464,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-05T00:00:00Z"
+        },
+        {
+          "close": 104397.99,
+          "funding_rate_avg_20": 1.7553412291666668e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 105619.02,
+          "next_timestamp": "2025-06-07T00:00:00Z",
+          "return_t_plus_1": 0.011695914835141874,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-06T00:00:00Z"
+        },
+        {
+          "close": 105619.02,
+          "funding_rate_avg_20": 1.762612625e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 105784.4,
+          "next_timestamp": "2025-06-08T00:00:00Z",
+          "return_t_plus_1": 0.0015658164599519075,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-07T00:00:00Z"
+        },
+        {
+          "close": 105784.4,
+          "funding_rate_avg_20": 1.72346325e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 110301.15,
+          "next_timestamp": "2025-06-09T00:00:00Z",
+          "return_t_plus_1": 0.042697694556097066,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-08T00:00:00Z"
+        },
+        {
+          "close": 110301.15,
+          "funding_rate_avg_20": 1.69383425e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 110300.24,
+          "next_timestamp": "2025-06-10T00:00:00Z",
+          "return_t_plus_1": -8.25014063754459e-06,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-09T00:00:00Z"
+        },
+        {
+          "close": 110300.24,
+          "funding_rate_avg_20": 1.5691265208333335e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 108669.37,
+          "next_timestamp": "2025-06-11T00:00:00Z",
+          "return_t_plus_1": -0.01478573392043403,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-10T00:00:00Z"
+        },
+        {
+          "close": 108669.37,
+          "funding_rate_avg_20": 1.56139575e-05,
+          "group": "UPPER",
+          "next_close": 105721.05,
+          "next_timestamp": "2025-06-12T00:00:00Z",
+          "return_t_plus_1": -0.027131104192469224,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-11T00:00:00Z"
+        },
+        {
+          "close": 105721.05,
+          "funding_rate_avg_20": 1.5885096666666667e-05,
+          "group": "UPPER",
+          "next_close": 106118.7,
+          "next_timestamp": "2025-06-13T00:00:00Z",
+          "return_t_plus_1": 0.0037613133808260812,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-12T00:00:00Z"
+        },
+        {
+          "close": 106118.7,
+          "funding_rate_avg_20": 1.4002116666666668e-05,
+          "group": "UPPER",
+          "next_close": 105465.42,
+          "next_timestamp": "2025-06-14T00:00:00Z",
+          "return_t_plus_1": -0.006156125169268001,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-13T00:00:00Z"
+        },
+        {
+          "close": 105465.42,
+          "funding_rate_avg_20": 1.1808796041666667e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 105599.25,
+          "next_timestamp": "2025-06-15T00:00:00Z",
+          "return_t_plus_1": 0.0012689467315447622,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-14T00:00:00Z"
+        },
+        {
+          "close": 105599.25,
+          "funding_rate_avg_20": 1.1462100208333334e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 106853.38,
+          "next_timestamp": "2025-06-16T00:00:00Z",
+          "return_t_plus_1": 0.011876315409437233,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-15T00:00:00Z"
+        },
+        {
+          "close": 106853.38,
+          "funding_rate_avg_20": 1.1833030833333333e-05,
+          "group": "UPPER",
+          "next_close": 104590.44,
+          "next_timestamp": "2025-06-17T00:00:00Z",
+          "return_t_plus_1": -0.02117799174906776,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-16T00:00:00Z"
+        },
+        {
+          "close": 104590.44,
+          "funding_rate_avg_20": 1.1798975000000002e-05,
+          "group": "UPPER",
+          "next_close": 104915.6,
+          "next_timestamp": "2025-06-18T00:00:00Z",
+          "return_t_plus_1": 0.0031088883458183503,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-17T00:00:00Z"
+        },
+        {
+          "close": 104915.6,
+          "funding_rate_avg_20": 1.1758835625e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 104671.9,
+          "next_timestamp": "2025-06-19T00:00:00Z",
+          "return_t_plus_1": -0.002322819485376937,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-18T00:00:00Z"
+        },
+        {
+          "close": 104671.9,
+          "funding_rate_avg_20": 1.1690450625e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 103317.8,
+          "next_timestamp": "2025-06-20T00:00:00Z",
+          "return_t_plus_1": -0.01293661431578097,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-19T00:00:00Z"
+        },
+        {
+          "close": 103317.8,
+          "funding_rate_avg_20": 1.1030162083333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 102160.03,
+          "next_timestamp": "2025-06-21T00:00:00Z",
+          "return_t_plus_1": -0.011205910307807598,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-20T00:00:00Z"
+        },
+        {
+          "close": 102160.03,
+          "funding_rate_avg_20": 1.0790337083333333e-05,
+          "group": "UPPER",
+          "next_close": 100996.87,
+          "next_timestamp": "2025-06-22T00:00:00Z",
+          "return_t_plus_1": -0.011385666194498989,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-21T00:00:00Z"
+        },
+        {
+          "close": 100996.87,
+          "funding_rate_avg_20": 1.0790337083333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 105419.39,
+          "next_timestamp": "2025-06-23T00:00:00Z",
+          "return_t_plus_1": 0.043788683748318125,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-22T00:00:00Z"
+        },
+        {
+          "close": 105419.39,
+          "funding_rate_avg_20": 1.0559805e-05,
+          "group": "UPPER",
+          "next_close": 106141.0,
+          "next_timestamp": "2025-06-24T00:00:00Z",
+          "return_t_plus_1": 0.006845135415790127,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-23T00:00:00Z"
+        },
+        {
+          "close": 106141.0,
+          "funding_rate_avg_20": 1.0500426875000001e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 107400.22,
+          "next_timestamp": "2025-06-25T00:00:00Z",
+          "return_t_plus_1": 0.01186365306526227,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-24T00:00:00Z"
+        },
+        {
+          "close": 107400.22,
+          "funding_rate_avg_20": 1.0051301250000002e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 107029.64,
+          "next_timestamp": "2025-06-26T00:00:00Z",
+          "return_t_plus_1": -0.0034504584813699335,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-25T00:00:00Z"
+        },
+        {
+          "close": 107029.64,
+          "funding_rate_avg_20": 9.863742708333333e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 107113.38,
+          "next_timestamp": "2025-06-27T00:00:00Z",
+          "return_t_plus_1": 0.0007824000902927342,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-26T00:00:00Z"
+        },
+        {
+          "close": 107113.38,
+          "funding_rate_avg_20": 9.726973958333334e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 107352.2,
+          "next_timestamp": "2025-06-28T00:00:00Z",
+          "return_t_plus_1": 0.002229600074239002,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-27T00:00:00Z"
+        },
+        {
+          "close": 107352.2,
+          "funding_rate_avg_20": 9.807721875000002e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 108386.44,
+          "next_timestamp": "2025-06-29T00:00:00Z",
+          "return_t_plus_1": 0.009634082953120737,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-28T00:00:00Z"
+        },
+        {
+          "close": 108386.44,
+          "funding_rate_avg_20": 9.429052500000001e-06,
+          "group": "UPPER",
+          "next_close": 107173.21,
+          "next_timestamp": "2025-06-30T00:00:00Z",
+          "return_t_plus_1": -0.011193558899065148,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-29T00:00:00Z"
+        },
+        {
+          "close": 107173.21,
+          "funding_rate_avg_20": 9.6578825e-06,
+          "group": "UPPER",
+          "next_close": 105711.78,
+          "next_timestamp": "2025-07-01T00:00:00Z",
+          "return_t_plus_1": -0.01363615030286025,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-06-30T00:00:00Z"
+        },
+        {
+          "close": 105711.78,
+          "funding_rate_avg_20": 9.752107916666667e-06,
+          "group": "UPPER",
+          "next_close": 108888.32,
+          "next_timestamp": "2025-07-02T00:00:00Z",
+          "return_t_plus_1": 0.030049063595372294,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-01T00:00:00Z"
+        },
+        {
+          "close": 108888.32,
+          "funding_rate_avg_20": 9.035322916666667e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 109628.83,
+          "next_timestamp": "2025-07-03T00:00:00Z",
+          "return_t_plus_1": 0.006800637570677948,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-02T00:00:00Z"
+        },
+        {
+          "close": 109628.83,
+          "funding_rate_avg_20": 8.319995208333335e-06,
+          "group": "UPPER",
+          "next_close": 108028.6,
+          "next_timestamp": "2025-07-04T00:00:00Z",
+          "return_t_plus_1": -0.014596799035436203,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-03T00:00:00Z"
+        },
+        {
+          "close": 108028.6,
+          "funding_rate_avg_20": 8.07707125e-06,
+          "group": "UPPER",
+          "next_close": 108246.65,
+          "next_timestamp": "2025-07-05T00:00:00Z",
+          "return_t_plus_1": 0.00201844696682163,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-04T00:00:00Z"
+        },
+        {
+          "close": 108246.65,
+          "funding_rate_avg_20": 8.31053e-06,
+          "group": "UPPER",
+          "next_close": 109217.98,
+          "next_timestamp": "2025-07-06T00:00:00Z",
+          "return_t_plus_1": 0.00897330309991129,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-05T00:00:00Z"
+        },
+        {
+          "close": 109217.98,
+          "funding_rate_avg_20": 8.795061666666668e-06,
+          "group": "UPPER",
+          "next_close": 108269.84,
+          "next_timestamp": "2025-07-07T00:00:00Z",
+          "return_t_plus_1": -0.008681171360246709,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-06T00:00:00Z"
+        },
+        {
+          "close": 108269.84,
+          "funding_rate_avg_20": 8.814589791666668e-06,
+          "group": "UPPER",
+          "next_close": 108958.04,
+          "next_timestamp": "2025-07-08T00:00:00Z",
+          "return_t_plus_1": 0.006356340787055714,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-07T00:00:00Z"
+        },
+        {
+          "close": 108958.04,
+          "funding_rate_avg_20": 8.728325e-06,
+          "group": "UPPER",
+          "next_close": 111282.85,
+          "next_timestamp": "2025-07-09T00:00:00Z",
+          "return_t_plus_1": 0.02133674577846678,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-08T00:00:00Z"
+        },
+        {
+          "close": 111282.85,
+          "funding_rate_avg_20": 8.794267916666668e-06,
+          "group": "UPPER",
+          "next_close": 116031.3,
+          "next_timestamp": "2025-07-10T00:00:00Z",
+          "return_t_plus_1": 0.042670096964626536,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-09T00:00:00Z"
+        },
+        {
+          "close": 116031.3,
+          "funding_rate_avg_20": 9.097424375e-06,
+          "group": "UPPER",
+          "next_close": 117582.16,
+          "next_timestamp": "2025-07-11T00:00:00Z",
+          "return_t_plus_1": 0.013365876276487443,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-10T00:00:00Z"
+        },
+        {
+          "close": 117582.16,
+          "funding_rate_avg_20": 9.418766666666667e-06,
+          "group": "UPPER",
+          "next_close": 117472.65,
+          "next_timestamp": "2025-07-12T00:00:00Z",
+          "return_t_plus_1": -0.0009313487692351741,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-11T00:00:00Z"
+        },
+        {
+          "close": 117472.65,
+          "funding_rate_avg_20": 9.418766666666667e-06,
+          "group": "UPPER",
+          "next_close": 119130.81,
+          "next_timestamp": "2025-07-13T00:00:00Z",
+          "return_t_plus_1": 0.014115285557957602,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-12T00:00:00Z"
+        },
+        {
+          "close": 119130.81,
+          "funding_rate_avg_20": 1.0680554791666667e-05,
+          "group": "UPPER",
+          "next_close": 119863.71,
+          "next_timestamp": "2025-07-14T00:00:00Z",
+          "return_t_plus_1": 0.0061520609152243555,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-13T00:00:00Z"
+        },
+        {
+          "close": 119863.71,
+          "funding_rate_avg_20": 1.1160772708333333e-05,
+          "group": "UPPER",
+          "next_close": 117781.64,
+          "next_timestamp": "2025-07-15T00:00:00Z",
+          "return_t_plus_1": -0.017370311664806737,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-14T00:00:00Z"
+        },
+        {
+          "close": 117781.64,
+          "funding_rate_avg_20": 1.2198678958333333e-05,
+          "group": "UPPER",
+          "next_close": 118681.68,
+          "next_timestamp": "2025-07-16T00:00:00Z",
+          "return_t_plus_1": 0.007641598469846356,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-15T00:00:00Z"
+        },
+        {
+          "close": 118681.68,
+          "funding_rate_avg_20": 1.4549352916666666e-05,
+          "group": "UPPER",
+          "next_close": 119273.69,
+          "next_timestamp": "2025-07-17T00:00:00Z",
+          "return_t_plus_1": 0.004988217221057356,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-16T00:00:00Z"
+        },
+        {
+          "close": 119273.69,
+          "funding_rate_avg_20": 1.6422832708333334e-05,
+          "group": "UPPER",
+          "next_close": 118023.05,
+          "next_timestamp": "2025-07-18T00:00:00Z",
+          "return_t_plus_1": -0.010485464145529533,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-17T00:00:00Z"
+        },
+        {
+          "close": 118023.05,
+          "funding_rate_avg_20": 1.8783622291666665e-05,
+          "group": "UPPER",
+          "next_close": 117914.17,
+          "next_timestamp": "2025-07-19T00:00:00Z",
+          "return_t_plus_1": -0.0009225316580109277,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-18T00:00:00Z"
+        },
+        {
+          "close": 117914.17,
+          "funding_rate_avg_20": 2.02961875e-05,
+          "group": "UPPER",
+          "next_close": 117312.7,
+          "next_timestamp": "2025-07-20T00:00:00Z",
+          "return_t_plus_1": -0.005100913656094108,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-19T00:00:00Z"
+        },
+        {
+          "close": 117312.7,
+          "funding_rate_avg_20": 2.1212947083333334e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 117428.79,
+          "next_timestamp": "2025-07-21T00:00:00Z",
+          "return_t_plus_1": 0.0009895774285306747,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-20T00:00:00Z"
+        },
+        {
+          "close": 117428.79,
+          "funding_rate_avg_20": 2.1297213541666666e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 120026.42,
+          "next_timestamp": "2025-07-22T00:00:00Z",
+          "return_t_plus_1": 0.022120895565729715,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-21T00:00:00Z"
+        },
+        {
+          "close": 120026.42,
+          "funding_rate_avg_20": 2.1484807708333332e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 118810.44,
+          "next_timestamp": "2025-07-23T00:00:00Z",
+          "return_t_plus_1": -0.010130936172219385,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-22T00:00:00Z"
+        },
+        {
+          "close": 118810.44,
+          "funding_rate_avg_20": 2.2023254583333333e-05,
+          "group": "UPPER",
+          "next_close": 118397.04,
+          "next_timestamp": "2025-07-24T00:00:00Z",
+          "return_t_plus_1": -0.003479492206240553,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-23T00:00:00Z"
+        },
+        {
+          "close": 118397.04,
+          "funding_rate_avg_20": 2.2979491875e-05,
+          "group": "UPPER",
+          "next_close": 117633.27,
+          "next_timestamp": "2025-07-25T00:00:00Z",
+          "return_t_plus_1": -0.006450921408170274,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-24T00:00:00Z"
+        },
+        {
+          "close": 117633.27,
+          "funding_rate_avg_20": 2.4369066875e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 117969.63,
+          "next_timestamp": "2025-07-26T00:00:00Z",
+          "return_t_plus_1": 0.0028593951354067837,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-25T00:00:00Z"
+        },
+        {
+          "close": 117969.63,
+          "funding_rate_avg_20": 2.496020625e-05,
+          "group": "UPPER",
+          "next_close": 119465.52,
+          "next_timestamp": "2025-07-27T00:00:00Z",
+          "return_t_plus_1": 0.01268029746299959,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-26T00:00:00Z"
+        },
+        {
+          "close": 119465.52,
+          "funding_rate_avg_20": 2.613231958333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 118070.59,
+          "next_timestamp": "2025-07-28T00:00:00Z",
+          "return_t_plus_1": -0.011676423456743024,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-27T00:00:00Z"
+        },
+        {
+          "close": 118070.59,
+          "funding_rate_avg_20": 2.6800454583333335e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 117933.39,
+          "next_timestamp": "2025-07-29T00:00:00Z",
+          "return_t_plus_1": -0.0011620167223691524,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-28T00:00:00Z"
+        },
+        {
+          "close": 117933.39,
+          "funding_rate_avg_20": 2.708491145833333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 117830.15,
+          "next_timestamp": "2025-07-30T00:00:00Z",
+          "return_t_plus_1": -0.0008754094154336256,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-29T00:00:00Z"
+        },
+        {
+          "close": 117830.15,
+          "funding_rate_avg_20": 2.7725585833333334e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 115761.13,
+          "next_timestamp": "2025-07-31T00:00:00Z",
+          "return_t_plus_1": -0.017559342833731395,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-30T00:00:00Z"
+        },
+        {
+          "close": 115761.13,
+          "funding_rate_avg_20": 2.778895104166667e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 113248.73,
+          "next_timestamp": "2025-08-01T00:00:00Z",
+          "return_t_plus_1": -0.021703312674988595,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-07-31T00:00:00Z"
+        },
+        {
+          "close": 113248.73,
+          "funding_rate_avg_20": 2.782824208333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 112542.74,
+          "next_timestamp": "2025-08-02T00:00:00Z",
+          "return_t_plus_1": -0.006233977193386586,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-01T00:00:00Z"
+        },
+        {
+          "close": 112542.74,
+          "funding_rate_avg_20": 2.7047162499999998e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 114215.73,
+          "next_timestamp": "2025-08-03T00:00:00Z",
+          "return_t_plus_1": 0.014865374701202416,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-02T00:00:00Z"
+        },
+        {
+          "close": 114215.73,
+          "funding_rate_avg_20": 2.6442782916666666e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 115051.85,
+          "next_timestamp": "2025-08-04T00:00:00Z",
+          "return_t_plus_1": 0.007320532819778958,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-03T00:00:00Z"
+        },
+        {
+          "close": 115051.85,
+          "funding_rate_avg_20": 2.5615358125000003e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 114112.95,
+          "next_timestamp": "2025-08-05T00:00:00Z",
+          "return_t_plus_1": -0.008160668429060491,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-04T00:00:00Z"
+        },
+        {
+          "close": 114112.95,
+          "funding_rate_avg_20": 2.3263592083333334e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 115028.83,
+          "next_timestamp": "2025-08-06T00:00:00Z",
+          "return_t_plus_1": 0.008026082929238232,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-05T00:00:00Z"
+        },
+        {
+          "close": 115028.83,
+          "funding_rate_avg_20": 2.138337104166667e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 117515.49,
+          "next_timestamp": "2025-08-07T00:00:00Z",
+          "return_t_plus_1": 0.021617710968632853,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-06T00:00:00Z"
+        },
+        {
+          "close": 117515.49,
+          "funding_rate_avg_20": 1.8971233541666666e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 116683.79,
+          "next_timestamp": "2025-08-08T00:00:00Z",
+          "return_t_plus_1": -0.007077364864836233,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-07T00:00:00Z"
+        },
+        {
+          "close": 116683.79,
+          "funding_rate_avg_20": 1.7893834583333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 116492.51,
+          "next_timestamp": "2025-08-09T00:00:00Z",
+          "return_t_plus_1": -0.001639302254409114,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-08T00:00:00Z"
+        },
+        {
+          "close": 116492.51,
+          "funding_rate_avg_20": 1.7049737083333332e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 119309.37,
+          "next_timestamp": "2025-08-10T00:00:00Z",
+          "return_t_plus_1": 0.02418061041005992,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-09T00:00:00Z"
+        },
+        {
+          "close": 119309.37,
+          "funding_rate_avg_20": 1.7049737083333332e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 118701.84,
+          "next_timestamp": "2025-08-11T00:00:00Z",
+          "return_t_plus_1": -0.005092056055614025,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-10T00:00:00Z"
+        },
+        {
+          "close": 118701.84,
+          "funding_rate_avg_20": 1.6992208541666665e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 120113.18,
+          "next_timestamp": "2025-08-12T00:00:00Z",
+          "return_t_plus_1": 0.011889790419423951,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-11T00:00:00Z"
+        },
+        {
+          "close": 120113.18,
+          "funding_rate_avg_20": 1.6827581250000002e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 123365.63,
+          "next_timestamp": "2025-08-13T00:00:00Z",
+          "return_t_plus_1": 0.027078210734242658,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-12T00:00:00Z"
+        },
+        {
+          "close": 123365.63,
+          "funding_rate_avg_20": 1.61474325e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 118389.79,
+          "next_timestamp": "2025-08-14T00:00:00Z",
+          "return_t_plus_1": -0.04033408656852,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-13T00:00:00Z"
+        },
+        {
+          "close": 118389.79,
+          "funding_rate_avg_20": 1.4809046874999999e-05,
+          "group": "UPPER",
+          "next_close": 117436.96,
+          "next_timestamp": "2025-08-15T00:00:00Z",
+          "return_t_plus_1": -0.008048244700830987,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-14T00:00:00Z"
+        },
+        {
+          "close": 117436.96,
+          "funding_rate_avg_20": 1.5656781875e-05,
+          "group": "UPPER",
+          "next_close": 117455.68,
+          "next_timestamp": "2025-08-16T00:00:00Z",
+          "return_t_plus_1": 0.00015940467123787272,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-15T00:00:00Z"
+        },
+        {
+          "close": 117455.68,
+          "funding_rate_avg_20": 1.5329195416666666e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 117488.6,
+          "next_timestamp": "2025-08-17T00:00:00Z",
+          "return_t_plus_1": 0.00028027593046164867,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-16T00:00:00Z"
+        },
+        {
+          "close": 117488.6,
+          "funding_rate_avg_20": 1.4661060416666669e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 116286.76,
+          "next_timestamp": "2025-08-18T00:00:00Z",
+          "return_t_plus_1": -0.010229418003108504,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-17T00:00:00Z"
+        },
+        {
+          "close": 116286.76,
+          "funding_rate_avg_20": 1.4376603541666667e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 112856.19,
+          "next_timestamp": "2025-08-19T00:00:00Z",
+          "return_t_plus_1": -0.029500950925109515,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-18T00:00:00Z"
+        },
+        {
+          "close": 112856.19,
+          "funding_rate_avg_20": 1.3735929166666666e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 114276.0,
+          "next_timestamp": "2025-08-20T00:00:00Z",
+          "return_t_plus_1": 0.01258070115604637,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-19T00:00:00Z"
+        },
+        {
+          "close": 114276.0,
+          "funding_rate_avg_20": 1.3367074791666667e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 112480.3,
+          "next_timestamp": "2025-08-21T00:00:00Z",
+          "return_t_plus_1": -0.0157137106654065,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-20T00:00:00Z"
+        },
+        {
+          "close": 112480.3,
+          "funding_rate_avg_20": 1.2861260833333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 116908.68,
+          "next_timestamp": "2025-08-22T00:00:00Z",
+          "return_t_plus_1": 0.03937027194984366,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-21T00:00:00Z"
+        },
+        {
+          "close": 116908.68,
+          "funding_rate_avg_20": 1.2583985416666666e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 115383.87,
+          "next_timestamp": "2025-08-23T00:00:00Z",
+          "return_t_plus_1": -0.01304274413157347,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-22T00:00:00Z"
+        },
+        {
+          "close": 115383.87,
+          "funding_rate_avg_20": 1.2725192083333335e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 113478.0,
+          "next_timestamp": "2025-08-24T00:00:00Z",
+          "return_t_plus_1": -0.01651764670399769,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-23T00:00:00Z"
+        },
+        {
+          "close": 113478.0,
+          "funding_rate_avg_20": 1.3104284166666667e-05,
+          "group": "UPPER",
+          "next_close": 110127.74,
+          "next_timestamp": "2025-08-25T00:00:00Z",
+          "return_t_plus_1": -0.029523431854632576,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-24T00:00:00Z"
+        },
+        {
+          "close": 110127.74,
+          "funding_rate_avg_20": 1.3606888541666667e-05,
+          "group": "UPPER",
+          "next_close": 111788.01,
+          "next_timestamp": "2025-08-26T00:00:00Z",
+          "return_t_plus_1": 0.015075856455421643,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-25T00:00:00Z"
+        },
+        {
+          "close": 111788.01,
+          "funding_rate_avg_20": 1.4357423958333333e-05,
+          "group": "UPPER",
+          "next_close": 111253.21,
+          "next_timestamp": "2025-08-27T00:00:00Z",
+          "return_t_plus_1": -0.004784055105730878,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-26T00:00:00Z"
+        },
+        {
+          "close": 111253.21,
+          "funding_rate_avg_20": 1.5004475000000002e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 112574.85,
+          "next_timestamp": "2025-08-28T00:00:00Z",
+          "return_t_plus_1": 0.011879567340124408,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-27T00:00:00Z"
+        },
+        {
+          "close": 112574.85,
+          "funding_rate_avg_20": 1.5222245625e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 108378.32,
+          "next_timestamp": "2025-08-29T00:00:00Z",
+          "return_t_plus_1": -0.037277686801270415,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-28T00:00:00Z"
+        },
+        {
+          "close": 108378.32,
+          "funding_rate_avg_20": 1.5230762708333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 108827.93,
+          "next_timestamp": "2025-08-30T00:00:00Z",
+          "return_t_plus_1": 0.004148523431623419,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-29T00:00:00Z"
+        },
+        {
+          "close": 108827.93,
+          "funding_rate_avg_20": 1.5230762708333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 108247.95,
+          "next_timestamp": "2025-08-31T00:00:00Z",
+          "return_t_plus_1": -0.005329330439345803,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-30T00:00:00Z"
+        },
+        {
+          "close": 108247.95,
+          "funding_rate_avg_20": 1.5116274166666668e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 109240.55,
+          "next_timestamp": "2025-09-01T00:00:00Z",
+          "return_t_plus_1": 0.009169688663849929,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-08-31T00:00:00Z"
+        },
+        {
+          "close": 109240.55,
+          "funding_rate_avg_20": 1.4672767916666668e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 111247.94,
+          "next_timestamp": "2025-09-02T00:00:00Z",
+          "return_t_plus_1": 0.018375868667816153,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-01T00:00:00Z"
+        },
+        {
+          "close": 111247.94,
+          "funding_rate_avg_20": 1.4553969166666668e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 111756.41,
+          "next_timestamp": "2025-09-03T00:00:00Z",
+          "return_t_plus_1": 0.0045706014870927625,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-02T00:00:00Z"
+        },
+        {
+          "close": 111756.41,
+          "funding_rate_avg_20": 1.4510601041666668e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 110720.79,
+          "next_timestamp": "2025-09-04T00:00:00Z",
+          "return_t_plus_1": -0.009266761521777633,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-03T00:00:00Z"
+        },
+        {
+          "close": 110720.79,
+          "funding_rate_avg_20": 1.3191868541666667e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 110670.02,
+          "next_timestamp": "2025-09-05T00:00:00Z",
+          "return_t_plus_1": -0.000458540803402796,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-04T00:00:00Z"
+        },
+        {
+          "close": 110670.02,
+          "funding_rate_avg_20": 1.2347341666666666e-05,
+          "group": "UPPER",
+          "next_close": 110212.6,
+          "next_timestamp": "2025-09-06T00:00:00Z",
+          "return_t_plus_1": -0.0041331880124355624,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-05T00:00:00Z"
+        },
+        {
+          "close": 110212.6,
+          "funding_rate_avg_20": 1.2347341666666666e-05,
+          "group": "UPPER",
+          "next_close": 111129.61,
+          "next_timestamp": "2025-09-07T00:00:00Z",
+          "return_t_plus_1": 0.008320373532608727,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-06T00:00:00Z"
+        },
+        {
+          "close": 111129.61,
+          "funding_rate_avg_20": 1.2347341666666666e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 112072.57,
+          "next_timestamp": "2025-09-08T00:00:00Z",
+          "return_t_plus_1": 0.008485227294507736,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-07T00:00:00Z"
+        },
+        {
+          "close": 112072.57,
+          "funding_rate_avg_20": 1.2301079583333335e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 111549.32,
+          "next_timestamp": "2025-09-09T00:00:00Z",
+          "return_t_plus_1": -0.004668849835423594,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-08T00:00:00Z"
+        },
+        {
+          "close": 111549.32,
+          "funding_rate_avg_20": 1.2520013333333334e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 113983.97,
+          "next_timestamp": "2025-09-10T00:00:00Z",
+          "return_t_plus_1": 0.021825771775211056,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-09T00:00:00Z"
+        },
+        {
+          "close": 113983.97,
+          "funding_rate_avg_20": 1.2915934375000001e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 115540.0,
+          "next_timestamp": "2025-09-11T00:00:00Z",
+          "return_t_plus_1": 0.013651305530067104,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-10T00:00:00Z"
+        },
+        {
+          "close": 115540.0,
+          "funding_rate_avg_20": 1.2943033333333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 116106.03,
+          "next_timestamp": "2025-09-12T00:00:00Z",
+          "return_t_plus_1": 0.004898996018694923,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-11T00:00:00Z"
+        },
+        {
+          "close": 116106.03,
+          "funding_rate_avg_20": 1.2979358541666668e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 115968.35,
+          "next_timestamp": "2025-09-13T00:00:00Z",
+          "return_t_plus_1": -0.0011858126576198558,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-12T00:00:00Z"
+        },
+        {
+          "close": 115968.35,
+          "funding_rate_avg_20": 1.2989256041666668e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 115314.13,
+          "next_timestamp": "2025-09-14T00:00:00Z",
+          "return_t_plus_1": -0.00564136680395988,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-13T00:00:00Z"
+        },
+        {
+          "close": 115314.13,
+          "funding_rate_avg_20": 1.2808514583333335e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 115381.08,
+          "next_timestamp": "2025-09-15T00:00:00Z",
+          "return_t_plus_1": 0.0005805879990596896,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-14T00:00:00Z"
+        },
+        {
+          "close": 115381.08,
+          "funding_rate_avg_20": 1.2214272916666666e-05,
+          "group": "UPPER",
+          "next_close": 116832.56,
+          "next_timestamp": "2025-09-16T00:00:00Z",
+          "return_t_plus_1": 0.01257987878081912,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-15T00:00:00Z"
+        },
+        {
+          "close": 116832.56,
+          "funding_rate_avg_20": 1.1929315625000001e-05,
+          "group": "UPPER",
+          "next_close": 116484.4,
+          "next_timestamp": "2025-09-17T00:00:00Z",
+          "return_t_plus_1": -0.0029799911942356427,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-16T00:00:00Z"
+        },
+        {
+          "close": 116484.4,
+          "funding_rate_avg_20": 1.1929315625000001e-05,
+          "group": "UPPER",
+          "next_close": 117117.99,
+          "next_timestamp": "2025-09-18T00:00:00Z",
+          "return_t_plus_1": 0.005439269121015444,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-17T00:00:00Z"
+        },
+        {
+          "close": 117117.99,
+          "funding_rate_avg_20": 1.1920798541666667e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 115690.55,
+          "next_timestamp": "2025-09-19T00:00:00Z",
+          "return_t_plus_1": -0.01218805069998219,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-18T00:00:00Z"
+        },
+        {
+          "close": 115690.55,
+          "funding_rate_avg_20": 1.1754400625e-05,
+          "group": "UPPER",
+          "next_close": 115752.4,
+          "next_timestamp": "2025-09-20T00:00:00Z",
+          "return_t_plus_1": 0.0005346158350876262,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-19T00:00:00Z"
+        },
+        {
+          "close": 115752.4,
+          "funding_rate_avg_20": 1.1786253333333334e-05,
+          "group": "UPPER",
+          "next_close": 115282.27,
+          "next_timestamp": "2025-09-21T00:00:00Z",
+          "return_t_plus_1": -0.004061514059319649,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-20T00:00:00Z"
+        },
+        {
+          "close": 115282.27,
+          "funding_rate_avg_20": 1.2127621041666667e-05,
+          "group": "UPPER",
+          "next_close": 112736.59,
+          "next_timestamp": "2025-09-22T00:00:00Z",
+          "return_t_plus_1": -0.022082146716923656,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-21T00:00:00Z"
+        },
+        {
+          "close": 112736.59,
+          "funding_rate_avg_20": 1.2127621041666667e-05,
+          "group": "UPPER",
+          "next_close": 112017.21,
+          "next_timestamp": "2025-09-23T00:00:00Z",
+          "return_t_plus_1": -0.00638106935822691,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-22T00:00:00Z"
+        },
+        {
+          "close": 112017.21,
+          "funding_rate_avg_20": 1.2127621041666667e-05,
+          "group": "UPPER",
+          "next_close": 113348.17,
+          "next_timestamp": "2025-09-24T00:00:00Z",
+          "return_t_plus_1": 0.011881745671044497,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-23T00:00:00Z"
+        },
+        {
+          "close": 113348.17,
+          "funding_rate_avg_20": 1.2130182708333334e-05,
+          "group": "UPPER",
+          "next_close": 109035.72,
+          "next_timestamp": "2025-09-25T00:00:00Z",
+          "return_t_plus_1": -0.03804604873638451,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-24T00:00:00Z"
+        },
+        {
+          "close": 109035.72,
+          "funding_rate_avg_20": 1.2130182708333334e-05,
+          "group": "UPPER",
+          "next_close": 109697.29,
+          "next_timestamp": "2025-09-26T00:00:00Z",
+          "return_t_plus_1": 0.00606746119528534,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-25T00:00:00Z"
+        },
+        {
+          "close": 109697.29,
+          "funding_rate_avg_20": 1.2130182708333334e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 109681.16,
+          "next_timestamp": "2025-09-27T00:00:00Z",
+          "return_t_plus_1": -0.0001470410071204853,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-26T00:00:00Z"
+        },
+        {
+          "close": 109681.16,
+          "funding_rate_avg_20": 1.1987042708333334e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 112197.67,
+          "next_timestamp": "2025-09-28T00:00:00Z",
+          "return_t_plus_1": 0.02294386747915489,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-27T00:00:00Z"
+        },
+        {
+          "close": 112197.67,
+          "funding_rate_avg_20": 1.1922490625e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 114365.07,
+          "next_timestamp": "2025-09-29T00:00:00Z",
+          "return_t_plus_1": 0.019317691713205853,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-28T00:00:00Z"
+        },
+        {
+          "close": 114365.07,
+          "funding_rate_avg_20": 1.1827484375e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 114067.71,
+          "next_timestamp": "2025-09-30T00:00:00Z",
+          "return_t_plus_1": -0.00260009459181898,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-29T00:00:00Z"
+        },
+        {
+          "close": 114067.71,
+          "funding_rate_avg_20": 1.1534743958333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 118659.97,
+          "next_timestamp": "2025-10-01T00:00:00Z",
+          "return_t_plus_1": 0.0402590706870507,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-09-30T00:00:00Z"
+        },
+        {
+          "close": 118659.97,
+          "funding_rate_avg_20": 1.1314615625e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 120621.32,
+          "next_timestamp": "2025-10-02T00:00:00Z",
+          "return_t_plus_1": 0.01652916312046937,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-01T00:00:00Z"
+        },
+        {
+          "close": 120621.32,
+          "funding_rate_avg_20": 1.1225633125000001e-05,
+          "group": "UPPER",
+          "next_close": 122318.4,
+          "next_timestamp": "2025-10-03T00:00:00Z",
+          "return_t_plus_1": 0.014069486223496686,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-02T00:00:00Z"
+        },
+        {
+          "close": 122318.4,
+          "funding_rate_avg_20": 1.1222806875e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 122458.56,
+          "next_timestamp": "2025-10-04T00:00:00Z",
+          "return_t_plus_1": 0.001145861947180471,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-03T00:00:00Z"
+        },
+        {
+          "close": 122458.56,
+          "funding_rate_avg_20": 1.1143797916666667e-05,
+          "group": "UPPER",
+          "next_close": 123520.79,
+          "next_timestamp": "2025-10-05T00:00:00Z",
+          "return_t_plus_1": 0.008674199663951665,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-04T00:00:00Z"
+        },
+        {
+          "close": 123520.79,
+          "funding_rate_avg_20": 1.1143797916666667e-05,
+          "group": "UPPER",
+          "next_close": 124720.09,
+          "next_timestamp": "2025-10-06T00:00:00Z",
+          "return_t_plus_1": 0.009709296710294746,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-05T00:00:00Z"
+        },
+        {
+          "close": 124720.09,
+          "funding_rate_avg_20": 1.1143797916666667e-05,
+          "group": "UPPER",
+          "next_close": 121393.95,
+          "next_timestamp": "2025-10-07T00:00:00Z",
+          "return_t_plus_1": -0.026668838997790933,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-06T00:00:00Z"
+        },
+        {
+          "close": 121393.95,
+          "funding_rate_avg_20": 1.1573380208333334e-05,
+          "group": "UPPER",
+          "next_close": 123343.25,
+          "next_timestamp": "2025-10-08T00:00:00Z",
+          "return_t_plus_1": 0.016057637139247793,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-07T00:00:00Z"
+        },
+        {
+          "close": 123343.25,
+          "funding_rate_avg_20": 1.2290200416666667e-05,
+          "group": "UPPER",
+          "next_close": 121714.51,
+          "next_timestamp": "2025-10-09T00:00:00Z",
+          "return_t_plus_1": -0.013204938251586529,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-08T00:00:00Z"
+        },
+        {
+          "close": 121714.51,
+          "funding_rate_avg_20": 1.2629506875000001e-05,
+          "group": "UPPER",
+          "next_close": 112980.28,
+          "next_timestamp": "2025-10-10T00:00:00Z",
+          "return_t_plus_1": -0.07175997340004903,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-09T00:00:00Z"
+        },
+        {
+          "close": 112980.28,
+          "funding_rate_avg_20": 1.2689973958333332e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 110768.89,
+          "next_timestamp": "2025-10-11T00:00:00Z",
+          "return_t_plus_1": -0.019573238798841652,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-10T00:00:00Z"
+        },
+        {
+          "close": 110768.89,
+          "funding_rate_avg_20": 1.2637015208333334e-05,
+          "group": "UPPER",
+          "next_close": 115067.98,
+          "next_timestamp": "2025-10-12T00:00:00Z",
+          "return_t_plus_1": 0.038811348565468196,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-11T00:00:00Z"
+        },
+        {
+          "close": 115067.98,
+          "funding_rate_avg_20": 1.2709617291666669e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 115274.03,
+          "next_timestamp": "2025-10-13T00:00:00Z",
+          "return_t_plus_1": 0.0017906806046303902,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-12T00:00:00Z"
+        },
+        {
+          "close": 115274.03,
+          "funding_rate_avg_20": 1.2623766458333334e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 113068.0,
+          "next_timestamp": "2025-10-14T00:00:00Z",
+          "return_t_plus_1": -0.019137267951853554,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-13T00:00:00Z"
+        },
+        {
+          "close": 113068.0,
+          "funding_rate_avg_20": 1.2393911875e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 110804.12,
+          "next_timestamp": "2025-10-15T00:00:00Z",
+          "return_t_plus_1": -0.020022287473025147,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-14T00:00:00Z"
+        },
+        {
+          "close": 110804.12,
+          "funding_rate_avg_20": 1.2313131041666666e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 108198.0,
+          "next_timestamp": "2025-10-16T00:00:00Z",
+          "return_t_plus_1": -0.023520064055379875,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-15T00:00:00Z"
+        },
+        {
+          "close": 108198.0,
+          "funding_rate_avg_20": 1.1816421458333334e-05,
+          "group": "UPPER",
+          "next_close": 106463.3,
+          "next_timestamp": "2025-10-17T00:00:00Z",
+          "return_t_plus_1": -0.016032643856633166,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-16T00:00:00Z"
+        },
+        {
+          "close": 106463.3,
+          "funding_rate_avg_20": 1.1959561458333334e-05,
+          "group": "UPPER",
+          "next_close": 107208.91,
+          "next_timestamp": "2025-10-18T00:00:00Z",
+          "return_t_plus_1": 0.007003446258006196,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-17T00:00:00Z"
+        },
+        {
+          "close": 107208.91,
+          "funding_rate_avg_20": 1.2057937083333334e-05,
+          "group": "UPPER",
+          "next_close": 108676.78,
+          "next_timestamp": "2025-10-19T00:00:00Z",
+          "return_t_plus_1": 0.013691679171068838,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-18T00:00:00Z"
+        },
+        {
+          "close": 108676.78,
+          "funding_rate_avg_20": 1.2239498750000002e-05,
+          "group": "UPPER",
+          "next_close": 110568.06,
+          "next_timestamp": "2025-10-20T00:00:00Z",
+          "return_t_plus_1": 0.017402797543320636,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-19T00:00:00Z"
+        },
+        {
+          "close": 110568.06,
+          "funding_rate_avg_20": 1.2602841041666667e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 108362.27,
+          "next_timestamp": "2025-10-21T00:00:00Z",
+          "return_t_plus_1": -0.01994961293523634,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-20T00:00:00Z"
+        },
+        {
+          "close": 108362.27,
+          "funding_rate_avg_20": 1.2506855625000002e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 107585.98,
+          "next_timestamp": "2025-10-22T00:00:00Z",
+          "return_t_plus_1": -0.007163840329295512,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-21T00:00:00Z"
+        },
+        {
+          "close": 107585.98,
+          "funding_rate_avg_20": 1.2361055416666667e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 110116.03,
+          "next_timestamp": "2025-10-23T00:00:00Z",
+          "return_t_plus_1": 0.023516539980395157,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-22T00:00:00Z"
+        },
+        {
+          "close": 110116.03,
+          "funding_rate_avg_20": 1.1862486458333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 111042.13,
+          "next_timestamp": "2025-10-24T00:00:00Z",
+          "return_t_plus_1": 0.008410219656484141,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-23T00:00:00Z"
+        },
+        {
+          "close": 111042.13,
+          "funding_rate_avg_20": 1.1835543125000001e-05,
+          "group": "UPPER",
+          "next_close": 111666.21,
+          "next_timestamp": "2025-10-25T00:00:00Z",
+          "return_t_plus_1": 0.005620209194474146,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-24T00:00:00Z"
+        },
+        {
+          "close": 111666.21,
+          "funding_rate_avg_20": 1.1835543125000001e-05,
+          "group": "UPPER",
+          "next_close": 114548.09,
+          "next_timestamp": "2025-10-26T00:00:00Z",
+          "return_t_plus_1": 0.025807986140122363,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-25T00:00:00Z"
+        },
+        {
+          "close": 114548.09,
+          "funding_rate_avg_20": 1.1835543125000001e-05,
+          "group": "UPPER",
+          "next_close": 114087.06,
+          "next_timestamp": "2025-10-27T00:00:00Z",
+          "return_t_plus_1": -0.004024772477655425,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-26T00:00:00Z"
+        },
+        {
+          "close": 114087.06,
+          "funding_rate_avg_20": 1.1405960833333334e-05,
+          "group": "UPPER",
+          "next_close": 112906.75,
+          "next_timestamp": "2025-10-28T00:00:00Z",
+          "return_t_plus_1": -0.010345695646815645,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-27T00:00:00Z"
+        },
+        {
+          "close": 112906.75,
+          "funding_rate_avg_20": 1.0689140625000001e-05,
+          "group": "UPPER",
+          "next_close": 110032.13,
+          "next_timestamp": "2025-10-29T00:00:00Z",
+          "return_t_plus_1": -0.025460125280375112,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-28T00:00:00Z"
+        },
+        {
+          "close": 110032.13,
+          "funding_rate_avg_20": 1.0674644791666667e-05,
+          "group": "UPPER",
+          "next_close": 108308.18,
+          "next_timestamp": "2025-10-30T00:00:00Z",
+          "return_t_plus_1": -0.01566769633560683,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-29T00:00:00Z"
+        },
+        {
+          "close": 108308.18,
+          "funding_rate_avg_20": 1.0614177708333333e-05,
+          "group": "UPPER",
+          "next_close": 109555.27,
+          "next_timestamp": "2025-10-31T00:00:00Z",
+          "return_t_plus_1": 0.011514273437149614,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-30T00:00:00Z"
+        },
+        {
+          "close": 109555.27,
+          "funding_rate_avg_20": 1.0677509791666668e-05,
+          "group": "UPPER",
+          "next_close": 110052.25,
+          "next_timestamp": "2025-11-01T00:00:00Z",
+          "return_t_plus_1": 0.004536340424335483,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-10-31T00:00:00Z"
+        },
+        {
+          "close": 110052.25,
+          "funding_rate_avg_20": 1.0655582083333333e-05,
+          "group": "UPPER",
+          "next_close": 110536.01,
+          "next_timestamp": "2025-11-02T00:00:00Z",
+          "return_t_plus_1": 0.004395730209968418,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-01T00:00:00Z"
+        },
+        {
+          "close": 110536.01,
+          "funding_rate_avg_20": 1.0741432916666668e-05,
+          "group": "UPPER",
+          "next_close": 106557.98,
+          "next_timestamp": "2025-11-03T00:00:00Z",
+          "return_t_plus_1": -0.03598854346199032,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-02T00:00:00Z"
+        },
+        {
+          "close": 106557.98,
+          "funding_rate_avg_20": 1.09712875e-05,
+          "group": "UPPER",
+          "next_close": 101468.15,
+          "next_timestamp": "2025-11-04T00:00:00Z",
+          "return_t_plus_1": -0.04776582664198403,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-03T00:00:00Z"
+        },
+        {
+          "close": 101468.15,
+          "funding_rate_avg_20": 1.1052068333333334e-05,
+          "group": "UPPER",
+          "next_close": 103869.0,
+          "next_timestamp": "2025-11-05T00:00:00Z",
+          "return_t_plus_1": 0.023661119277329945,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-04T00:00:00Z"
+        },
+        {
+          "close": 103869.0,
+          "funding_rate_avg_20": 1.1519661458333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 101290.5,
+          "next_timestamp": "2025-11-06T00:00:00Z",
+          "return_t_plus_1": -0.024824538601507684,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-05T00:00:00Z"
+        },
+        {
+          "close": 101290.5,
+          "funding_rate_avg_20": 1.1380423333333333e-05,
+          "group": "UPPER",
+          "next_close": 103284.27,
+          "next_timestamp": "2025-11-07T00:00:00Z",
+          "return_t_plus_1": 0.01968368208272242,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-06T00:00:00Z"
+        },
+        {
+          "close": 103284.27,
+          "funding_rate_avg_20": 1.1392861875e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 102285.57,
+          "next_timestamp": "2025-11-08T00:00:00Z",
+          "return_t_plus_1": -0.009669429817338093,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-07T00:00:00Z"
+        },
+        {
+          "close": 102285.57,
+          "funding_rate_avg_20": 1.1335648333333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 104694.95,
+          "next_timestamp": "2025-11-09T00:00:00Z",
+          "return_t_plus_1": 0.023555424289076088,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-08T00:00:00Z"
+        },
+        {
+          "close": 104694.95,
+          "funding_rate_avg_20": 1.1258560416666667e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 105979.38,
+          "next_timestamp": "2025-11-10T00:00:00Z",
+          "return_t_plus_1": 0.012268309025411428,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-09T00:00:00Z"
+        },
+        {
+          "close": 105979.38,
+          "funding_rate_avg_20": 1.1359070833333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 103009.35,
+          "next_timestamp": "2025-11-11T00:00:00Z",
+          "return_t_plus_1": -0.028024602521735775,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-10T00:00:00Z"
+        },
+        {
+          "close": 103009.35,
+          "funding_rate_avg_20": 1.1345633125000002e-05,
+          "group": "UPPER",
+          "next_close": 101639.01,
+          "next_timestamp": "2025-11-12T00:00:00Z",
+          "return_t_plus_1": -0.01330306423640193,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-11T00:00:00Z"
+        },
+        {
+          "close": 101639.01,
+          "funding_rate_avg_20": 1.1847028333333333e-05,
+          "group": "UPPER",
+          "next_close": 99614.54,
+          "next_timestamp": "2025-11-13T00:00:00Z",
+          "return_t_plus_1": -0.019918238085947504,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-12T00:00:00Z"
+        },
+        {
+          "close": 99614.54,
+          "funding_rate_avg_20": 1.1952980625e-05,
+          "group": "UPPER",
+          "next_close": 94503.96,
+          "next_timestamp": "2025-11-14T00:00:00Z",
+          "return_t_plus_1": -0.05130355468187664,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-13T00:00:00Z"
+        },
+        {
+          "close": 94503.96,
+          "funding_rate_avg_20": 1.1952980625e-05,
+          "group": "UPPER",
+          "next_close": 95544.94,
+          "next_timestamp": "2025-11-15T00:00:00Z",
+          "return_t_plus_1": 0.011015199786337027,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-14T00:00:00Z"
+        },
+        {
+          "close": 95544.94,
+          "funding_rate_avg_20": 1.1932379375e-05,
+          "group": "UPPER",
+          "next_close": 94183.97,
+          "next_timestamp": "2025-11-16T00:00:00Z",
+          "return_t_plus_1": -0.014244291743759518,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-15T00:00:00Z"
+        },
+        {
+          "close": 94183.97,
+          "funding_rate_avg_20": 1.1932379375e-05,
+          "group": "UPPER",
+          "next_close": 92100.6,
+          "next_timestamp": "2025-11-17T00:00:00Z",
+          "return_t_plus_1": -0.022120218546744175,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-16T00:00:00Z"
+        },
+        {
+          "close": 92100.6,
+          "funding_rate_avg_20": 1.1937443124999999e-05,
+          "group": "UPPER",
+          "next_close": 92914.46,
+          "next_timestamp": "2025-11-18T00:00:00Z",
+          "return_t_plus_1": 0.008836641672258283,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-17T00:00:00Z"
+        },
+        {
+          "close": 92914.46,
+          "funding_rate_avg_20": 1.1779030416666668e-05,
+          "group": "UPPER",
+          "next_close": 91461.6,
+          "next_timestamp": "2025-11-19T00:00:00Z",
+          "return_t_plus_1": -0.015636532785101465,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-18T00:00:00Z"
+        },
+        {
+          "close": 91461.6,
+          "funding_rate_avg_20": 1.1808041875e-05,
+          "group": "UPPER",
+          "next_close": 86536.88,
+          "next_timestamp": "2025-11-20T00:00:00Z",
+          "return_t_plus_1": -0.05384467361165779,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-19T00:00:00Z"
+        },
+        {
+          "close": 86536.88,
+          "funding_rate_avg_20": 1.1820301041666667e-05,
+          "group": "UPPER",
+          "next_close": 85068.88,
+          "next_timestamp": "2025-11-21T00:00:00Z",
+          "return_t_plus_1": -0.01696386557962337,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-20T00:00:00Z"
+        },
+        {
+          "close": 85068.88,
+          "funding_rate_avg_20": 1.1769626666666667e-05,
+          "group": "UPPER",
+          "next_close": 84684.0,
+          "next_timestamp": "2025-11-22T00:00:00Z",
+          "return_t_plus_1": -0.004524333692885185,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-21T00:00:00Z"
+        },
+        {
+          "close": 84684.0,
+          "funding_rate_avg_20": 1.1769626666666667e-05,
+          "group": "UPPER",
+          "next_close": 86808.28,
+          "next_timestamp": "2025-11-23T00:00:00Z",
+          "return_t_plus_1": 0.025084785791885222,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-22T00:00:00Z"
+        },
+        {
+          "close": 86808.28,
+          "funding_rate_avg_20": 1.1769626666666667e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 88266.2,
+          "next_timestamp": "2025-11-24T00:00:00Z",
+          "return_t_plus_1": 0.016794711287909436,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-23T00:00:00Z"
+        },
+        {
+          "close": 88266.2,
+          "funding_rate_avg_20": 1.1677881458333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 87325.01,
+          "next_timestamp": "2025-11-25T00:00:00Z",
+          "return_t_plus_1": -0.010663085076733858,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-24T00:00:00Z"
+        },
+        {
+          "close": 87325.01,
+          "funding_rate_avg_20": 1.1619627708333334e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 90468.84,
+          "next_timestamp": "2025-11-26T00:00:00Z",
+          "return_t_plus_1": 0.036001484568968234,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-25T00:00:00Z"
+        },
+        {
+          "close": 90468.84,
+          "funding_rate_avg_20": 1.1203424583333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 91316.7,
+          "next_timestamp": "2025-11-27T00:00:00Z",
+          "return_t_plus_1": 0.009371845598993067,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-26T00:00:00Z"
+        },
+        {
+          "close": 91316.7,
+          "funding_rate_avg_20": 1.0607976875e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 90902.7,
+          "next_timestamp": "2025-11-28T00:00:00Z",
+          "return_t_plus_1": -0.004533672373180364,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-27T00:00:00Z"
+        },
+        {
+          "close": 90902.7,
+          "funding_rate_avg_20": 1.0405743333333333e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 90828.06,
+          "next_timestamp": "2025-11-29T00:00:00Z",
+          "return_t_plus_1": -0.0008210977231699612,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-28T00:00:00Z"
+        },
+        {
+          "close": 90828.06,
+          "funding_rate_avg_20": 1.0083396041666667e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 90369.51,
+          "next_timestamp": "2025-11-30T00:00:00Z",
+          "return_t_plus_1": -0.0050485499745343,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-29T00:00:00Z"
+        },
+        {
+          "close": 90369.51,
+          "funding_rate_avg_20": 1.0094602083333334e-05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 86282.36,
+          "next_timestamp": "2025-12-01T00:00:00Z",
+          "return_t_plus_1": -0.045227090420209115,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-11-30T00:00:00Z"
+        },
+        {
+          "close": 86282.36,
+          "funding_rate_avg_20": 9.947827291666666e-06,
+          "group": "UPPER",
+          "next_close": 91308.05,
+          "next_timestamp": "2025-12-02T00:00:00Z",
+          "return_t_plus_1": 0.05824701596015691,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-01T00:00:00Z"
+        },
+        {
+          "close": 91308.05,
+          "funding_rate_avg_20": 9.863184791666668e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 93453.84,
+          "next_timestamp": "2025-12-03T00:00:00Z",
+          "return_t_plus_1": 0.02350055663219175,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-02T00:00:00Z"
+        },
+        {
+          "close": 93453.84,
+          "funding_rate_avg_20": 9.458149166666667e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 92093.54,
+          "next_timestamp": "2025-12-04T00:00:00Z",
+          "return_t_plus_1": -0.014555849176449032,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-03T00:00:00Z"
+        },
+        {
+          "close": 92093.54,
+          "funding_rate_avg_20": 8.404587291666666e-06,
+          "group": "UPPER",
+          "next_close": 89345.29,
+          "next_timestamp": "2025-12-05T00:00:00Z",
+          "return_t_plus_1": -0.029841941139411077,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-04T00:00:00Z"
+        },
+        {
+          "close": 89345.29,
+          "funding_rate_avg_20": 8.234939166666668e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 89267.97,
+          "next_timestamp": "2025-12-06T00:00:00Z",
+          "return_t_plus_1": -0.0008654065592040849,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-05T00:00:00Z"
+        },
+        {
+          "close": 89267.97,
+          "funding_rate_avg_20": 7.910005625e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 90402.29,
+          "next_timestamp": "2025-12-07T00:00:00Z",
+          "return_t_plus_1": 0.012706909320330695,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-06T00:00:00Z"
+        },
+        {
+          "close": 90402.29,
+          "funding_rate_avg_20": 7.6180468750000005e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 90653.86,
+          "next_timestamp": "2025-12-08T00:00:00Z",
+          "return_t_plus_1": 0.0027827834892235614,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-07T00:00:00Z"
+        },
+        {
+          "close": 90653.86,
+          "funding_rate_avg_20": 7.16750625e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 92690.0,
+          "next_timestamp": "2025-12-09T00:00:00Z",
+          "return_t_plus_1": 0.022460599030201145,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-08T00:00:00Z"
+        },
+        {
+          "close": 92690.0,
+          "funding_rate_avg_20": 6.298259166666667e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 92035.99,
+          "next_timestamp": "2025-12-10T00:00:00Z",
+          "return_t_plus_1": -0.007055885208760326,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-09T00:00:00Z"
+        },
+        {
+          "close": 92035.99,
+          "funding_rate_avg_20": 5.780020625e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 92542.0,
+          "next_timestamp": "2025-12-11T00:00:00Z",
+          "return_t_plus_1": 0.005497957918418672,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-10T00:00:00Z"
+        },
+        {
+          "close": 92542.0,
+          "funding_rate_avg_20": 5.374425416666667e-06,
+          "group": "UPPER",
+          "next_close": 90278.0,
+          "next_timestamp": "2025-12-12T00:00:00Z",
+          "return_t_plus_1": -0.024464567439648977,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-11T00:00:00Z"
+        },
+        {
+          "close": 90278.0,
+          "funding_rate_avg_20": 5.297602708333334e-06,
+          "group": "UPPER",
+          "next_close": 90255.32,
+          "next_timestamp": "2025-12-13T00:00:00Z",
+          "return_t_plus_1": -0.0002512239969869601,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-12T00:00:00Z"
+        },
+        {
+          "close": 90255.32,
+          "funding_rate_avg_20": 5.191427083333334e-06,
+          "group": "UPPER",
+          "next_close": 88171.61,
+          "next_timestamp": "2025-12-14T00:00:00Z",
+          "return_t_plus_1": -0.023086838537606513,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-13T00:00:00Z"
+        },
+        {
+          "close": 88171.61,
+          "funding_rate_avg_20": 5.271281041666667e-06,
+          "group": "UPPER",
+          "next_close": 86417.5,
+          "next_timestamp": "2025-12-15T00:00:00Z",
+          "return_t_plus_1": -0.019894272090528964,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-14T00:00:00Z"
+        },
+        {
+          "close": 86417.5,
+          "funding_rate_avg_20": 5.346691458333334e-06,
+          "group": "UPPER",
+          "next_close": 87854.01,
+          "next_timestamp": "2025-12-16T00:00:00Z",
+          "return_t_plus_1": 0.01662290624005558,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-15T00:00:00Z"
+        },
+        {
+          "close": 87854.01,
+          "funding_rate_avg_20": 5.6922743750000004e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 86209.77,
+          "next_timestamp": "2025-12-17T00:00:00Z",
+          "return_t_plus_1": -0.01871559419996871,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-16T00:00:00Z"
+        },
+        {
+          "close": 86209.77,
+          "funding_rate_avg_20": 5.9343668750000005e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 85460.02,
+          "next_timestamp": "2025-12-18T00:00:00Z",
+          "return_t_plus_1": -0.008696810117925113,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-17T00:00:00Z"
+        },
+        {
+          "close": 85460.02,
+          "funding_rate_avg_20": 5.840759791666667e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 88092.65,
+          "next_timestamp": "2025-12-19T00:00:00Z",
+          "return_t_plus_1": 0.03080539882859834,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-18T00:00:00Z"
+        },
+        {
+          "close": 88092.65,
+          "funding_rate_avg_20": 5.7270045833333335e-06,
+          "group": "UPPER",
+          "next_close": 88324.0,
+          "next_timestamp": "2025-12-20T00:00:00Z",
+          "return_t_plus_1": 0.0026262122889935124,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-19T00:00:00Z"
+        },
+        {
+          "close": 88324.0,
+          "funding_rate_avg_20": 5.8073375e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 88639.95,
+          "next_timestamp": "2025-12-21T00:00:00Z",
+          "return_t_plus_1": 0.0035771704180063146,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-20T00:00:00Z"
+        },
+        {
+          "close": 88639.95,
+          "funding_rate_avg_20": 5.846196458333333e-06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 88556.77,
+          "next_timestamp": "2025-12-22T00:00:00Z",
+          "return_t_plus_1": -0.0009384030564095758,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-21T00:00:00Z"
+        },
+        {
+          "close": 88556.77,
+          "funding_rate_avg_20": 5.096858541666667e-06,
+          "group": "UPPER",
+          "next_close": 87429.32,
+          "next_timestamp": "2025-12-23T00:00:00Z",
+          "return_t_plus_1": -0.012731381237143125,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-22T00:00:00Z"
+        },
+        {
+          "close": 87429.32,
+          "funding_rate_avg_20": 5.3042635416666666e-06,
+          "group": "UPPER",
+          "next_close": 87609.03,
+          "next_timestamp": "2025-12-24T00:00:00Z",
+          "return_t_plus_1": 0.0020554889366632967,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-23T00:00:00Z"
+        },
+        {
+          "close": 87609.03,
+          "funding_rate_avg_20": 6.070495416666667e-06,
+          "group": "UPPER",
+          "next_close": 87171.68,
+          "next_timestamp": "2025-12-25T00:00:00Z",
+          "return_t_plus_1": -0.0049920653156416694,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-24T00:00:00Z"
+        },
+        {
+          "close": 87171.68,
+          "funding_rate_avg_20": 5.984517291666667e-06,
+          "group": "UPPER",
+          "next_close": 87296.01,
+          "next_timestamp": "2025-12-26T00:00:00Z",
+          "return_t_plus_1": 0.0014262659616059992,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-25T00:00:00Z"
+        },
+        {
+          "close": 87296.01,
+          "funding_rate_avg_20": 6.289690208333334e-06,
+          "group": "UPPER",
+          "next_close": 87808.0,
+          "next_timestamp": "2025-12-27T00:00:00Z",
+          "return_t_plus_1": 0.005864987414659684,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-26T00:00:00Z"
+        },
+        {
+          "close": 87808.0,
+          "funding_rate_avg_20": 6.576585208333334e-06,
+          "group": "UPPER",
+          "next_close": 87877.29,
+          "next_timestamp": "2025-12-28T00:00:00Z",
+          "return_t_plus_1": 0.0007891080539357276,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-27T00:00:00Z"
+        },
+        {
+          "close": 87877.29,
+          "funding_rate_avg_20": 6.974730625000001e-06,
+          "group": "UPPER",
+          "next_close": 87110.78,
+          "next_timestamp": "2025-12-29T00:00:00Z",
+          "return_t_plus_1": -0.008722503845987939,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-28T00:00:00Z"
+        },
+        {
+          "close": 87110.78,
+          "funding_rate_avg_20": 7.81496625e-06,
+          "group": "UPPER",
+          "next_close": 88397.5,
+          "next_timestamp": "2025-12-30T00:00:00Z",
+          "return_t_plus_1": 0.014771076553326656,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-29T00:00:00Z"
+        },
+        {
+          "close": 88397.5,
+          "funding_rate_avg_20": 8.264830208333333e-06,
+          "group": "UPPER",
+          "next_close": 87497.94,
+          "next_timestamp": "2025-12-31T00:00:00Z",
+          "return_t_plus_1": -0.010176305891003712,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-30T00:00:00Z"
+        },
+        {
+          "close": 87497.94,
+          "funding_rate_avg_20": 8.620765e-06,
+          "group": "UPPER",
+          "next_close": 88738.34,
+          "next_timestamp": "2026-01-01T00:00:00Z",
+          "return_t_plus_1": 0.01417633375140026,
+          "row_role": "EVALUATION",
+          "timestamp": "2025-12-31T00:00:00Z"
+        }
+      ],
+      "execution": {
+        "code_revision": "7e14372db318d730e4aabb3beaed175a0844f794",
+        "pipeline_sha256": "a364837ee0f988286e144a9a8e95dfef525d02ca08c99079533bf70cbb7e5826"
+      },
+      "inputs": {
+        "dataset_hashes": {
+          "capture_sha256": "724e0fcb283f1baa3582b5935a8365ce9887e5ff1141c2218261b11fa13e8bfb",
+          "code_sha256": "a364837ee0f988286e144a9a8e95dfef525d02ca08c99079533bf70cbb7e5826",
+          "dataset_sha256": "7e6d9d869d564562851cc3f326018e7fb07f5779a6ca7afd7c230ef86431229c",
+          "raw_sha256": "0ea5b220bb2a88159552323ee790b961f6754d0d63b3f98c47cec7b81dcc1526",
+          "selection_sha256": "3612e3adf66846e59d97fe2376b719db0d312c63aa2812fe433f1c54be9f6598",
+          "validation_sha256": "6a1e93cbfe5959ab2912a5e4f461773a54c2aad1d84b28a4eda88a3f68ebba83"
+        },
+        "dataset_manifest_sha256": "a5a09d428d8cbe6930f95ebc47c2f267b1fd34743fdd68ed8a4d6248c1b3673b",
+        "experiment_record_sha256": "a4cdc2f86a3ab0e3714b23612eee37ff19ebe4b9722d5ba83a882b4bb27accad",
+        "hypothesis_record_sha256": "75e18a4e11e96f5d7dd94ce8a635316085ef881f41fe97844f79076b75a779b6"
+      },
+      "record_id": "EXPERIMENT_RESULT_RECORD|EXPERIMENT_RESULT|4be7d24e1242ba9d34edc8e68f07e3d1a40532aff0a9ce001c595a8ca5610eb1|4673cd5bbcdb88bb29933e1d011e20032f5918787e37e7f1b608a8ff075cd989",
+      "references": {
+        "dataset": {
+          "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|938ed5c945e98a52ae54deed1bc7a2cda066fa94823d97c2b157bad2bc79c624",
+          "dataset_sha256": "7e6d9d869d564562851cc3f326018e7fb07f5779a6ca7afd7c230ef86431229c",
+          "evaluable_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "hypothesis_id": "HYPOTHESIS|1b0cca86-2410-41dc-9ffd-9ab5403effb5",
+          "hypothesis_version": 1,
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-11T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-12T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-16T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-17T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-18T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-19T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-25T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|0922190d-1fae-4ba4-b72f-ef72ee737b35",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|0922190d-1fae-4ba4-b72f-ef72ee737b35|1|d76bb370c147f0c4356ffdd14414391acdc33b005f9e2ad95bdedc904e67434c",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "7e14372db318d730e4aabb3beaed175a0844f794",
+          "hypothesis_id": "HYPOTHESIS|1b0cca86-2410-41dc-9ffd-9ab5403effb5",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|1b0cca86-2410-41dc-9ffd-9ab5403effb5|1|d5a3d40a0089211486a6b007c0a154672bc3f26dc7215d0a95caecaedf102157",
+          "system_version": "0.1.0",
+          "version": 1
+        }
+      },
+      "result_id": "EXPERIMENT_RESULT|4be7d24e1242ba9d34edc8e68f07e3d1a40532aff0a9ce001c595a8ca5610eb1",
+      "schema_version": "1",
+      "status": "COMPLETED"
+    }
+  ],
+  "schema_version": "1"
+}

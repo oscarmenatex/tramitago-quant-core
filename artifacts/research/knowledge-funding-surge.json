@@ -1,0 +1,243 @@
+{
+  "records": [
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(funding_rate_t-1 > FUNDSURGE20) - mean_forward_return_1d(funding_rate_t-1 <= FUNDSURGE20)",
+          "threshold": "0"
+        },
+        "description": "For BTC-USD, the mean t+1 return when the prior day mean perpetual funding rate (Hyperliquid BTC) exceeds its own trailing 20-day average exceeds the mean t+1 return otherwise -- FUNDING_RATE_SURGE, the clean redo of the first funding-rate Hypothesis: a relative threshold instead of the degenerate absolute sign, over the full 2025 year instead of the 3-month window OKX retention forced.",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|1b0cca86-2410-41dc-9ffd-9ab5403effb5",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|1b0cca86-2410-41dc-9ffd-9ab5403effb5|1|d5a3d40a0089211486a6b007c0a154672bc3f26dc7215d0a95caecaedf102157",
+        "target_metric": "mean_forward_return_1d(funding_rate_t-1 > FUNDSURGE20) - mean_forward_return_1d(funding_rate_t-1 <= FUNDSURGE20)",
+        "version": 1
+      },
+      "interpretation": "FUNDING_RATE_SURGE(window=20) sobre BTC-USD, 2025 completo, con funding rate real de Hyperliquid (DEX on-chain, funding horario, sin geobloqueo) -- la repeticion LIMPIA de la primera hipotesis de funding rate, corrigiendo sus dos defectos: (a) periodo 2025 completo en vez de los 96 dias que forzaba la retencion de OKX; (b) umbral RELATIVO (contra el propio promedio movil de 20 dias) en vez del signo absoluto, que era degenerado. La correccion (b) funciono como se esperaba: el split de grupos es 165/200, balanceado, contra el 3/93 del diseno por signo. Ademas quedo confirmado que mas datos NUNCA habrian arreglado el diseno original: sobre el ano completo el funding de BTC es positivo 369 de 387 dias (95%), aun mas desbalanceado que en la muestra corta.\n\nResultado: muestra completa metric=-0.002777, NOT_MET (grupo UPPER n=165, media=-0.001450; grupo LOWER_OR_EQUAL n=200, media=+0.001327) -- REJECTED. Walk-forward independiente (M2.6, 5 folds): consistencia 0.0, NOT_VALIDATED. Risk Analytics: Sharpe promedio -0.860, peor drawdown 25.3%.\n\nHALLAZGO QUE MERECE ATENCION, con su advertencia: los 5 folds dieron metric NEGATIVA, sin excepcion (-0.006955, -0.001733, -0.000343, -0.002643, -0.006131). Es la PRIMERA vez en 23 hipotesis reales que los 5 folds coinciden en direccion. La hipotesis tal como se declaro queda firmemente rechazada, pero su INVERSA (un funding por encima de su propio promedio predice retornos MENORES al dia siguiente) se sostuvo en 5 de 5 sub-periodos. Bajo la nula de moneda justa, que los 5 folds coincidan en una direccion concreta tiene probabilidad 1/32 = 3.1%. Existe ademas un mecanismo economico coherente (funding elevado respecto a su propia norma = posicionamiento largo apalancado concentrado, que tiende a revertir), pero la coherencia de la historia NO es evidencia. Lo decisivo: esta observacion se hizo DESPUES de ver los datos, sobre los mismos datos -- probar la inversa aqui seria circular (DOC-004 SS14, data snooping). La forma legitima de perseguirla es una Hypothesis nueva en direccion DECREASE sobre un instrumento o periodo DISTINTO, que seria evidencia genuinamente fuera de muestra respecto de esta observacion.",
+      "knowledge_id": "KNOWLEDGE|e73333992e8e0bdd35c8624dc4f7b99041b13705948fb2ae0896b3fba842fffd",
+      "limitations": [
+        "El hallazgo de los 5 folds negativos es POST-HOC: se observo despues de ver el resultado, sobre los mismos datos que lo generaron. No es evidencia independiente y no debe tratarse como tal hasta replicarse fuera de muestra.",
+        "Una sola ventana evaluada (FUNDSURGE20) -- no se probo un barrido de ventanas.",
+        "Un solo instrumento (BTC) y periodo (2025).",
+        "El funding proviene de Hyperliquid, no de Binance (geobloqueado) ni de OKX (retencion insuficiente) -- distinto exchange, distinta frecuencia de liquidacion (horaria vs 8h). El nivel absoluto del funding no es directamente comparable entre venues, aunque el umbral relativo mitiga eso por construccion.",
+        "Risk Analytics (Sharpe/drawdown) es descriptivo -- no gatea ni la Disposition ni el veredicto walk-forward. El Sharpe reportado corresponde a la implementacion larga del grupo UPPER, que es justamente el lado perdedor aqui.",
+        "El precio (OHLCV de Coinbase) y el funding (Hyperliquid, perpetuo) vienen de mercados distintos; el perpetuo de Hyperliquid referencia su propio indice, no el spot de Coinbase."
+      ],
+      "materialization": {
+        "knowledge_code_revision": "7e14372db318d730e4aabb3beaed175a0844f794",
+        "pipeline_sha256": "a364837ee0f988286e144a9a8e95dfef525d02ca08c99079533bf70cbb7e5826",
+        "preserved_at": "2026-09-29T05:23:36.488995Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(funding_rate_t-1 > FUNDSURGE20) - mean_forward_return_1d(funding_rate_t-1 <= FUNDSURGE20)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "funding_rate_t-1 <= FUNDSURGE20_t",
+          "upper_group": "funding_rate_t-1 > FUNDSURGE20_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "funding_rate_avg_20",
+          "parameters": {
+            "window": 20
+          },
+          "strategy_id": "FUNDING_RATE_SURGE"
+        },
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | funding_rate_t-1 > FUNDSURGE20_t) - mean(return_t+1 | funding_rate_t-1 <= FUNDSURGE20_t)",
+          "name": "mean_forward_return_1d(funding_rate_t-1 > FUNDSURGE20) - mean_forward_return_1d(funding_rate_t-1 <= FUNDSURGE20)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_FUNDSURGE20_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-11T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-12T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-16T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-17T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-18T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-19T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-25T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|e73333992e8e0bdd35c8624dc4f7b99041b13705948fb2ae0896b3fba842fffd|81bd8a70b054dcc53f48d66aa65e64175f2e06d9f6363e28684a3054e5b0707b",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|4f786f265211dbeae805902ebaa639c6199f3a3c8d9ac31756a634f6a268d7b6",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|4f786f265211dbeae805902ebaa639c6199f3a3c8d9ac31756a634f6a268d7b6|e718e4cce7f6121711119664fb5aa6325ae107a03f0679be15f4a1741b93faef"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|0922190d-1fae-4ba4-b72f-ef72ee737b35",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|0922190d-1fae-4ba4-b72f-ef72ee737b35|1|d76bb370c147f0c4356ffdd14414391acdc33b005f9e2ad95bdedc904e67434c",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "7e14372db318d730e4aabb3beaed175a0844f794",
+          "hypothesis_id": "HYPOTHESIS|1b0cca86-2410-41dc-9ffd-9ab5403effb5",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|1b0cca86-2410-41dc-9ffd-9ab5403effb5|1|d5a3d40a0089211486a6b007c0a154672bc3f26dc7215d0a95caecaedf102157",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|168d32006dfaad706ab07e8ed03cf4cab0bd7c449995f89fe6ffa4d9b460efe9|55cf682e7ed5c7bcc4758e30a5e54d51bf86346fde4dbd6e9b50f2194a964278",
+          "research_result_id": "RESEARCH_RESULT|168d32006dfaad706ab07e8ed03cf4cab0bd7c449995f89fe6ffa4d9b460efe9"
+        }
+      },
+      "results": {
+        "outcome": "REJECTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(funding_rate_t-1 > FUNDSURGE20) - mean_forward_return_1d(funding_rate_t-1 <= FUNDSURGE20)",
+            "threshold": "0"
+          },
+          "criterion_result": "NOT_MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 200,
+              "mean_return_t_plus_1": 0.0013267092730944007,
+              "rule": "funding_rate_t-1 <= FUNDSURGE20_t"
+            },
+            "upper": {
+              "count": 165,
+              "mean_return_t_plus_1": -0.0014504443042690776,
+              "rule": "funding_rate_t-1 > FUNDSURGE20_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": -0.0027771535773634783,
+          "observation_count": 365,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    }
+  ],
+  "schema_version": "1"
+}

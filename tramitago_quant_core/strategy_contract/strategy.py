@@ -170,6 +170,57 @@ def funding_rate_sign_strategy():
     }
 
 
+def funding_rate_surge_strategy(window):
+    """A seventh Strategy family: classifies each day by whether the PRIOR
+    day's mean perpetual-futures funding rate exceeds the trailing average
+    of the same quantity over the `window` days before it -- a RELATIVE
+    threshold, not the absolute sign FUNDING_RATE_SIGN used.
+
+    Proposed 2026-09-29 to fix the design flaw FUNDING_RATE_SIGN's own
+    Knowledge Record documented: classifying by sign cannot produce a
+    balanced partition when the underlying series carries a near-constant
+    bias, and BTC funding is positive on the large majority of days (93 of
+    96 in the first real funding test, leaving one walk-forward fold with
+    an empty group and the whole validation INSUFFICIENT_EVIDENCE). More
+    data alone would not have fixed that -- the split stays degenerate at
+    any length. Comparing the series against its OWN recent history is
+    exactly how volume_surge_strategy handles the same problem for volume,
+    which is likewise always positive, and it produces a balanced split by
+    construction.
+
+    Keeps FUNDING_RATE_SIGN's lag-1 convention: the signal at day t reads
+    day t-1's funding, never day t's still-accruing value."""
+    if not isinstance(window, int) or isinstance(window, bool) or window < 2:
+        raise ValueError("Funding rate surge window must be an integer >= 2")
+    indicator_name = f"FUNDSURGE{window}"
+    column_name = f"funding_rate_avg_{window}"
+
+    def compute(window_rows):
+        if len(window_rows) != window + 2:
+            raise ValueError("Strategy compute window has the wrong length")
+        prior = window_rows[:-2]          # the `window` days before yesterday
+        indicator_value = math.fsum(row["funding_rate"] for row in prior) / window
+        if not math.isfinite(indicator_value):
+            raise ValueError("Non-finite indicator")
+        yesterday = window_rows[-2]["funding_rate"]
+        if not math.isfinite(yesterday):
+            raise ValueError("Non-finite indicator")
+        group = "UPPER" if yesterday > indicator_value else "LOWER_OR_EQUAL"
+        return {"indicator_value": indicator_value, "group": group}
+
+    return {
+        "schema_version": STRATEGY_SCHEMA_VERSION,
+        "strategy_id": "FUNDING_RATE_SURGE",
+        "parameters": {"window": window},
+        "indicator_name": indicator_name,
+        "column_name": column_name,
+        "required_inputs": {"variables": ["funding_rate"], "warmup_periods": window + 1},
+        "upper_group_description": f"funding_rate_t-1 > {indicator_name}_t",
+        "lower_or_equal_group_description": f"funding_rate_t-1 <= {indicator_name}_t",
+        "compute": compute,
+    }
+
+
 def intraday_range_strategy(window):
     """A sixth Strategy family, and the first to read `high`/`low` at all:
     classifies each day by whether its own intraday range, normalized by
