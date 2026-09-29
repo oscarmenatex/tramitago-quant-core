@@ -293,11 +293,23 @@ RISK_ANALYTICS_RULE = "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE"
 RISK_ANALYTICS_PERIODS_PER_YEAR = 365
 
 
-def _risk_analytics_strategy_returns(evidence):
+_WALK_FORWARD_LONG_GROUP_BY_DIRECTION = {"INCREASE": "UPPER", "DECREASE": "LOWER_OR_EQUAL"}
+_WALK_FORWARD_LONG_GROUP_SUMMARY_KEY = {"UPPER": "upper", "LOWER_OR_EQUAL": "lower_or_equal"}
+
+
+def _walk_forward_long_group(criterion):
+    """Reversal extension (2026-09-29): which group is the Hypothesis's own
+    implied long position -- UPPER for an INCREASE-direction criterion (the
+    only shape every already-sealed real Hypothesis used), LOWER_OR_EQUAL
+    for a DECREASE-direction one (e.g. a short-term-reversal Hypothesis).
+    Derived from the criterion, never hardcoded to UPPER."""
+    return _WALK_FORWARD_LONG_GROUP_BY_DIRECTION[criterion["expected_direction"]]
+
+
+def _risk_analytics_strategy_returns(evidence, long_group="UPPER"):
     """Daily returns a long-only implementation of the Hypothesis's own
     criterion would have actually captured: long (captures
-    return_t_plus_1) while close_t > SMA3_t (group == UPPER), flat (0
-    return) otherwise.
+    return_t_plus_1) while group == long_group, flat (0 return) otherwise.
 
     M2.6-T4 (Risk Analytics, extension of M2.6): purely descriptive --
     reports the risk side of DOC-003 §8's "Retorno esperado / Riesgo
@@ -306,8 +318,14 @@ def _risk_analytics_strategy_returns(evidence):
     INSUFFICIENT_EVIDENCE verdict, never blocks or authorizes anything --
     that is Risk Control (Etapa 4.5), a distinct, unbuilt capability that
     requires real capital and a Broker Adapter. This requires neither.
+
+    Reversal extension (2026-09-29): `long_group` defaults to "UPPER" --
+    the group every already-sealed real fold's criterion (always
+    INCREASE-direction) implies -- so this reproduces every one of them
+    unchanged. A DECREASE-direction criterion passes "LOWER_OR_EQUAL" via
+    _walk_forward_long_group instead.
     """
-    return [item["return_t_plus_1"] if item["group"] == "UPPER" else 0.0
+    return [item["return_t_plus_1"] if item["group"] == long_group else 0.0
             for item in evidence]
 
 
@@ -348,8 +366,8 @@ def _risk_analytics_max_drawdown(returns):
     return max_drawdown
 
 
-def _risk_analytics_summary(evidence):
-    returns = _risk_analytics_strategy_returns(evidence)
+def _risk_analytics_summary(evidence, long_group="UPPER"):
+    returns = _risk_analytics_strategy_returns(evidence, long_group)
     return {
         "rule": RISK_ANALYTICS_RULE,
         "sharpe_ratio": _risk_analytics_sharpe_ratio(returns),
@@ -364,16 +382,18 @@ def _walk_forward_fold_evaluation(fold_period, evidence, criterion, analytical_r
     summary = _experiment_result_summary(evidence, criterion, analytical_rule)
     returns = [item["return_t_plus_1"] for item in evidence]
     baseline_mean = math.fsum(returns) / len(returns) if returns else None
-    upper_mean = summary["groups"]["upper"]["mean_return_t_plus_1"]
-    beats_baseline = (upper_mean > baseline_mean
-                      if baseline_mean is not None and upper_mean is not None else None)
+    long_group = _walk_forward_long_group(criterion)
+    long_group_mean = summary["groups"][
+        _WALK_FORWARD_LONG_GROUP_SUMMARY_KEY[long_group]]["mean_return_t_plus_1"]
+    beats_baseline = (long_group_mean > baseline_mean
+                      if baseline_mean is not None and long_group_mean is not None else None)
     return {
         "period": fold_period,
         "observation_count": len(evidence),
         **summary,
         "baseline": {"rule": WALK_FORWARD_BASELINE_RULE, "mean_return_t_plus_1": baseline_mean},
         "beats_baseline": beats_baseline,
-        "risk_analytics": _risk_analytics_summary(evidence),
+        "risk_analytics": _risk_analytics_summary(evidence, long_group),
     }
 
 

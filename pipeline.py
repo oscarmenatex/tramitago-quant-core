@@ -72,6 +72,7 @@ from tramitago_quant_core.research.experiment import (
     _load_experiment_result_registry, _persist_experiment_result, _verified_experiment_result_inputs, execute_experiment_result,
     load_experiment_result, verified_experiment_result,
     _experiment_conditions_strategy, _experiment_conditions_horizon,
+    _experiment_criterion_is_compatible, _experiment_threshold_is_valid, _experiment_criterion_result,
 )
 from tramitago_quant_core.research.research_execution import (
     RESEARCH_EXECUTION_REGISTRY_SCHEMA_VERSION, RESEARCH_EXECUTION_SCHEMA_VERSION,
@@ -155,7 +156,7 @@ from tramitago_quant_core.research.walk_forward import (
     RISK_ANALYTICS_RULE, RISK_ANALYTICS_PERIODS_PER_YEAR, _risk_analytics_strategy_returns,
     _risk_analytics_sharpe_ratio, _risk_analytics_annualized_volatility,
     _risk_analytics_max_drawdown, _risk_analytics_summary,
-    _statistical_validation_risk_analytics_summary,
+    _statistical_validation_risk_analytics_summary, _walk_forward_long_group,
     STATISTICAL_VALIDATION_BASE_SIGNIFICANCE_LEVEL, _statistical_validation_binomial_p_value,
     _statistical_validation_bonferroni_correction,
 )
