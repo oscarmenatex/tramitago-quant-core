@@ -831,6 +831,46 @@
       "system_version": "0.1.0",
       "target_metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
       "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "LT",
+        "expected_direction": "DECREASE",
+        "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+        "threshold": "0"
+      },
+      "code_revision": "9cd7d3ec2046522f37f15621394a906783125751",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2026-01-01T00:00:00Z",
+          "start_utc": "2025-01-01T00:00:00Z"
+        },
+        "universe": [
+          "ATOM-USD"
+        ],
+        "variables": [
+          "close",
+          "sma_close_3",
+          "forward_return_1d"
+        ]
+      },
+      "creation_context": {
+        "created_by": "oscar+claude-analysis",
+        "provenance": [
+          "DISCOVERY|artifacts/live-run-1",
+          "SNAPSHOT_SHA256|a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f",
+          "ANALYSIS|tramitago-quant-core-docs/Hipotesis de Reversion en ATOM-USD (2026-09-29).txt"
+        ]
+      },
+      "creation_timestamp": "2026-09-29T08:00:00Z",
+      "description": "For ATOM-USD, the mean t+1 return when close_t <= SMA3_t exceeds the mean t+1 return when close_t > SMA3_t (reversal direction, repeated on a second instrument after BTC-USD -- ATOM-USD showed the same negative full-sample sign and 60% walk-forward consistency as BTC-USD under the original momentum direction, making it the natural second test of whether reversal improves consistency on a different instrument).",
+      "expected_direction": "DECREASE",
+      "hypothesis_id": "HYPOTHESIS|e401178c-c46f-423f-8298-509b874eb6c5",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|e401178c-c46f-423f-8298-509b874eb6c5|1|e5f1b1377ef79733d8550ab278ecdf5077b8590f9513e32b83fefa1980e9e480",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+      "version": 1
     }
   ],
   "schema_version": "2"
