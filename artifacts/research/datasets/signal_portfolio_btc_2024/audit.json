@@ -1,0 +1,105 @@
+{
+  "backtest_executed": false,
+  "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|9ae4a8a242584c6aa562f0885b3577d4529c771f0b8a01859c26defba872f86d",
+  "evaluable_period": {
+    "end_exclusive_utc": "2025-01-01T00:00:00Z",
+    "start_utc": "2024-01-01T00:00:00Z"
+  },
+  "hypothesis_id": "HYPOTHESIS|055afbb0-5f33-4408-9416-7de4ce1f0dd1",
+  "hypothesis_version": 1,
+  "integrity": "VERIFIED",
+  "metric_evaluated": false,
+  "milestone": "M2.2-T1",
+  "status": "VERIFIED",
+  "support_rows": [
+    {
+      "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+      "timestamp": "2023-12-11T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+      "timestamp": "2023-12-12T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+      "timestamp": "2023-12-13T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+      "timestamp": "2023-12-14T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+      "timestamp": "2023-12-15T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+      "timestamp": "2023-12-16T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+      "timestamp": "2023-12-17T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+      "timestamp": "2023-12-18T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+      "timestamp": "2023-12-19T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+      "timestamp": "2023-12-20T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+      "timestamp": "2023-12-21T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+      "timestamp": "2023-12-22T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+      "timestamp": "2023-12-23T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+      "timestamp": "2023-12-24T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+      "timestamp": "2023-12-25T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+      "timestamp": "2023-12-26T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+      "timestamp": "2023-12-27T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+      "timestamp": "2023-12-28T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+      "timestamp": "2023-12-29T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+      "timestamp": "2023-12-30T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+      "timestamp": "2023-12-31T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_FORWARD_RETURN",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
+  "validation": "PASS"
+}
