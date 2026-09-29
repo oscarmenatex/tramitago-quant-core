@@ -1,0 +1,321 @@
+{
+  "fold_results": [
+    {
+      "evaluation": {
+        "baseline": {
+          "mean_return_t_plus_1": 0.002669794884481713,
+          "rule": "BUY_AND_HOLD_MEAN_FORWARD_RETURN_1D"
+        },
+        "beats_baseline": true,
+        "criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(FUNDINGSIGN_t > 0) - mean_forward_return_1d(FUNDINGSIGN_t <= 0)",
+          "threshold": "0"
+        },
+        "criterion_result": "MET",
+        "groups": {
+          "lower_or_equal": {
+            "count": 1,
+            "mean_return_t_plus_1": -0.0011281190976447641,
+            "rule": "FUNDINGSIGN_t <= 0"
+          },
+          "upper": {
+            "count": 23,
+            "mean_return_t_plus_1": 0.0028349215793567776,
+            "rule": "FUNDINGSIGN_t > 0"
+          }
+        },
+        "inconclusive_reason": null,
+        "metric": 0.003963040677001542,
+        "observation_count": 24,
+        "period": {
+          "end_exclusive_utc": "2026-07-18T00:00:00Z",
+          "start_utc": "2026-06-24T00:00:00Z"
+        },
+        "risk_analytics": {
+          "annualized_volatility": 0.31964704491866197,
+          "max_drawdown": 0.03924205714174411,
+          "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+          "sharpe_ratio": 3.1022715832234224
+        }
+      },
+      "fold_index": 0,
+      "fold_period": {
+        "end_exclusive_utc": "2026-07-18T00:00:00Z",
+        "start_utc": "2026-06-24T00:00:00Z"
+      },
+      "fold_result_id": "WALK_FORWARD_FOLD_RESULT|e57cf04abed7630047b3a583b324b1be401deba69bd874cb641bd0bcf4570f51",
+      "inputs": {
+        "dataset_hashes": {
+          "capture_sha256": "c546174d565db201941df3239bbee9bd6fd5f0bd102127a5b6408ba450fa8893",
+          "code_sha256": "6b1994cfa8541d3affb47eeb82af2902885d2c30d74090a1b06301680a5762d0",
+          "dataset_sha256": "9476b73fe40875b2d9a916e59b79c45217ed6f4eb3cd65a3f1d50e3d95b0f057",
+          "raw_sha256": "661413e9e49bdb63e59d386ad68654a6602a76d0af797a249f380fc6e6b20bdb",
+          "selection_sha256": "134c6fb27e15782d2710950f467ac6f042473125a8d24945b5874295e57c758d",
+          "validation_sha256": "783df960c7b21727600f0ce5efb4ffc1531927c770856c8d0dd50e1eef98121b"
+        },
+        "dataset_manifest_sha256": "3b0cf222162e39e2064ef1e366a74bf4ba8016b01b72e71376a4c4a41fd4b784",
+        "experiment_record_sha256": "5b1207072d1c2b7205da034de8e94a26f7538d05d743756a13fbb75df0cfba38",
+        "hypothesis_record_sha256": "fe3cb70d1990f0faaac3e3c21ddd08accecbec428e494f4ea2dff6f302fe7b2f"
+      },
+      "materialization": {
+        "computation_code_revision": "5b38b195b270e8fff13f55e55fde9cff17ea1c72",
+        "computed_at": "2026-09-29T02:58:20.506582Z",
+        "pipeline_sha256": "6b1994cfa8541d3affb47eeb82af2902885d2c30d74090a1b06301680a5762d0"
+      },
+      "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|e57cf04abed7630047b3a583b324b1be401deba69bd874cb641bd0bcf4570f51|a02afb792a793e01f37d4dccf7dc17c5edd6ffdd24e23a0f935196baef207dcc",
+      "reference": {
+        "experiment": {
+          "experiment_id": "EXPERIMENT|119cba39-b2d6-4986-9509-6b70bbd7d459",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|119cba39-b2d6-4986-9509-6b70bbd7d459|1|66bc0cc6eabaa0ae24a30b7e15b6003df4722293ac220badd7b8ab5b3bc61483",
+          "version": 1
+        },
+        "partition": {
+          "partition_id": "WALK_FORWARD_PARTITION|93901173622a0162a70063227e266e1e86cd4b9b58e1d2bbdcd81926e2ab6d0c",
+          "record_id": "WALK_FORWARD_PARTITION_RECORD|WALK_FORWARD_PARTITION|93901173622a0162a70063227e266e1e86cd4b9b58e1d2bbdcd81926e2ab6d0c|b70ac99808a6ff93562d885ffacdd24beb8416f862c168c717045819a77089be"
+        }
+      },
+      "schema_version": "1",
+      "status": "COMPUTED"
+    },
+    {
+      "evaluation": {
+        "baseline": {
+          "mean_return_t_plus_1": -0.0007460871192747215,
+          "rule": "BUY_AND_HOLD_MEAN_FORWARD_RETURN_1D"
+        },
+        "beats_baseline": true,
+        "criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(FUNDINGSIGN_t > 0) - mean_forward_return_1d(FUNDINGSIGN_t <= 0)",
+          "threshold": "0"
+        },
+        "criterion_result": "MET",
+        "groups": {
+          "lower_or_equal": {
+            "count": 1,
+            "mean_return_t_plus_1": -0.015667016359289687,
+            "rule": "FUNDINGSIGN_t <= 0"
+          },
+          "upper": {
+            "count": 23,
+            "mean_return_t_plus_1": -9.735106536102732e-05,
+            "rule": "FUNDINGSIGN_t > 0"
+          }
+        },
+        "inconclusive_reason": null,
+        "metric": 0.015569665293928659,
+        "observation_count": 24,
+        "period": {
+          "end_exclusive_utc": "2026-08-11T00:00:00Z",
+          "start_utc": "2026-07-18T00:00:00Z"
+        },
+        "risk_analytics": {
+          "annualized_volatility": 0.2253347486950264,
+          "max_drawdown": 0.04138844466370579,
+          "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+          "sharpe_ratio": -0.15112001855735516
+        }
+      },
+      "fold_index": 1,
+      "fold_period": {
+        "end_exclusive_utc": "2026-08-11T00:00:00Z",
+        "start_utc": "2026-07-18T00:00:00Z"
+      },
+      "fold_result_id": "WALK_FORWARD_FOLD_RESULT|479c1b4c91a43de369a65ee5a039507ff99ac6f440631fafe03d9b484ffd2ec1",
+      "inputs": {
+        "dataset_hashes": {
+          "capture_sha256": "c546174d565db201941df3239bbee9bd6fd5f0bd102127a5b6408ba450fa8893",
+          "code_sha256": "6b1994cfa8541d3affb47eeb82af2902885d2c30d74090a1b06301680a5762d0",
+          "dataset_sha256": "9476b73fe40875b2d9a916e59b79c45217ed6f4eb3cd65a3f1d50e3d95b0f057",
+          "raw_sha256": "661413e9e49bdb63e59d386ad68654a6602a76d0af797a249f380fc6e6b20bdb",
+          "selection_sha256": "134c6fb27e15782d2710950f467ac6f042473125a8d24945b5874295e57c758d",
+          "validation_sha256": "783df960c7b21727600f0ce5efb4ffc1531927c770856c8d0dd50e1eef98121b"
+        },
+        "dataset_manifest_sha256": "3b0cf222162e39e2064ef1e366a74bf4ba8016b01b72e71376a4c4a41fd4b784",
+        "experiment_record_sha256": "5b1207072d1c2b7205da034de8e94a26f7538d05d743756a13fbb75df0cfba38",
+        "hypothesis_record_sha256": "fe3cb70d1990f0faaac3e3c21ddd08accecbec428e494f4ea2dff6f302fe7b2f"
+      },
+      "materialization": {
+        "computation_code_revision": "5b38b195b270e8fff13f55e55fde9cff17ea1c72",
+        "computed_at": "2026-09-29T02:58:20.542149Z",
+        "pipeline_sha256": "6b1994cfa8541d3affb47eeb82af2902885d2c30d74090a1b06301680a5762d0"
+      },
+      "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|479c1b4c91a43de369a65ee5a039507ff99ac6f440631fafe03d9b484ffd2ec1|2cfb4a508bb52ed2aed681bcf798001916a1ba5c6650710252a31d9e6eb00ba1",
+      "reference": {
+        "experiment": {
+          "experiment_id": "EXPERIMENT|119cba39-b2d6-4986-9509-6b70bbd7d459",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|119cba39-b2d6-4986-9509-6b70bbd7d459|1|66bc0cc6eabaa0ae24a30b7e15b6003df4722293ac220badd7b8ab5b3bc61483",
+          "version": 1
+        },
+        "partition": {
+          "partition_id": "WALK_FORWARD_PARTITION|93901173622a0162a70063227e266e1e86cd4b9b58e1d2bbdcd81926e2ab6d0c",
+          "record_id": "WALK_FORWARD_PARTITION_RECORD|WALK_FORWARD_PARTITION|93901173622a0162a70063227e266e1e86cd4b9b58e1d2bbdcd81926e2ab6d0c|b70ac99808a6ff93562d885ffacdd24beb8416f862c168c717045819a77089be"
+        }
+      },
+      "schema_version": "1",
+      "status": "COMPUTED"
+    },
+    {
+      "evaluation": {
+        "baseline": {
+          "mean_return_t_plus_1": 0.009822715188969136,
+          "rule": "BUY_AND_HOLD_MEAN_FORWARD_RETURN_1D"
+        },
+        "beats_baseline": false,
+        "criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(FUNDINGSIGN_t > 0) - mean_forward_return_1d(FUNDINGSIGN_t <= 0)",
+          "threshold": "0"
+        },
+        "criterion_result": "INCONCLUSIVE",
+        "groups": {
+          "lower_or_equal": {
+            "count": 0,
+            "mean_return_t_plus_1": null,
+            "rule": "FUNDINGSIGN_t <= 0"
+          },
+          "upper": {
+            "count": 24,
+            "mean_return_t_plus_1": 0.009822715188969136,
+            "rule": "FUNDINGSIGN_t > 0"
+          }
+        },
+        "inconclusive_reason": "GROUP_EMPTY_OR_NONFINITE",
+        "metric": null,
+        "observation_count": 24,
+        "period": {
+          "end_exclusive_utc": "2026-09-04T00:00:00Z",
+          "start_utc": "2026-08-11T00:00:00Z"
+        },
+        "risk_analytics": {
+          "annualized_volatility": 0.508279586951773,
+          "max_drawdown": 0.03697249989847425,
+          "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+          "sharpe_ratio": 7.053777361934303
+        }
+      },
+      "fold_index": 2,
+      "fold_period": {
+        "end_exclusive_utc": "2026-09-04T00:00:00Z",
+        "start_utc": "2026-08-11T00:00:00Z"
+      },
+      "fold_result_id": "WALK_FORWARD_FOLD_RESULT|1e1309a7557cb47097c3cfd24c33c66bf9000a371bcb5132de93804a026f4a6a",
+      "inputs": {
+        "dataset_hashes": {
+          "capture_sha256": "c546174d565db201941df3239bbee9bd6fd5f0bd102127a5b6408ba450fa8893",
+          "code_sha256": "6b1994cfa8541d3affb47eeb82af2902885d2c30d74090a1b06301680a5762d0",
+          "dataset_sha256": "9476b73fe40875b2d9a916e59b79c45217ed6f4eb3cd65a3f1d50e3d95b0f057",
+          "raw_sha256": "661413e9e49bdb63e59d386ad68654a6602a76d0af797a249f380fc6e6b20bdb",
+          "selection_sha256": "134c6fb27e15782d2710950f467ac6f042473125a8d24945b5874295e57c758d",
+          "validation_sha256": "783df960c7b21727600f0ce5efb4ffc1531927c770856c8d0dd50e1eef98121b"
+        },
+        "dataset_manifest_sha256": "3b0cf222162e39e2064ef1e366a74bf4ba8016b01b72e71376a4c4a41fd4b784",
+        "experiment_record_sha256": "5b1207072d1c2b7205da034de8e94a26f7538d05d743756a13fbb75df0cfba38",
+        "hypothesis_record_sha256": "fe3cb70d1990f0faaac3e3c21ddd08accecbec428e494f4ea2dff6f302fe7b2f"
+      },
+      "materialization": {
+        "computation_code_revision": "5b38b195b270e8fff13f55e55fde9cff17ea1c72",
+        "computed_at": "2026-09-29T02:58:20.585996Z",
+        "pipeline_sha256": "6b1994cfa8541d3affb47eeb82af2902885d2c30d74090a1b06301680a5762d0"
+      },
+      "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|1e1309a7557cb47097c3cfd24c33c66bf9000a371bcb5132de93804a026f4a6a|c736dc24aff735ff7fb4cbf0e8897ff571146224fdaf589a88e78bc17b8d206a",
+      "reference": {
+        "experiment": {
+          "experiment_id": "EXPERIMENT|119cba39-b2d6-4986-9509-6b70bbd7d459",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|119cba39-b2d6-4986-9509-6b70bbd7d459|1|66bc0cc6eabaa0ae24a30b7e15b6003df4722293ac220badd7b8ab5b3bc61483",
+          "version": 1
+        },
+        "partition": {
+          "partition_id": "WALK_FORWARD_PARTITION|93901173622a0162a70063227e266e1e86cd4b9b58e1d2bbdcd81926e2ab6d0c",
+          "record_id": "WALK_FORWARD_PARTITION_RECORD|WALK_FORWARD_PARTITION|93901173622a0162a70063227e266e1e86cd4b9b58e1d2bbdcd81926e2ab6d0c|b70ac99808a6ff93562d885ffacdd24beb8416f862c168c717045819a77089be"
+        }
+      },
+      "schema_version": "1",
+      "status": "COMPUTED"
+    },
+    {
+      "evaluation": {
+        "baseline": {
+          "mean_return_t_plus_1": 0.0021575289326801195,
+          "rule": "BUY_AND_HOLD_MEAN_FORWARD_RETURN_1D"
+        },
+        "beats_baseline": true,
+        "criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(FUNDINGSIGN_t > 0) - mean_forward_return_1d(FUNDINGSIGN_t <= 0)",
+          "threshold": "0"
+        },
+        "criterion_result": "MET",
+        "groups": {
+          "lower_or_equal": {
+            "count": 1,
+            "mean_return_t_plus_1": -0.015523693124384175,
+            "rule": "FUNDINGSIGN_t <= 0"
+          },
+          "upper": {
+            "count": 23,
+            "mean_return_t_plus_1": 0.0029262777177698714,
+            "rule": "FUNDINGSIGN_t > 0"
+          }
+        },
+        "inconclusive_reason": null,
+        "metric": 0.018449970842154047,
+        "observation_count": 24,
+        "period": {
+          "end_exclusive_utc": "2026-09-28T00:00:00Z",
+          "start_utc": "2026-09-04T00:00:00Z"
+        },
+        "risk_analytics": {
+          "annualized_volatility": 0.4029252550682694,
+          "max_drawdown": 0.04435089933908616,
+          "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+          "sharpe_ratio": 2.540390673339208
+        }
+      },
+      "fold_index": 3,
+      "fold_period": {
+        "end_exclusive_utc": "2026-09-28T00:00:00Z",
+        "start_utc": "2026-09-04T00:00:00Z"
+      },
+      "fold_result_id": "WALK_FORWARD_FOLD_RESULT|7a8c0b027b0925621ce7efe35667ea53396f7e244387fc403f28d13c36231d6c",
+      "inputs": {
+        "dataset_hashes": {
+          "capture_sha256": "c546174d565db201941df3239bbee9bd6fd5f0bd102127a5b6408ba450fa8893",
+          "code_sha256": "6b1994cfa8541d3affb47eeb82af2902885d2c30d74090a1b06301680a5762d0",
+          "dataset_sha256": "9476b73fe40875b2d9a916e59b79c45217ed6f4eb3cd65a3f1d50e3d95b0f057",
+          "raw_sha256": "661413e9e49bdb63e59d386ad68654a6602a76d0af797a249f380fc6e6b20bdb",
+          "selection_sha256": "134c6fb27e15782d2710950f467ac6f042473125a8d24945b5874295e57c758d",
+          "validation_sha256": "783df960c7b21727600f0ce5efb4ffc1531927c770856c8d0dd50e1eef98121b"
+        },
+        "dataset_manifest_sha256": "3b0cf222162e39e2064ef1e366a74bf4ba8016b01b72e71376a4c4a41fd4b784",
+        "experiment_record_sha256": "5b1207072d1c2b7205da034de8e94a26f7538d05d743756a13fbb75df0cfba38",
+        "hypothesis_record_sha256": "fe3cb70d1990f0faaac3e3c21ddd08accecbec428e494f4ea2dff6f302fe7b2f"
+      },
+      "materialization": {
+        "computation_code_revision": "5b38b195b270e8fff13f55e55fde9cff17ea1c72",
+        "computed_at": "2026-09-29T02:58:20.626967Z",
+        "pipeline_sha256": "6b1994cfa8541d3affb47eeb82af2902885d2c30d74090a1b06301680a5762d0"
+      },
+      "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|7a8c0b027b0925621ce7efe35667ea53396f7e244387fc403f28d13c36231d6c|b78b27902fbb5a93a48b847c163762349bb938fa969d3a78c28bdf12e0322949",
+      "reference": {
+        "experiment": {
+          "experiment_id": "EXPERIMENT|119cba39-b2d6-4986-9509-6b70bbd7d459",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|119cba39-b2d6-4986-9509-6b70bbd7d459|1|66bc0cc6eabaa0ae24a30b7e15b6003df4722293ac220badd7b8ab5b3bc61483",
+          "version": 1
+        },
+        "partition": {
+          "partition_id": "WALK_FORWARD_PARTITION|93901173622a0162a70063227e266e1e86cd4b9b58e1d2bbdcd81926e2ab6d0c",
+          "record_id": "WALK_FORWARD_PARTITION_RECORD|WALK_FORWARD_PARTITION|93901173622a0162a70063227e266e1e86cd4b9b58e1d2bbdcd81926e2ab6d0c|b70ac99808a6ff93562d885ffacdd24beb8416f862c168c717045819a77089be"
+        }
+      },
+      "schema_version": "1",
+      "status": "COMPUTED"
+    }
+  ],
+  "schema_version": "1"
+}

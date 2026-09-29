@@ -1,0 +1,163 @@
+{
+  "records": [
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(FUNDINGSIGN_t > 0) - mean_forward_return_1d(FUNDINGSIGN_t <= 0)",
+          "threshold": "0"
+        },
+        "description": "For BTC-USD, the mean t+1 return following a day whose PRIOR day mean funding rate (OKX BTC-USDT-SWAP perpetual, used as a proxy for the broader perpetual-futures funding signal since Binance own history is geoblocked from every reachable network) was positive differs from the mean t+1 return following a day whose prior funding rate was zero or negative (FUNDING_RATE_SIGN, Etapa 2.8). Period shortened to 2026-06-24..2026-09-28 (OKX public history retention, ~3 months) instead of the full 2025 year every prior real Hypothesis used -- an explicit, documented deviation from that methodology, not a silent one.",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|f0a1bd99-02fb-40b0-a2ad-d26334a68b45",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|f0a1bd99-02fb-40b0-a2ad-d26334a68b45|2|a6f2e0e945b065e209a1370a62869039019d60b80295dcdac2bea46c29e65758",
+        "target_metric": "mean_forward_return_1d(FUNDINGSIGN_t > 0) - mean_forward_return_1d(FUNDINGSIGN_t <= 0)",
+        "version": 2
+      },
+      "interpretation": "FUNDING_RATE_SIGN sobre BTC-USD (OKX BTC-USDT-SWAP como fuente de funding rate; Binance geobloqueado -- HTTP 451 -- desde sandbox y VM Oracle Cloud), periodo 2026-06-24..2026-09-28 (96 dias, acotado por la retencion publica de ~3 meses de OKX, NO el mismo periodo 2025 de las 12 hipotesis previas). Muestra completa: metric=0.014709, MET (grupo funding>0: n=93, media=0.003936; grupo funding<=0: n=3, media=-0.010773). Walk-forward independiente (4 folds de 24 dias, 5 no divide 96): INSUFFICIENT_EVIDENCE, razon=USABLE_FOLDS_BELOW_MINIMUM -- solo 3 de 4 folds fueron usables porque un fold (2026-08-11..2026-09-04) no tuvo NINGUN dia con funding rate previo <= 0 (INCONCLUSIVE, GROUP_EMPTY_OR_NONFINITE); los otros 3 folds tuvieron apenas 1 dia cada uno en ese grupo. El resultado ACCEPTED de muestra completa esta dominado por 3 observaciones extremas, no por una senal distribuida; no es evidencia robusta de un efecto predictivo del signo del funding rate. Risk Analytics (descriptivo, no gatea el veredicto): Sharpe entre -0.151 y 7.054 (promedio 3.136), peor drawdown 4.44%.",
+      "knowledge_id": "KNOWLEDGE|1c6b3c4cc53b9ad6410205c55acb02a8d9cce715febc9f6c5646de0437536daa",
+      "limitations": [
+        "Periodo distinto a las 12 hipotesis previas (2026-06-24..2026-09-28, ~3 meses) en vez de 2025 completo -- forzado por el geobloqueo de Binance (HTTP 451 desde sandbox y VM Oracle Cloud) y la retencion publica corta (~3 meses) del endpoint de OKX; no es comparable directamente con esas 12 hipotesis.",
+        "Fuente de funding rate distinta a la originalmente disenada (OKX BTC-USDT-SWAP en vez de Binance BTCUSDT), un instrumento/exchange diferente aunque metodologicamente equivalente (funding rate publico de futuro perpetuo).",
+        "Desbalance severo de grupos: el grupo 'funding_rate_lag_1 <= 0' tiene solo 3 de 96 dias en toda la muestra (0 en un fold completo) -- el funding fue casi siempre positivo en este periodo. El resultado de muestra completa esta dominado por 3 observaciones, no por una senal distribuida.",
+        "4 folds de walk-forward (no 5): el periodo de 96 dias no es divisible entre 5; se eligio el mayor divisor par razonable (4, folds de 24 dias) que sigue satisfaciendo WALK_FORWARD_MINIMUM_FOLDS.",
+        "Un solo instrumento evaluado (BTC-USD/BTC-USDT-SWAP).",
+        "El umbral de clasificacion (signo del funding rate, >0 vs <=0) no produce una particion balanceada cuando la serie subyacente tiene un sesgo casi constante hacia positivo -- a diferencia de senales tipo cruce de SMA, que se balancean naturalmente cerca de 50/50.",
+        "Risk Analytics (Sharpe/drawdown) es descriptivo -- no gatea ni la Disposition ni el veredicto walk-forward.",
+        "Primera Hipotesis real que usa una fuente de datos auxiliar fuera de OHLCV (Etapa 2.8) -- prueba la generalizacion del pipeline, no aun un segundo instrumento/estrategia con esta fuente."
+      ],
+      "materialization": {
+        "knowledge_code_revision": "5b38b195b270e8fff13f55e55fde9cff17ea1c72",
+        "pipeline_sha256": "6b1994cfa8541d3affb47eeb82af2902885d2c30d74090a1b06301680a5762d0",
+        "preserved_at": "2026-09-29T03:01:01.042978Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(FUNDINGSIGN_t > 0) - mean_forward_return_1d(FUNDINGSIGN_t <= 0)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "FUNDINGSIGN_t <= 0",
+          "upper_group": "FUNDINGSIGN_t > 0"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "funding_rate_lag_1",
+          "parameters": {},
+          "strategy_id": "FUNDING_RATE_SIGN"
+        },
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | FUNDINGSIGN_t > 0) - mean(return_t+1 | FUNDINGSIGN_t <= 0)",
+          "name": "mean_forward_return_1d(FUNDINGSIGN_t > 0) - mean_forward_return_1d(FUNDINGSIGN_t <= 0)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_FUNDINGSIGN_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_FUNDINGSIGN_WARMUP",
+              "timestamp": "2026-06-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-09-28T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-09-28T00:00:00Z",
+            "start_utc": "2026-06-24T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|1c6b3c4cc53b9ad6410205c55acb02a8d9cce715febc9f6c5646de0437536daa|4983a3ec61f2b902dcd2ef641510ece0ffdcca08e6caa91ff7812c265f4f1a79",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|0c75f86b3f09d6693f66f145a210b3f0f64c8e27e22fc4473dab49c00b692e99",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|0c75f86b3f09d6693f66f145a210b3f0f64c8e27e22fc4473dab49c00b692e99|b7c87ee4e127f2cdf69ab08030c0a85994023671680d31c8a4b42467bb63d239"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|119cba39-b2d6-4986-9509-6b70bbd7d459",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|119cba39-b2d6-4986-9509-6b70bbd7d459|1|66bc0cc6eabaa0ae24a30b7e15b6003df4722293ac220badd7b8ab5b3bc61483",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "6667531a31dc95d508dea5cd5a6310ec38ccec20",
+          "hypothesis_id": "HYPOTHESIS|f0a1bd99-02fb-40b0-a2ad-d26334a68b45",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|f0a1bd99-02fb-40b0-a2ad-d26334a68b45|2|a6f2e0e945b065e209a1370a62869039019d60b80295dcdac2bea46c29e65758",
+          "system_version": "0.1.0",
+          "version": 2
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|b1e336342394d12ab17067f4c8179ae0ad9e90fc788bf870e8c203f0c10e1efb|e666186abf94050a951a612526ea78a48b4818e3dd8864fb1c36e6a768ddd2c0",
+          "research_result_id": "RESEARCH_RESULT|b1e336342394d12ab17067f4c8179ae0ad9e90fc788bf870e8c203f0c10e1efb"
+        }
+      },
+      "results": {
+        "outcome": "ACCEPTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(FUNDINGSIGN_t > 0) - mean_forward_return_1d(FUNDINGSIGN_t <= 0)",
+            "threshold": "0"
+          },
+          "criterion_result": "MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 3,
+              "mean_return_t_plus_1": -0.010772942860439541,
+              "rule": "FUNDINGSIGN_t <= 0"
+            },
+            "upper": {
+              "count": 93,
+              "mean_return_t_plus_1": 0.003935630901783533,
+              "rule": "FUNDINGSIGN_t > 0"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": 0.014708573762223075,
+          "observation_count": 96,
+          "period": {
+            "end_exclusive_utc": "2026-09-28T00:00:00Z",
+            "start_utc": "2026-06-24T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    }
+  ],
+  "schema_version": "1"
+}

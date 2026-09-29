@@ -32,6 +32,7 @@ from tramitago_quant_core.strategy_contract.strategy import (
     sma_crossover_strategy, _strategy_classify_rows,
 )
 
+BASE_OHLCV_VARIABLES = {"open", "high", "low", "close", "volume"}
 HYPOTHESIS_DATASET_SCHEMA_VERSION = "1"
 HYPOTHESIS_DATASET_CAPTURE_SCHEMA_VERSION = "1"
 # M4.1 production wiring (2026-09-28): these three constants remain the
@@ -81,16 +82,45 @@ def _hypothesis_dataset_support_policy(strategy, horizon=1):
             f"{horizon_word} forward-return {forward_word} after the evaluable period")
 
 
+def _hypothesis_dataset_auxiliary_variables(strategy):
+    """Etapa 2.8 extension (2026-09-28): any required_inputs.variables name
+    outside the base OHLCV set (e.g. "funding_rate") must come from an
+    auxiliary data source merged in before Strategy classification -- see
+    _hypothesis_dataset_merge_auxiliary. Sorted for a deterministic column
+    order; empty for every Strategy tested before Etapa 2.8 (SMA, Momentum,
+    Volume Surge), which is exactly why this returns [] and changes nothing
+    for them."""
+    return sorted(set(strategy["required_inputs"]["variables"]) - BASE_OHLCV_VARIABLES)
+
+
+def _hypothesis_dataset_merge_auxiliary(base_rows, auxiliary_series, auxiliary_variable):
+    """Generic fusion point (Etapa 2.8, DOC-005 PA-005-002): merges ONE
+    named auxiliary daily series -- from ANY provider, keyed by ISO
+    timestamp -- into base OHLCV rows before Strategy classification. Never
+    reads which provider produced the series. Fails closed if any row's day
+    is missing, mirroring acquisition.py's "reject entire dataset; no
+    imputation" policy."""
+    merged = []
+    for row in base_rows:
+        if row["timestamp"] not in auxiliary_series:
+            raise ValueError("Auxiliary data series is missing a required day")
+        merged.append({**row, auxiliary_variable: auxiliary_series[row["timestamp"]]})
+    return merged
+
+
 def _hypothesis_dataset_columns(strategy, horizon=1):
-    return COLUMNS[:-1] + [
-        strategy["column_name"], "row_role", _hypothesis_dataset_forward_column(horizon)]
+    return (COLUMNS[:-1] + _hypothesis_dataset_auxiliary_variables(strategy)
+           + [strategy["column_name"], "row_role", _hypothesis_dataset_forward_column(horizon)])
 
 
 def _hypothesis_dataset_schema(strategy, horizon=1):
     base_schema = {key: value for key, value in SCHEMA.items() if key != "sma_close_3"}
     forward_column = _hypothesis_dataset_forward_column(horizon)
+    auxiliary_schema = {
+        name: "nullable finite float64" for name in _hypothesis_dataset_auxiliary_variables(strategy)}
     return {
         **base_schema,
+        **auxiliary_schema,
         strategy["column_name"]: "nullable finite float64",
         "row_role": (f"SUPPORT_{strategy['indicator_name']}_WARMUP | EVALUATION | "
                      "SUPPORT_FORWARD_RETURN"),
@@ -277,12 +307,19 @@ def _hypothesis_dataset_capture_rows(raw_bytes, capture, config):
     return payload
 
 
-def _hypothesis_dataset_rows(rows, config, strategy=None, horizon=1):
+def _hypothesis_dataset_rows(rows, config, strategy=None, horizon=1, auxiliary_series=None):
     strategy = strategy or _hypothesis_dataset_default_strategy()
     forward_column = _hypothesis_dataset_forward_column(horizon)
     warmup_role = _hypothesis_dataset_warmup_role(strategy)
     column_name = strategy["column_name"]
+    auxiliary_variables = _hypothesis_dataset_auxiliary_variables(strategy)
     base_rows = [{key: row[key] for key in COLUMNS[:-1]} for row in rows]
+    if auxiliary_variables:
+        if auxiliary_series is None or set(auxiliary_series) != set(auxiliary_variables):
+            raise ValueError("Strategy requires an auxiliary data series that was not supplied")
+        for variable in auxiliary_variables:
+            base_rows = _hypothesis_dataset_merge_auxiliary(
+                base_rows, auxiliary_series[variable], variable)
     derived = _strategy_classify_rows(strategy, base_rows)
     start = epoch(config["evaluable_period"]["start_utc"])
     end = epoch(config["evaluable_period"]["end_exclusive_utc"])
@@ -307,6 +344,7 @@ def _hypothesis_dataset_rows(rows, config, strategy=None, horizon=1):
             "instrument": row["instrument"], "timestamp": row["timestamp"],
             "open": row["open"], "high": row["high"], "low": row["low"],
             "close": row["close"], "volume": row["volume"],
+            **{variable: row[variable] for variable in auxiliary_variables},
             column_name: row[column_name],
             "row_role": role, forward_column: forward_return,
         })
@@ -324,6 +362,13 @@ def _hypothesis_dataset_bytes(rows, strategy=None, horizon=1):
 
 
 def _hypothesis_dataset_selection(hypothesis, config, rows, strategy=None, horizon=1):
+    """Etapa 2.8 extension (2026-09-29): `evaluable_row_count` is derived
+    from the Hypothesis's own evaluable_period instead of a hardcoded 365 --
+    every already-sealed real Hypothesis Dataset (BTC-USD, ETH-USD) used
+    exactly one full calendar year, which is exactly why this reproduces
+    365 for them unchanged. Found while sourcing funding-rate history from
+    OKX (Binance's own history is geoblocked from every reachable network),
+    whose public retention only covers ~3 months, not a full year."""
     strategy = strategy or _hypothesis_dataset_default_strategy()
     forward_column = _hypothesis_dataset_forward_column(horizon)
     forward_key = "support_forward_return" if horizon == 1 else f"support_forward_return_{horizon}d"
@@ -331,10 +376,14 @@ def _hypothesis_dataset_selection(hypothesis, config, rows, strategy=None, horiz
     warmup_role = _hypothesis_dataset_warmup_role(strategy)
     column_name = strategy["column_name"]
     expected_support_roles = [warmup_role] * warmup + [HYPOTHESIS_DATASET_FORWARD_ROLE] * horizon
+    period = config["evaluable_period"]
+    expected_evaluable_count = (
+        (epoch(period["end_exclusive_utc"]) - epoch(period["start_utc"])) // config["frequency_seconds"])
     support_rows = [{"timestamp": row["timestamp"], "row_role": row["row_role"]}
                     for row in rows if row["row_role"] != HYPOTHESIS_DATASET_EVALUATION_ROLE]
     evaluation_rows = [row for row in rows if row["row_role"] == HYPOTHESIS_DATASET_EVALUATION_ROLE]
-    if (len(support_rows) != len(expected_support_roles) or len(evaluation_rows) != 365
+    if (len(support_rows) != len(expected_support_roles)
+            or len(evaluation_rows) != expected_evaluable_count
             or [item["row_role"] for item in support_rows] != expected_support_roles
             or not all(row[column_name] is not None and row[forward_column] is not None
                        for row in evaluation_rows)):
@@ -398,11 +447,29 @@ def _hypothesis_dataset_validation(payload, config):
 
 
 def create_hypothesis_dataset(registry_path, hypothesis_id, version, output, *,
-                              transport=None, acquired_at=None, strategy=None, horizon=1):
-    """Capture and publish a sealed historical dataset; never evaluate the Hypothesis."""
+                              transport=None, acquired_at=None, strategy=None, horizon=1,
+                              auxiliary_sources=None):
+    """Capture and publish a sealed historical dataset; never evaluate the Hypothesis.
+
+    Etapa 2.8 extension (2026-09-28): `auxiliary_sources` is a mapping
+    {variable_name: {"series": {timestamp: value}, "capture": <sealed
+    capture dict>, "raw": <raw capture bytes>}}, required only when
+    `strategy` needs a variable outside the base OHLCV set (see
+    _hypothesis_dataset_auxiliary_variables). The capture/raw bytes are
+    published alongside the dataset and hashed into the manifest exactly
+    like Coinbase's own raw.json/capture.json, so a non-default Strategy's
+    external data is just as independently reproducible -- this module
+    never inspects which provider produced them (DOC-005 PA-005-002).
+    """
     strategy = strategy or _hypothesis_dataset_default_strategy()
     hypothesis = load_hypothesis(registry_path, hypothesis_id, version)
     config = _hypothesis_dataset_config(hypothesis, strategy, horizon)
+    auxiliary_variables = _hypothesis_dataset_auxiliary_variables(strategy)
+    if auxiliary_variables and (
+            auxiliary_sources is None or set(auxiliary_sources) != set(auxiliary_variables)):
+        raise ValueError("Strategy requires auxiliary sources that were not supplied")
+    auxiliary_series = ({variable: data["series"] for variable, data in auxiliary_sources.items()}
+                        if auxiliary_variables else None)
     acquired_at = acquired_at or datetime.now(timezone.utc).isoformat(
         timespec="microseconds").replace("+00:00", "Z")
     if not _explicit_utc(acquired_at):
@@ -448,7 +515,7 @@ def create_hypothesis_dataset(registry_path, hypothesis_id, version, output, *,
             "code_sha256": digest(source),
         })})
         raise ValueError("Historical dataset rejected; see validation.json")
-    selected_rows = _hypothesis_dataset_rows(rows, config, strategy, horizon)
+    selected_rows = _hypothesis_dataset_rows(rows, config, strategy, horizon, auxiliary_series)
     dataset = _hypothesis_dataset_bytes(selected_rows, strategy, horizon)
     selection = _hypothesis_dataset_selection(hypothesis, config, selected_rows, strategy, horizon)
     selection_bytes = encoded(selection)
@@ -460,6 +527,14 @@ def create_hypothesis_dataset(registry_path, hypothesis_id, version, output, *,
         "capture_sha256": digest(capture_bytes),
         "code_sha256": digest(source),
     }
+    auxiliary_files = {}
+    for variable in auxiliary_variables:
+        auxiliary_capture_bytes = encoded(auxiliary_sources[variable]["capture"])
+        auxiliary_raw_bytes = auxiliary_sources[variable]["raw"]
+        hashes[f"{variable}_capture_sha256"] = digest(auxiliary_capture_bytes)
+        hashes[f"{variable}_raw_sha256"] = digest(auxiliary_raw_bytes)
+        auxiliary_files[f"{variable}_capture.json"] = auxiliary_capture_bytes
+        auxiliary_files[f"{variable}_raw.json"] = auxiliary_raw_bytes
     dataset_id, identity = _hypothesis_dataset_identity(hypothesis, config, hashes)
     audit = _hypothesis_dataset_audit(dataset_id, hypothesis, config, selection)
     audit_bytes = encoded(audit)
@@ -478,7 +553,7 @@ def create_hypothesis_dataset(registry_path, hypothesis_id, version, output, *,
         "input_kind": capture["kind"],
         "replay": "create_hypothesis_dataset(<registry>, <hypothesis_id>, <version>, <output>)",
     }
-    publish(output, base_files | {
+    publish(output, base_files | auxiliary_files | {
         "dataset.csv": dataset,
         "selection.json": selection_bytes,
         "audit.json": audit_bytes,
@@ -487,7 +562,8 @@ def create_hypothesis_dataset(registry_path, hypothesis_id, version, output, *,
     return manifest
 
 
-def verified_hypothesis_dataset(directory, registry_path=None, strategy=None, horizon=1):
+def verified_hypothesis_dataset(directory, registry_path=None, strategy=None, horizon=1,
+                                auxiliary_verifiers=None):
     """Fail closed unless all dataset artifacts, selection, and linked Hypothesis agree.
 
     M4.1 production wiring (2026-09-28): `strategy` defaults to
@@ -499,8 +575,21 @@ def verified_hypothesis_dataset(directory, registry_path=None, strategy=None, ho
     Etapa 2.7 return-horizon extension (2026-09-28): `horizon` defaults to
     1 for the same byte-for-byte reason; a dataset built with a different
     forward-return horizon must be verified by passing that horizon.
+
+    Etapa 2.8 extension (2026-09-28): `auxiliary_verifiers` is a mapping
+    {variable_name: callable(raw_bytes, capture_dict) -> series} used to
+    INDEPENDENTLY re-derive each auxiliary series from its own sealed raw
+    bytes -- required only when `strategy` needs a variable outside the
+    base OHLCV set. This module calls the verifier without knowing which
+    provider it is (DOC-005 PA-005-002); Binance's is
+    verified_binance_funding_rate_capture, but any future provider's own
+    verifier plugs in the same way.
     """
     strategy = strategy or _hypothesis_dataset_default_strategy()
+    auxiliary_variables = _hypothesis_dataset_auxiliary_variables(strategy)
+    if auxiliary_variables and (
+            auxiliary_verifiers is None or set(auxiliary_verifiers) != set(auxiliary_variables)):
+        raise ValueError("Strategy requires auxiliary verifiers that were not supplied")
     directory = Path(directory)
     manifest = json.loads((directory / "manifest.json").read_bytes())
     required = {
@@ -508,6 +597,8 @@ def verified_hypothesis_dataset(directory, registry_path=None, strategy=None, ho
         "audit_sha256", "dataset_sha256", "selection_sha256", "validation_sha256", "raw_sha256",
         "capture_sha256", "code_sha256", "runtime", "input_kind", "replay",
     }
+    for variable in auxiliary_variables:
+        required |= {f"{variable}_capture_sha256", f"{variable}_raw_sha256"}
     if not isinstance(manifest, dict) or set(manifest) != required or manifest["status"] != "PASS":
         raise ValueError("Historical dataset manifest is invalid")
     files = {
@@ -519,6 +610,9 @@ def verified_hypothesis_dataset(directory, registry_path=None, strategy=None, ho
         "pipeline_snapshot.py": "code_sha256",
         "audit.json": "audit_sha256",
     }
+    for variable in auxiliary_variables:
+        files[f"{variable}_capture.json"] = f"{variable}_capture_sha256"
+        files[f"{variable}_raw.json"] = f"{variable}_raw_sha256"
     for name, field in files.items():
         if digest((directory / name).read_bytes()) != manifest[field]:
             raise ValueError("Historical dataset integrity failure: " + name)
@@ -537,7 +631,15 @@ def verified_hypothesis_dataset(directory, registry_path=None, strategy=None, ho
     expected_id = "HISTORICAL_HYPOTHESIS_DATASET|" + digest(encoded(identity))
     if manifest["dataset_id"] != expected_id:
         raise ValueError("Historical dataset identifier is invalid")
-    selected_rows = _hypothesis_dataset_rows(rows, config, strategy, horizon)
+    auxiliary_series = None
+    if auxiliary_variables:
+        auxiliary_series = {}
+        for variable in auxiliary_variables:
+            auxiliary_capture = json.loads((directory / f"{variable}_capture.json").read_bytes())
+            auxiliary_raw = (directory / f"{variable}_raw.json").read_bytes()
+            auxiliary_series[variable] = auxiliary_verifiers[variable](
+                auxiliary_raw, auxiliary_capture)
+    selected_rows = _hypothesis_dataset_rows(rows, config, strategy, horizon, auxiliary_series)
     if _hypothesis_dataset_bytes(selected_rows, strategy, horizon) != (directory / "dataset.csv").read_bytes():
         raise ValueError("Historical dataset rows are invalid")
     hypothesis = None

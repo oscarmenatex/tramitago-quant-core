@@ -470,6 +470,87 @@
       "system_version": "0.1.0",
       "target_metric": "mean_forward_return_5d(close_t > SMA3_t) - mean_forward_return_5d(close_t <= SMA3_t)",
       "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "GT",
+        "expected_direction": "INCREASE",
+        "metric": "mean_forward_return_1d(FUNDINGSIGN_t > 0) - mean_forward_return_1d(FUNDINGSIGN_t <= 0)",
+        "threshold": "0"
+      },
+      "code_revision": "936c414e494141ff8dd0dd3d502c2ee28c4e2845",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2026-01-01T00:00:00Z",
+          "start_utc": "2025-01-01T00:00:00Z"
+        },
+        "universe": [
+          "BTC-USD"
+        ],
+        "variables": [
+          "funding_rate",
+          "funding_rate_lag_1",
+          "forward_return_1d"
+        ]
+      },
+      "creation_context": {
+        "created_by": "oscar+claude-analysis",
+        "provenance": [
+          "DISCOVERY|artifacts/live-run-1",
+          "SNAPSHOT_SHA256|a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f",
+          "ANALYSIS|tramitago-quant-core-docs/Etapa 2.8 \u2014 Expansion del Universo de Datos.txt"
+        ]
+      },
+      "creation_timestamp": "2026-09-28T09:00:00Z",
+      "description": "For BTC-USD, the mean t+1 return following a day whose PRIOR day's mean Binance USDT-M perpetual futures funding rate was positive differs from the mean t+1 return following a day whose prior funding rate was zero or negative (FUNDING_RATE_SIGN, Etapa 2.8: first non-OHLCV auxiliary data source, motivated by exhausting the price/volume-derived search space with 12 prior hypotheses).",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|f0a1bd99-02fb-40b0-a2ad-d26334a68b45",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|f0a1bd99-02fb-40b0-a2ad-d26334a68b45|1|c774ac9ef0c97b26b0d982ed549a201494143d267d5579dce1f419cff268ef49",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_return_1d(FUNDINGSIGN_t > 0) - mean_forward_return_1d(FUNDINGSIGN_t <= 0)",
+      "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "GT",
+        "expected_direction": "INCREASE",
+        "metric": "mean_forward_return_1d(FUNDINGSIGN_t > 0) - mean_forward_return_1d(FUNDINGSIGN_t <= 0)",
+        "threshold": "0"
+      },
+      "code_revision": "6667531a31dc95d508dea5cd5a6310ec38ccec20",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2026-09-28T00:00:00Z",
+          "start_utc": "2026-06-24T00:00:00Z"
+        },
+        "universe": [
+          "BTC-USD"
+        ],
+        "variables": [
+          "funding_rate",
+          "funding_rate_lag_1",
+          "forward_return_1d"
+        ]
+      },
+      "creation_context": {
+        "created_by": "oscar+claude-analysis",
+        "provenance": [
+          "DISCOVERY|artifacts/live-run-1",
+          "SNAPSHOT_SHA256|a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f",
+          "ANALYSIS|tramitago-quant-core-docs/Etapa 2.8 \u2014 Expansion del Universo de Datos.txt",
+          "REVISION|Binance funding-rate history geoblocked (HTTP 451) from sandbox and Oracle Cloud VM; substituted OKX BTC-USDT-SWAP public funding-rate-history, whose ~3-month public retention forced shortening the period from full-year 2025 to 2026-06-24..2026-09-28"
+        ]
+      },
+      "creation_timestamp": "2026-09-29T03:00:00Z",
+      "description": "For BTC-USD, the mean t+1 return following a day whose PRIOR day mean funding rate (OKX BTC-USDT-SWAP perpetual, used as a proxy for the broader perpetual-futures funding signal since Binance own history is geoblocked from every reachable network) was positive differs from the mean t+1 return following a day whose prior funding rate was zero or negative (FUNDING_RATE_SIGN, Etapa 2.8). Period shortened to 2026-06-24..2026-09-28 (OKX public history retention, ~3 months) instead of the full 2025 year every prior real Hypothesis used -- an explicit, documented deviation from that methodology, not a silent one.",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|f0a1bd99-02fb-40b0-a2ad-d26334a68b45",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|f0a1bd99-02fb-40b0-a2ad-d26334a68b45|2|a6f2e0e945b065e209a1370a62869039019d60b80295dcdac2bea46c29e65758",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_return_1d(FUNDINGSIGN_t > 0) - mean_forward_return_1d(FUNDINGSIGN_t <= 0)",
+      "version": 2
     }
   ],
   "schema_version": "2"

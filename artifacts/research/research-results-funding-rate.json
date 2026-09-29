@@ -1,0 +1,69 @@
+{
+  "results": [
+    {
+      "costs": {
+        "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution",
+        "source_experiment": {
+          "experiment_id": "EXPERIMENT|119cba39-b2d6-4986-9509-6b70bbd7d459",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|119cba39-b2d6-4986-9509-6b70bbd7d459|1|66bc0cc6eabaa0ae24a30b7e15b6003df4722293ac220badd7b8ab5b3bc61483",
+          "version": 1
+        }
+      },
+      "materialization": {
+        "constituted_at": "2026-09-29T02:59:53.531999Z",
+        "materialization_code_revision": "5b38b195b270e8fff13f55e55fde9cff17ea1c72",
+        "original_execution_time": "NOT_RECORDED",
+        "pipeline_sha256": "6b1994cfa8541d3affb47eeb82af2902885d2c30d74090a1b06301680a5762d0",
+        "provenance": "CONSTITUTED_AFTER_ORIGINAL_EXECUTION_FROM_LEGACY_SEALED_RESULT"
+      },
+      "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|b1e336342394d12ab17067f4c8179ae0ad9e90fc788bf870e8c203f0c10e1efb|e666186abf94050a951a612526ea78a48b4818e3dd8864fb1c36e6a768ddd2c0",
+      "references": {
+        "experiment": {
+          "experiment_id": "EXPERIMENT|119cba39-b2d6-4986-9509-6b70bbd7d459",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|119cba39-b2d6-4986-9509-6b70bbd7d459|1|66bc0cc6eabaa0ae24a30b7e15b6003df4722293ac220badd7b8ab5b3bc61483",
+          "version": 1
+        },
+        "legacy_result": {
+          "record_id": "EXPERIMENT_RESULT_RECORD|EXPERIMENT_RESULT|6ca07092035181f9d94563255d741bc42f31c8aec22ee78c3c6b7629a6bf8c9b|cd37086a80f5858ae7324cd0e8b334917ef1a9ad3529b90da14b7b2e4ed3e45d",
+          "result_id": "EXPERIMENT_RESULT|6ca07092035181f9d94563255d741bc42f31c8aec22ee78c3c6b7629a6bf8c9b"
+        },
+        "research_execution": {
+          "execution_id": "RESEARCH_EXECUTION|fb4118d841d19183e2a3e6ede1052400a895e2d12f2dbf7c0bb7be399a6d2d4d",
+          "record_id": "RESEARCH_EXECUTION_RECORD|RESEARCH_EXECUTION|fb4118d841d19183e2a3e6ede1052400a895e2d12f2dbf7c0bb7be399a6d2d4d|c4f47f1fa2a07fd96249e9a91eeabde40acba30101699e0ba5c5b90f31b5db45"
+        }
+      },
+      "research_result_id": "RESEARCH_RESULT|b1e336342394d12ab17067f4c8179ae0ad9e90fc788bf870e8c203f0c10e1efb",
+      "schema_version": "1",
+      "scientific_result": {
+        "criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(FUNDINGSIGN_t > 0) - mean_forward_return_1d(FUNDINGSIGN_t <= 0)",
+          "threshold": "0"
+        },
+        "criterion_result": "MET",
+        "groups": {
+          "lower_or_equal": {
+            "count": 3,
+            "mean_return_t_plus_1": -0.010772942860439541,
+            "rule": "FUNDINGSIGN_t <= 0"
+          },
+          "upper": {
+            "count": 93,
+            "mean_return_t_plus_1": 0.003935630901783533,
+            "rule": "FUNDINGSIGN_t > 0"
+          }
+        },
+        "inconclusive_reason": null,
+        "metric": 0.014708573762223075,
+        "observation_count": 96,
+        "period": {
+          "end_exclusive_utc": "2026-09-28T00:00:00Z",
+          "start_utc": "2026-06-24T00:00:00Z"
+        }
+      },
+      "status": "PRESERVED_SCIENTIFIC_RESULT"
+    }
+  ],
+  "schema_version": "1"
+}

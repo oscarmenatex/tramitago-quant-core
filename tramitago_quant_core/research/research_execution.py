@@ -241,11 +241,13 @@ def _persist_research_execution(registry_path, record):
 
 def _verified_legacy_result(legacy_result_registry_path, legacy_result_id,
                             legacy_result_record_id, experiment_registry_path,
-                            hypothesis_registry_path, dataset_directory):
+                            hypothesis_registry_path, dataset_directory,
+                            auxiliary_verifiers=None):
     legacy = verified_experiment_result(
         legacy_result_registry_path, legacy_result_id,
         experiment_registry_path=experiment_registry_path,
-        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory)
+        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory,
+        auxiliary_verifiers=auxiliary_verifiers)
     if legacy["record_id"] != legacy_result_record_id:
         raise ValueError("Legacy Research Result seal does not match")
     return legacy
@@ -255,11 +257,12 @@ def constitute_research_execution(registry_path, *, legacy_result_registry_path,
                                   legacy_result_id, legacy_result_record_id,
                                   experiment_registry_path, hypothesis_registry_path,
                                   dataset_directory, materialized_at,
-                                  materialization_code_revision):
+                                  materialization_code_revision, auxiliary_verifiers=None):
     """Append a post-hoc Research Execution from a verified immutable legacy result."""
     legacy = _verified_legacy_result(
         legacy_result_registry_path, legacy_result_id, legacy_result_record_id,
-        experiment_registry_path, hypothesis_registry_path, dataset_directory)
+        experiment_registry_path, hypothesis_registry_path, dataset_directory,
+        auxiliary_verifiers)
     references = _research_execution_references(legacy)
     execution_id = _research_execution_id(references)
     path = Path(registry_path)
@@ -275,7 +278,7 @@ def constitute_research_execution(registry_path, *, legacy_result_registry_path,
                 legacy_result_registry_path=legacy_result_registry_path,
                 experiment_registry_path=experiment_registry_path,
                 hypothesis_registry_path=hypothesis_registry_path,
-                dataset_directory=dataset_directory)
+                dataset_directory=dataset_directory, auxiliary_verifiers=auxiliary_verifiers)
     record = _research_execution_record(
         execution_id, references,
         _research_execution_input_hashes(legacy, legacy_result_registry_path),
@@ -297,13 +300,14 @@ def load_research_execution(registry_path, execution_id):
 
 def verified_research_execution(registry_path, execution_id, *, legacy_result_registry_path,
                                 experiment_registry_path, hypothesis_registry_path,
-                                dataset_directory):
+                                dataset_directory, auxiliary_verifiers=None):
     """Reload the post-hoc execution and reproduce its legacy sealed scientific result."""
     record = load_research_execution(registry_path, execution_id)
     legacy_reference = record["references"]["legacy_result"]
     legacy = _verified_legacy_result(
         legacy_result_registry_path, legacy_reference["result_id"], legacy_reference["record_id"],
-        experiment_registry_path, hypothesis_registry_path, dataset_directory)
+        experiment_registry_path, hypothesis_registry_path, dataset_directory,
+        auxiliary_verifiers)
     references = _research_execution_references(legacy)
     expected = _research_execution_record(
         record["execution_id"], references,
@@ -453,19 +457,21 @@ def constitute_research_result(registry_path, *, research_execution_registry_pat
                                 research_execution_id, research_execution_record_id,
                                 legacy_result_registry_path, experiment_registry_path,
                                 hypothesis_registry_path, dataset_directory, materialized_at,
-                                materialization_code_revision):
+                                materialization_code_revision, auxiliary_verifiers=None):
     """Append a Research Result that owns aggregates and links to its causal execution."""
     execution = verified_research_execution(
         research_execution_registry_path, research_execution_id,
         legacy_result_registry_path=legacy_result_registry_path,
         experiment_registry_path=experiment_registry_path,
-        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory)
+        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory,
+        auxiliary_verifiers=auxiliary_verifiers)
     if execution["record_id"] != research_execution_record_id:
         raise ValueError("Research Execution seal does not match the requested Research Result")
     experiment_reference = execution["references"]["experiment"]
     experiment = verified_experiment_conditions(
         experiment_registry_path, experiment_reference["experiment_id"], experiment_reference["version"],
-        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory)
+        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory,
+        auxiliary_verifiers=auxiliary_verifiers)
     if experiment["record_id"] != experiment_reference["record_id"]:
         raise ValueError("Research Result experiment reference is invalid")
     references = _research_result_references(execution)
@@ -484,7 +490,7 @@ def constitute_research_result(registry_path, *, research_execution_registry_pat
                 legacy_result_registry_path=legacy_result_registry_path,
                 experiment_registry_path=experiment_registry_path,
                 hypothesis_registry_path=hypothesis_registry_path,
-                dataset_directory=dataset_directory)
+                dataset_directory=dataset_directory, auxiliary_verifiers=auxiliary_verifiers)
     record = _research_result_record(
         research_result_id, references,
         _research_materialization(materialized_at, materialization_code_revision),
@@ -506,7 +512,7 @@ def load_research_result(registry_path, research_result_id):
 def verified_research_result(registry_path, research_result_id, *,
                              research_execution_registry_path, legacy_result_registry_path,
                              experiment_registry_path, hypothesis_registry_path,
-                             dataset_directory):
+                             dataset_directory, auxiliary_verifiers=None):
     """Reload a Research Result and prove its exact causal link to Research Execution."""
     record = load_research_result(registry_path, research_result_id)
     execution_reference = record["references"]["research_execution"]
@@ -514,13 +520,15 @@ def verified_research_result(registry_path, research_result_id, *,
         research_execution_registry_path, execution_reference["execution_id"],
         legacy_result_registry_path=legacy_result_registry_path,
         experiment_registry_path=experiment_registry_path,
-        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory)
+        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory,
+        auxiliary_verifiers=auxiliary_verifiers)
     if execution["record_id"] != execution_reference["record_id"]:
         raise ValueError("Research Result Research Execution reference is invalid")
     experiment_reference = execution["references"]["experiment"]
     experiment = verified_experiment_conditions(
         experiment_registry_path, experiment_reference["experiment_id"], experiment_reference["version"],
-        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory)
+        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory,
+        auxiliary_verifiers=auxiliary_verifiers)
     references = _research_result_references(execution)
     expected = _research_result_record(
         record["research_result_id"], references, record["materialization"],

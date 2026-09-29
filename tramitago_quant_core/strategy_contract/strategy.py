@@ -132,6 +132,44 @@ def volume_surge_strategy(window):
     }
 
 
+def funding_rate_sign_strategy():
+    """A fourth Strategy family, and the first requiring a variable outside
+    the base OHLCV set: classifies each day by the SIGN of the PRIOR day's
+    daily-mean perpetual-futures funding rate (positive: longs paying
+    shorts, a leverage-crowded-long market; negative: the reverse) --
+    never today's still-accruing funding rate, to avoid same-day lookahead.
+    Proposed 2026-09-28 (Etapa 2.8) after diagnosing that price/volume-only
+    signals on BTC-USD/ETH-USD all showed effects inside the noise floor --
+    funding rate comes from an entirely different market (derivatives
+    positioning, not spot price/volume), a genuinely different information
+    source, not another transform of the same series. Sign, not a
+    magnitude/percentile threshold, was chosen deliberately to avoid
+    introducing a free parameter that could be tuned to the data."""
+    indicator_name = "FUNDINGSIGN"
+    column_name = "funding_rate_lag_1"
+
+    def compute(window_rows):
+        if len(window_rows) != 2:
+            raise ValueError("Strategy compute window has the wrong length")
+        indicator_value = window_rows[0]["funding_rate"]
+        if not math.isfinite(indicator_value):
+            raise ValueError("Non-finite indicator")
+        group = "UPPER" if indicator_value > 0 else "LOWER_OR_EQUAL"
+        return {"indicator_value": indicator_value, "group": group}
+
+    return {
+        "schema_version": STRATEGY_SCHEMA_VERSION,
+        "strategy_id": "FUNDING_RATE_SIGN",
+        "parameters": {},
+        "indicator_name": indicator_name,
+        "column_name": column_name,
+        "required_inputs": {"variables": ["funding_rate"], "warmup_periods": 1},
+        "upper_group_description": f"{indicator_name}_t > 0",
+        "lower_or_equal_group_description": f"{indicator_name}_t <= 0",
+        "compute": compute,
+    }
+
+
 def _strategy_classify_rows(strategy, rows):
     """Generic classification runner: given ANY Strategy (via its contract)
     and raw rows (each with at least 'close'), produces one classified row

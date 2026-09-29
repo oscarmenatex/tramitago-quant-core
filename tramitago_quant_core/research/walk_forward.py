@@ -187,7 +187,8 @@ def _persist_walk_forward_partition(registry_path, record):
 
 def constitute_walk_forward_partition(registry_path, *, dataset_directory,
                                       hypothesis_registry_path, fold_count, partitioned_at,
-                                      partition_code_revision, strategy=None, horizon=1):
+                                      partition_code_revision, strategy=None, horizon=1,
+                                      auxiliary_verifiers=None):
     """M2.6-T1: seal an immutable walk-forward partition of a sealed Hypothesis
     Dataset. Never mutates the dataset and never redefines the Hypothesis's
     acceptance criterion (HY-AC-002) -- folds are pure boundaries.
@@ -197,10 +198,12 @@ def constitute_walk_forward_partition(registry_path, *, dataset_directory,
     (BTC-USD, ETH-USD) was built with. A Partition over a dataset built with
     a different Strategy must pass that same Strategy explicitly.
     `horizon` likewise defaults to 1, the forward-return distance every
-    already-sealed real Partition was built with.
+    already-sealed real Partition was built with. Etapa 2.8:
+    `auxiliary_verifiers` is required when the Strategy needs a variable
+    outside the base OHLCV set (see verified_hypothesis_dataset).
     """
     manifest = verified_hypothesis_dataset(
-        dataset_directory, hypothesis_registry_path, strategy, horizon)
+        dataset_directory, hypothesis_registry_path, strategy, horizon, auxiliary_verifiers)
     reference = _walk_forward_partition_reference(manifest)
     folds = _walk_forward_folds(manifest["config"]["evaluable_period"], fold_count)
     partition_id = _walk_forward_partition_id(reference, fold_count)
@@ -215,7 +218,7 @@ def constitute_walk_forward_partition(registry_path, *, dataset_directory,
             return verified_walk_forward_partition(
                 registry_path, partition_id, dataset_directory=dataset_directory,
                 hypothesis_registry_path=hypothesis_registry_path, strategy=strategy,
-                horizon=horizon)
+                horizon=horizon, auxiliary_verifiers=auxiliary_verifiers)
     record = _walk_forward_partition_record(
         partition_id, reference, fold_count, folds,
         _walk_forward_partition_materialization(partitioned_at, partition_code_revision))
@@ -233,11 +236,12 @@ def load_walk_forward_partition(registry_path, partition_id):
 
 
 def verified_walk_forward_partition(registry_path, partition_id, *, dataset_directory,
-                                    hypothesis_registry_path, strategy=None, horizon=1):
+                                    hypothesis_registry_path, strategy=None, horizon=1,
+                                    auxiliary_verifiers=None):
     """Reload a Walk-Forward Partition and reproduce its folds from the sealed dataset."""
     record = load_walk_forward_partition(registry_path, partition_id)
     manifest = verified_hypothesis_dataset(
-        dataset_directory, hypothesis_registry_path, strategy, horizon)
+        dataset_directory, hypothesis_registry_path, strategy, horizon, auxiliary_verifiers)
     reference = _walk_forward_partition_reference(manifest)
     folds = _walk_forward_folds(manifest["config"]["evaluable_period"], record["fold_count"])
     expected = _walk_forward_partition_record(
@@ -502,7 +506,8 @@ def constitute_walk_forward_fold_result(registry_path, *, partition_registry_pat
                                         partition_record_id, fold_index, experiment_registry_path,
                                         experiment_id, experiment_version, experiment_record_id,
                                         hypothesis_registry_path, dataset_directory, computed_at,
-                                        computation_code_revision, strategy=None, horizon=1):
+                                        computation_code_revision, strategy=None, horizon=1,
+                                        auxiliary_verifiers=None):
     """M2.6-T2: execute one walk-forward fold against its declared baseline.
 
     Reuses the already-sealed Experiment (M2.2-T2) unmodified -- never
@@ -514,11 +519,12 @@ def constitute_walk_forward_fold_result(registry_path, *, partition_registry_pat
     Partition itself (see verified_walk_forward_partition); the Experiment/
     dataset resolution below already reconstructs its own Strategy and
     return horizon from the Experiment's sealed conditions (M4.1 production
-    wiring).
+    wiring). Etapa 2.8: `auxiliary_verifiers` is needed by both.
     """
     partition = verified_walk_forward_partition(
         partition_registry_path, partition_id, dataset_directory=dataset_directory,
-        hypothesis_registry_path=hypothesis_registry_path, strategy=strategy, horizon=horizon)
+        hypothesis_registry_path=hypothesis_registry_path, strategy=strategy, horizon=horizon,
+        auxiliary_verifiers=auxiliary_verifiers)
     if partition["record_id"] != partition_record_id:
         raise ValueError("Walk-Forward Partition seal does not match the requested fold result")
     if (not isinstance(fold_index, int) or isinstance(fold_index, bool)
@@ -528,7 +534,7 @@ def constitute_walk_forward_fold_result(registry_path, *, partition_registry_pat
 
     experiment, hypothesis, dataset, _ = _verified_experiment_result_inputs(
         experiment_registry_path, hypothesis_registry_path, dataset_directory, experiment_id,
-        experiment_version, experiment_record_id)
+        experiment_version, experiment_record_id, auxiliary_verifiers)
 
     evidence = _walk_forward_fold_evidence(dataset_directory, experiment["conditions"], fold_period)
     evaluation = _walk_forward_fold_evaluation(
@@ -549,7 +555,8 @@ def constitute_walk_forward_fold_result(registry_path, *, partition_registry_pat
                 registry_path, fold_result_id, partition_registry_path=partition_registry_path,
                 experiment_registry_path=experiment_registry_path,
                 hypothesis_registry_path=hypothesis_registry_path,
-                dataset_directory=dataset_directory, strategy=strategy, horizon=horizon)
+                dataset_directory=dataset_directory, strategy=strategy, horizon=horizon,
+                auxiliary_verifiers=auxiliary_verifiers)
     record = _walk_forward_fold_result_record(
         fold_result_id, reference, fold_index, fold_period,
         _experiment_result_inputs(experiment, hypothesis, dataset, dataset_directory), evaluation,
@@ -570,7 +577,8 @@ def load_walk_forward_fold_result(registry_path, fold_result_id):
 
 def verified_walk_forward_fold_result(registry_path, fold_result_id, *, partition_registry_path,
                                       experiment_registry_path, hypothesis_registry_path,
-                                      dataset_directory, strategy=None, horizon=1):
+                                      dataset_directory, strategy=None, horizon=1,
+                                      auxiliary_verifiers=None):
     """Reload a fold result and reproduce its evidence and baseline from the
     sealed partition, experiment, and dataset."""
     record = load_walk_forward_fold_result(registry_path, fold_result_id)
@@ -578,14 +586,14 @@ def verified_walk_forward_fold_result(registry_path, fold_result_id, *, partitio
     partition = verified_walk_forward_partition(
         partition_registry_path, partition_reference["partition_id"],
         dataset_directory=dataset_directory, hypothesis_registry_path=hypothesis_registry_path,
-        strategy=strategy, horizon=horizon)
+        strategy=strategy, horizon=horizon, auxiliary_verifiers=auxiliary_verifiers)
     if partition["record_id"] != partition_reference["record_id"]:
         raise ValueError("Walk-Forward Fold Result partition reference is invalid")
     experiment_reference = record["reference"]["experiment"]
     experiment, hypothesis, dataset, _ = _verified_experiment_result_inputs(
         experiment_registry_path, hypothesis_registry_path, dataset_directory,
         experiment_reference["experiment_id"], experiment_reference["version"],
-        experiment_reference["record_id"])
+        experiment_reference["record_id"], auxiliary_verifiers)
     fold_period = partition["folds"][record["fold_index"]]
     if fold_period != record["fold_period"]:
         raise ValueError("Walk-Forward Fold Result fold period is invalid")
@@ -913,7 +921,7 @@ def _persist_statistical_validation(registry_path, record):
 def _statistical_validation_all_fold_results(fold_result_registry_path, partition, *,
                                              partition_registry_path, experiment_registry_path,
                                              hypothesis_registry_path, dataset_directory,
-                                             strategy=None, horizon=1):
+                                             strategy=None, horizon=1, auxiliary_verifiers=None):
     """Resolve and independently reverify every fold of one partition -- fails
     closed unless exactly one verified result exists per fold index."""
     registry = _load_walk_forward_fold_result_registry(fold_result_registry_path)
@@ -932,7 +940,8 @@ def _statistical_validation_all_fold_results(fold_result_registry_path, partitio
             partition_registry_path=partition_registry_path,
             experiment_registry_path=experiment_registry_path,
             hypothesis_registry_path=hypothesis_registry_path,
-            dataset_directory=dataset_directory, strategy=strategy, horizon=horizon)
+            dataset_directory=dataset_directory, strategy=strategy, horizon=horizon,
+            auxiliary_verifiers=auxiliary_verifiers)
         for index in range(partition["fold_count"])]
 
 
@@ -942,7 +951,7 @@ def constitute_statistical_validation(registry_path, *, partition_registry_path,
                                       dataset_directory, minimum_folds_required,
                                       consistency_threshold, validated_at,
                                       validation_code_revision, batch_size=None, strategy=None,
-                                      horizon=1):
+                                      horizon=1, auxiliary_verifiers=None):
     """M2.6-T3: aggregate every fold of one partition into one traceable
     verdict -- VALIDATED, NOT_VALIDATED, or INSUFFICIENT_EVIDENCE, never
     unclassified (DOC-004 REQ-004-005). Purely additive: never touches the
@@ -956,17 +965,19 @@ def constitute_statistical_validation(registry_path, *, partition_registry_path,
     single hypothesis evaluated on its own, exactly as M2.6 always has.
     Etapa 2.7, M2.7-T4: `strategy`/`horizon` are only needed to verify the
     underlying Partition/dataset for a non-default Strategy or horizon.
+    Etapa 2.8: `auxiliary_verifiers` is needed by both when required.
     """
     partition = verified_walk_forward_partition(
         partition_registry_path, partition_id, dataset_directory=dataset_directory,
-        hypothesis_registry_path=hypothesis_registry_path, strategy=strategy, horizon=horizon)
+        hypothesis_registry_path=hypothesis_registry_path, strategy=strategy, horizon=horizon,
+        auxiliary_verifiers=auxiliary_verifiers)
     if partition["record_id"] != partition_record_id:
         raise ValueError("Walk-Forward Partition seal does not match the requested validation")
     fold_results = _statistical_validation_all_fold_results(
         fold_result_registry_path, partition, partition_registry_path=partition_registry_path,
         experiment_registry_path=experiment_registry_path,
         hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory,
-        strategy=strategy, horizon=horizon)
+        strategy=strategy, horizon=horizon, auxiliary_verifiers=auxiliary_verifiers)
 
     if not _hypothesis_text_is_valid(consistency_threshold):
         raise ValueError("Consistency threshold is required")
@@ -999,7 +1010,8 @@ def constitute_statistical_validation(registry_path, *, partition_registry_path,
                 fold_result_registry_path=fold_result_registry_path,
                 experiment_registry_path=experiment_registry_path,
                 hypothesis_registry_path=hypothesis_registry_path,
-                dataset_directory=dataset_directory, strategy=strategy, horizon=horizon)
+                dataset_directory=dataset_directory, strategy=strategy, horizon=horizon,
+                auxiliary_verifiers=auxiliary_verifiers)
 
     fold_summaries = [_statistical_validation_fold_summary(item) for item in fold_results]
     sensitivity = _statistical_validation_sensitivity(fold_summaries)
@@ -1045,7 +1057,7 @@ def query_statistical_validation(registry_path, *, outcome=None):
 def verified_statistical_validation(registry_path, validation_id, *, partition_registry_path,
                                     fold_result_registry_path, experiment_registry_path,
                                     hypothesis_registry_path, dataset_directory, strategy=None,
-                                    horizon=1):
+                                    horizon=1, auxiliary_verifiers=None):
     """Reload a Statistical Validation and reproduce its verdict from every
     fold, re-verified fresh from the sealed partition/experiment/dataset."""
     record = load_statistical_validation(registry_path, validation_id)
@@ -1053,14 +1065,14 @@ def verified_statistical_validation(registry_path, validation_id, *, partition_r
     partition = verified_walk_forward_partition(
         partition_registry_path, partition_reference["partition_id"],
         dataset_directory=dataset_directory, hypothesis_registry_path=hypothesis_registry_path,
-        strategy=strategy, horizon=horizon)
+        strategy=strategy, horizon=horizon, auxiliary_verifiers=auxiliary_verifiers)
     if partition["record_id"] != partition_reference["record_id"]:
         raise ValueError("Statistical Validation partition reference is invalid")
     fold_results = _statistical_validation_all_fold_results(
         fold_result_registry_path, partition, partition_registry_path=partition_registry_path,
         experiment_registry_path=experiment_registry_path,
         hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory,
-        strategy=strategy, horizon=horizon)
+        strategy=strategy, horizon=horizon, auxiliary_verifiers=auxiliary_verifiers)
     reference = _statistical_validation_reference(partition, fold_results)
     if reference != record["reference"]:
         raise ValueError("Statistical Validation fold result references are invalid")
