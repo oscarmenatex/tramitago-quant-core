@@ -591,6 +591,46 @@
       "system_version": "0.1.0",
       "target_metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
       "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "LT",
+        "expected_direction": "DECREASE",
+        "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+        "threshold": "0"
+      },
+      "code_revision": "b95ee1b7ef35482fa0b5f939fd22298985028cdf",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2026-01-01T00:00:00Z",
+          "start_utc": "2025-01-01T00:00:00Z"
+        },
+        "universe": [
+          "BTC-USD"
+        ],
+        "variables": [
+          "close",
+          "sma_close_3",
+          "forward_return_1d"
+        ]
+      },
+      "creation_context": {
+        "created_by": "oscar+claude-analysis",
+        "provenance": [
+          "DISCOVERY|artifacts/live-run-1",
+          "SNAPSHOT_SHA256|a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f",
+          "ANALYSIS|tramitago-quant-core-docs/Hipotesis de Reversion - Por Que Invertir la Direccion SMA3 (2026-09-29).txt"
+        ]
+      },
+      "creation_timestamp": "2026-09-29T05:00:00Z",
+      "description": "For BTC-USD, the mean t+1 return when close_t <= SMA3_t exceeds the mean t+1 return when close_t > SMA3_t (reversal direction of the original, already-rejected SMA3 Hypothesis: motivated by a consistent sign pattern across 12 prior real hypotheses -- 9 of 12 momentum-direction variants showed the upper group underperforming, with larger magnitude than the 3 near-zero positive cases -- suggesting short-term reversal, not continuation).",
+      "expected_direction": "DECREASE",
+      "hypothesis_id": "HYPOTHESIS|a31ef17d-ce17-4763-a735-9759a5c3a444",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|a31ef17d-ce17-4763-a735-9759a5c3a444|1|b4b1c8a6bb40c1fc0d83c01f88ca1bbe5300bfbcfc6ac5665d8f200224b64e30",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+      "version": 1
     }
   ],
   "schema_version": "2"
