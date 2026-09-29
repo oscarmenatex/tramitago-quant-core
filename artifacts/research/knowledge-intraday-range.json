@@ -1,0 +1,238 @@
+{
+  "records": [
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d((high-low)/close > RANGE20) - mean_forward_return_1d(NOT ...)",
+          "threshold": "0"
+        },
+        "description": "For BTC-USD, the mean t+1 return when the day close-normalized intraday range (high_t - low_t)/close_t exceeds its trailing 20-day average exceeds the mean t+1 return otherwise -- INTRADAY_RANGE, a volatility-expansion signal reading high/low for the first time (never touched by any prior Strategy).",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|9169a0c0-8a1d-4ce9-93e7-b52e2a871650",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|9169a0c0-8a1d-4ce9-93e7-b52e2a871650|1|3f3f93f2a6cfc2e132111169dea4e374e22e54c3e1bf1bf3060252544267cb2a",
+        "target_metric": "mean_forward_return_1d((high-low)/close > RANGE20) - mean_forward_return_1d(NOT ...)",
+        "version": 1
+      },
+      "interpretation": "INTRADAY_RANGE(window=20) sobre BTC-USD, 2025 completo -- primera Strategy que lee high/low. Clasifica UPPER cuando el rango intradia normalizado (high_t-low_t)/close_t supera su promedio movil de 20 dias. Muestra completa: metric=-0.002302, NOT_MET (grupo UPPER: n=154, media=-0.001260; grupo LOWER_OR_EQUAL: n=211, media=+0.001043) -- el signo es NEGATIVO y de magnitud comparable a las mayores vistas: los dias de rango amplio (mas incertidumbre intradia) tienden a rendir MENOS al dia siguiente, no mas. Walk-forward independiente (M2.6, 5 folds): consistencia real 40% (NOT_VALIDATED, razon=CONSISTENCY_BELOW_THRESHOLD). Risk Analytics: Sharpe promedio -0.466, peor drawdown de fold 21.2%. La expansion de volatilidad intradia -- la mitad high/low del OHLCV nunca antes tocada -- tampoco produce una senal robusta: mismo patron de fondo (40% consistencia) que las 6 familias de senal previas.",
+      "knowledge_id": "KNOWLEDGE|0e078cd856314e9783c6030eba021a0cc1234020e75c147646adb85a5c738d03",
+      "limitations": [
+        "Una sola ventana evaluada (RANGE20) -- no se probo un barrido de ventanas.",
+        "Un solo instrumento (BTC-USD) y periodo (2025).",
+        "Una sola direccion (INCREASE: rango alto -> mayor retorno). El signo negativo observado sugiere que la direccion inversa (rango alto -> menor retorno) podria ser MET en muestra completa, pero dado el patron ya visto en la reversion de SMA3 (mejor muestra completa, peor walk-forward), no se persiguio.",
+        "Risk Analytics (Sharpe/drawdown) es descriptivo -- no gatea ni la Disposition ni el veredicto walk-forward.",
+        "Sexta familia de senal probada sin exito -- refuerza que el problema no es la eleccion de indicador dentro del OHLCV diario, sino algo mas estructural (ver diagnostico del espacio de busqueda)."
+      ],
+      "materialization": {
+        "knowledge_code_revision": "aac4799509976ed2e20a439b3722c9bad6660dc3",
+        "pipeline_sha256": "f1d60da8c1f24a2828194cdaf132174ef340bd38848f646fe667984d44271a4c",
+        "preserved_at": "2026-09-29T04:52:10.706179Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d((high-low)/close > RANGE20) - mean_forward_return_1d(NOT ...)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "(high_t - low_t) / close_t <= RANGE20_t",
+          "upper_group": "(high_t - low_t) / close_t > RANGE20_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "range_avg_20",
+          "parameters": {
+            "window": 20
+          },
+          "strategy_id": "INTRADAY_RANGE"
+        },
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | (high_t - low_t) / close_t > RANGE20_t) - mean(return_t+1 | (high_t - low_t) / close_t <= RANGE20_t)",
+          "name": "mean_forward_return_1d((high-low)/close > RANGE20) - mean_forward_return_1d(NOT ...)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_RANGE20_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2024-12-12T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2024-12-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2024-12-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2024-12-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2024-12-16T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2024-12-17T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2024-12-18T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2024-12-19T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2024-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2024-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2024-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2024-12-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2024-12-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2024-12-25T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2024-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2024-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2024-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2024-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|0e078cd856314e9783c6030eba021a0cc1234020e75c147646adb85a5c738d03|bc728b1195618f0ee49b2764315c4c8ae45168e5dc9734e284102c6f3c96766b",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|f9bd2fcfd99b5c14bad3c1c1b977d9e92019f16a6d9faec489a0d4d846e1088b",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|f9bd2fcfd99b5c14bad3c1c1b977d9e92019f16a6d9faec489a0d4d846e1088b|66a059ca8918cbbda1cea49eaaef13474bf9f4880b7b9270291e6db16978a2ad"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|3d3f86a0-c9a7-463f-910c-606c0d8f0a2d",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|3d3f86a0-c9a7-463f-910c-606c0d8f0a2d|1|5ef0799f9d27265ca7aeeb137a5c9f2bbd8984946cce53b6a1f3ef53e4e847e0",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "aac4799509976ed2e20a439b3722c9bad6660dc3",
+          "hypothesis_id": "HYPOTHESIS|9169a0c0-8a1d-4ce9-93e7-b52e2a871650",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|9169a0c0-8a1d-4ce9-93e7-b52e2a871650|1|3f3f93f2a6cfc2e132111169dea4e374e22e54c3e1bf1bf3060252544267cb2a",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|d50beb5d5e3850bea6c1b5aa4b811150c92c2d3ccdb839055b58c9e764648e8e|e033ba580b76740d72b68d222d2a35e31e286bbdb983e840c1a05d874cc8936a",
+          "research_result_id": "RESEARCH_RESULT|d50beb5d5e3850bea6c1b5aa4b811150c92c2d3ccdb839055b58c9e764648e8e"
+        }
+      },
+      "results": {
+        "outcome": "REJECTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d((high-low)/close > RANGE20) - mean_forward_return_1d(NOT ...)",
+            "threshold": "0"
+          },
+          "criterion_result": "NOT_MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 211,
+              "mean_return_t_plus_1": 0.0010426944789174576,
+              "rule": "(high_t - low_t) / close_t <= RANGE20_t"
+            },
+            "upper": {
+              "count": 154,
+              "mean_return_t_plus_1": -0.0012596752638772805,
+              "rule": "(high_t - low_t) / close_t > RANGE20_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": -0.0023023697427947383,
+          "observation_count": 365,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    }
+  ],
+  "schema_version": "1"
+}

@@ -912,6 +912,48 @@
       "system_version": "0.1.0",
       "target_metric": "mean_forward_return_1d(close_t > sma_close_3 AND volume_t > volsurge20) - mean_forward_return_1d(NOT ...)",
       "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "GT",
+        "expected_direction": "INCREASE",
+        "metric": "mean_forward_return_1d((high-low)/close > RANGE20) - mean_forward_return_1d(NOT ...)",
+        "threshold": "0"
+      },
+      "code_revision": "aac4799509976ed2e20a439b3722c9bad6660dc3",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2026-01-01T00:00:00Z",
+          "start_utc": "2025-01-01T00:00:00Z"
+        },
+        "universe": [
+          "BTC-USD"
+        ],
+        "variables": [
+          "high",
+          "low",
+          "close",
+          "range_avg_20",
+          "forward_return_1d"
+        ]
+      },
+      "creation_context": {
+        "created_by": "oscar+claude-analysis",
+        "provenance": [
+          "DISCOVERY|artifacts/live-run-1",
+          "SNAPSHOT_SHA256|a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f",
+          "ANALYSIS|tramitago-quant-core-docs/Hipotesis de Rango Intradia - RANGE20 BTC-USD (2026-09-29).txt"
+        ]
+      },
+      "creation_timestamp": "2026-09-29T10:00:00Z",
+      "description": "For BTC-USD, the mean t+1 return when the day close-normalized intraday range (high_t - low_t)/close_t exceeds its trailing 20-day average exceeds the mean t+1 return otherwise -- INTRADAY_RANGE, a volatility-expansion signal reading high/low for the first time (never touched by any prior Strategy).",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|9169a0c0-8a1d-4ce9-93e7-b52e2a871650",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|9169a0c0-8a1d-4ce9-93e7-b52e2a871650|1|3f3f93f2a6cfc2e132111169dea4e374e22e54c3e1bf1bf3060252544267cb2a",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_return_1d((high-low)/close > RANGE20) - mean_forward_return_1d(NOT ...)",
+      "version": 1
     }
   ],
   "schema_version": "2"
