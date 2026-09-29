@@ -1074,6 +1074,50 @@
       "system_version": "0.1.0",
       "target_metric": "mean_forward_return_1d(funding_rate_t-1 > FUNDSURGE20) - mean_forward_return_1d(funding_rate_t-1 <= FUNDSURGE20)",
       "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "GT",
+        "expected_direction": "INCREASE",
+        "metric": "mean_forward_return_1d(portfolio_votes >= 3) - mean_forward_return_1d(portfolio_votes < 3)",
+        "threshold": "0"
+      },
+      "code_revision": "0771eefc6b421a308c3394cf38286d91b3ac1b15",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2025-01-01T00:00:00Z",
+          "start_utc": "2024-01-01T00:00:00Z"
+        },
+        "universe": [
+          "BTC-USD"
+        ],
+        "variables": [
+          "close",
+          "volume",
+          "high",
+          "low",
+          "funding_rate",
+          "portfolio_votes",
+          "forward_return_1d"
+        ]
+      },
+      "creation_context": {
+        "created_by": "oscar+claude-analysis",
+        "provenance": [
+          "DISCOVERY|artifacts/live-run-1",
+          "SNAPSHOT_SHA256|a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f",
+          "ANALYSIS|tramitago-quant-core-docs/Via A - Cartera de Senales, Pre-declaracion (2026-09-29).txt"
+        ]
+      },
+      "creation_timestamp": "2026-09-29T13:00:00Z",
+      "description": "For BTC-USD, the mean t+1 return on days when at least 3 of 4 weak signals agree (close>SMA3, volume>VOLAVG20, intraday range>RANGEAVG20, prior-day funding>FUNDAVG20) exceeds the mean t+1 return otherwise -- SIGNAL_PORTFOLIO, the first test of a portfolio of weak signals rather than one signal alone. Directions pre-declared as each component was originally declared; evaluated out of sample on 2024, never on 2025 where the diversity was measured.",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|055afbb0-5f33-4408-9416-7de4ce1f0dd1",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|055afbb0-5f33-4408-9416-7de4ce1f0dd1|1|8d604464c68a9a985f446c98e1e4562adf99ffe16849bbcae1fa66578faa4d99",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_return_1d(portfolio_votes >= 3) - mean_forward_return_1d(portfolio_votes < 3)",
+      "version": 1
     }
   ],
   "schema_version": "2"

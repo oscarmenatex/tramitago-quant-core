@@ -1,0 +1,246 @@
+{
+  "records": [
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(portfolio_votes >= 3) - mean_forward_return_1d(portfolio_votes < 3)",
+          "threshold": "0"
+        },
+        "description": "For BTC-USD, the mean t+1 return on days when at least 3 of 4 weak signals agree (close>SMA3, volume>VOLAVG20, intraday range>RANGEAVG20, prior-day funding>FUNDAVG20) exceeds the mean t+1 return otherwise -- SIGNAL_PORTFOLIO, the first test of a portfolio of weak signals rather than one signal alone. Directions pre-declared as each component was originally declared; evaluated out of sample on 2024, never on 2025 where the diversity was measured.",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|055afbb0-5f33-4408-9416-7de4ce1f0dd1",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|055afbb0-5f33-4408-9416-7de4ce1f0dd1|1|8d604464c68a9a985f446c98e1e4562adf99ffe16849bbcae1fa66578faa4d99",
+        "target_metric": "mean_forward_return_1d(portfolio_votes >= 3) - mean_forward_return_1d(portfolio_votes < 3)",
+        "version": 1
+      },
+      "interpretation": "SIGNAL_PORTFOLIO(3,20,20,20) sobre BTC-USD 2024 -- primera prueba de una CARTERA de senales debiles en vez de una senal evaluada sola (via 7.A del catalogo). Voto por mayoria de cuatro familias estructuralmente distintas (precio, actividad, volatilidad, posicionamiento), UPPER con 3 o mas votos de 4. Cero parametros ajustados: votos iguales, sin pesos que ajustar y sin escala que estandarizar. Direcciones PRE-DECLARADAS por escrito antes de ejecutar, cada una identica a la de la Hypothesis original de su componente -- deliberadamente NO invertidas, pese a que los cuatro componentes mostraron IC negativo en BTC-2025, porque invertirlas habria sido snoopear cuatro signos sobre la muestra que los sugirio.\n\nEvaluado FUERA DE MUESTRA en 2024 (366 dias, 6 folds de 61), nunca en 2025, que es donde se midio la diversidad de los componentes y donde vive el sesgo de reversion que ya probamos que no generaliza.\n\nResultado: muestra completa metric=+0.001079, MET (grupo 3+ votos n=109, media=+0.003215; resto n=257, media=+0.002136) -- ACCEPTED en Disposition. Walk-forward independiente: 2 de 6 folds, consistencia 33.3%, NOT_VALIDATED. p-valor binomial exacto 0.8906. Los folds individuales van de -0.008140 a +0.012949, es decir cambian de signo con la misma inestabilidad que todo lo anterior.\n\nLo que esto cierra: la hipotesis de que el problema era la UNIDAD DE EVALUACION (probar senales de a una y exigir que cada una fuera robusta sola) y no el contenido de las senales. Combinar cuatro familias medidas como genuinamente diversas (correlacion media 0.131, amplitud efectiva 2.87 de 4) no produjo consistencia; de hecho 33.3% es PEOR que la de varios componentes por separado. La amplitud efectiva real era insuficiente para compensar lo debil de cada componente.\n\nDetalle honesto que no cambia el veredicto: por primera vez en el proyecto DOS de los criterios de riesgo de Fase 0->1 se cumplen a la vez -- Sharpe promedio +0.777 (umbral >=0.5) y peor drawdown 13.42% (umbral <=15%). Pero eso se explica por exposicion: la cartera solo esta larga ~30% de los dias, y 2024 fue alcista, asi que menos exposicion produce menos drawdown. No es calidad de senal, y la consistencia (33.3% frente al 70% exigido) falla por el margen mas amplio. Ningun criterio compensa a otro (DOC-004 REQ-004-005).",
+      "knowledge_id": "KNOWLEDGE|f08d3261f46ac09532916e616cef17dfc93962a1b5e563814a21697e8824f03f",
+      "limitations": [
+        "Limitacion DECLARADA DE ANTEMANO en el diseno: los votos de volumen y rango correlacionan 0.772 entre si, asi que la dimension de agitacion de mercado pesa dos de los cuatro votos. Se acepto conscientemente en vez de descartar uno segun su IC en muestra, que habria sido otra decision snoopeada.",
+        "Una sola combinacion de ventanas (3,20,20,20), las mismas de los componentes originales -- no se barrio ningun parametro, deliberadamente.",
+        "Un solo instrumento (BTC-USD) y un solo periodo (2024).",
+        "Regla de agregacion unica (voto por mayoria, umbral en 3 de 4). No se probaron otras reglas (2 de 4, unanimidad, promedio de z-scores) -- probar varias y quedarse con la mejor seria exactamente el sobreajuste que el diseno de votos iguales busca evitar.",
+        "Los criterios de riesgo que se cumplen (Sharpe, drawdown) reflejan baja exposicion en un ano alcista, no calidad de senal.",
+        "Risk Analytics es descriptivo -- no gatea la Disposition ni el veredicto walk-forward."
+      ],
+      "materialization": {
+        "knowledge_code_revision": "0771eefc6b421a308c3394cf38286d91b3ac1b15",
+        "pipeline_sha256": "44f39a14fb539222793b4bfe9336c254335adef3e83251acdaef9b63117780ec",
+        "preserved_at": "2026-09-29T05:54:42.056910Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(portfolio_votes >= 3) - mean_forward_return_1d(portfolio_votes < 3)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "NOT (at least 3 of 4 votes: close>SMA3, volume>VOLAVG20, range>RANGEAVG20, funding_t-1>FUNDAVG20)",
+          "upper_group": "at least 3 of 4 votes: close>SMA3, volume>VOLAVG20, range>RANGEAVG20, funding_t-1>FUNDAVG20"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "portfolio_votes",
+          "parameters": {
+            "funding_window": 20,
+            "range_window": 20,
+            "sma_window": 3,
+            "volume_window": 20
+          },
+          "strategy_id": "SIGNAL_PORTFOLIO"
+        },
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | at least 3 of 4 votes: close>SMA3, volume>VOLAVG20, range>RANGEAVG20, funding_t-1>FUNDAVG20) - mean(return_t+1 | NOT (at least 3 of 4 votes: close>SMA3, volume>VOLAVG20, range>RANGEAVG20, funding_t-1>FUNDAVG20))",
+          "name": "mean_forward_return_1d(portfolio_votes >= 3) - mean_forward_return_1d(portfolio_votes < 3)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-11T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-12T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-16T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-17T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-18T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-19T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-25T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2025-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2025-01-01T00:00:00Z",
+            "start_utc": "2024-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|f08d3261f46ac09532916e616cef17dfc93962a1b5e563814a21697e8824f03f|bb037e4339ba859ce7669c36498ffb2428e48fe399cd25795a1eeb73b38f6720",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|6e84fd238875594c2454c649e032a84f7d2d91f91d3938ea62be24f112bf42f8",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|6e84fd238875594c2454c649e032a84f7d2d91f91d3938ea62be24f112bf42f8|198ff592333a5c56bb181c48a20fa37f91ba1c8bcee24d314d267cc3fb2db681"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|5ce482da-e2df-4084-aa5b-9ad1de5e8a6c",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|5ce482da-e2df-4084-aa5b-9ad1de5e8a6c|1|2fc94132c2e2752d22a04f5105d23d0388199473c46bd0c0ef0618363ee55943",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "0771eefc6b421a308c3394cf38286d91b3ac1b15",
+          "hypothesis_id": "HYPOTHESIS|055afbb0-5f33-4408-9416-7de4ce1f0dd1",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|055afbb0-5f33-4408-9416-7de4ce1f0dd1|1|8d604464c68a9a985f446c98e1e4562adf99ffe16849bbcae1fa66578faa4d99",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|5b1596ed4540b4d48dcb6189d668a44085e01858b72e4c39d56c41fe91a69c10|b07e4e58ccc32f0278ba4043f630a7ad4472ef68ead46f5eaa0e8380794d3a54",
+          "research_result_id": "RESEARCH_RESULT|5b1596ed4540b4d48dcb6189d668a44085e01858b72e4c39d56c41fe91a69c10"
+        }
+      },
+      "results": {
+        "outcome": "ACCEPTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(portfolio_votes >= 3) - mean_forward_return_1d(portfolio_votes < 3)",
+            "threshold": "0"
+          },
+          "criterion_result": "MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 257,
+              "mean_return_t_plus_1": 0.0021362609103804183,
+              "rule": "NOT (at least 3 of 4 votes: close>SMA3, volume>VOLAVG20, range>RANGEAVG20, funding_t-1>FUNDAVG20)"
+            },
+            "upper": {
+              "count": 109,
+              "mean_return_t_plus_1": 0.0032154790987384387,
+              "rule": "at least 3 of 4 votes: close>SMA3, volume>VOLAVG20, range>RANGEAVG20, funding_t-1>FUNDAVG20"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": 0.0010792181883580204,
+          "observation_count": 366,
+          "period": {
+            "end_exclusive_utc": "2025-01-01T00:00:00Z",
+            "start_utc": "2024-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    }
+  ],
+  "schema_version": "1"
+}

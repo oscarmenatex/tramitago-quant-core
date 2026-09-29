@@ -1,0 +1,3832 @@
+{
+  "results": [
+    {
+      "evaluation": {
+        "criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(portfolio_votes >= 3) - mean_forward_return_1d(portfolio_votes < 3)",
+          "threshold": "0"
+        },
+        "criterion_result": "MET",
+        "groups": {
+          "lower_or_equal": {
+            "count": 257,
+            "mean_return_t_plus_1": 0.0021362609103804183,
+            "rule": "NOT (at least 3 of 4 votes: close>SMA3, volume>VOLAVG20, range>RANGEAVG20, funding_t-1>FUNDAVG20)"
+          },
+          "upper": {
+            "count": 109,
+            "mean_return_t_plus_1": 0.0032154790987384387,
+            "rule": "at least 3 of 4 votes: close>SMA3, volume>VOLAVG20, range>RANGEAVG20, funding_t-1>FUNDAVG20"
+          }
+        },
+        "inconclusive_reason": null,
+        "metric": 0.0010792181883580204,
+        "observation_count": 366,
+        "period": {
+          "end_exclusive_utc": "2025-01-01T00:00:00Z",
+          "start_utc": "2024-01-01T00:00:00Z"
+        }
+      },
+      "evidence": [
+        {
+          "close": 44220.78,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 44972.8,
+          "next_timestamp": "2024-01-02T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.017006032005767446,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-01T00:00:00Z"
+        },
+        {
+          "close": 44972.8,
+          "group": "UPPER",
+          "next_close": 42862.44,
+          "next_timestamp": "2024-01-03T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": -0.04692525259712543,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-02T00:00:00Z"
+        },
+        {
+          "close": 42862.44,
+          "group": "UPPER",
+          "next_close": 44193.29,
+          "next_timestamp": "2024-01-04T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.031049328969605883,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-03T00:00:00Z"
+        },
+        {
+          "close": 44193.29,
+          "group": "UPPER",
+          "next_close": 44186.59,
+          "next_timestamp": "2024-01-05T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": -0.00015160672581748802,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-04T00:00:00Z"
+        },
+        {
+          "close": 44186.59,
+          "group": "UPPER",
+          "next_close": 43992.44,
+          "next_timestamp": "2024-01-06T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": -0.004393867008067209,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-05T00:00:00Z"
+        },
+        {
+          "close": 43992.44,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 43950.28,
+          "next_timestamp": "2024-01-07T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": -0.0009583464795315244,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-06T00:00:00Z"
+        },
+        {
+          "close": 43950.28,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 46995.1,
+          "next_timestamp": "2024-01-08T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.06927873952111341,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-07T00:00:00Z"
+        },
+        {
+          "close": 46995.1,
+          "group": "UPPER",
+          "next_close": 46124.08,
+          "next_timestamp": "2024-01-09T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.01853427272204966,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-08T00:00:00Z"
+        },
+        {
+          "close": 46124.08,
+          "group": "UPPER",
+          "next_close": 46666.11,
+          "next_timestamp": "2024-01-10T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": 0.011751562307584118,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-09T00:00:00Z"
+        },
+        {
+          "close": 46666.11,
+          "group": "UPPER",
+          "next_close": 46342.66,
+          "next_timestamp": "2024-01-11T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": -0.006931154107338244,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-10T00:00:00Z"
+        },
+        {
+          "close": 46342.66,
+          "group": "UPPER",
+          "next_close": 42773.03,
+          "next_timestamp": "2024-01-12T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.07702686897989897,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-11T00:00:00Z"
+        },
+        {
+          "close": 42773.03,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 42839.33,
+          "next_timestamp": "2024-01-13T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.0015500421644201179,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-12T00:00:00Z"
+        },
+        {
+          "close": 42839.33,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 41697.33,
+          "next_timestamp": "2024-01-14T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": -0.026657746514709757,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-13T00:00:00Z"
+        },
+        {
+          "close": 41697.33,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 42490.16,
+          "next_timestamp": "2024-01-15T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.019013927270643105,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-14T00:00:00Z"
+        },
+        {
+          "close": 42490.16,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 43130.45,
+          "next_timestamp": "2024-01-16T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.01506913600701898,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-15T00:00:00Z"
+        },
+        {
+          "close": 43130.45,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 42739.49,
+          "next_timestamp": "2024-01-17T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.009064593576000202,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-16T00:00:00Z"
+        },
+        {
+          "close": 42739.49,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 41293.5,
+          "next_timestamp": "2024-01-18T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": -0.033832645171947506,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-17T00:00:00Z"
+        },
+        {
+          "close": 41293.5,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 41624.07,
+          "next_timestamp": "2024-01-19T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.008005376148788601,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-18T00:00:00Z"
+        },
+        {
+          "close": 41624.07,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 41666.67,
+          "next_timestamp": "2024-01-20T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.0010234462896108187,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-19T00:00:00Z"
+        },
+        {
+          "close": 41666.67,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 41554.05,
+          "next_timestamp": "2024-01-21T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.002702879783769485,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-20T00:00:00Z"
+        },
+        {
+          "close": 41554.05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 39524.27,
+          "next_timestamp": "2024-01-22T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": -0.048846742976918156,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-21T00:00:00Z"
+        },
+        {
+          "close": 39524.27,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 39878.3,
+          "next_timestamp": "2024-01-23T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.008957281184447163,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-22T00:00:00Z"
+        },
+        {
+          "close": 39878.3,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 40077.78,
+          "next_timestamp": "2024-01-24T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.005002219252074225,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-23T00:00:00Z"
+        },
+        {
+          "close": 40077.78,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 39941.66,
+          "next_timestamp": "2024-01-25T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.003396395708544664,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-24T00:00:00Z"
+        },
+        {
+          "close": 39941.66,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 41814.8,
+          "next_timestamp": "2024-01-26T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.04689689912737727,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-25T00:00:00Z"
+        },
+        {
+          "close": 41814.8,
+          "group": "UPPER",
+          "next_close": 42126.55,
+          "next_timestamp": "2024-01-27T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.007455494226924486,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-26T00:00:00Z"
+        },
+        {
+          "close": 42126.55,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 42034.59,
+          "next_timestamp": "2024-01-28T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.002182946384168827,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-27T00:00:00Z"
+        },
+        {
+          "close": 42034.59,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 43306.18,
+          "next_timestamp": "2024-01-29T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.030251038489967463,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-28T00:00:00Z"
+        },
+        {
+          "close": 43306.18,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 42942.78,
+          "next_timestamp": "2024-01-30T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.008391412034033041,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-29T00:00:00Z"
+        },
+        {
+          "close": 42942.78,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 42548.08,
+          "next_timestamp": "2024-01-31T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.009191300609788122,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-30T00:00:00Z"
+        },
+        {
+          "close": 42548.08,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 43078.81,
+          "next_timestamp": "2024-02-01T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.012473653335238533,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-01-31T00:00:00Z"
+        },
+        {
+          "close": 43078.81,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 43181.66,
+          "next_timestamp": "2024-02-02T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.0023874847053575454,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-01T00:00:00Z"
+        },
+        {
+          "close": 43181.66,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 43010.67,
+          "next_timestamp": "2024-02-03T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.003959782926362787,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-02T00:00:00Z"
+        },
+        {
+          "close": 43010.67,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 42568.55,
+          "next_timestamp": "2024-02-04T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.010279309761972888,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-03T00:00:00Z"
+        },
+        {
+          "close": 42568.55,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 42657.67,
+          "next_timestamp": "2024-02-05T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.0020935643802759696,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-04T00:00:00Z"
+        },
+        {
+          "close": 42657.67,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 43095.79,
+          "next_timestamp": "2024-02-06T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.0102706031529618,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-05T00:00:00Z"
+        },
+        {
+          "close": 43095.79,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 44343.61,
+          "next_timestamp": "2024-02-07T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.028954568416079685,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-06T00:00:00Z"
+        },
+        {
+          "close": 44343.61,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 45305.2,
+          "next_timestamp": "2024-02-08T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.021684973325356127,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-07T00:00:00Z"
+        },
+        {
+          "close": 45305.2,
+          "group": "UPPER",
+          "next_close": 47160.41,
+          "next_timestamp": "2024-02-09T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.040949162568535424,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-08T00:00:00Z"
+        },
+        {
+          "close": 47160.41,
+          "group": "UPPER",
+          "next_close": 47767.06,
+          "next_timestamp": "2024-02-10T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": 0.012863543807188904,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-09T00:00:00Z"
+        },
+        {
+          "close": 47767.06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 48316.3,
+          "next_timestamp": "2024-02-11T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.011498300293131036,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-10T00:00:00Z"
+        },
+        {
+          "close": 48316.3,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 49941.81,
+          "next_timestamp": "2024-02-12T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.03364309767097229,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-11T00:00:00Z"
+        },
+        {
+          "close": 49941.81,
+          "group": "UPPER",
+          "next_close": 49725.36,
+          "next_timestamp": "2024-02-13T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": -0.004334043960360967,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-12T00:00:00Z"
+        },
+        {
+          "close": 49725.36,
+          "group": "UPPER",
+          "next_close": 51858.59,
+          "next_timestamp": "2024-02-14T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": 0.042900242451738846,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-13T00:00:00Z"
+        },
+        {
+          "close": 51858.59,
+          "group": "UPPER",
+          "next_close": 51934.29,
+          "next_timestamp": "2024-02-15T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": 0.0014597388783614829,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-14T00:00:00Z"
+        },
+        {
+          "close": 51934.29,
+          "group": "UPPER",
+          "next_close": 52162.64,
+          "next_timestamp": "2024-02-16T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.0043969023163694665,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-15T00:00:00Z"
+        },
+        {
+          "close": 52162.64,
+          "group": "UPPER",
+          "next_close": 51666.22,
+          "next_timestamp": "2024-02-17T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.009516772924069716,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-16T00:00:00Z"
+        },
+        {
+          "close": 51666.22,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 52153.63,
+          "next_timestamp": "2024-02-18T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.009433823492409399,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-17T00:00:00Z"
+        },
+        {
+          "close": 52153.63,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 51787.05,
+          "next_timestamp": "2024-02-19T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.007028849190363062,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-18T00:00:00Z"
+        },
+        {
+          "close": 51787.05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 52277.52,
+          "next_timestamp": "2024-02-20T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.009470900543668614,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-19T00:00:00Z"
+        },
+        {
+          "close": 52277.52,
+          "group": "UPPER",
+          "next_close": 51851.67,
+          "next_timestamp": "2024-02-21T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": -0.008145948774922696,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-20T00:00:00Z"
+        },
+        {
+          "close": 51851.67,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 51258.7,
+          "next_timestamp": "2024-02-22T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.011435890107300284,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-21T00:00:00Z"
+        },
+        {
+          "close": 51258.7,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 50747.05,
+          "next_timestamp": "2024-02-23T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.009981720176282183,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-22T00:00:00Z"
+        },
+        {
+          "close": 50747.05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 51570.65,
+          "next_timestamp": "2024-02-24T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.016229514819088076,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-23T00:00:00Z"
+        },
+        {
+          "close": 51570.65,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 51731.0,
+          "next_timestamp": "2024-02-25T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.003109326719752392,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-24T00:00:00Z"
+        },
+        {
+          "close": 51731.0,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 54533.48,
+          "next_timestamp": "2024-02-26T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.05417409290367492,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-25T00:00:00Z"
+        },
+        {
+          "close": 54533.48,
+          "group": "UPPER",
+          "next_close": 57077.07,
+          "next_timestamp": "2024-02-27T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.04664272296578176,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-26T00:00:00Z"
+        },
+        {
+          "close": 57077.07,
+          "group": "UPPER",
+          "next_close": 62518.9,
+          "next_timestamp": "2024-02-28T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": 0.09534178961884354,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-27T00:00:00Z"
+        },
+        {
+          "close": 62518.9,
+          "group": "UPPER",
+          "next_close": 61179.03,
+          "next_timestamp": "2024-02-29T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": -0.021431439132806318,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-28T00:00:00Z"
+        },
+        {
+          "close": 61179.03,
+          "group": "UPPER",
+          "next_close": 62436.72,
+          "next_timestamp": "2024-03-01T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": 0.020557534174700187,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-02-29T00:00:00Z"
+        },
+        {
+          "close": 62436.72,
+          "group": "UPPER",
+          "next_close": 62045.78,
+          "next_timestamp": "2024-03-02T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": -0.006261379521538046,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-01T00:00:00Z"
+        },
+        {
+          "close": 62045.78,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 63154.49,
+          "next_timestamp": "2024-03-03T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.017869224949706553,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-02T00:00:00Z"
+        },
+        {
+          "close": 63154.49,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 68360.14,
+          "next_timestamp": "2024-03-04T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.0824272351815365,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-03T00:00:00Z"
+        },
+        {
+          "close": 68360.14,
+          "group": "UPPER",
+          "next_close": 63800.78,
+          "next_timestamp": "2024-03-05T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": -0.06669617704118225,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-04T00:00:00Z"
+        },
+        {
+          "close": 63800.78,
+          "group": "UPPER",
+          "next_close": 66122.28,
+          "next_timestamp": "2024-03-06T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.03638670248232079,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-05T00:00:00Z"
+        },
+        {
+          "close": 66122.28,
+          "group": "UPPER",
+          "next_close": 66938.21,
+          "next_timestamp": "2024-03-07T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": 0.012339713633589211,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-06T00:00:00Z"
+        },
+        {
+          "close": 66938.21,
+          "group": "UPPER",
+          "next_close": 68289.16,
+          "next_timestamp": "2024-03-08T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.020182045501366153,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-07T00:00:00Z"
+        },
+        {
+          "close": 68289.16,
+          "group": "UPPER",
+          "next_close": 68480.0,
+          "next_timestamp": "2024-03-09T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": 0.002794587017910244,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-08T00:00:00Z"
+        },
+        {
+          "close": 68480.0,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 69032.12,
+          "next_timestamp": "2024-03-10T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.008062499999999861,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-09T00:00:00Z"
+        },
+        {
+          "close": 69032.12,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 72110.98,
+          "next_timestamp": "2024-03-11T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.04460039761201018,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-10T00:00:00Z"
+        },
+        {
+          "close": 72110.98,
+          "group": "UPPER",
+          "next_close": 71475.93,
+          "next_timestamp": "2024-03-12T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": -0.008806564548145102,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-11T00:00:00Z"
+        },
+        {
+          "close": 71475.93,
+          "group": "UPPER",
+          "next_close": 73135.04,
+          "next_timestamp": "2024-03-13T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.023212149880386335,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-12T00:00:00Z"
+        },
+        {
+          "close": 73135.04,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 71364.58,
+          "next_timestamp": "2024-03-14T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.02420809505265864,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-13T00:00:00Z"
+        },
+        {
+          "close": 71364.58,
+          "group": "UPPER",
+          "next_close": 69506.88,
+          "next_timestamp": "2024-03-15T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.026031120760466875,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-14T00:00:00Z"
+        },
+        {
+          "close": 69506.88,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 65254.22,
+          "next_timestamp": "2024-03-16T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.06118329581186788,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-15T00:00:00Z"
+        },
+        {
+          "close": 65254.22,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 68343.64,
+          "next_timestamp": "2024-03-17T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.04734437098474231,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-16T00:00:00Z"
+        },
+        {
+          "close": 68343.64,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 67613.04,
+          "next_timestamp": "2024-03-18T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.01069009493787576,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-17T00:00:00Z"
+        },
+        {
+          "close": 67613.04,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 61906.27,
+          "next_timestamp": "2024-03-19T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.08440339319160917,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-18T00:00:00Z"
+        },
+        {
+          "close": 61906.27,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 67858.8,
+          "next_timestamp": "2024-03-20T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.09615391138894336,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-19T00:00:00Z"
+        },
+        {
+          "close": 67858.8,
+          "group": "UPPER",
+          "next_close": 65484.7,
+          "next_timestamp": "2024-03-21T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.03498588245002865,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-20T00:00:00Z"
+        },
+        {
+          "close": 65484.7,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 63814.56,
+          "next_timestamp": "2024-03-22T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.02550427809854816,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-21T00:00:00Z"
+        },
+        {
+          "close": 63814.56,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 63998.86,
+          "next_timestamp": "2024-03-23T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.0028880556412205216,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-22T00:00:00Z"
+        },
+        {
+          "close": 63998.86,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 67204.93,
+          "next_timestamp": "2024-03-24T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.050095736080298714,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-23T00:00:00Z"
+        },
+        {
+          "close": 67204.93,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 69890.28,
+          "next_timestamp": "2024-03-25T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.039957634060477476,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-24T00:00:00Z"
+        },
+        {
+          "close": 69890.28,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 69992.4,
+          "next_timestamp": "2024-03-26T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.0014611473870185243,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-25T00:00:00Z"
+        },
+        {
+          "close": 69992.4,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 69435.96,
+          "next_timestamp": "2024-03-27T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.007950006000651322,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-26T00:00:00Z"
+        },
+        {
+          "close": 69435.96,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 70801.18,
+          "next_timestamp": "2024-03-28T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.0196615701719971,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-27T00:00:00Z"
+        },
+        {
+          "close": 70801.18,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 69903.75,
+          "next_timestamp": "2024-03-29T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.012675353715856041,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-28T00:00:00Z"
+        },
+        {
+          "close": 69903.75,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 69626.87,
+          "next_timestamp": "2024-03-30T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.003960874774243228,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-29T00:00:00Z"
+        },
+        {
+          "close": 69626.87,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 71288.9,
+          "next_timestamp": "2024-03-31T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.023870525847277113,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-30T00:00:00Z"
+        },
+        {
+          "close": 71288.9,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 69681.82,
+          "next_timestamp": "2024-04-01T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.022543200975186695,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-03-31T00:00:00Z"
+        },
+        {
+          "close": 69681.82,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 65464.14,
+          "next_timestamp": "2024-04-02T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.060527695746179,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-01T00:00:00Z"
+        },
+        {
+          "close": 65464.14,
+          "group": "UPPER",
+          "next_close": 65987.92,
+          "next_timestamp": "2024-04-03T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.008001021628024185,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-02T00:00:00Z"
+        },
+        {
+          "close": 65987.92,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 68525.23,
+          "next_timestamp": "2024-04-04T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.03845112863081601,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-03T00:00:00Z"
+        },
+        {
+          "close": 68525.23,
+          "group": "UPPER",
+          "next_close": 67856.51,
+          "next_timestamp": "2024-04-05T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.009758741415388239,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-04T00:00:00Z"
+        },
+        {
+          "close": 67856.51,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 68919.89,
+          "next_timestamp": "2024-04-06T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.015671009310676443,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-05T00:00:00Z"
+        },
+        {
+          "close": 68919.89,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 69350.34,
+          "next_timestamp": "2024-04-07T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.006245657095506063,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-06T00:00:00Z"
+        },
+        {
+          "close": 69350.34,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 71622.53,
+          "next_timestamp": "2024-04-08T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.03276393453874915,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-07T00:00:00Z"
+        },
+        {
+          "close": 71622.53,
+          "group": "UPPER",
+          "next_close": 69117.01,
+          "next_timestamp": "2024-04-09T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.03498228839444806,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-08T00:00:00Z"
+        },
+        {
+          "close": 69117.01,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 70634.04,
+          "next_timestamp": "2024-04-10T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.02194872145076876,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-09T00:00:00Z"
+        },
+        {
+          "close": 70634.04,
+          "group": "UPPER",
+          "next_close": 70020.73,
+          "next_timestamp": "2024-04-11T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": -0.008682923983960089,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-10T00:00:00Z"
+        },
+        {
+          "close": 70020.73,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 67148.61,
+          "next_timestamp": "2024-04-12T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.04101813848555991,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-11T00:00:00Z"
+        },
+        {
+          "close": 67148.61,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 64024.77,
+          "next_timestamp": "2024-04-13T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.04652129061197252,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-12T00:00:00Z"
+        },
+        {
+          "close": 64024.77,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 65777.05,
+          "next_timestamp": "2024-04-14T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.027368782425926774,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-13T00:00:00Z"
+        },
+        {
+          "close": 65777.05,
+          "group": "UPPER",
+          "next_close": 63452.18,
+          "next_timestamp": "2024-04-15T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.03534469849286348,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-14T00:00:00Z"
+        },
+        {
+          "close": 63452.18,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 63814.94,
+          "next_timestamp": "2024-04-16T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.005717061257785039,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-15T00:00:00Z"
+        },
+        {
+          "close": 63814.94,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 61279.36,
+          "next_timestamp": "2024-04-17T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.03973332890385861,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-16T00:00:00Z"
+        },
+        {
+          "close": 61279.36,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 63513.85,
+          "next_timestamp": "2024-04-18T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.03646399048554039,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-17T00:00:00Z"
+        },
+        {
+          "close": 63513.85,
+          "group": "UPPER",
+          "next_close": 63848.37,
+          "next_timestamp": "2024-04-19T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.005266882735025513,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-18T00:00:00Z"
+        },
+        {
+          "close": 63848.37,
+          "group": "UPPER",
+          "next_close": 64968.87,
+          "next_timestamp": "2024-04-20T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.01754939084584306,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-19T00:00:00Z"
+        },
+        {
+          "close": 64968.87,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 64952.92,
+          "next_timestamp": "2024-04-21T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.00024550219204988455,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-20T00:00:00Z"
+        },
+        {
+          "close": 64952.92,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 66859.17,
+          "next_timestamp": "2024-04-22T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.029348180189589623,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-21T00:00:00Z"
+        },
+        {
+          "close": 66859.17,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 66414.16,
+          "next_timestamp": "2024-04-23T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.006655930667401222,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-22T00:00:00Z"
+        },
+        {
+          "close": 66414.16,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 64255.78,
+          "next_timestamp": "2024-04-24T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.03249879242619347,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-23T00:00:00Z"
+        },
+        {
+          "close": 64255.78,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 64484.44,
+          "next_timestamp": "2024-04-25T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.0035585903711696787,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-24T00:00:00Z"
+        },
+        {
+          "close": 64484.44,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 63742.39,
+          "next_timestamp": "2024-04-26T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": -0.011507427218101052,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-25T00:00:00Z"
+        },
+        {
+          "close": 63742.39,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 63422.0,
+          "next_timestamp": "2024-04-27T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": -0.005026325495482653,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-26T00:00:00Z"
+        },
+        {
+          "close": 63422.0,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 63108.94,
+          "next_timestamp": "2024-04-28T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": -0.004936142032733071,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-27T00:00:00Z"
+        },
+        {
+          "close": 63108.94,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 63844.85,
+          "next_timestamp": "2024-04-29T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.011660946927646076,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-28T00:00:00Z"
+        },
+        {
+          "close": 63844.85,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 60622.1,
+          "next_timestamp": "2024-04-30T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.050477838071512404,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-29T00:00:00Z"
+        },
+        {
+          "close": 60622.1,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 58265.59,
+          "next_timestamp": "2024-05-01T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.03887212749145941,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-04-30T00:00:00Z"
+        },
+        {
+          "close": 58265.59,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 59071.89,
+          "next_timestamp": "2024-05-02T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.013838356395258433,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-01T00:00:00Z"
+        },
+        {
+          "close": 59071.89,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 62913.03,
+          "next_timestamp": "2024-05-03T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.06502483668628178,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-02T00:00:00Z"
+        },
+        {
+          "close": 62913.03,
+          "group": "UPPER",
+          "next_close": 63902.88,
+          "next_timestamp": "2024-05-04T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.015733624656132372,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-03T00:00:00Z"
+        },
+        {
+          "close": 63902.88,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 64023.45,
+          "next_timestamp": "2024-05-05T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.0018867694225987997,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-04T00:00:00Z"
+        },
+        {
+          "close": 64023.45,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 63162.24,
+          "next_timestamp": "2024-05-06T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.01345147754455589,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-05T00:00:00Z"
+        },
+        {
+          "close": 63162.24,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 62315.76,
+          "next_timestamp": "2024-05-07T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.013401677964555936,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-06T00:00:00Z"
+        },
+        {
+          "close": 62315.76,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 61169.53,
+          "next_timestamp": "2024-05-08T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.018393902280899765,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-07T00:00:00Z"
+        },
+        {
+          "close": 61169.53,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 63073.57,
+          "next_timestamp": "2024-05-09T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.03112726221698936,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-08T00:00:00Z"
+        },
+        {
+          "close": 63073.57,
+          "group": "UPPER",
+          "next_close": 60787.47,
+          "next_timestamp": "2024-05-10T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.036244975510344446,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-09T00:00:00Z"
+        },
+        {
+          "close": 60787.47,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 60814.63,
+          "next_timestamp": "2024-05-11T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.0004468026058659369,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-10T00:00:00Z"
+        },
+        {
+          "close": 60814.63,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 61453.02,
+          "next_timestamp": "2024-05-12T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.010497309611190664,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-11T00:00:00Z"
+        },
+        {
+          "close": 61453.02,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 62932.37,
+          "next_timestamp": "2024-05-13T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.024072860861842127,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-12T00:00:00Z"
+        },
+        {
+          "close": 62932.37,
+          "group": "UPPER",
+          "next_close": 61539.84,
+          "next_timestamp": "2024-05-14T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.02212740438664562,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-13T00:00:00Z"
+        },
+        {
+          "close": 61539.84,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 66244.69,
+          "next_timestamp": "2024-05-15T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.07645209997296076,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-14T00:00:00Z"
+        },
+        {
+          "close": 66244.69,
+          "group": "UPPER",
+          "next_close": 65252.18,
+          "next_timestamp": "2024-05-16T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": -0.014982483879085295,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-15T00:00:00Z"
+        },
+        {
+          "close": 65252.18,
+          "group": "UPPER",
+          "next_close": 67046.33,
+          "next_timestamp": "2024-05-17T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.0274956330960896,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-16T00:00:00Z"
+        },
+        {
+          "close": 67046.33,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 66923.87,
+          "next_timestamp": "2024-05-18T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.0018264981841661365,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-17T00:00:00Z"
+        },
+        {
+          "close": 66923.87,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 66261.62,
+          "next_timestamp": "2024-05-19T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.00989557238695249,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-18T00:00:00Z"
+        },
+        {
+          "close": 66261.62,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 71432.17,
+          "next_timestamp": "2024-05-20T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.078032351155918,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-19T00:00:00Z"
+        },
+        {
+          "close": 71432.17,
+          "group": "UPPER",
+          "next_close": 70142.84,
+          "next_timestamp": "2024-05-21T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.018049710655577145,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-20T00:00:00Z"
+        },
+        {
+          "close": 70142.84,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 69109.93,
+          "next_timestamp": "2024-05-22T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.014725808079627312,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-21T00:00:00Z"
+        },
+        {
+          "close": 69109.93,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 67940.45,
+          "next_timestamp": "2024-05-23T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.016922025532365548,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-22T00:00:00Z"
+        },
+        {
+          "close": 67940.45,
+          "group": "UPPER",
+          "next_close": 68547.8,
+          "next_timestamp": "2024-05-24T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.00893944623563736,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-23T00:00:00Z"
+        },
+        {
+          "close": 68547.8,
+          "group": "UPPER",
+          "next_close": 69289.67,
+          "next_timestamp": "2024-05-25T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": 0.010822666810605064,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-24T00:00:00Z"
+        },
+        {
+          "close": 69289.67,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 68473.72,
+          "next_timestamp": "2024-05-26T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.01177592561777241,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-25T00:00:00Z"
+        },
+        {
+          "close": 68473.72,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 69368.72,
+          "next_timestamp": "2024-05-27T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.01307070800301191,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-26T00:00:00Z"
+        },
+        {
+          "close": 69368.72,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 68321.98,
+          "next_timestamp": "2024-05-28T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.015089510084660751,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-27T00:00:00Z"
+        },
+        {
+          "close": 68321.98,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 67569.45,
+          "next_timestamp": "2024-05-29T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.011014464159264659,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-28T00:00:00Z"
+        },
+        {
+          "close": 67569.45,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 68338.58,
+          "next_timestamp": "2024-05-30T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.011382806875000595,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-29T00:00:00Z"
+        },
+        {
+          "close": 68338.58,
+          "group": "UPPER",
+          "next_close": 67472.41,
+          "next_timestamp": "2024-05-31T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.012674685368060046,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-30T00:00:00Z"
+        },
+        {
+          "close": 67472.41,
+          "group": "UPPER",
+          "next_close": 67719.29,
+          "next_timestamp": "2024-06-01T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.003658977054472823,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-05-31T00:00:00Z"
+        },
+        {
+          "close": 67719.29,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 67735.52,
+          "next_timestamp": "2024-06-02T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.00023966583229118044,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-01T00:00:00Z"
+        },
+        {
+          "close": 67735.52,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 68791.0,
+          "next_timestamp": "2024-06-03T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.015582370962827108,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-02T00:00:00Z"
+        },
+        {
+          "close": 68791.0,
+          "group": "UPPER",
+          "next_close": 70542.32,
+          "next_timestamp": "2024-06-04T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.02545856289340187,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-03T00:00:00Z"
+        },
+        {
+          "close": 70542.32,
+          "group": "UPPER",
+          "next_close": 71121.11,
+          "next_timestamp": "2024-06-05T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": 0.00820486198922854,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-04T00:00:00Z"
+        },
+        {
+          "close": 71121.11,
+          "group": "UPPER",
+          "next_close": 70773.64,
+          "next_timestamp": "2024-06-06T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.004885609912443689,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-05T00:00:00Z"
+        },
+        {
+          "close": 70773.64,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 69324.53,
+          "next_timestamp": "2024-06-07T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": -0.020475278648943274,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-06T00:00:00Z"
+        },
+        {
+          "close": 69324.53,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 69304.05,
+          "next_timestamp": "2024-06-08T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.00029542212547273294,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-07T00:00:00Z"
+        },
+        {
+          "close": 69304.05,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 69637.87,
+          "next_timestamp": "2024-06-09T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.004816745918889254,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-08T00:00:00Z"
+        },
+        {
+          "close": 69637.87,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 69497.73,
+          "next_timestamp": "2024-06-10T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.002012410775918294,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-09T00:00:00Z"
+        },
+        {
+          "close": 69497.73,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 67316.53,
+          "next_timestamp": "2024-06-11T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.031385197761135464,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-10T00:00:00Z"
+        },
+        {
+          "close": 67316.53,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 68248.6,
+          "next_timestamp": "2024-06-12T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.013846079113109422,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-11T00:00:00Z"
+        },
+        {
+          "close": 68248.6,
+          "group": "UPPER",
+          "next_close": 66738.85,
+          "next_timestamp": "2024-06-13T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.022121332891810286,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-12T00:00:00Z"
+        },
+        {
+          "close": 66738.85,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 66004.39,
+          "next_timestamp": "2024-06-14T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.011004984353191638,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-13T00:00:00Z"
+        },
+        {
+          "close": 66004.39,
+          "group": "UPPER",
+          "next_close": 66192.0,
+          "next_timestamp": "2024-06-15T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.0028423866957940636,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-14T00:00:00Z"
+        },
+        {
+          "close": 66192.0,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 66628.75,
+          "next_timestamp": "2024-06-16T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.006598229393280253,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-15T00:00:00Z"
+        },
+        {
+          "close": 66628.75,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 66481.81,
+          "next_timestamp": "2024-06-17T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.0022053542952554794,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-16T00:00:00Z"
+        },
+        {
+          "close": 66481.81,
+          "group": "UPPER",
+          "next_close": 65152.8,
+          "next_timestamp": "2024-06-18T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.019990580882199183,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-17T00:00:00Z"
+        },
+        {
+          "close": 65152.8,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 64943.79,
+          "next_timestamp": "2024-06-19T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.003207997200427304,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-18T00:00:00Z"
+        },
+        {
+          "close": 64943.79,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 64840.88,
+          "next_timestamp": "2024-06-20T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": -0.0015846010834908997,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-19T00:00:00Z"
+        },
+        {
+          "close": 64840.88,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 64120.28,
+          "next_timestamp": "2024-06-21T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.011113359349842256,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-20T00:00:00Z"
+        },
+        {
+          "close": 64120.28,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 64235.01,
+          "next_timestamp": "2024-06-22T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.0017892934965348939,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-21T00:00:00Z"
+        },
+        {
+          "close": 64235.01,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 63171.43,
+          "next_timestamp": "2024-06-23T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": -0.01655763733826776,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-22T00:00:00Z"
+        },
+        {
+          "close": 63171.43,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 60263.0,
+          "next_timestamp": "2024-06-24T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": -0.04604027485209694,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-23T00:00:00Z"
+        },
+        {
+          "close": 60263.0,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 61789.71,
+          "next_timestamp": "2024-06-25T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.025334118779350545,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-24T00:00:00Z"
+        },
+        {
+          "close": 61789.71,
+          "group": "UPPER",
+          "next_close": 60816.68,
+          "next_timestamp": "2024-06-26T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.015747444032347735,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-25T00:00:00Z"
+        },
+        {
+          "close": 60816.68,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 61615.39,
+          "next_timestamp": "2024-06-27T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.01313307467622371,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-26T00:00:00Z"
+        },
+        {
+          "close": 61615.39,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 60313.35,
+          "next_timestamp": "2024-06-28T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.02113173348411823,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-27T00:00:00Z"
+        },
+        {
+          "close": 60313.35,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 60885.67,
+          "next_timestamp": "2024-06-29T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.009489109790784322,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-28T00:00:00Z"
+        },
+        {
+          "close": 60885.67,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 62668.26,
+          "next_timestamp": "2024-06-30T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.02927766090116113,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-29T00:00:00Z"
+        },
+        {
+          "close": 62668.26,
+          "group": "UPPER",
+          "next_close": 62830.13,
+          "next_timestamp": "2024-07-01T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.0025829662416030352,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-06-30T00:00:00Z"
+        },
+        {
+          "close": 62830.13,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 62040.22,
+          "next_timestamp": "2024-07-02T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.012572152882701304,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-01T00:00:00Z"
+        },
+        {
+          "close": 62040.22,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 60145.01,
+          "next_timestamp": "2024-07-03T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.03054808638654083,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-02T00:00:00Z"
+        },
+        {
+          "close": 60145.01,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 57042.14,
+          "next_timestamp": "2024-07-04T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.05158981601299928,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-03T00:00:00Z"
+        },
+        {
+          "close": 57042.14,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 56639.43,
+          "next_timestamp": "2024-07-05T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.007059868370997258,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-04T00:00:00Z"
+        },
+        {
+          "close": 56639.43,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 58244.75,
+          "next_timestamp": "2024-07-06T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.028342799353736403,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-05T00:00:00Z"
+        },
+        {
+          "close": 58244.75,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 55854.09,
+          "next_timestamp": "2024-07-07T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.041045072731877186,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-06T00:00:00Z"
+        },
+        {
+          "close": 55854.09,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 56699.43,
+          "next_timestamp": "2024-07-08T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.015134791382332091,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-07T00:00:00Z"
+        },
+        {
+          "close": 56699.43,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 58047.86,
+          "next_timestamp": "2024-07-09T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.023782073294211337,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-08T00:00:00Z"
+        },
+        {
+          "close": 58047.86,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 57712.59,
+          "next_timestamp": "2024-07-10T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.005775751250778338,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-09T00:00:00Z"
+        },
+        {
+          "close": 57712.59,
+          "group": "UPPER",
+          "next_close": 57340.77,
+          "next_timestamp": "2024-07-11T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": -0.006442615034258581,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-10T00:00:00Z"
+        },
+        {
+          "close": 57340.77,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 57909.03,
+          "next_timestamp": "2024-07-12T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.009910226179383308,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-11T00:00:00Z"
+        },
+        {
+          "close": 57909.03,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 59224.58,
+          "next_timestamp": "2024-07-13T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.022717527819063887,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-12T00:00:00Z"
+        },
+        {
+          "close": 59224.58,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 60808.42,
+          "next_timestamp": "2024-07-14T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.026742950308807467,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-13T00:00:00Z"
+        },
+        {
+          "close": 60808.42,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 64757.16,
+          "next_timestamp": "2024-07-15T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.06493738860506504,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-14T00:00:00Z"
+        },
+        {
+          "close": 64757.16,
+          "group": "UPPER",
+          "next_close": 65088.99,
+          "next_timestamp": "2024-07-16T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": 0.00512422101278065,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-15T00:00:00Z"
+        },
+        {
+          "close": 65088.99,
+          "group": "UPPER",
+          "next_close": 64085.81,
+          "next_timestamp": "2024-07-17T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": -0.01541243764882505,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-16T00:00:00Z"
+        },
+        {
+          "close": 64085.81,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 63982.86,
+          "next_timestamp": "2024-07-18T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.0016064398655489809,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-17T00:00:00Z"
+        },
+        {
+          "close": 63982.86,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 66707.61,
+          "next_timestamp": "2024-07-19T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.04258562371235053,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-18T00:00:00Z"
+        },
+        {
+          "close": 66707.61,
+          "group": "UPPER",
+          "next_close": 67163.83,
+          "next_timestamp": "2024-07-20T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": 0.006839099766878132,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-19T00:00:00Z"
+        },
+        {
+          "close": 67163.83,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 68181.28,
+          "next_timestamp": "2024-07-21T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.015148778739985547,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-20T00:00:00Z"
+        },
+        {
+          "close": 68181.28,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 67558.22,
+          "next_timestamp": "2024-07-22T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.009138285464866613,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-21T00:00:00Z"
+        },
+        {
+          "close": 67558.22,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 65939.24,
+          "next_timestamp": "2024-07-23T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.023964219305955603,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-22T00:00:00Z"
+        },
+        {
+          "close": 65939.24,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 65366.4,
+          "next_timestamp": "2024-07-24T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.008687391604756178,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-23T00:00:00Z"
+        },
+        {
+          "close": 65366.4,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 65795.42,
+          "next_timestamp": "2024-07-25T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.006563310814118539,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-24T00:00:00Z"
+        },
+        {
+          "close": 65795.42,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 67924.08,
+          "next_timestamp": "2024-07-26T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.032352707832855376,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-25T00:00:00Z"
+        },
+        {
+          "close": 67924.08,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 67899.41,
+          "next_timestamp": "2024-07-27T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.0003631996193397269,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-26T00:00:00Z"
+        },
+        {
+          "close": 67899.41,
+          "group": "UPPER",
+          "next_close": 68244.3,
+          "next_timestamp": "2024-07-28T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.005079425579691987,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-27T00:00:00Z"
+        },
+        {
+          "close": 68244.3,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 66771.45,
+          "next_timestamp": "2024-07-29T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.021582022234824083,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-28T00:00:00Z"
+        },
+        {
+          "close": 66771.45,
+          "group": "UPPER",
+          "next_close": 66169.68,
+          "next_timestamp": "2024-07-30T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.00901238478421551,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-29T00:00:00Z"
+        },
+        {
+          "close": 66169.68,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 64609.62,
+          "next_timestamp": "2024-07-31T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.0235766592795974,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-30T00:00:00Z"
+        },
+        {
+          "close": 64609.62,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 65288.18,
+          "next_timestamp": "2024-08-01T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.010502460779060474,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-07-31T00:00:00Z"
+        },
+        {
+          "close": 65288.18,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 61418.06,
+          "next_timestamp": "2024-08-02T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.05927749862226217,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-01T00:00:00Z"
+        },
+        {
+          "close": 61418.06,
+          "group": "UPPER",
+          "next_close": 60674.93,
+          "next_timestamp": "2024-08-03T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.012099535543779738,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-02T00:00:00Z"
+        },
+        {
+          "close": 60674.93,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 58130.95,
+          "next_timestamp": "2024-08-04T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": -0.0419280252980927,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-03T00:00:00Z"
+        },
+        {
+          "close": 58130.95,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 54029.12,
+          "next_timestamp": "2024-08-05T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.07056189516944067,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-04T00:00:00Z"
+        },
+        {
+          "close": 54029.12,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 56048.08,
+          "next_timestamp": "2024-08-06T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.03736799710970673,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-05T00:00:00Z"
+        },
+        {
+          "close": 56048.08,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 55148.1,
+          "next_timestamp": "2024-08-07T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.01605728510236215,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-06T00:00:00Z"
+        },
+        {
+          "close": 55148.1,
+          "group": "UPPER",
+          "next_close": 61705.58,
+          "next_timestamp": "2024-08-08T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.11890672570768546,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-07T00:00:00Z"
+        },
+        {
+          "close": 61705.58,
+          "group": "UPPER",
+          "next_close": 60862.13,
+          "next_timestamp": "2024-08-09T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.013668942095674375,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-08T00:00:00Z"
+        },
+        {
+          "close": 60862.13,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 60935.02,
+          "next_timestamp": "2024-08-10T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.0011976248613054796,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-09T00:00:00Z"
+        },
+        {
+          "close": 60935.02,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 58722.49,
+          "next_timestamp": "2024-08-11T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": -0.03630966232553956,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-10T00:00:00Z"
+        },
+        {
+          "close": 58722.49,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 59358.78,
+          "next_timestamp": "2024-08-12T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.010835541885229949,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-11T00:00:00Z"
+        },
+        {
+          "close": 59358.78,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 60603.19,
+          "next_timestamp": "2024-08-13T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.020964211191672133,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-12T00:00:00Z"
+        },
+        {
+          "close": 60603.19,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 58690.62,
+          "next_timestamp": "2024-08-14T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.03155889978728843,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-13T00:00:00Z"
+        },
+        {
+          "close": 58690.62,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 57543.61,
+          "next_timestamp": "2024-08-15T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.01954332736645148,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-14T00:00:00Z"
+        },
+        {
+          "close": 57543.61,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 58888.99,
+          "next_timestamp": "2024-08-16T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.02338018070121084,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-15T00:00:00Z"
+        },
+        {
+          "close": 58888.99,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 59497.49,
+          "next_timestamp": "2024-08-17T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.01033300112635649,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-16T00:00:00Z"
+        },
+        {
+          "close": 59497.49,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 58437.9,
+          "next_timestamp": "2024-08-18T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.017808986563971008,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-17T00:00:00Z"
+        },
+        {
+          "close": 58437.9,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 59452.67,
+          "next_timestamp": "2024-08-19T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.017364929266794338,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-18T00:00:00Z"
+        },
+        {
+          "close": 59452.67,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 59017.59,
+          "next_timestamp": "2024-08-20T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.007318090171560043,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-19T00:00:00Z"
+        },
+        {
+          "close": 59017.59,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 61163.28,
+          "next_timestamp": "2024-08-21T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.03635678786612595,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-20T00:00:00Z"
+        },
+        {
+          "close": 61163.28,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 60383.29,
+          "next_timestamp": "2024-08-22T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.01275258619223818,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-21T00:00:00Z"
+        },
+        {
+          "close": 60383.29,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 64086.72,
+          "next_timestamp": "2024-08-23T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.06133203407763976,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-22T00:00:00Z"
+        },
+        {
+          "close": 64086.72,
+          "group": "UPPER",
+          "next_close": 64179.63,
+          "next_timestamp": "2024-08-24T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": 0.001449754332878861,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-23T00:00:00Z"
+        },
+        {
+          "close": 64179.63,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 64251.93,
+          "next_timestamp": "2024-08-25T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.0011265256593095963,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-24T00:00:00Z"
+        },
+        {
+          "close": 64251.93,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 62840.0,
+          "next_timestamp": "2024-08-26T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.02197490410015701,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-25T00:00:00Z"
+        },
+        {
+          "close": 62840.0,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 59439.64,
+          "next_timestamp": "2024-08-27T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.05411139401654996,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-26T00:00:00Z"
+        },
+        {
+          "close": 59439.64,
+          "group": "UPPER",
+          "next_close": 59045.88,
+          "next_timestamp": "2024-08-28T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.006624535411048904,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-27T00:00:00Z"
+        },
+        {
+          "close": 59045.88,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 59364.47,
+          "next_timestamp": "2024-08-29T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.005395634716596653,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-28T00:00:00Z"
+        },
+        {
+          "close": 59364.47,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 59112.77,
+          "next_timestamp": "2024-08-30T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.00423990983158784,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-29T00:00:00Z"
+        },
+        {
+          "close": 59112.77,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 58968.37,
+          "next_timestamp": "2024-08-31T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": -0.00244278858865854,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-30T00:00:00Z"
+        },
+        {
+          "close": 58968.37,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 57299.0,
+          "next_timestamp": "2024-09-01T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": -0.028309583595408916,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-08-31T00:00:00Z"
+        },
+        {
+          "close": 57299.0,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 59139.83,
+          "next_timestamp": "2024-09-02T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.03212673868653915,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-01T00:00:00Z"
+        },
+        {
+          "close": 59139.83,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 57468.84,
+          "next_timestamp": "2024-09-03T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.028254900293085083,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-02T00:00:00Z"
+        },
+        {
+          "close": 57468.84,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 57971.0,
+          "next_timestamp": "2024-09-04T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.008737952601792554,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-03T00:00:00Z"
+        },
+        {
+          "close": 57971.0,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 56156.82,
+          "next_timestamp": "2024-09-05T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.0312946128236532,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-04T00:00:00Z"
+        },
+        {
+          "close": 56156.82,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 53950.01,
+          "next_timestamp": "2024-09-06T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.03929727502376379,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-05T00:00:00Z"
+        },
+        {
+          "close": 53950.01,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 54156.33,
+          "next_timestamp": "2024-09-07T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.003824281033497412,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-06T00:00:00Z"
+        },
+        {
+          "close": 54156.33,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 54881.11,
+          "next_timestamp": "2024-09-08T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.013383107754901369,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-07T00:00:00Z"
+        },
+        {
+          "close": 54881.11,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 57053.9,
+          "next_timestamp": "2024-09-09T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.03959085375642002,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-08T00:00:00Z"
+        },
+        {
+          "close": 57053.9,
+          "group": "UPPER",
+          "next_close": 57645.59,
+          "next_timestamp": "2024-09-10T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.010370719617764923,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-09T00:00:00Z"
+        },
+        {
+          "close": 57645.59,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 57352.79,
+          "next_timestamp": "2024-09-11T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.005079313092293702,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-10T00:00:00Z"
+        },
+        {
+          "close": 57352.79,
+          "group": "UPPER",
+          "next_close": 58137.54,
+          "next_timestamp": "2024-09-12T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.013682856579427138,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-11T00:00:00Z"
+        },
+        {
+          "close": 58137.54,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 60543.35,
+          "next_timestamp": "2024-09-13T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.04138135187694547,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-12T00:00:00Z"
+        },
+        {
+          "close": 60543.35,
+          "group": "UPPER",
+          "next_close": 60012.35,
+          "next_timestamp": "2024-09-14T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.008770575133354885,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-13T00:00:00Z"
+        },
+        {
+          "close": 60012.35,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 59122.33,
+          "next_timestamp": "2024-09-15T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.014830614031945077,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-14T00:00:00Z"
+        },
+        {
+          "close": 59122.33,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 58208.75,
+          "next_timestamp": "2024-09-16T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.015452367996998784,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-15T00:00:00Z"
+        },
+        {
+          "close": 58208.75,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 60312.6,
+          "next_timestamp": "2024-09-17T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.03614319153048284,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-16T00:00:00Z"
+        },
+        {
+          "close": 60312.6,
+          "group": "UPPER",
+          "next_close": 61769.18,
+          "next_timestamp": "2024-09-18T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": 0.024150509180502988,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-17T00:00:00Z"
+        },
+        {
+          "close": 61769.18,
+          "group": "UPPER",
+          "next_close": 62960.14,
+          "next_timestamp": "2024-09-19T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": 0.0192808128584514,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-18T00:00:00Z"
+        },
+        {
+          "close": 62960.14,
+          "group": "UPPER",
+          "next_close": 63210.69,
+          "next_timestamp": "2024-09-20T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.003979501951552278,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-19T00:00:00Z"
+        },
+        {
+          "close": 63210.69,
+          "group": "UPPER",
+          "next_close": 63362.74,
+          "next_timestamp": "2024-09-21T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.0024054475595820524,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-20T00:00:00Z"
+        },
+        {
+          "close": 63362.74,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 63577.66,
+          "next_timestamp": "2024-09-22T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.00339189877205448,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-21T00:00:00Z"
+        },
+        {
+          "close": 63577.66,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 63338.87,
+          "next_timestamp": "2024-09-23T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.003755879030464482,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-22T00:00:00Z"
+        },
+        {
+          "close": 63338.87,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 64272.93,
+          "next_timestamp": "2024-09-24T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.014747026588886047,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-23T00:00:00Z"
+        },
+        {
+          "close": 64272.93,
+          "group": "UPPER",
+          "next_close": 63130.89,
+          "next_timestamp": "2024-09-25T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.017768600248969535,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-24T00:00:00Z"
+        },
+        {
+          "close": 63130.89,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 65177.21,
+          "next_timestamp": "2024-09-26T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.03241392605109805,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-25T00:00:00Z"
+        },
+        {
+          "close": 65177.21,
+          "group": "UPPER",
+          "next_close": 65789.0,
+          "next_timestamp": "2024-09-27T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": 0.009386563186733587,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-26T00:00:00Z"
+        },
+        {
+          "close": 65789.0,
+          "group": "UPPER",
+          "next_close": 65858.99,
+          "next_timestamp": "2024-09-28T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.0010638556597608595,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-27T00:00:00Z"
+        },
+        {
+          "close": 65858.99,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 65600.01,
+          "next_timestamp": "2024-09-29T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.00393234089985306,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-28T00:00:00Z"
+        },
+        {
+          "close": 65600.01,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 63301.25,
+          "next_timestamp": "2024-09-30T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": -0.03504206782895303,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-29T00:00:00Z"
+        },
+        {
+          "close": 63301.25,
+          "group": "UPPER",
+          "next_close": 60790.0,
+          "next_timestamp": "2024-10-01T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.03967141249185446,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-09-30T00:00:00Z"
+        },
+        {
+          "close": 60790.0,
+          "group": "UPPER",
+          "next_close": 60631.37,
+          "next_timestamp": "2024-10-02T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.002609475242638548,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-01T00:00:00Z"
+        },
+        {
+          "close": 60631.37,
+          "group": "UPPER",
+          "next_close": 60744.99,
+          "next_timestamp": "2024-10-03T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.0018739474301834314,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-02T00:00:00Z"
+        },
+        {
+          "close": 60744.99,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 62090.71,
+          "next_timestamp": "2024-10-04T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.02215359653528637,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-03T00:00:00Z"
+        },
+        {
+          "close": 62090.71,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 62051.29,
+          "next_timestamp": "2024-10-05T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.0006348775847465626,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-04T00:00:00Z"
+        },
+        {
+          "close": 62051.29,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 62810.86,
+          "next_timestamp": "2024-10-06T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.012241002564169046,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-05T00:00:00Z"
+        },
+        {
+          "close": 62810.86,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 62200.28,
+          "next_timestamp": "2024-10-07T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.009720930425088925,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-06T00:00:00Z"
+        },
+        {
+          "close": 62200.28,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 62122.02,
+          "next_timestamp": "2024-10-08T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.0012581936930188276,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-07T00:00:00Z"
+        },
+        {
+          "close": 62122.02,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 60578.28,
+          "next_timestamp": "2024-10-09T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": -0.024850125607634777,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-08T00:00:00Z"
+        },
+        {
+          "close": 60578.28,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 60279.53,
+          "next_timestamp": "2024-10-10T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.004931635563109382,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-09T00:00:00Z"
+        },
+        {
+          "close": 60279.53,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 62518.75,
+          "next_timestamp": "2024-10-11T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.037147270391789666,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-10T00:00:00Z"
+        },
+        {
+          "close": 62518.75,
+          "group": "UPPER",
+          "next_close": 63187.47,
+          "next_timestamp": "2024-10-12T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.010696311106668022,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-11T00:00:00Z"
+        },
+        {
+          "close": 63187.47,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 62845.3,
+          "next_timestamp": "2024-10-13T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.005415155884544776,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-12T00:00:00Z"
+        },
+        {
+          "close": 62845.3,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 66065.65,
+          "next_timestamp": "2024-10-14T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.0512424954610764,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-13T00:00:00Z"
+        },
+        {
+          "close": 66065.65,
+          "group": "UPPER",
+          "next_close": 67056.6,
+          "next_timestamp": "2024-10-15T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.014999474008051239,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-14T00:00:00Z"
+        },
+        {
+          "close": 67056.6,
+          "group": "UPPER",
+          "next_close": 67608.44,
+          "next_timestamp": "2024-10-16T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.008229465854218576,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-15T00:00:00Z"
+        },
+        {
+          "close": 67608.44,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 67402.33,
+          "next_timestamp": "2024-10-17T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.0030485838750310412,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-16T00:00:00Z"
+        },
+        {
+          "close": 67402.33,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 68426.11,
+          "next_timestamp": "2024-10-18T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.015189089160567493,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-17T00:00:00Z"
+        },
+        {
+          "close": 68426.11,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 68363.73,
+          "next_timestamp": "2024-10-19T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.000911640308063788,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-18T00:00:00Z"
+        },
+        {
+          "close": 68363.73,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 69014.86,
+          "next_timestamp": "2024-10-20T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.009524494933205174,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-19T00:00:00Z"
+        },
+        {
+          "close": 69014.86,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 67346.15,
+          "next_timestamp": "2024-10-21T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.024178995653979518,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-20T00:00:00Z"
+        },
+        {
+          "close": 67346.15,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 67380.08,
+          "next_timestamp": "2024-10-22T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.000503814991651419,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-21T00:00:00Z"
+        },
+        {
+          "close": 67380.08,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 66601.11,
+          "next_timestamp": "2024-10-23T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.011560835190459917,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-22T00:00:00Z"
+        },
+        {
+          "close": 66601.11,
+          "group": "UPPER",
+          "next_close": 68156.84,
+          "next_timestamp": "2024-10-24T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.0233589199939761,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-23T00:00:00Z"
+        },
+        {
+          "close": 68156.84,
+          "group": "UPPER",
+          "next_close": 66564.51,
+          "next_timestamp": "2024-10-25T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": -0.023362732192396263,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-24T00:00:00Z"
+        },
+        {
+          "close": 66564.51,
+          "group": "UPPER",
+          "next_close": 67012.56,
+          "next_timestamp": "2024-10-26T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.006731064346451321,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-25T00:00:00Z"
+        },
+        {
+          "close": 67012.56,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 67943.19,
+          "next_timestamp": "2024-10-27T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.013887396631318216,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-26T00:00:00Z"
+        },
+        {
+          "close": 67943.19,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 69924.5,
+          "next_timestamp": "2024-10-28T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.029161274294009498,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-27T00:00:00Z"
+        },
+        {
+          "close": 69924.5,
+          "group": "UPPER",
+          "next_close": 72724.35,
+          "next_timestamp": "2024-10-29T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": 0.040041044269176096,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-28T00:00:00Z"
+        },
+        {
+          "close": 72724.35,
+          "group": "UPPER",
+          "next_close": 72322.91,
+          "next_timestamp": "2024-10-30T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": -0.00552002183587752,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-29T00:00:00Z"
+        },
+        {
+          "close": 72322.91,
+          "group": "UPPER",
+          "next_close": 70197.83,
+          "next_timestamp": "2024-10-31T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.02938322033778784,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-30T00:00:00Z"
+        },
+        {
+          "close": 70197.83,
+          "group": "UPPER",
+          "next_close": 69467.29,
+          "next_timestamp": "2024-11-01T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.010406874400533561,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-10-31T00:00:00Z"
+        },
+        {
+          "close": 69467.29,
+          "group": "UPPER",
+          "next_close": 69358.94,
+          "next_timestamp": "2024-11-02T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.0015597268872874492,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-01T00:00:00Z"
+        },
+        {
+          "close": 69358.94,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 68738.18,
+          "next_timestamp": "2024-11-03T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.00894996376818924,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-02T00:00:00Z"
+        },
+        {
+          "close": 68738.18,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 67807.48,
+          "next_timestamp": "2024-11-04T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": -0.013539782403316436,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-03T00:00:00Z"
+        },
+        {
+          "close": 67807.48,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 69380.73,
+          "next_timestamp": "2024-11-05T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.023201717568622326,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-04T00:00:00Z"
+        },
+        {
+          "close": 69380.73,
+          "group": "UPPER",
+          "next_close": 75646.55,
+          "next_timestamp": "2024-11-06T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.09031066695320167,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-05T00:00:00Z"
+        },
+        {
+          "close": 75646.55,
+          "group": "UPPER",
+          "next_close": 75920.0,
+          "next_timestamp": "2024-11-07T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.0036148376892271017,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-06T00:00:00Z"
+        },
+        {
+          "close": 75920.0,
+          "group": "UPPER",
+          "next_close": 76566.73,
+          "next_timestamp": "2024-11-08T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.0085185721812433,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-07T00:00:00Z"
+        },
+        {
+          "close": 76566.73,
+          "group": "UPPER",
+          "next_close": 76716.06,
+          "next_timestamp": "2024-11-09T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.001950324899600675,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-08T00:00:00Z"
+        },
+        {
+          "close": 76716.06,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 80428.92,
+          "next_timestamp": "2024-11-10T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.0483974281265227,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-09T00:00:00Z"
+        },
+        {
+          "close": 80428.92,
+          "group": "UPPER",
+          "next_close": 88770.73,
+          "next_timestamp": "2024-11-11T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": 0.10371654872401614,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-10T00:00:00Z"
+        },
+        {
+          "close": 88770.73,
+          "group": "UPPER",
+          "next_close": 88035.43,
+          "next_timestamp": "2024-11-12T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": -0.0082831356687052,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-11T00:00:00Z"
+        },
+        {
+          "close": 88035.43,
+          "group": "UPPER",
+          "next_close": 90493.82,
+          "next_timestamp": "2024-11-13T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": 0.027925007011381897,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-12T00:00:00Z"
+        },
+        {
+          "close": 90493.82,
+          "group": "UPPER",
+          "next_close": 87340.4,
+          "next_timestamp": "2024-11-14T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": -0.034846799483102986,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-13T00:00:00Z"
+        },
+        {
+          "close": 87340.4,
+          "group": "UPPER",
+          "next_close": 91058.36,
+          "next_timestamp": "2024-11-15T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.04256861658522304,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-14T00:00:00Z"
+        },
+        {
+          "close": 91058.36,
+          "group": "UPPER",
+          "next_close": 90636.24,
+          "next_timestamp": "2024-11-16T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.00463570835231375,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-15T00:00:00Z"
+        },
+        {
+          "close": 90636.24,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 89886.69,
+          "next_timestamp": "2024-11-17T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.008269870859603179,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-16T00:00:00Z"
+        },
+        {
+          "close": 89886.69,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 90520.3,
+          "next_timestamp": "2024-11-18T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.007048985784213535,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-17T00:00:00Z"
+        },
+        {
+          "close": 90520.3,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 92435.89,
+          "next_timestamp": "2024-11-19T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.02116199349759107,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-18T00:00:00Z"
+        },
+        {
+          "close": 92435.89,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 94393.15,
+          "next_timestamp": "2024-11-20T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.021174243034821183,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-19T00:00:00Z"
+        },
+        {
+          "close": 94393.15,
+          "group": "UPPER",
+          "next_close": 98439.09,
+          "next_timestamp": "2024-11-21T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.04286264416432761,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-20T00:00:00Z"
+        },
+        {
+          "close": 98439.09,
+          "group": "UPPER",
+          "next_close": 99024.03,
+          "next_timestamp": "2024-11-22T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": 0.0059421516391506835,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-21T00:00:00Z"
+        },
+        {
+          "close": 99024.03,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 97778.77,
+          "next_timestamp": "2024-11-23T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.012575331462474248,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-22T00:00:00Z"
+        },
+        {
+          "close": 97778.77,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 98028.18,
+          "next_timestamp": "2024-11-24T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.002550758206510295,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-23T00:00:00Z"
+        },
+        {
+          "close": 98028.18,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 93000.01,
+          "next_timestamp": "2024-11-25T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": -0.051293107757381606,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-24T00:00:00Z"
+        },
+        {
+          "close": 93000.01,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 91929.54,
+          "next_timestamp": "2024-11-26T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.011510428869846323,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-25T00:00:00Z"
+        },
+        {
+          "close": 91929.54,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 95951.19,
+          "next_timestamp": "2024-11-27T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.04374709152248579,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-26T00:00:00Z"
+        },
+        {
+          "close": 95951.19,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 95665.53,
+          "next_timestamp": "2024-11-28T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.002977138688952219,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-27T00:00:00Z"
+        },
+        {
+          "close": 95665.53,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 97490.56,
+          "next_timestamp": "2024-11-29T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.01907719530744245,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-28T00:00:00Z"
+        },
+        {
+          "close": 97490.56,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 96465.42,
+          "next_timestamp": "2024-11-30T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.010515274504526384,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-29T00:00:00Z"
+        },
+        {
+          "close": 96465.42,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 97263.18,
+          "next_timestamp": "2024-12-01T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.008269906459744902,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-11-30T00:00:00Z"
+        },
+        {
+          "close": 97263.18,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 95862.89,
+          "next_timestamp": "2024-12-02T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.014396917723644154,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-01T00:00:00Z"
+        },
+        {
+          "close": 95862.89,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 95924.52,
+          "next_timestamp": "2024-12-03T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.0006428973714438513,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-02T00:00:00Z"
+        },
+        {
+          "close": 95924.52,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 98746.24,
+          "next_timestamp": "2024-12-04T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.029416045032073068,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-03T00:00:00Z"
+        },
+        {
+          "close": 98746.24,
+          "group": "UPPER",
+          "next_close": 97044.23,
+          "next_timestamp": "2024-12-05T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": -0.017236200588498396,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-04T00:00:00Z"
+        },
+        {
+          "close": 97044.23,
+          "group": "UPPER",
+          "next_close": 99891.35,
+          "next_timestamp": "2024-12-06T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": 0.029338374883287832,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-05T00:00:00Z"
+        },
+        {
+          "close": 99891.35,
+          "group": "UPPER",
+          "next_close": 99929.32,
+          "next_timestamp": "2024-12-07T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": 0.0003801129927667457,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-06T00:00:00Z"
+        },
+        {
+          "close": 99929.32,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 101174.99,
+          "next_timestamp": "2024-12-08T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.012465510622908349,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-07T00:00:00Z"
+        },
+        {
+          "close": 101174.99,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 97324.81,
+          "next_timestamp": "2024-12-09T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.038054661532459844,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-08T00:00:00Z"
+        },
+        {
+          "close": 97324.81,
+          "group": "UPPER",
+          "next_close": 96660.76,
+          "next_timestamp": "2024-12-10T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.006823028989216606,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-09T00:00:00Z"
+        },
+        {
+          "close": 96660.76,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 101202.11,
+          "next_timestamp": "2024-12-11T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.0469823535424303,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-10T00:00:00Z"
+        },
+        {
+          "close": 101202.11,
+          "group": "UPPER",
+          "next_close": 100030.47,
+          "next_timestamp": "2024-12-12T00:00:00Z",
+          "portfolio_votes": 3.0,
+          "return_t_plus_1": -0.011577228972795117,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-11T00:00:00Z"
+        },
+        {
+          "close": 100030.47,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 101428.75,
+          "next_timestamp": "2024-12-13T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.013978540738637024,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-12T00:00:00Z"
+        },
+        {
+          "close": 101428.75,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 101399.99,
+          "next_timestamp": "2024-12-14T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.0002835487965689998,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-13T00:00:00Z"
+        },
+        {
+          "close": 101399.99,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 104447.76,
+          "next_timestamp": "2024-12-15T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.03005690631724911,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-14T00:00:00Z"
+        },
+        {
+          "close": 104447.76,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 106099.81,
+          "next_timestamp": "2024-12-16T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.01581699789444979,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-15T00:00:00Z"
+        },
+        {
+          "close": 106099.81,
+          "group": "UPPER",
+          "next_close": 106136.99,
+          "next_timestamp": "2024-12-17T00:00:00Z",
+          "portfolio_votes": 4.0,
+          "return_t_plus_1": 0.0003504247557089002,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-16T00:00:00Z"
+        },
+        {
+          "close": 106136.99,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 100150.73,
+          "next_timestamp": "2024-12-18T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.056401260295774414,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-17T00:00:00Z"
+        },
+        {
+          "close": 100150.73,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 97372.21,
+          "next_timestamp": "2024-12-19T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.02774338239970886,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-18T00:00:00Z"
+        },
+        {
+          "close": 97372.21,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 97765.0,
+          "next_timestamp": "2024-12-20T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.004033902486140439,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-19T00:00:00Z"
+        },
+        {
+          "close": 97765.0,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 97230.08,
+          "next_timestamp": "2024-12-21T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": -0.005471487751240178,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-20T00:00:00Z"
+        },
+        {
+          "close": 97230.08,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 95087.75,
+          "next_timestamp": "2024-12-22T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": -0.02203361346612076,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-21T00:00:00Z"
+        },
+        {
+          "close": 95087.75,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 94764.56,
+          "next_timestamp": "2024-12-23T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": -0.0033988605261981997,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-22T00:00:00Z"
+        },
+        {
+          "close": 94764.56,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 98594.47,
+          "next_timestamp": "2024-12-24T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": 0.04041500324593916,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-23T00:00:00Z"
+        },
+        {
+          "close": 98594.47,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 99346.28,
+          "next_timestamp": "2024-12-25T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.0076252755352304025,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-24T00:00:00Z"
+        },
+        {
+          "close": 99346.28,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 95669.49,
+          "next_timestamp": "2024-12-26T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.03700984073082547,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-25T00:00:00Z"
+        },
+        {
+          "close": 95669.49,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 94171.89,
+          "next_timestamp": "2024-12-27T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.015653893419939946,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-26T00:00:00Z"
+        },
+        {
+          "close": 94171.89,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 95130.82,
+          "next_timestamp": "2024-12-28T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.01018276260569917,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-27T00:00:00Z"
+        },
+        {
+          "close": 95130.82,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 93563.35,
+          "next_timestamp": "2024-12-29T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": -0.016476994521859467,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-28T00:00:00Z"
+        },
+        {
+          "close": 93563.35,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 92620.71,
+          "next_timestamp": "2024-12-30T00:00:00Z",
+          "portfolio_votes": 0.0,
+          "return_t_plus_1": -0.010074885091224228,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-29T00:00:00Z"
+        },
+        {
+          "close": 92620.71,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 93354.22,
+          "next_timestamp": "2024-12-31T00:00:00Z",
+          "portfolio_votes": 1.0,
+          "return_t_plus_1": 0.007919503100332514,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-30T00:00:00Z"
+        },
+        {
+          "close": 93354.22,
+          "group": "LOWER_OR_EQUAL",
+          "next_close": 94383.59,
+          "next_timestamp": "2025-01-01T00:00:00Z",
+          "portfolio_votes": 2.0,
+          "return_t_plus_1": 0.011026496713271161,
+          "row_role": "EVALUATION",
+          "timestamp": "2024-12-31T00:00:00Z"
+        }
+      ],
+      "execution": {
+        "code_revision": "0771eefc6b421a308c3394cf38286d91b3ac1b15",
+        "pipeline_sha256": "44f39a14fb539222793b4bfe9336c254335adef3e83251acdaef9b63117780ec"
+      },
+      "inputs": {
+        "dataset_hashes": {
+          "capture_sha256": "8eb3f0a02b4121c4b33f116b8ad61bc7e3a46b9f6d4c83aa88c74bcd2ccac97a",
+          "code_sha256": "44f39a14fb539222793b4bfe9336c254335adef3e83251acdaef9b63117780ec",
+          "dataset_sha256": "87c30d360f847c2cb0ce7caa433778d0128131516b0fdd41d33de98213015273",
+          "raw_sha256": "6026837451ba57998fe32c3817f8533116aec6a566962b8514f26a91a131c9ba",
+          "selection_sha256": "a2502e7562f8ca37c2570724c35642535fd0f2d49f6708be768903768a2d7410",
+          "validation_sha256": "4f79a8f53b86f94fe3043de820734f1f68957940988951caf7bf9db43036d6d1"
+        },
+        "dataset_manifest_sha256": "012d518d4c858e87cf19c361d182a80c9e1e5b25a954a84c8a2c77481c0661ef",
+        "experiment_record_sha256": "36ec703e530e543cc41a5279f554c8e5bcb5dc586fb44b1c1a459694073ef56f",
+        "hypothesis_record_sha256": "7402ce49913ffafb3cc8c229dd6f69e5437fab6d7d03e7eced568812f22e3429"
+      },
+      "record_id": "EXPERIMENT_RESULT_RECORD|EXPERIMENT_RESULT|8d8f45eb090c1c84fe9e291e05e707f6fa8a554d82b7b996d5629e663b7679dc|41944bd2913d5a322e772df3dabc9e1746791ec17b1019e255b55aa64e3440de",
+      "references": {
+        "dataset": {
+          "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|9ae4a8a242584c6aa562f0885b3577d4529c771f0b8a01859c26defba872f86d",
+          "dataset_sha256": "87c30d360f847c2cb0ce7caa433778d0128131516b0fdd41d33de98213015273",
+          "evaluable_period": {
+            "end_exclusive_utc": "2025-01-01T00:00:00Z",
+            "start_utc": "2024-01-01T00:00:00Z"
+          },
+          "hypothesis_id": "HYPOTHESIS|055afbb0-5f33-4408-9416-7de4ce1f0dd1",
+          "hypothesis_version": 1,
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-11T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-12T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-16T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-17T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-18T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-19T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-25T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PORTFOLIO3_20_20_20_WARMUP",
+              "timestamp": "2023-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2025-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|5ce482da-e2df-4084-aa5b-9ad1de5e8a6c",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|5ce482da-e2df-4084-aa5b-9ad1de5e8a6c|1|2fc94132c2e2752d22a04f5105d23d0388199473c46bd0c0ef0618363ee55943",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "0771eefc6b421a308c3394cf38286d91b3ac1b15",
+          "hypothesis_id": "HYPOTHESIS|055afbb0-5f33-4408-9416-7de4ce1f0dd1",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|055afbb0-5f33-4408-9416-7de4ce1f0dd1|1|8d604464c68a9a985f446c98e1e4562adf99ffe16849bbcae1fa66578faa4d99",
+          "system_version": "0.1.0",
+          "version": 1
+        }
+      },
+      "result_id": "EXPERIMENT_RESULT|8d8f45eb090c1c84fe9e291e05e707f6fa8a554d82b7b996d5629e663b7679dc",
+      "schema_version": "1",
+      "status": "COMPLETED"
+    }
+  ],
+  "schema_version": "1"
+}
