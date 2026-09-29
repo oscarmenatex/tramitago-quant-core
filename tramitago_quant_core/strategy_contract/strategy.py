@@ -170,6 +170,59 @@ def funding_rate_sign_strategy():
     }
 
 
+def sma_volume_confirmation_strategy(sma_window, volume_window):
+    """A fifth Strategy family, and the first COMBINED signal: classifies
+    UPPER only when BOTH the SMA_CROSSOVER condition (close above its own
+    trailing average) AND the VOLUME_SURGE condition (volume above its own
+    trailing average) hold at once -- the "confirmation" heuristic technical
+    analysts commonly invoke (a price move is more meaningful when
+    accompanied by above-average volume). Proposed 2026-09-28/29 after the
+    hypothesis catalog's Nivel 1 (period, liquidity, direction) all failed
+    to help: tests whether a CONJUNCTION of two signals that are each,
+    individually, inside the noise floor carries information neither one
+    does alone -- genuinely different from adding a fourth solo indicator.
+
+    Reuses SMA_CROSSOVER's and VOLUME_SURGE's own averaging formulas
+    unchanged, so a direct comparison against SMA3/VOLSURGE20 in isolation
+    is exact, not approximate."""
+    if not isinstance(sma_window, int) or isinstance(sma_window, bool) or sma_window < 2:
+        raise ValueError("SMA window must be an integer >= 2")
+    if not isinstance(volume_window, int) or isinstance(volume_window, bool) or volume_window < 2:
+        raise ValueError("Volume window must be an integer >= 2")
+    indicator_name = f"SMA{sma_window}CONFIRM{volume_window}"
+    column_name = f"sma_close_{sma_window}_confirm_vol_{volume_window}"
+    warmup = max(sma_window - 1, volume_window)
+
+    def compute(window_rows):
+        if len(window_rows) != warmup + 1:
+            raise ValueError("Strategy compute window has the wrong length")
+        sma_rows = window_rows[-sma_window:]
+        sma_value = math.fsum(row["close"] / sma_window for row in sma_rows)
+        volume_rows = window_rows[-(volume_window + 1):-1]
+        volume_avg = math.fsum(row["volume"] for row in volume_rows) / volume_window
+        if not math.isfinite(sma_value) or not math.isfinite(volume_avg):
+            raise ValueError("Non-finite indicator")
+        close_t = window_rows[-1]["close"]
+        volume_t = window_rows[-1]["volume"]
+        group = "UPPER" if (close_t > sma_value and volume_t > volume_avg) else "LOWER_OR_EQUAL"
+        return {"indicator_value": sma_value, "group": group}
+
+    upper_description = (
+        f"close_t > SMA{sma_window}_t AND volume_t > VOLAVG{volume_window}_t")
+    lower_description = f"NOT ({upper_description})"
+    return {
+        "schema_version": STRATEGY_SCHEMA_VERSION,
+        "strategy_id": "SMA_VOLUME_CONFIRMATION",
+        "parameters": {"sma_window": sma_window, "volume_window": volume_window},
+        "indicator_name": indicator_name,
+        "column_name": column_name,
+        "required_inputs": {"variables": ["close", "volume"], "warmup_periods": warmup},
+        "upper_group_description": upper_description,
+        "lower_or_equal_group_description": lower_description,
+        "compute": compute,
+    }
+
+
 def _strategy_classify_rows(strategy, rows):
     """Generic classification runner: given ANY Strategy (via its contract)
     and raw rows (each with at least 'close'), produces one classified row
