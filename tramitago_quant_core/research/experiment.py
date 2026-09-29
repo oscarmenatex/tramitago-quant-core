@@ -32,7 +32,7 @@ from tramitago_quant_core.research.historical_dataset import (
 )
 from tramitago_quant_core.strategy_contract.strategy import (
     sma_crossover_strategy, momentum_crossover_strategy, volume_surge_strategy,
-    funding_rate_sign_strategy, sma_volume_confirmation_strategy,
+    funding_rate_sign_strategy, sma_volume_confirmation_strategy, intraday_range_strategy,
 )
 
 # M4.1 production wiring (2026-09-28): an Experiment's indicator is described
@@ -49,6 +49,7 @@ _EXPERIMENT_STRATEGY_CONSTRUCTORS = {
     "FUNDING_RATE_SIGN": lambda parameters: funding_rate_sign_strategy(),
     "SMA_VOLUME_CONFIRMATION": lambda parameters: sma_volume_confirmation_strategy(
         parameters["sma_window"], parameters["volume_window"]),
+    "INTRADAY_RANGE": lambda parameters: intraday_range_strategy(parameters["window"]),
 }
 
 

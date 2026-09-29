@@ -170,6 +170,55 @@ def funding_rate_sign_strategy():
     }
 
 
+def intraday_range_strategy(window):
+    """A sixth Strategy family, and the first to read `high`/`low` at all:
+    classifies each day by whether its own intraday range, normalized by
+    that day's close ((high - low) / close), exceeds the trailing average
+    of the same quantity over the prior `window` days -- a
+    volatility-expansion hypothesis (how UNCERTAIN the day was), never
+    direction (SMA/Momentum) and never activity level (Volume Surge).
+
+    Proposed 2026-09-29 after the catalog's Nivel 1 and the first combined
+    Strategy all failed: every Strategy tested so far read only `close`,
+    `volume` or `funding_rate`, leaving the high/low half of the OHLCV
+    record entirely untouched. Normalizing by close (rather than the raw
+    high-low spread) keeps the indicator comparable across price levels,
+    so the trailing average is not dominated by the instrument's own drift
+    in nominal price."""
+    if not isinstance(window, int) or isinstance(window, bool) or window < 2:
+        raise ValueError("Intraday range window must be an integer >= 2")
+    indicator_name = f"RANGE{window}"
+    column_name = f"range_avg_{window}"
+
+    def _normalized_range(row):
+        return (row["high"] - row["low"]) / row["close"]
+
+    def compute(window_rows):
+        if len(window_rows) != window + 1:
+            raise ValueError("Strategy compute window has the wrong length")
+        prior = window_rows[:-1]
+        indicator_value = math.fsum(_normalized_range(row) for row in prior) / window
+        if not math.isfinite(indicator_value):
+            raise ValueError("Non-finite indicator")
+        current_range = _normalized_range(window_rows[-1])
+        if not math.isfinite(current_range):
+            raise ValueError("Non-finite indicator")
+        group = "UPPER" if current_range > indicator_value else "LOWER_OR_EQUAL"
+        return {"indicator_value": indicator_value, "group": group}
+
+    return {
+        "schema_version": STRATEGY_SCHEMA_VERSION,
+        "strategy_id": "INTRADAY_RANGE",
+        "parameters": {"window": window},
+        "indicator_name": indicator_name,
+        "column_name": column_name,
+        "required_inputs": {"variables": ["high", "low", "close"], "warmup_periods": window},
+        "upper_group_description": f"(high_t - low_t) / close_t > {indicator_name}_t",
+        "lower_or_equal_group_description": f"(high_t - low_t) / close_t <= {indicator_name}_t",
+        "compute": compute,
+    }
+
+
 def sma_volume_confirmation_strategy(sma_window, volume_window):
     """A fifth Strategy family, and the first COMBINED signal: classifies
     UPPER only when BOTH the SMA_CROSSOVER condition (close above its own
