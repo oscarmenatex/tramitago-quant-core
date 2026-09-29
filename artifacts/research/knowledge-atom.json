@@ -1,0 +1,163 @@
+{
+  "records": [
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+          "threshold": "0"
+        },
+        "description": "For ATOM-USD, the mean t+1 return when close_t > SMA3_t exceeds the mean t+1 return when close_t <= SMA3_t (same SMA3 signal as the original BTC-USD/ETH-USD Hypotheses, same period, same horizon -- isolating only the instrument, chosen for meaningfully lower liquidity/less algorithmic arbitrage than BTC-USD/ETH-USD, per written instrument-selection analysis).",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|ca1d3cca-ae72-4a16-a159-b504cad89790",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|ca1d3cca-ae72-4a16-a159-b504cad89790|1|e28dbfb8710d70f364fcc18ae97eed58361103f5865e5c3c211f599bb19f899f",
+        "target_metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+        "version": 1
+      },
+      "interpretation": "SMA3 sobre ATOM-USD (Cosmos), 2025 completo -- misma senal exacta que la Hypothesis original BTC-USD (ya rechazada) y ETH-USD, mismo periodo, mismo horizonte de 1 dia, aislando unicamente el instrumento. ATOM-USD elegido por ser el de menor liquidez/volumen entre los candidatos con cobertura diaria completa verificada en Coinbase para 2025 (ver ANALYSIS en el registro de Hypothesis), bajo la hipotesis de que un activo menos arbitrado podria mostrar una senal mas robusta que BTC-USD/ETH-USD. Muestra completa: metric=-0.000983, NOT_MET (grupo UPPER: n=168, media=-0.002801; grupo LOWER_OR_EQUAL: n=197, media=-0.001818) -- grupos balanceados, sin el desbalance severo visto en la Hypothesis de funding rate. Walk-forward independiente (M2.6, 5 folds): consistencia real 60% (NOT_VALIDATED, razon=CONSISTENCY_BELOW_THRESHOLD) -- identica a la consistencia de BTC-USD. Risk Analytics (descriptivo): Sharpe entre -2.964 y 1.620 (promedio -0.652, mas negativo que BTC-USD), peor drawdown de fold 44.4% (comparable al 46.8% de ETH-USD, muy por encima del 21.4% de BTC-USD). Full-sample y walk-forward coinciden esta vez (REJECTED en ambos, a diferencia de ETH-USD/volume_surge donde full-sample ACCEPTED tecnico diverge del veredicto walk-forward).",
+      "knowledge_id": "KNOWLEDGE|413faed1a819164e55eb30811b9ac651572d2d155196758cf913c8d7d8ef14c8",
+      "limitations": [
+        "Un solo instrumento nuevo evaluado (ATOM-USD) -- no se probo un barrido de multiples activos de baja liquidez, solo el candidato de menor volumen entre tres verificados.",
+        "Un solo periodo historico evaluado (2025), el mismo que las 13 hipotesis previas, para aislar unicamente el cambio de instrumento.",
+        "La eleccion de 'menor liquidez' se baso en volumen de 24h de un solo momento (2026-09-29), no en una serie historica de liquidez a lo largo de 2025 -- el perfil de liquidez pudo haber sido distinto durante el periodo evaluado.",
+        "Risk Analytics (Sharpe/drawdown) es descriptivo -- no gatea ni la Disposition ni el veredicto walk-forward.",
+        "El resultado (consistencia 60%, Sharpe negativo, drawdown 44.4%) es comparable o peor que BTC-USD/ETH-USD, no mejor -- no confirma la hipotesis motivadora de que un activo menos arbitrado tendria una senal SMA3 mas robusta; sugiere que la ausencia de senal puede no ser especifica de la liquidez del instrumento."
+      ],
+      "materialization": {
+        "knowledge_code_revision": "85ea1d56d9bd42aceb4ca03613be457164d9ea12",
+        "pipeline_sha256": "6b1994cfa8541d3affb47eeb82af2902885d2c30d74090a1b06301680a5762d0",
+        "preserved_at": "2026-09-29T03:19:06.505271Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= SMA3_t",
+          "upper_group": "close_t > SMA3_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "instrument": "ATOM-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > SMA3_t) - mean(return_t+1 | close_t <= SMA3_t)",
+          "name": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_SMA3_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "sma": {
+          "source": "close",
+          "window": 3
+        },
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|413faed1a819164e55eb30811b9ac651572d2d155196758cf913c8d7d8ef14c8|2d3ce4ff9a062399a550cf2ed41ba4bc44922746fdd4fbc05ae2539070963559",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|32590e612ede14afa9400aec3acaa508e3bfc5aa82f53841fc409dcba91de815",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|32590e612ede14afa9400aec3acaa508e3bfc5aa82f53841fc409dcba91de815|906fb900c696c802bb3decec6a495cf1af99a5b564a193e4ac0b12f4c9ab9c31"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|f0259471-9848-4bba-883b-4b725a41f654",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|f0259471-9848-4bba-883b-4b725a41f654|1|c604ce9630aac616f7ebdfef510e1a2ce5f872f730c174353fdbfe6c97e3ba9a",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "85ea1d56d9bd42aceb4ca03613be457164d9ea12",
+          "hypothesis_id": "HYPOTHESIS|ca1d3cca-ae72-4a16-a159-b504cad89790",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|ca1d3cca-ae72-4a16-a159-b504cad89790|1|e28dbfb8710d70f364fcc18ae97eed58361103f5865e5c3c211f599bb19f899f",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|dc907c5483503515fdae12f386178966b10446248e0f98966270c425999225b7|172a52642c83795eca748ccae8d8a549e2db5dea6887cccb520a684baf54fe28",
+          "research_result_id": "RESEARCH_RESULT|dc907c5483503515fdae12f386178966b10446248e0f98966270c425999225b7"
+        }
+      },
+      "results": {
+        "outcome": "REJECTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+            "threshold": "0"
+          },
+          "criterion_result": "NOT_MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 197,
+              "mean_return_t_plus_1": -0.0018177855956071694,
+              "rule": "close_t <= SMA3_t"
+            },
+            "upper": {
+              "count": 168,
+              "mean_return_t_plus_1": -0.0028012055346440636,
+              "rule": "close_t > SMA3_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": -0.0009834199390368942,
+          "observation_count": 365,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    }
+  ],
+  "schema_version": "1"
+}
