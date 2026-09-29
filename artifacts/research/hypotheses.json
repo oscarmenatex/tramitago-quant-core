@@ -871,6 +871,47 @@
       "system_version": "0.1.0",
       "target_metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
       "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "GT",
+        "expected_direction": "INCREASE",
+        "metric": "mean_forward_return_1d(close_t > sma_close_3 AND volume_t > volsurge20) - mean_forward_return_1d(NOT ...)",
+        "threshold": "0"
+      },
+      "code_revision": "4ae3efc69bb19dadf51e52a48560fd97c9251aea",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2026-01-01T00:00:00Z",
+          "start_utc": "2025-01-01T00:00:00Z"
+        },
+        "universe": [
+          "BTC-USD"
+        ],
+        "variables": [
+          "close",
+          "volume",
+          "sma_close_3_confirm_vol_20",
+          "forward_return_1d"
+        ]
+      },
+      "creation_context": {
+        "created_by": "oscar+claude-analysis",
+        "provenance": [
+          "DISCOVERY|artifacts/live-run-1",
+          "SNAPSHOT_SHA256|a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f",
+          "ANALYSIS|tramitago-quant-core-docs/Hipotesis de Senal Combinada - SMA3+VolumenSurge20 BTC-USD (2026-09-29).txt"
+        ]
+      },
+      "creation_timestamp": "2026-09-29T09:00:00Z",
+      "description": "For BTC-USD, the mean t+1 return when close_t > SMA3_t AND volume_t > VOLSURGE20_t (both conditions confirmed simultaneously) exceeds the mean t+1 return otherwise -- SMA_VOLUME_CONFIRMATION, the first combined Strategy, testing whether a conjunction of two individually noise-floor signals (SMA3 alone, VOLSURGE20 alone) carries information neither does alone.",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|85504562-57dc-4816-8a03-06a4e6342805",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|85504562-57dc-4816-8a03-06a4e6342805|1|f7853564464751afd92ca367bef7b2012f7e26992e496acb21367f8b86f52a74",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_return_1d(close_t > sma_close_3 AND volume_t > volsurge20) - mean_forward_return_1d(NOT ...)",
+      "version": 1
     }
   ],
   "schema_version": "2"

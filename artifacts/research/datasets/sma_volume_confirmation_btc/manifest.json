@@ -1,0 +1,96 @@
+{
+  "audit_sha256": "ab550a1ec34143fc02dcc80a97774726d47fa3ea287cc3f9cdf7d7c3244113d6",
+  "capture_sha256": "eecfe6316d1f4f5668e843d7781d9fb22b97b0edd58fc12ab1efcb76b730c7ed",
+  "code_sha256": "a60d099182d3bbf828506bc576d7729e4de62082f4b3b198642e74fbe19d7675",
+  "columns": [
+    "instrument",
+    "timestamp",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "sma_close_3_confirm_vol_20",
+    "row_role",
+    "forward_return_1d"
+  ],
+  "config": {
+    "capture_period": {
+      "end_exclusive_utc": "2026-01-02T00:00:00Z",
+      "start_utc": "2024-12-12T00:00:00Z"
+    },
+    "duplicate_policy": "reject entire dataset",
+    "evaluable_period": {
+      "end_exclusive_utc": "2026-01-01T00:00:00Z",
+      "start_utc": "2025-01-01T00:00:00Z"
+    },
+    "frequency_seconds": 86400,
+    "instrument": "BTC-USD",
+    "missing_policy": "reject entire dataset; no imputation",
+    "schema_version": "1",
+    "source": "Coinbase Exchange public candles",
+    "support_policy": "exactly 20 SMA3CONFIRM20 warm-up rows before and one forward-return row after the evaluable period",
+    "temporal_policy": "reject rows outside the declared capture period",
+    "timezone": "UTC"
+  },
+  "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|a6eb7f48c19288e28455ad2ec42936190c1ea1dfadd634f4262674c5cdac8191",
+  "dataset_sha256": "f4003d26c7cbaaba7b7489343c5d908f3185d3f8c8db66d4cc264683cad86af6",
+  "identity": {
+    "code_revision": "4ae3efc69bb19dadf51e52a48560fd97c9251aea",
+    "config": {
+      "capture_period": {
+        "end_exclusive_utc": "2026-01-02T00:00:00Z",
+        "start_utc": "2024-12-12T00:00:00Z"
+      },
+      "duplicate_policy": "reject entire dataset",
+      "evaluable_period": {
+        "end_exclusive_utc": "2026-01-01T00:00:00Z",
+        "start_utc": "2025-01-01T00:00:00Z"
+      },
+      "frequency_seconds": 86400,
+      "instrument": "BTC-USD",
+      "missing_policy": "reject entire dataset; no imputation",
+      "schema_version": "1",
+      "source": "Coinbase Exchange public candles",
+      "support_policy": "exactly 20 SMA3CONFIRM20 warm-up rows before and one forward-return row after the evaluable period",
+      "temporal_policy": "reject rows outside the declared capture period",
+      "timezone": "UTC"
+    },
+    "hashes": {
+      "capture_sha256": "eecfe6316d1f4f5668e843d7781d9fb22b97b0edd58fc12ab1efcb76b730c7ed",
+      "code_sha256": "a60d099182d3bbf828506bc576d7729e4de62082f4b3b198642e74fbe19d7675",
+      "dataset_sha256": "f4003d26c7cbaaba7b7489343c5d908f3185d3f8c8db66d4cc264683cad86af6",
+      "raw_sha256": "9a368ce9741b1cb666d81f776ce5ec2a2de7500d011a844b31e898436f0d3e49",
+      "selection_sha256": "4ba55d025cb73cbe43e547ac300c992b8c3504ed12ffe9f6ed843743f3a79c40",
+      "validation_sha256": "fba3aaeec60f8631d5ce5492f0f4a6acfe5f42b1652e79c83f10ee30e30900e9"
+    },
+    "hypothesis_id": "HYPOTHESIS|85504562-57dc-4816-8a03-06a4e6342805",
+    "hypothesis_version": 1,
+    "schema_version": "1",
+    "system_version": "0.1.0"
+  },
+  "input_kind": "historical-hypothesis-dataset",
+  "range": [
+    "2024-12-12T00:00:00Z",
+    "2026-01-01T00:00:00Z"
+  ],
+  "raw_sha256": "9a368ce9741b1cb666d81f776ce5ec2a2de7500d011a844b31e898436f0d3e49",
+  "replay": "create_hypothesis_dataset(<registry>, <hypothesis_id>, <version>, <output>)",
+  "rows": 386,
+  "runtime": "3.11.9",
+  "schema": {
+    "close": "finite float64",
+    "forward_return_1d": "nullable finite float64; defined only for EVALUATION rows",
+    "high": "finite float64",
+    "instrument": "string",
+    "low": "finite float64",
+    "open": "finite float64",
+    "row_role": "SUPPORT_SMA3CONFIRM20_WARMUP | EVALUATION | SUPPORT_FORWARD_RETURN",
+    "sma_close_3_confirm_vol_20": "nullable finite float64",
+    "timestamp": "UTC ISO8601 bucket start",
+    "volume": "finite float64"
+  },
+  "selection_sha256": "4ba55d025cb73cbe43e547ac300c992b8c3504ed12ffe9f6ed843743f3a79c40",
+  "status": "PASS",
+  "validation_sha256": "fba3aaeec60f8631d5ce5492f0f4a6acfe5f42b1652e79c83f10ee30e30900e9"
+}
