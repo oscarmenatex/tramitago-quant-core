@@ -1,0 +1,44 @@
+{
+  "acquired_at": "2026-09-29T02:56:09.957146Z",
+  "capture_id": "OKX_FUNDING_RATE_CAPTURE|a192b87e4b6e176673c6dd05133ba98c0f40823a3282e1127c52f3e47b6f2e7b",
+  "capture_period": {
+    "end_exclusive_utc": "2026-09-29T00:00:00Z",
+    "start_utc": "2026-06-23T00:00:00Z"
+  },
+  "inst_id": "BTC-USDT-SWAP",
+  "kind": "okx-funding-rate-capture",
+  "responses": [
+    {
+      "after_ms": 1790640000000,
+      "response_headers": {
+        "Content-Type": "application/json;charset=UTF-8",
+        "Date": "Tue, 29 Sep 2026 02:56:15 GMT"
+      },
+      "response_sha256": "c34cedd59028515a0e27dcf0a32863f94e8040f04be493b9e56ae319ec6ac3d1",
+      "sequence": 1,
+      "url": "https://www.okx.com/api/v5/public/funding-rate-history?instId=BTC-USDT-SWAP&limit=100&after=1790640000000"
+    },
+    {
+      "after_ms": 1787760000000,
+      "response_headers": {
+        "Content-Type": "application/json;charset=UTF-8",
+        "Date": "Tue, 29 Sep 2026 02:56:16 GMT"
+      },
+      "response_sha256": "25c9d1d8a9eddfe5c0f958bc8e69c88416685e37dcbd91debce16bbd5949a6d4",
+      "sequence": 2,
+      "url": "https://www.okx.com/api/v5/public/funding-rate-history?instId=BTC-USDT-SWAP&limit=100&after=1787760000000"
+    },
+    {
+      "after_ms": 1784880000000,
+      "response_headers": {
+        "Content-Type": "application/json;charset=UTF-8",
+        "Date": "Tue, 29 Sep 2026 02:56:16 GMT"
+      },
+      "response_sha256": "ca8d5c776fee52c73e2bb62eb451e1c7e54b679e47ac5cdaba1ef7fa2580b9dc",
+      "sequence": 3,
+      "url": "https://www.okx.com/api/v5/public/funding-rate-history?instId=BTC-USDT-SWAP&limit=100&after=1784880000000"
+    }
+  ],
+  "schema_version": "1",
+  "source": "OKX public funding rate history"
+}
