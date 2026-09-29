@@ -1,0 +1,117 @@
+{
+  "experiments": [
+    {
+      "conditions": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= SMA3_t",
+          "upper_group": "close_t > SMA3_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > SMA3_t) - mean(return_t+1 | close_t <= SMA3_t)",
+          "name": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_SMA3_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2022-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2022-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2024-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "sma": {
+          "source": "close",
+          "window": 3
+        },
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2024-01-01T00:00:00Z",
+            "start_utc": "2023-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "created_at": "2026-09-29T04:11:44.717561Z",
+      "experiment_id": "EXPERIMENT|f2ad6996-6001-499f-8b64-4e78a828a21f",
+      "record_id": "EXPERIMENT_VERSION|EXPERIMENT|f2ad6996-6001-499f-8b64-4e78a828a21f|1|0625b54b8f917c3b92e2b2e1f504f793747e954b29747c8c954c85c1b6c899fb",
+      "references": {
+        "dataset": {
+          "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|cbb63ee7da1e25cf0cdf238578d17fc8c9e7e5afc25c4f81c4b19db597ba3c2c",
+          "dataset_sha256": "cc79cac314ba297aaf527f12a583b2f3e0c4f2a84519c228e575ecf3c51fd030",
+          "evaluable_period": {
+            "end_exclusive_utc": "2024-01-01T00:00:00Z",
+            "start_utc": "2023-01-01T00:00:00Z"
+          },
+          "hypothesis_id": "HYPOTHESIS|074608d7-8234-4ec4-9241-cabb271a0290",
+          "hypothesis_version": 1,
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2022-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3_WARMUP",
+              "timestamp": "2022-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2024-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "hypothesis": {
+          "code_revision": "da8bcbdff0d601295e764c3a22677db0c71e0c5a",
+          "hypothesis_id": "HYPOTHESIS|074608d7-8234-4ec4-9241-cabb271a0290",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|074608d7-8234-4ec4-9241-cabb271a0290|1|2973f8d4d5b1ba467ca5781aafd120e1d89a95dcc214a379aacd684e963c711c",
+          "system_version": "0.1.0",
+          "version": 1
+        }
+      },
+      "revision_reason": "INITIAL_BTC_2023_PERIOD",
+      "status": "CONDITIONS_FIXED",
+      "version": 1
+    }
+  ],
+  "schema_version": "1"
+}

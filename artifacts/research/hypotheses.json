@@ -631,6 +631,46 @@
       "system_version": "0.1.0",
       "target_metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
       "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "GT",
+        "expected_direction": "INCREASE",
+        "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+        "threshold": "0"
+      },
+      "code_revision": "da8bcbdff0d601295e764c3a22677db0c71e0c5a",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2024-01-01T00:00:00Z",
+          "start_utc": "2023-01-01T00:00:00Z"
+        },
+        "universe": [
+          "BTC-USD"
+        ],
+        "variables": [
+          "close",
+          "sma_close_3",
+          "forward_return_1d"
+        ]
+      },
+      "creation_context": {
+        "created_by": "oscar+claude-analysis",
+        "provenance": [
+          "DISCOVERY|artifacts/live-run-1",
+          "SNAPSHOT_SHA256|a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f",
+          "ANALYSIS|tramitago-quant-core-docs/Hipotesis de Periodo - SMA3 BTC-USD 2023 (2026-09-29).txt"
+        ]
+      },
+      "creation_timestamp": "2026-09-29T06:00:00Z",
+      "description": "For BTC-USD, the mean t+1 return when close_t > SMA3_t exceeds the mean t+1 return when close_t <= SMA3_t, evaluated over 2023 instead of 2025 (same signal/instrument/horizon as the original Hypothesis, isolating only the period -- tests whether the noise-floor result is specific to 2025 or holds across other years).",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|074608d7-8234-4ec4-9241-cabb271a0290",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|074608d7-8234-4ec4-9241-cabb271a0290|1|2973f8d4d5b1ba467ca5781aafd120e1d89a95dcc214a379aacd684e963c711c",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+      "version": 1
     }
   ],
   "schema_version": "2"

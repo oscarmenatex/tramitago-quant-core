@@ -1,0 +1,69 @@
+{
+  "dispositions": [
+    {
+      "criterion_applied": {
+        "comparison": "GT",
+        "expected_direction": "INCREASE",
+        "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+        "threshold": "0"
+      },
+      "disposition_id": "DISPOSITION|5de40092c3d11ce951a9446495c3ed8255eb1fcfaf6fb56a3071b41795241646",
+      "materialization": {
+        "disposed_at": "2026-09-29T04:12:55.474818Z",
+        "disposition_code_revision": "da8bcbdff0d601295e764c3a22677db0c71e0c5a",
+        "pipeline_sha256": "cdd3d4e132782f34acd578894d450fa1851ca233690c0c181786f4b7572f14de"
+      },
+      "outcome": "ACCEPTED",
+      "outcome_reason": null,
+      "record_id": "DISPOSITION_RECORD|DISPOSITION|5de40092c3d11ce951a9446495c3ed8255eb1fcfaf6fb56a3071b41795241646|ed05392109fcbfc0658791dc36ea81ce6c8ed9edac265e29d96e20548712f41f",
+      "references": {
+        "hypothesis": {
+          "code_revision": "da8bcbdff0d601295e764c3a22677db0c71e0c5a",
+          "hypothesis_id": "HYPOTHESIS|074608d7-8234-4ec4-9241-cabb271a0290",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|074608d7-8234-4ec4-9241-cabb271a0290|1|2973f8d4d5b1ba467ca5781aafd120e1d89a95dcc214a379aacd684e963c711c",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_execution": {
+          "execution_id": "RESEARCH_EXECUTION|152c08c4ccb68bb1c8f1f0596aff5c12ccf7dc9e87edce1a7b240cf7ed2034c2",
+          "record_id": "RESEARCH_EXECUTION_RECORD|RESEARCH_EXECUTION|152c08c4ccb68bb1c8f1f0596aff5c12ccf7dc9e87edce1a7b240cf7ed2034c2|a875be38e75af88378f2ae2ce4158a07a2a9e82d2276c36818a208cc39bbbebb"
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|4875a34eadeeecdfb81e2b2a3a0b57b5a3cb23e11a73cd7faa6de52daba17350|c11b41145246fbd997c89b6bb002eada8cd1a5ad799d080ad5ecd79fcee10f24",
+          "research_result_id": "RESEARCH_RESULT|4875a34eadeeecdfb81e2b2a3a0b57b5a3cb23e11a73cd7faa6de52daba17350"
+        }
+      },
+      "schema_version": "1",
+      "scientific_result": {
+        "criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_3) - mean_forward_return_1d(close_t <= sma_close_3)",
+          "threshold": "0"
+        },
+        "criterion_result": "MET",
+        "groups": {
+          "lower_or_equal": {
+            "count": 167,
+            "mean_return_t_plus_1": 0.002511290482531061,
+            "rule": "close_t <= SMA3_t"
+          },
+          "upper": {
+            "count": 198,
+            "mean_return_t_plus_1": 0.003320403182519504,
+            "rule": "close_t > SMA3_t"
+          }
+        },
+        "inconclusive_reason": null,
+        "metric": 0.0008091126999884429,
+        "observation_count": 365,
+        "period": {
+          "end_exclusive_utc": "2024-01-01T00:00:00Z",
+          "start_utc": "2023-01-01T00:00:00Z"
+        }
+      },
+      "status": "ISSUED"
+    }
+  ],
+  "schema_version": "1"
+}
