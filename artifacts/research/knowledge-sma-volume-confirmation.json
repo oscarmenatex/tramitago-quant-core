@@ -1,0 +1,239 @@
+{
+  "records": [
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_3 AND volume_t > volsurge20) - mean_forward_return_1d(NOT ...)",
+          "threshold": "0"
+        },
+        "description": "For BTC-USD, the mean t+1 return when close_t > SMA3_t AND volume_t > VOLSURGE20_t (both conditions confirmed simultaneously) exceeds the mean t+1 return otherwise -- SMA_VOLUME_CONFIRMATION, the first combined Strategy, testing whether a conjunction of two individually noise-floor signals (SMA3 alone, VOLSURGE20 alone) carries information neither does alone.",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|85504562-57dc-4816-8a03-06a4e6342805",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|85504562-57dc-4816-8a03-06a4e6342805|1|f7853564464751afd92ca367bef7b2012f7e26992e496acb21367f8b86f52a74",
+        "target_metric": "mean_forward_return_1d(close_t > sma_close_3 AND volume_t > volsurge20) - mean_forward_return_1d(NOT ...)",
+        "version": 1
+      },
+      "interpretation": "SMA_VOLUME_CONFIRMATION(sma_window=3, volume_window=20) sobre BTC-USD, 2025 completo -- primera Strategy combinada: UPPER solo cuando close_t > SMA3_t Y volume_t > VOLSURGE20_t simultaneamente. Motivada porque SMA3 solo (NOT_MET, metric -0.000805) y VOLSURGE20 solo (MET por tecnicismo, metric +0.000005, ruido) fallaron por separado -- prueba si la conjuncion de ambas condiciones (la heuristica de 'confirmacion por volumen' del analisis tecnico) aporta informacion que ninguna aporta sola. Muestra completa: metric=-0.002200, NOT_MET -- MAYOR magnitud negativa que SMA3 solo (-0.0008), no menor. Grupo UPPER (ambas condiciones a la vez) es raro: solo 70 de 365 dias (19%), grupo LOWER_OR_EQUAL 295 dias (81%) -- la conjuncion reduce drasticamente el tamano de muestra del grupo de interes. Walk-forward independiente (M2.6, 5 folds): consistencia real 40% (NOT_VALIDATED, razon=CONSISTENCY_BELOW_THRESHOLD) -- ningun fold quedo INCONCLUSIVE (conteos de 8 a 18 dias en el grupo UPPER por fold, suficientes para calcular una media). Full-sample y walk-forward coinciden en rechazar (REJECTED en ambos), igual que ATOM-USD momentum. Risk Analytics: Sharpe promedio -0.962 (peor que SMA3 solo, -0.14), peor drawdown de fold 16.6% (marginalmente por encima del umbral de 15%). La conjuncion de dos senales, cada una dentro del ruido por separado, NO revela informacion adicional -- empeora el resultado respecto a cualquiera de las dos por separado, ademas de reducir el tamano de muestra util.",
+      "knowledge_id": "KNOWLEDGE|2c80d3b43f76bb92c1ef7f578559a3a25957982f8035113706df2090329ed4e8",
+      "limitations": [
+        "Una sola combinacion de ventanas evaluada (SMA3 + VOLSURGE20, las mismas ya selladas individualmente) -- no se probo un barrido de otras combinaciones de ventanas.",
+        "Un solo instrumento (BTC-USD) y periodo (2025) evaluados.",
+        "El grupo de interes (ambas condiciones a la vez) es pequeno (70 de 365 dias, 19%) -- menor poder estadistico que las hipotesis de un solo indicador, aunque ningun fold quedo INCONCLUSIVE.",
+        "Risk Analytics (Sharpe/drawdown) es descriptivo -- no gatea ni la Disposition ni el veredicto walk-forward.",
+        "Primera Strategy combinada probada -- no descarta que OTRAS combinaciones (distintas ventanas, distintos indicadores, OR en vez de AND) puedan comportarse distinto; solo descarta esta combinacion especifica."
+      ],
+      "materialization": {
+        "knowledge_code_revision": "4ae3efc69bb19dadf51e52a48560fd97c9251aea",
+        "pipeline_sha256": "a60d099182d3bbf828506bc576d7729e4de62082f4b3b198642e74fbe19d7675",
+        "preserved_at": "2026-09-29T04:44:16.499461Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_3 AND volume_t > volsurge20) - mean_forward_return_1d(NOT ...)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "NOT (close_t > SMA3_t AND volume_t > VOLAVG20_t)",
+          "upper_group": "close_t > SMA3_t AND volume_t > VOLAVG20_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "sma_close_3_confirm_vol_20",
+          "parameters": {
+            "sma_window": 3,
+            "volume_window": 20
+          },
+          "strategy_id": "SMA_VOLUME_CONFIRMATION"
+        },
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > SMA3_t AND volume_t > VOLAVG20_t) - mean(return_t+1 | NOT (close_t > SMA3_t AND volume_t > VOLAVG20_t))",
+          "name": "mean_forward_return_1d(close_t > sma_close_3 AND volume_t > volsurge20) - mean_forward_return_1d(NOT ...)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_SMA3CONFIRM20_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_SMA3CONFIRM20_WARMUP",
+              "timestamp": "2024-12-12T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3CONFIRM20_WARMUP",
+              "timestamp": "2024-12-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3CONFIRM20_WARMUP",
+              "timestamp": "2024-12-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3CONFIRM20_WARMUP",
+              "timestamp": "2024-12-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3CONFIRM20_WARMUP",
+              "timestamp": "2024-12-16T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3CONFIRM20_WARMUP",
+              "timestamp": "2024-12-17T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3CONFIRM20_WARMUP",
+              "timestamp": "2024-12-18T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3CONFIRM20_WARMUP",
+              "timestamp": "2024-12-19T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3CONFIRM20_WARMUP",
+              "timestamp": "2024-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3CONFIRM20_WARMUP",
+              "timestamp": "2024-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3CONFIRM20_WARMUP",
+              "timestamp": "2024-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3CONFIRM20_WARMUP",
+              "timestamp": "2024-12-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3CONFIRM20_WARMUP",
+              "timestamp": "2024-12-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3CONFIRM20_WARMUP",
+              "timestamp": "2024-12-25T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3CONFIRM20_WARMUP",
+              "timestamp": "2024-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3CONFIRM20_WARMUP",
+              "timestamp": "2024-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3CONFIRM20_WARMUP",
+              "timestamp": "2024-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3CONFIRM20_WARMUP",
+              "timestamp": "2024-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3CONFIRM20_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA3CONFIRM20_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|2c80d3b43f76bb92c1ef7f578559a3a25957982f8035113706df2090329ed4e8|b549b8b30707f655a1d3d90c1cd10c48cff4d5f2fc7027d65546c4c14dc69592",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|fb04baeff75000c4cc1dbe531eace6e698e310a46ae068b993fded2841db5bcf",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|fb04baeff75000c4cc1dbe531eace6e698e310a46ae068b993fded2841db5bcf|445ef84cc245a5383d299511e68b6078465f536a4f8e098f5db88c3393986b18"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|db09c87e-8bd2-4158-9897-58f483b5cff8",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|db09c87e-8bd2-4158-9897-58f483b5cff8|1|21a27831848f0aec55376f8dfd7d1c5ddbd0c7b5e1609d27e05759d44179776c",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "4ae3efc69bb19dadf51e52a48560fd97c9251aea",
+          "hypothesis_id": "HYPOTHESIS|85504562-57dc-4816-8a03-06a4e6342805",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|85504562-57dc-4816-8a03-06a4e6342805|1|f7853564464751afd92ca367bef7b2012f7e26992e496acb21367f8b86f52a74",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|1c10b66ec0727d4c6f3be30ce4b5b4a80d6d3ec44f67f6c0bbf72093a5bc23d9|66cd66dcb9b6e665574aa3b9acc347ccb0db7bd27e7fb8f6edfb29ead015d4ed",
+          "research_result_id": "RESEARCH_RESULT|1c10b66ec0727d4c6f3be30ce4b5b4a80d6d3ec44f67f6c0bbf72093a5bc23d9"
+        }
+      },
+      "results": {
+        "outcome": "REJECTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(close_t > sma_close_3 AND volume_t > volsurge20) - mean_forward_return_1d(NOT ...)",
+            "threshold": "0"
+          },
+          "criterion_result": "NOT_MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 295,
+              "mean_return_t_plus_1": 0.0004931394813344974,
+              "rule": "NOT (close_t > SMA3_t AND volume_t > VOLAVG20_t)"
+            },
+            "upper": {
+              "count": 70,
+              "mean_return_t_plus_1": -0.0017065371797027765,
+              "rule": "close_t > SMA3_t AND volume_t > VOLAVG20_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": -0.0021996766610372738,
+          "observation_count": 365,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    }
+  ],
+  "schema_version": "1"
+}
