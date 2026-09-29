@@ -362,6 +362,13 @@ def _hypothesis_dataset_bytes(rows, strategy=None, horizon=1):
 
 
 def _hypothesis_dataset_selection(hypothesis, config, rows, strategy=None, horizon=1):
+    """Etapa 2.8 extension (2026-09-29): `evaluable_row_count` is derived
+    from the Hypothesis's own evaluable_period instead of a hardcoded 365 --
+    every already-sealed real Hypothesis Dataset (BTC-USD, ETH-USD) used
+    exactly one full calendar year, which is exactly why this reproduces
+    365 for them unchanged. Found while sourcing funding-rate history from
+    OKX (Binance's own history is geoblocked from every reachable network),
+    whose public retention only covers ~3 months, not a full year."""
     strategy = strategy or _hypothesis_dataset_default_strategy()
     forward_column = _hypothesis_dataset_forward_column(horizon)
     forward_key = "support_forward_return" if horizon == 1 else f"support_forward_return_{horizon}d"
@@ -369,10 +376,14 @@ def _hypothesis_dataset_selection(hypothesis, config, rows, strategy=None, horiz
     warmup_role = _hypothesis_dataset_warmup_role(strategy)
     column_name = strategy["column_name"]
     expected_support_roles = [warmup_role] * warmup + [HYPOTHESIS_DATASET_FORWARD_ROLE] * horizon
+    period = config["evaluable_period"]
+    expected_evaluable_count = (
+        (epoch(period["end_exclusive_utc"]) - epoch(period["start_utc"])) // config["frequency_seconds"])
     support_rows = [{"timestamp": row["timestamp"], "row_role": row["row_role"]}
                     for row in rows if row["row_role"] != HYPOTHESIS_DATASET_EVALUATION_ROLE]
     evaluation_rows = [row for row in rows if row["row_role"] == HYPOTHESIS_DATASET_EVALUATION_ROLE]
-    if (len(support_rows) != len(expected_support_roles) or len(evaluation_rows) != 365
+    if (len(support_rows) != len(expected_support_roles)
+            or len(evaluation_rows) != expected_evaluable_count
             or [item["row_role"] for item in support_rows] != expected_support_roles
             or not all(row[column_name] is not None and row[forward_column] is not None
                        for row in evaluation_rows)):
