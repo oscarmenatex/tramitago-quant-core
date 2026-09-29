@@ -34,7 +34,9 @@ from tramitago_quant_core.strategy_contract.strategy import (
     sma_crossover_strategy, momentum_crossover_strategy, volume_surge_strategy,
     funding_rate_sign_strategy, sma_volume_confirmation_strategy, intraday_range_strategy,
     funding_rate_surge_strategy, signal_portfolio_strategy,
+    pair_ratio_reversion_strategy,
 )
+from tramitago_quant_core.strategy_contract.outcome import strategy_outcome
 
 # M4.1 production wiring (2026-09-28): an Experiment's indicator is described
 # either by the legacy fixed "sma" field (the exact shape both already-sealed
@@ -52,6 +54,8 @@ _EXPERIMENT_STRATEGY_CONSTRUCTORS = {
         parameters["sma_window"], parameters["volume_window"]),
     "INTRADAY_RANGE": lambda parameters: intraday_range_strategy(parameters["window"]),
     "FUNDING_RATE_SURGE": lambda parameters: funding_rate_surge_strategy(parameters["window"]),
+    "PAIR_RATIO_REVERSION": lambda parameters: pair_ratio_reversion_strategy(
+        parameters["window"], parameters["pair_variable"]),
     "SIGNAL_PORTFOLIO": lambda parameters: signal_portfolio_strategy(
         parameters["sma_window"], parameters["volume_window"],
         parameters["range_window"], parameters["funding_window"]),
@@ -183,6 +187,7 @@ def _experiment_conditions(hypothesis, dataset, selection, strategy=None, horizo
     it reproduces the legacy "return_t+1" text exactly at the default.
     """
     strategy = strategy or sma_crossover_strategy(3)
+    outcome = strategy_outcome(strategy)
     reference = _experiment_reference(hypothesis, dataset, selection)
     criterion = hypothesis["acceptance_criterion"]
     metric = hypothesis["target_metric"]
@@ -218,7 +223,7 @@ def _experiment_conditions(hypothesis, dataset, selection, strategy=None, horizo
         "frequency_seconds": 86400,
         "analytical_rule": analytical_rule,
         **indicator_field,
-        "outcome": {"name": f"return_t+{horizon}", "formula": f"(close_t+{horizon} / close_t) - 1"},
+        "outcome": {"name": outcome["name"](horizon), "formula": outcome["formula"](horizon)},
         "metric": {
             "name": metric,
             "formula": metric_formula,
@@ -297,6 +302,7 @@ def _experiment_conditions_are_valid(conditions):
             return False
         warmup_role = HYPOTHESIS_DATASET_WARMUP_ROLE
         warmup_count = 2
+        expected_outcome = strategy_outcome(sma_crossover_strategy(3))
     else:
         indicator = conditions.get("indicator")
         if (not isinstance(indicator, dict)
@@ -318,6 +324,7 @@ def _experiment_conditions_are_valid(conditions):
             return False
         warmup_role = _hypothesis_dataset_warmup_role(reconstructed)
         warmup_count = reconstructed["required_inputs"]["warmup_periods"]
+        expected_outcome = strategy_outcome(reconstructed)
     expected_formula = (
         f"mean(return_t+{horizon} | {analytical_rule['upper_group']}) - "
         f"mean(return_t+{horizon} | {analytical_rule['lower_or_equal_group']})")
@@ -333,7 +340,8 @@ def _experiment_conditions_are_valid(conditions):
         and _hypothesis_text_is_valid(conditions.get("instrument"))
         and conditions.get("frequency_seconds") == 86400
         and conditions.get("outcome") == {
-            "name": f"return_t+{horizon}", "formula": f"(close_t+{horizon} / close_t) - 1"}
+            "name": expected_outcome["name"](horizon),
+            "formula": expected_outcome["formula"](horizon)}
         and isinstance(conditions.get("metric"), dict)
         and _hypothesis_text_is_valid(conditions["metric"].get("name"))
         and conditions["metric"].get("formula") == expected_formula
@@ -640,9 +648,10 @@ def _experiment_result_dataset_rows(dataset_directory, conditions):
     indicator-column fork M4.1 already introduced.
     """
     strategy = _experiment_conditions_strategy(conditions)
+    outcome = strategy_outcome(strategy)
     horizon = _experiment_conditions_horizon(conditions)
     column_name = strategy["column_name"]
-    forward_column = _hypothesis_dataset_forward_column(horizon)
+    forward_column = _hypothesis_dataset_forward_column(horizon, strategy)
     auxiliary_variables = _hypothesis_dataset_auxiliary_variables(strategy)
     warmup = strategy["required_inputs"]["warmup_periods"]
     columns = _hypothesis_dataset_columns(strategy, horizon)
@@ -721,7 +730,7 @@ def _experiment_result_dataset_rows(dataset_directory, conditions):
         if (not math.isfinite(indicator_value) or row[column_name] != indicator_value
                 or epoch(next_row["timestamp"]) != timestamp + horizon * frequency):
             raise ValueError("Historical dataset indicator or forward-return support is invalid")
-        forward_return = next_row["close"] / row["close"] - 1
+        forward_return = outcome["compute"](row, next_row)
         if not math.isfinite(forward_return) or row[forward_column] != forward_return:
             raise ValueError("Historical dataset forward return is invalid")
         group = signal["group"]
@@ -869,6 +878,15 @@ def _experiment_result_record_is_valid(record):
             epoch(period["start_utc"]), epoch(period["end_exclusive_utc"]), 86400)]
         if len(record["evidence"]) != len(expected_timestamps):
             return False
+        # Vía 7.C (2026-09-29): the close-return identity check that used to
+        # live in this loop was removed. This record carries no "conditions",
+        # so the Outcome cannot be reconstructed here, and the identity only
+        # holds for CLOSE_RETURN -- a spread Outcome legitimately violates it.
+        # Same precedent as the M4.1 removal of the hardcoded
+        # group != (close > indicator) re-derivation: this is the CHEAP
+        # structural check, and full grounding still happens in
+        # verified_experiment_result, which recomputes through the real
+        # Strategy and its declared Outcome.
         # M4.1 production wiring (2026-09-28): this record carries no
         # "conditions" (only a reference to the sealed Experiment that
         # defines them), so the indicator column name and analytical-rule
@@ -913,8 +931,7 @@ def _experiment_result_record_is_valid(record):
                     or item["next_timestamp"] != iso(epoch(item["timestamp"]) + horizon_seconds)
                     or item["group"] not in {"UPPER", "LOWER_OR_EQUAL"}
                     or not all(isinstance(item[name], float) and math.isfinite(item[name])
-                               for name in ("close", column_name, "next_close", "return_t_plus_1"))
-                    or item["return_t_plus_1"] != item["next_close"] / item["close"] - 1):
+                               for name in ("close", column_name, "next_close", "return_t_plus_1"))):
                 return False
             # M4.1 production wiring (2026-09-28): "group" is NOT re-derived
             # here as close-vs-indicator -- that comparison is only correct

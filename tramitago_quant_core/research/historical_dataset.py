@@ -31,6 +31,7 @@ from tramitago_quant_core.research.hypothesis import load_hypothesis
 from tramitago_quant_core.strategy_contract.strategy import (
     sma_crossover_strategy, _strategy_classify_rows,
 )
+from tramitago_quant_core.strategy_contract.outcome import strategy_outcome
 
 BASE_OHLCV_VARIABLES = {"open", "high", "low", "close", "volume"}
 HYPOTHESIS_DATASET_SCHEMA_VERSION = "1"
@@ -65,12 +66,18 @@ def _hypothesis_dataset_warmup_role(strategy):
     return f"SUPPORT_{strategy['indicator_name']}_WARMUP"
 
 
-def _hypothesis_dataset_forward_column(horizon):
+def _hypothesis_dataset_forward_column(horizon, strategy=None):
     """Etapa 2.7 return-horizon extension (2026-09-28): `horizon=1` remains
     the LITERAL column name every already-sealed real Hypothesis Dataset
     was built with ("forward_return_1d"); any other horizon derives its own
-    name, so it can coexist with the default without ever colliding."""
-    return "forward_return_1d" if horizon == 1 else f"forward_return_{horizon}d"
+    name, so it can coexist with the default without ever colliding.
+
+    Vía 7.C (2026-09-29): the name now comes from the Strategy's declared
+    Outcome, which defaults to the close return -- so omitting `strategy`
+    reproduces the legacy name exactly."""
+    if strategy is None:
+        return "forward_return_1d" if horizon == 1 else f"forward_return_{horizon}d"
+    return strategy_outcome(strategy)["column"](horizon)
 
 
 def _hypothesis_dataset_support_policy(strategy, horizon=1):
@@ -110,12 +117,13 @@ def _hypothesis_dataset_merge_auxiliary(base_rows, auxiliary_series, auxiliary_v
 
 def _hypothesis_dataset_columns(strategy, horizon=1):
     return (COLUMNS[:-1] + _hypothesis_dataset_auxiliary_variables(strategy)
-           + [strategy["column_name"], "row_role", _hypothesis_dataset_forward_column(horizon)])
+           + [strategy["column_name"], "row_role",
+              _hypothesis_dataset_forward_column(horizon, strategy)])
 
 
 def _hypothesis_dataset_schema(strategy, horizon=1):
     base_schema = {key: value for key, value in SCHEMA.items() if key != "sma_close_3"}
-    forward_column = _hypothesis_dataset_forward_column(horizon)
+    forward_column = _hypothesis_dataset_forward_column(horizon, strategy)
     auxiliary_schema = {
         name: "nullable finite float64" for name in _hypothesis_dataset_auxiliary_variables(strategy)}
     return {
@@ -154,11 +162,16 @@ def _hypothesis_dataset_config(hypothesis, strategy=None, horizon=1):
     reason. Any other horizon derives its own capture buffer/support-policy.
     """
     strategy = strategy or _hypothesis_dataset_default_strategy()
-    forward_column = _hypothesis_dataset_forward_column(horizon)
+    forward_column = _hypothesis_dataset_forward_column(horizon, strategy)
     constraints = hypothesis["constraints"]
     period = constraints["period"]
     universe = constraints["universe"]
     warmup = strategy["required_inputs"]["warmup_periods"]
+    # Deliberately NOT including the Outcome's own required variables here:
+    # "close" was always implicit for the close return and the already-sealed
+    # funding-rate Hypotheses never declared it, so demanding it now would
+    # break their re-verification. A pair Outcome's second leg is covered
+    # anyway, because the pairs Strategy declares it among its own inputs.
     required_variables = set(strategy["required_inputs"]["variables"]) | {
         strategy["column_name"], forward_column}
     if (not isinstance(universe, list) or len(universe) != 1
@@ -309,7 +322,8 @@ def _hypothesis_dataset_capture_rows(raw_bytes, capture, config):
 
 def _hypothesis_dataset_rows(rows, config, strategy=None, horizon=1, auxiliary_series=None):
     strategy = strategy or _hypothesis_dataset_default_strategy()
-    forward_column = _hypothesis_dataset_forward_column(horizon)
+    outcome = strategy_outcome(strategy)
+    forward_column = _hypothesis_dataset_forward_column(horizon, strategy)
     warmup_role = _hypothesis_dataset_warmup_role(strategy)
     column_name = strategy["column_name"]
     auxiliary_variables = _hypothesis_dataset_auxiliary_variables(strategy)
@@ -337,7 +351,7 @@ def _hypothesis_dataset_rows(rows, config, strategy=None, horizon=1, auxiliary_s
             if (index + horizon >= len(derived)
                     or epoch(derived[index + horizon]["timestamp"]) != timestamp + horizon * 86400):
                 raise ValueError("Evaluation row lacks its forward-horizon close")
-            forward_return = derived[index + horizon]["close"] / row["close"] - 1
+            forward_return = outcome["compute"](row, derived[index + horizon])
             if not math.isfinite(forward_return):
                 raise ValueError("Forward return is non-finite")
         result.append({
@@ -370,7 +384,7 @@ def _hypothesis_dataset_selection(hypothesis, config, rows, strategy=None, horiz
     OKX (Binance's own history is geoblocked from every reachable network),
     whose public retention only covers ~3 months, not a full year."""
     strategy = strategy or _hypothesis_dataset_default_strategy()
-    forward_column = _hypothesis_dataset_forward_column(horizon)
+    forward_column = _hypothesis_dataset_forward_column(horizon, strategy)
     forward_key = "support_forward_return" if horizon == 1 else f"support_forward_return_{horizon}d"
     warmup = strategy["required_inputs"]["warmup_periods"]
     warmup_role = _hypothesis_dataset_warmup_role(strategy)

@@ -8,6 +8,8 @@ module decomposition). No behavior change.
 
 import math
 
+from tramitago_quant_core.strategy_contract.outcome import spread_return_outcome
+
 
 # M4.1 -- Strategy contract (proof of concept, DOC-002 SS3.1/SS3.5/SS6.1).
 #
@@ -166,6 +168,69 @@ def funding_rate_sign_strategy():
         "required_inputs": {"variables": ["funding_rate"], "warmup_periods": 1},
         "upper_group_description": f"{indicator_name}_t > 0",
         "lower_or_equal_group_description": f"{indicator_name}_t <= 0",
+        "compute": compute,
+    }
+
+
+def pair_ratio_reversion_strategy(window, pair_variable="pair_close"):
+    """Vía 7.C -- the first RELATIVE-VALUE Strategy: it reads two real price
+    series and classifies by where their ratio sits against its own trailing
+    average, and it declares a SPREAD Outcome, so the quantity predicted is
+    the return of a market-neutral position rather than one asset's
+    direction.
+
+    Why this is structurally different from everything tested before: all 27
+    prior Hypotheses predicted the direction of ONE instrument, fighting
+    against that instrument's own 3-4% daily volatility. A spread between
+    two correlated assets has far lower volatility, so an equally small edge
+    is relatively larger. The aggregate signal measurement that closed the
+    single-signal axis does not cover this -- it measured single-instrument
+    directional prediction only.
+
+    Both legs are real captured prices: the primary instrument travels the
+    normal dataset path and the second arrives as an auxiliary variable,
+    sealed and independently re-verified. No synthetic ratio instrument is
+    built, because the high/low of A/B are not derivable from the daily OHLC
+    of A and B.
+
+    Signal and P&L are deliberately distinct here: the signal is read off
+    the ratio, but the P&L is the difference of two real returns."""
+    if not isinstance(window, int) or isinstance(window, bool) or window < 2:
+        raise ValueError("Pair ratio window must be an integer >= 2")
+    if not isinstance(pair_variable, str) or not pair_variable:
+        raise ValueError("Pair variable name is required")
+    indicator_name = f"PAIRRATIO{window}"
+    column_name = f"pair_ratio_avg_{window}"
+
+    def ratio(row):
+        return row["close"] / row[pair_variable]
+
+    def compute(window_rows):
+        if len(window_rows) != window + 1:
+            raise ValueError("Strategy compute window has the wrong length")
+        prior = window_rows[:-1]
+        indicator_value = math.fsum(ratio(row) for row in prior) / window
+        if not math.isfinite(indicator_value):
+            raise ValueError("Non-finite indicator")
+        current = ratio(window_rows[-1])
+        if not math.isfinite(current):
+            raise ValueError("Non-finite indicator")
+        group = "UPPER" if current > indicator_value else "LOWER_OR_EQUAL"
+        return {"indicator_value": indicator_value, "group": group}
+
+    return {
+        "schema_version": STRATEGY_SCHEMA_VERSION,
+        "strategy_id": "PAIR_RATIO_REVERSION",
+        "parameters": {"window": window, "pair_variable": pair_variable},
+        "indicator_name": indicator_name,
+        "column_name": column_name,
+        "required_inputs": {"variables": ["close", pair_variable],
+                            "warmup_periods": window},
+        "upper_group_description": (
+            f"close_t / {pair_variable}_t > {indicator_name}_t"),
+        "lower_or_equal_group_description": (
+            f"close_t / {pair_variable}_t <= {indicator_name}_t"),
+        "outcome": spread_return_outcome(pair_variable),
         "compute": compute,
     }
 

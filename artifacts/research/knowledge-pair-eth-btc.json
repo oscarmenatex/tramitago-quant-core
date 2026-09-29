@@ -1,0 +1,240 @@
+{
+  "records": [
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "LT",
+          "expected_direction": "DECREASE",
+          "metric": "mean_forward_spread_return_1d(ETH/BTC > PAIRRATIO20) - mean_forward_spread_return_1d(ETH/BTC <= PAIRRATIO20)",
+          "threshold": "0"
+        },
+        "description": "For the ETH-USD / BTC-USD pair, the mean t+1 return of a market-neutral position (long ETH, short BTC) when the ETH/BTC ratio is above its own trailing 20-day average is LOWER than when it is below -- PAIR_RATIO_REVERSION, the first relative-value Hypothesis: it predicts a SPREAD, not one instrument direction. Direction DECREASE pre-declared on the pairs-trading reversion prior, with the honest caveat that ETH and BTC are not strongly cointegrated.",
+        "expected_direction": "DECREASE",
+        "hypothesis_id": "HYPOTHESIS|38b2461c-b3f5-4b2d-8045-c5f69fe1ff26",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|38b2461c-b3f5-4b2d-8045-c5f69fe1ff26|1|319b17fa6c5daa8f7c0e46d6ce5a5af001a754abc6f74eaaa64c79c7a8df3521",
+        "target_metric": "mean_forward_spread_return_1d(ETH/BTC > PAIRRATIO20) - mean_forward_spread_return_1d(ETH/BTC <= PAIRRATIO20)",
+        "version": 1
+      },
+      "interpretation": "PAIR_RATIO_REVERSION(20) sobre el par ETH-USD / BTC-USD, 2025 completo -- PRIMERA hipotesis de VALOR RELATIVO del proyecto (via 7.C). A diferencia de las 27 anteriores, no predice la direccion de un instrumento sino el retorno de un DIFERENCIAL: posicion neutral a mercado, larga ETH y corta BTC, mismo nocional. Ambas patas son precios reales capturados y sellados; la segunda entra por el punto de fusion auxiliar de Etapa 2.8. Direccion DECREASE PRE-DECLARADA por escrito sobre el prior de reversion del trade de pares, junto con la advertencia -- tambien pre-declarada -- de que ETH y BTC no estan fuertemente cointegrados y que por tanto esa premisa es debil.\n\nResultado: muestra completa metric=+0.001048, NOT_MET -> REJECTED. El signo es el CONTRARIO al declarado: cuando el ratio ETH/BTC estaba por encima de su media de 20 dias, el diferencial SIGUIO subiendo (+0.001036 diario) en vez de revertir, mientras que por debajo quedo plano (-0.000011). Es decir, en 2025 el ratio mostro momentum, no reversion -- exactamente lo contrario de la premisa del trade de pares.\n\nWalk-forward independiente (5 folds): 3 de 5 folds MET, consistencia 60%, NOT_VALIDATED (umbral 70%), p-valor binomial exacto 0.5000. Risk Analytics: Sharpe promedio +0.304, peor drawdown 25.9%.\n\nCONTRADICCION INTERNA QUE MERECE ATENCION: la muestra completa dice momentum (metric positiva) mientras que el walk-forward da 3 de 5 folds a favor de la reversion. No es un error: la muestra completa esta dominada por los sub-periodos donde el momentum del ratio fue fuerte (folds 1 y 2, con metric +0.0034 y +0.0022 sobre muchos dias en el grupo UPPER), mientras que los tres folds restantes fueron de reversion pero de menor peso agregado. Es otra manifestacion del mismo patron de fondo del proyecto: el efecto cambia de signo entre sub-periodos, que es justamente lo que el walk-forward existe para detectar.\n\nLo que NO cierra este resultado: el eje de valor relativo tiene ahora un solo dato. El 60% de consistencia empata con lo mejor visto dentro de muestra en todo el proyecto, y el diferencial efectivamente resulto menos volatil que un instrumento solo (los retornos del spread son de orden 0.001 frente a 3-4% diario de los activos), que era la premisa estructural de la via. Un solo par, una sola ventana y un solo periodo no agotan el eje.",
+      "knowledge_id": "KNOWLEDGE|b154409262618e2436ad19dbfdab4da2e43c97678d56ec5192cc992b4c2cd521",
+      "limitations": [
+        "Un solo par (ETH/BTC), una sola ventana (20), un solo periodo (2025) y un solo horizonte (1 dia). El eje de valor relativo NO queda agotado con esto.",
+        "La premisa de reversion estaba declarada de antemano como DEBIL: ETH y BTC no estan cointegrados en ningun sentido fuerte y su ratio ha tenido tendencias sostenidas. El resultado es consistente con esa advertencia previa.",
+        "El P&L del diferencial IGNORA COSTOS, y este eje es mas sensible a ellos que todo lo anterior: dos patas implican el doble de comisiones y spread que una posicion direccional. El Nivel 4 sigue sin construirse.",
+        "Operar el diferencial exigiria una posicion corta, es decir CAP-007 Execution y Risk Control (Etapa 4.5, sin construir). Esto es investigacion de Fase 0: mide si la relacion existe, no si es operable.",
+        "El retorno del diferencial asume rebalanceo diario a nocional igual, sin modelar el drift del hedge intradia.",
+        "Risk Analytics es descriptivo -- no gatea la Disposition ni el veredicto walk-forward."
+      ],
+      "materialization": {
+        "knowledge_code_revision": "e0ee1a342f401b7bf7ca99781c111e30f0a599f2",
+        "pipeline_sha256": "15a27889506edfd4dd140693f4cfa264d49a67e57de3e6fd6540216fb7614730",
+        "preserved_at": "2026-09-29T12:34:23.510235Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "LT",
+          "expected_direction": "DECREASE",
+          "metric": "mean_forward_spread_return_1d(ETH/BTC > PAIRRATIO20) - mean_forward_spread_return_1d(ETH/BTC <= PAIRRATIO20)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t / pair_close_t <= PAIRRATIO20_t",
+          "upper_group": "close_t / pair_close_t > PAIRRATIO20_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "pair_ratio_avg_20",
+          "parameters": {
+            "pair_variable": "pair_close",
+            "window": 20
+          },
+          "strategy_id": "PAIR_RATIO_REVERSION"
+        },
+        "instrument": "ETH-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t / pair_close_t > PAIRRATIO20_t) - mean(return_t+1 | close_t / pair_close_t <= PAIRRATIO20_t)",
+          "name": "mean_forward_spread_return_1d(ETH/BTC > PAIRRATIO20) - mean_forward_spread_return_1d(ETH/BTC <= PAIRRATIO20)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - (pair_close_t+1 / pair_close_t)",
+          "name": "spread_return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_PAIRRATIO20_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_PAIRRATIO20_WARMUP",
+              "timestamp": "2024-12-12T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PAIRRATIO20_WARMUP",
+              "timestamp": "2024-12-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PAIRRATIO20_WARMUP",
+              "timestamp": "2024-12-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PAIRRATIO20_WARMUP",
+              "timestamp": "2024-12-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PAIRRATIO20_WARMUP",
+              "timestamp": "2024-12-16T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PAIRRATIO20_WARMUP",
+              "timestamp": "2024-12-17T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PAIRRATIO20_WARMUP",
+              "timestamp": "2024-12-18T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PAIRRATIO20_WARMUP",
+              "timestamp": "2024-12-19T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PAIRRATIO20_WARMUP",
+              "timestamp": "2024-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PAIRRATIO20_WARMUP",
+              "timestamp": "2024-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PAIRRATIO20_WARMUP",
+              "timestamp": "2024-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PAIRRATIO20_WARMUP",
+              "timestamp": "2024-12-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PAIRRATIO20_WARMUP",
+              "timestamp": "2024-12-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PAIRRATIO20_WARMUP",
+              "timestamp": "2024-12-25T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PAIRRATIO20_WARMUP",
+              "timestamp": "2024-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PAIRRATIO20_WARMUP",
+              "timestamp": "2024-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PAIRRATIO20_WARMUP",
+              "timestamp": "2024-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PAIRRATIO20_WARMUP",
+              "timestamp": "2024-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PAIRRATIO20_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_PAIRRATIO20_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|b154409262618e2436ad19dbfdab4da2e43c97678d56ec5192cc992b4c2cd521|7bea85fecdc63544a55f7e59739902b4f3661427a384db74b9cfc0f4a794c60e",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|c606b9fde3761e8f7a88247a10eff1d15cbf66f78eccdd1314f0991a6999792d",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|c606b9fde3761e8f7a88247a10eff1d15cbf66f78eccdd1314f0991a6999792d|12a95d3db0f1996cd7a0285edbd9046852f4339cf2b2db067586b5f6d7b6b68d"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|34753513-7228-4d25-ac02-a7e98da49458",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|34753513-7228-4d25-ac02-a7e98da49458|1|30e25fd97210adc30fb7cad89259628d60e18af3c3587ca771d73122a9482218",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "e0ee1a342f401b7bf7ca99781c111e30f0a599f2",
+          "hypothesis_id": "HYPOTHESIS|38b2461c-b3f5-4b2d-8045-c5f69fe1ff26",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|38b2461c-b3f5-4b2d-8045-c5f69fe1ff26|1|319b17fa6c5daa8f7c0e46d6ce5a5af001a754abc6f74eaaa64c79c7a8df3521",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|c29e067ed0645c599d113fa7401629a6685e9d84ec7dfba33d6ca17d11d93c42|d178c7cde6742b83a681d38cbf21229a9f8dafb91b0d5bc4f323a2d2eee45cc4",
+          "research_result_id": "RESEARCH_RESULT|c29e067ed0645c599d113fa7401629a6685e9d84ec7dfba33d6ca17d11d93c42"
+        }
+      },
+      "results": {
+        "outcome": "REJECTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "LT",
+            "expected_direction": "DECREASE",
+            "metric": "mean_forward_spread_return_1d(ETH/BTC > PAIRRATIO20) - mean_forward_spread_return_1d(ETH/BTC <= PAIRRATIO20)",
+            "threshold": "0"
+          },
+          "criterion_result": "NOT_MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 226,
+              "mean_return_t_plus_1": -1.1365220675414181e-05,
+              "rule": "close_t / pair_close_t <= PAIRRATIO20_t"
+            },
+            "upper": {
+              "count": 139,
+              "mean_return_t_plus_1": 0.0010363361301124138,
+              "rule": "close_t / pair_close_t > PAIRRATIO20_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": 0.0010477013507878279,
+          "observation_count": 365,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    }
+  ],
+  "schema_version": "1"
+}
