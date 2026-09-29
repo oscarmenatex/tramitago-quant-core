@@ -1,0 +1,89 @@
+{
+  "partitions": [
+    {
+      "fold_count": 6,
+      "folds": [
+        {
+          "end_exclusive_utc": "2024-03-02T00:00:00Z",
+          "start_utc": "2024-01-01T00:00:00Z"
+        },
+        {
+          "end_exclusive_utc": "2024-05-02T00:00:00Z",
+          "start_utc": "2024-03-02T00:00:00Z"
+        },
+        {
+          "end_exclusive_utc": "2024-07-02T00:00:00Z",
+          "start_utc": "2024-05-02T00:00:00Z"
+        },
+        {
+          "end_exclusive_utc": "2024-09-01T00:00:00Z",
+          "start_utc": "2024-07-02T00:00:00Z"
+        },
+        {
+          "end_exclusive_utc": "2024-11-01T00:00:00Z",
+          "start_utc": "2024-09-01T00:00:00Z"
+        },
+        {
+          "end_exclusive_utc": "2025-01-01T00:00:00Z",
+          "start_utc": "2024-11-01T00:00:00Z"
+        }
+      ],
+      "materialization": {
+        "partition_code_revision": "84d0f366136615a0a4c9e31c19b796944fffba7c",
+        "partitioned_at": "2026-09-29T05:29:14.687831Z",
+        "pipeline_sha256": "a364837ee0f988286e144a9a8e95dfef525d02ca08c99079533bf70cbb7e5826"
+      },
+      "partition_id": "WALK_FORWARD_PARTITION|3651dc2345cef159d73f49b2dcb47fa579fd9b19361c07cbc0b779b9296f25fb",
+      "record_id": "WALK_FORWARD_PARTITION_RECORD|WALK_FORWARD_PARTITION|3651dc2345cef159d73f49b2dcb47fa579fd9b19361c07cbc0b779b9296f25fb|80c32f41ed67f6056d9a526eed8aebbcc4161636b56d901987f9c68a20c58a0a",
+      "reference": {
+        "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|494e6a61717ef38cb75b469121f63d3926d3b5c4bf3901cf893584f99381fca9",
+        "dataset_sha256": "2aae4ea704a7867f230fb4cc73a351dffe4e2cc7c50c60499a201521f383f704"
+      },
+      "schema_version": "1",
+      "status": "SEALED"
+    },
+    {
+      "fold_count": 6,
+      "folds": [
+        {
+          "end_exclusive_utc": "2024-03-02T00:00:00Z",
+          "start_utc": "2024-01-01T00:00:00Z"
+        },
+        {
+          "end_exclusive_utc": "2024-05-02T00:00:00Z",
+          "start_utc": "2024-03-02T00:00:00Z"
+        },
+        {
+          "end_exclusive_utc": "2024-07-02T00:00:00Z",
+          "start_utc": "2024-05-02T00:00:00Z"
+        },
+        {
+          "end_exclusive_utc": "2024-09-01T00:00:00Z",
+          "start_utc": "2024-07-02T00:00:00Z"
+        },
+        {
+          "end_exclusive_utc": "2024-11-01T00:00:00Z",
+          "start_utc": "2024-09-01T00:00:00Z"
+        },
+        {
+          "end_exclusive_utc": "2025-01-01T00:00:00Z",
+          "start_utc": "2024-11-01T00:00:00Z"
+        }
+      ],
+      "materialization": {
+        "partition_code_revision": "84d0f366136615a0a4c9e31c19b796944fffba7c",
+        "partitioned_at": "2026-09-29T05:29:16.782493Z",
+        "pipeline_sha256": "a364837ee0f988286e144a9a8e95dfef525d02ca08c99079533bf70cbb7e5826"
+      },
+      "partition_id": "WALK_FORWARD_PARTITION|07a40d7eb34b22a1b545a06bef6a4e7a9677b8672c8ae49b5b9420728e58d93d",
+      "record_id": "WALK_FORWARD_PARTITION_RECORD|WALK_FORWARD_PARTITION|07a40d7eb34b22a1b545a06bef6a4e7a9677b8672c8ae49b5b9420728e58d93d|60c88a7bbc528c0134807c162e0f4d1f88bd7497e36c8a77bb7bcc953af69dc7",
+      "reference": {
+        "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|c53a6306abc8fa60ef20e394d0d6cd286b1e87f83420abfca553a4d61cd4b191",
+        "dataset_sha256": "2241840a0d071bfe98822b136a50b6d190f79bb5ae8efd353c319dc3351aa4d3"
+      },
+      "schema_version": "1",
+      "status": "SEALED"
+    }
+  ],
+  "schema_version": "1"
+}

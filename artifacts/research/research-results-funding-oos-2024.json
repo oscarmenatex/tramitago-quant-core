@@ -1,0 +1,133 @@
+{
+  "results": [
+    {
+      "costs": {
+        "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution",
+        "source_experiment": {
+          "experiment_id": "EXPERIMENT|10a20157-e6d7-4c85-8a9a-f615d087dbd1",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|10a20157-e6d7-4c85-8a9a-f615d087dbd1|1|dbcfc3a2f20e601b8cd362c5b9d44a40baf6abeda3829afcd19fab4f3ef323a3",
+          "version": 1
+        }
+      },
+      "materialization": {
+        "constituted_at": "2026-09-29T05:31:13.172889Z",
+        "materialization_code_revision": "84d0f366136615a0a4c9e31c19b796944fffba7c",
+        "original_execution_time": "NOT_RECORDED",
+        "pipeline_sha256": "a364837ee0f988286e144a9a8e95dfef525d02ca08c99079533bf70cbb7e5826",
+        "provenance": "CONSTITUTED_AFTER_ORIGINAL_EXECUTION_FROM_LEGACY_SEALED_RESULT"
+      },
+      "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|b96b149b3294e3ed651f842e420adcd5014863ebd2f26abe3416d826f4130b06|86984494262274e367b75be54ad0ad84160f7db129b5af3b2bbcb30fe1e4f724",
+      "references": {
+        "experiment": {
+          "experiment_id": "EXPERIMENT|10a20157-e6d7-4c85-8a9a-f615d087dbd1",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|10a20157-e6d7-4c85-8a9a-f615d087dbd1|1|dbcfc3a2f20e601b8cd362c5b9d44a40baf6abeda3829afcd19fab4f3ef323a3",
+          "version": 1
+        },
+        "legacy_result": {
+          "record_id": "EXPERIMENT_RESULT_RECORD|EXPERIMENT_RESULT|36ded7d4a040cb65b9e38c2357764069222c33c0893f7ba30ede7457daf052ca|79cff6364ef343c4530e5686c002abf44425b6edd5ed8ea30e58b0310b76f22e",
+          "result_id": "EXPERIMENT_RESULT|36ded7d4a040cb65b9e38c2357764069222c33c0893f7ba30ede7457daf052ca"
+        },
+        "research_execution": {
+          "execution_id": "RESEARCH_EXECUTION|368c4481f315e53239573be33046159cdcd1de589c874254c0fdbb03d36b32cf",
+          "record_id": "RESEARCH_EXECUTION_RECORD|RESEARCH_EXECUTION|368c4481f315e53239573be33046159cdcd1de589c874254c0fdbb03d36b32cf|49ebd53f3e93e89a4386f649a8c61a7540ab431c0782a299493c28c913df2f52"
+        }
+      },
+      "research_result_id": "RESEARCH_RESULT|b96b149b3294e3ed651f842e420adcd5014863ebd2f26abe3416d826f4130b06",
+      "schema_version": "1",
+      "scientific_result": {
+        "criterion": {
+          "comparison": "LT",
+          "expected_direction": "DECREASE",
+          "metric": "mean_forward_return_1d(funding_rate_t-1 > FUNDSURGE20) - mean_forward_return_1d(funding_rate_t-1 <= FUNDSURGE20)",
+          "threshold": "0"
+        },
+        "criterion_result": "MET",
+        "groups": {
+          "lower_or_equal": {
+            "count": 202,
+            "mean_return_t_plus_1": 0.002137850240139818,
+            "rule": "funding_rate_t-1 <= FUNDSURGE20_t"
+          },
+          "upper": {
+            "count": 164,
+            "mean_return_t_plus_1": 0.0007974944260420914,
+            "rule": "funding_rate_t-1 > FUNDSURGE20_t"
+          }
+        },
+        "inconclusive_reason": null,
+        "metric": -0.0013403558140977264,
+        "observation_count": 366,
+        "period": {
+          "end_exclusive_utc": "2025-01-01T00:00:00Z",
+          "start_utc": "2024-01-01T00:00:00Z"
+        }
+      },
+      "status": "PRESERVED_SCIENTIFIC_RESULT"
+    },
+    {
+      "costs": {
+        "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution",
+        "source_experiment": {
+          "experiment_id": "EXPERIMENT|ec5ab92d-061e-4d41-8e26-ea59d1c71fe1",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|ec5ab92d-061e-4d41-8e26-ea59d1c71fe1|1|1899501eed2c22c88a941f242b753ab035fee696aa71b94801561df17ce7a073",
+          "version": 1
+        }
+      },
+      "materialization": {
+        "constituted_at": "2026-09-29T05:31:15.045362Z",
+        "materialization_code_revision": "84d0f366136615a0a4c9e31c19b796944fffba7c",
+        "original_execution_time": "NOT_RECORDED",
+        "pipeline_sha256": "a364837ee0f988286e144a9a8e95dfef525d02ca08c99079533bf70cbb7e5826",
+        "provenance": "CONSTITUTED_AFTER_ORIGINAL_EXECUTION_FROM_LEGACY_SEALED_RESULT"
+      },
+      "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|208aefa0ef1bab2fac404d4129ebee2e956482178d91b62f103da5601d5789a0|99f79542245979e214f5e76dee15fd4d98786f143897786437ddd63b08408d29",
+      "references": {
+        "experiment": {
+          "experiment_id": "EXPERIMENT|ec5ab92d-061e-4d41-8e26-ea59d1c71fe1",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|ec5ab92d-061e-4d41-8e26-ea59d1c71fe1|1|1899501eed2c22c88a941f242b753ab035fee696aa71b94801561df17ce7a073",
+          "version": 1
+        },
+        "legacy_result": {
+          "record_id": "EXPERIMENT_RESULT_RECORD|EXPERIMENT_RESULT|449d45308189140b652199df531eb441034eea3138d249da9c5785b4f2d01615|47af49ea0f4c8b1d5b00a01183be228a34b5e32c5d049fb5bf6ddb2324ae8f98",
+          "result_id": "EXPERIMENT_RESULT|449d45308189140b652199df531eb441034eea3138d249da9c5785b4f2d01615"
+        },
+        "research_execution": {
+          "execution_id": "RESEARCH_EXECUTION|1bd7b130ca6b33575b653a9c6d70eabb2e8b43bec7d1792b0743c213606b940a",
+          "record_id": "RESEARCH_EXECUTION_RECORD|RESEARCH_EXECUTION|1bd7b130ca6b33575b653a9c6d70eabb2e8b43bec7d1792b0743c213606b940a|3dde25fa71c849233dc8e7f1ab928165cb6af15fa8019bde8d6be8847d3d8f4d"
+        }
+      },
+      "research_result_id": "RESEARCH_RESULT|208aefa0ef1bab2fac404d4129ebee2e956482178d91b62f103da5601d5789a0",
+      "schema_version": "1",
+      "scientific_result": {
+        "criterion": {
+          "comparison": "LT",
+          "expected_direction": "DECREASE",
+          "metric": "mean_forward_return_1d(funding_rate_t-1 > FUNDSURGE20) - mean_forward_return_1d(funding_rate_t-1 <= FUNDSURGE20)",
+          "threshold": "0"
+        },
+        "criterion_result": "NOT_MET",
+        "groups": {
+          "lower_or_equal": {
+            "count": 216,
+            "mean_return_t_plus_1": 0.0020007829516790177,
+            "rule": "funding_rate_t-1 <= FUNDSURGE20_t"
+          },
+          "upper": {
+            "count": 150,
+            "mean_return_t_plus_1": 0.0031155810544505965,
+            "rule": "funding_rate_t-1 > FUNDSURGE20_t"
+          }
+        },
+        "inconclusive_reason": null,
+        "metric": 0.0011147981027715788,
+        "observation_count": 366,
+        "period": {
+          "end_exclusive_utc": "2025-01-01T00:00:00Z",
+          "start_utc": "2024-01-01T00:00:00Z"
+        }
+      },
+      "status": "PRESERVED_SCIENTIFIC_RESULT"
+    }
+  ],
+  "schema_version": "1"
+}
