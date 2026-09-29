@@ -34,6 +34,7 @@ from tramitago_quant_core.strategy_contract.strategy import (
     sma_crossover_strategy, momentum_crossover_strategy, volume_surge_strategy,
     funding_rate_sign_strategy, sma_volume_confirmation_strategy, intraday_range_strategy,
     funding_rate_surge_strategy, signal_portfolio_strategy,
+    pair_ratio_reversion_strategy,
 )
 from tramitago_quant_core.strategy_contract.outcome import strategy_outcome
 
@@ -53,6 +54,8 @@ _EXPERIMENT_STRATEGY_CONSTRUCTORS = {
         parameters["sma_window"], parameters["volume_window"]),
     "INTRADAY_RANGE": lambda parameters: intraday_range_strategy(parameters["window"]),
     "FUNDING_RATE_SURGE": lambda parameters: funding_rate_surge_strategy(parameters["window"]),
+    "PAIR_RATIO_REVERSION": lambda parameters: pair_ratio_reversion_strategy(
+        parameters["window"], parameters["pair_variable"]),
     "SIGNAL_PORTFOLIO": lambda parameters: signal_portfolio_strategy(
         parameters["sma_window"], parameters["volume_window"],
         parameters["range_window"], parameters["funding_window"]),
