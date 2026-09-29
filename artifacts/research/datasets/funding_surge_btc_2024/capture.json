@@ -1,0 +1,50 @@
+{
+  "acquired_at": "2026-09-29T05:28:40.865812Z",
+  "capture_id": "COINBASE_HISTORICAL_CAPTURE|9498ebc3481345cf131140e4e65fdadb4a1f25fcce38e2f1431d96ede8108dd6",
+  "config": {
+    "capture_period": {
+      "end_exclusive_utc": "2025-01-02T00:00:00Z",
+      "start_utc": "2023-12-11T00:00:00Z"
+    },
+    "duplicate_policy": "reject entire dataset",
+    "evaluable_period": {
+      "end_exclusive_utc": "2025-01-01T00:00:00Z",
+      "start_utc": "2024-01-01T00:00:00Z"
+    },
+    "frequency_seconds": 86400,
+    "instrument": "BTC-USD",
+    "missing_policy": "reject entire dataset; no imputation",
+    "schema_version": "1",
+    "source": "Coinbase Exchange public candles",
+    "support_policy": "exactly 21 FUNDSURGE20 warm-up rows before and one forward-return row after the evaluable period",
+    "temporal_policy": "reject rows outside the declared capture period",
+    "timezone": "UTC"
+  },
+  "kind": "historical-hypothesis-dataset",
+  "responses": [
+    {
+      "end_exclusive_utc": "2024-10-06T00:00:00Z",
+      "response_headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "Date": "Tue, 29 Sep 2026 05:28:40 GMT"
+      },
+      "response_sha256": "95a40e9a20e707200c46069ea9a5a3e89c1ac61ab8b8325f5e341e156a29c1a2",
+      "sequence": 1,
+      "start_utc": "2023-12-11T00:00:00Z",
+      "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400&start=2023-12-11T00%3A00%3A00Z&end=2024-10-05T00%3A00%3A00Z"
+    },
+    {
+      "end_exclusive_utc": "2025-01-02T00:00:00Z",
+      "response_headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "Date": "Tue, 29 Sep 2026 05:28:41 GMT"
+      },
+      "response_sha256": "a9ecb90e7fa01185862fa566b9c9bd3769a84392f7348c4e263dbd0983e0f3e4",
+      "sequence": 2,
+      "start_utc": "2024-10-06T00:00:00Z",
+      "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400&start=2024-10-06T00%3A00%3A00Z&end=2025-01-01T00%3A00%3A00Z"
+    }
+  ],
+  "schema_version": "1",
+  "source": "Coinbase Exchange public candles"
+}

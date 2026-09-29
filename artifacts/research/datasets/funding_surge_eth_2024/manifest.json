@@ -1,0 +1,102 @@
+{
+  "audit_sha256": "fe715c1ace444ad80b65b3637b6a44fd1874766519bc815cfafa60f90dff4015",
+  "capture_sha256": "329421f16a2fa5930eabcc21c18c824f1786437cf87e44f50c92152d8e74479d",
+  "code_sha256": "a364837ee0f988286e144a9a8e95dfef525d02ca08c99079533bf70cbb7e5826",
+  "columns": [
+    "instrument",
+    "timestamp",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "funding_rate",
+    "funding_rate_avg_20",
+    "row_role",
+    "forward_return_1d"
+  ],
+  "config": {
+    "capture_period": {
+      "end_exclusive_utc": "2025-01-02T00:00:00Z",
+      "start_utc": "2023-12-11T00:00:00Z"
+    },
+    "duplicate_policy": "reject entire dataset",
+    "evaluable_period": {
+      "end_exclusive_utc": "2025-01-01T00:00:00Z",
+      "start_utc": "2024-01-01T00:00:00Z"
+    },
+    "frequency_seconds": 86400,
+    "instrument": "ETH-USD",
+    "missing_policy": "reject entire dataset; no imputation",
+    "schema_version": "1",
+    "source": "Coinbase Exchange public candles",
+    "support_policy": "exactly 21 FUNDSURGE20 warm-up rows before and one forward-return row after the evaluable period",
+    "temporal_policy": "reject rows outside the declared capture period",
+    "timezone": "UTC"
+  },
+  "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|494e6a61717ef38cb75b469121f63d3926d3b5c4bf3901cf893584f99381fca9",
+  "dataset_sha256": "2aae4ea704a7867f230fb4cc73a351dffe4e2cc7c50c60499a201521f383f704",
+  "funding_rate_capture_sha256": "6ad30b397bf6a46ead7a17ab2be5e4afd8bd113934475933784f269a604df2d2",
+  "funding_rate_raw_sha256": "7050921550e6e34ce81da19a89733625c052d5324cd8bb35b78bec810a30fa1d",
+  "identity": {
+    "code_revision": "84d0f366136615a0a4c9e31c19b796944fffba7c",
+    "config": {
+      "capture_period": {
+        "end_exclusive_utc": "2025-01-02T00:00:00Z",
+        "start_utc": "2023-12-11T00:00:00Z"
+      },
+      "duplicate_policy": "reject entire dataset",
+      "evaluable_period": {
+        "end_exclusive_utc": "2025-01-01T00:00:00Z",
+        "start_utc": "2024-01-01T00:00:00Z"
+      },
+      "frequency_seconds": 86400,
+      "instrument": "ETH-USD",
+      "missing_policy": "reject entire dataset; no imputation",
+      "schema_version": "1",
+      "source": "Coinbase Exchange public candles",
+      "support_policy": "exactly 21 FUNDSURGE20 warm-up rows before and one forward-return row after the evaluable period",
+      "temporal_policy": "reject rows outside the declared capture period",
+      "timezone": "UTC"
+    },
+    "hashes": {
+      "capture_sha256": "329421f16a2fa5930eabcc21c18c824f1786437cf87e44f50c92152d8e74479d",
+      "code_sha256": "a364837ee0f988286e144a9a8e95dfef525d02ca08c99079533bf70cbb7e5826",
+      "dataset_sha256": "2aae4ea704a7867f230fb4cc73a351dffe4e2cc7c50c60499a201521f383f704",
+      "funding_rate_capture_sha256": "6ad30b397bf6a46ead7a17ab2be5e4afd8bd113934475933784f269a604df2d2",
+      "funding_rate_raw_sha256": "7050921550e6e34ce81da19a89733625c052d5324cd8bb35b78bec810a30fa1d",
+      "raw_sha256": "a4b62c2330c940623a5818f7f554c0d005ea9d0dcb97679951e451ded13bfd85",
+      "selection_sha256": "ecb15dac2797259b5bce60f5ac6fdfbbdf9b7e61e87192fb9632310655fdff84",
+      "validation_sha256": "4f79a8f53b86f94fe3043de820734f1f68957940988951caf7bf9db43036d6d1"
+    },
+    "hypothesis_id": "HYPOTHESIS|b16e5dd8-d83b-48dd-8243-9bf7dd626ee7",
+    "hypothesis_version": 1,
+    "schema_version": "1",
+    "system_version": "0.1.0"
+  },
+  "input_kind": "historical-hypothesis-dataset",
+  "range": [
+    "2023-12-11T00:00:00Z",
+    "2025-01-01T00:00:00Z"
+  ],
+  "raw_sha256": "a4b62c2330c940623a5818f7f554c0d005ea9d0dcb97679951e451ded13bfd85",
+  "replay": "create_hypothesis_dataset(<registry>, <hypothesis_id>, <version>, <output>)",
+  "rows": 388,
+  "runtime": "3.11.9",
+  "schema": {
+    "close": "finite float64",
+    "forward_return_1d": "nullable finite float64; defined only for EVALUATION rows",
+    "funding_rate": "nullable finite float64",
+    "funding_rate_avg_20": "nullable finite float64",
+    "high": "finite float64",
+    "instrument": "string",
+    "low": "finite float64",
+    "open": "finite float64",
+    "row_role": "SUPPORT_FUNDSURGE20_WARMUP | EVALUATION | SUPPORT_FORWARD_RETURN",
+    "timestamp": "UTC ISO8601 bucket start",
+    "volume": "finite float64"
+  },
+  "selection_sha256": "ecb15dac2797259b5bce60f5ac6fdfbbdf9b7e61e87192fb9632310655fdff84",
+  "status": "PASS",
+  "validation_sha256": "4f79a8f53b86f94fe3043de820734f1f68957940988951caf7bf9db43036d6d1"
+}

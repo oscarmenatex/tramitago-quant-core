@@ -1,0 +1,539 @@
+{
+  "experiments": [
+    {
+      "conditions": {
+        "acceptance_criterion": {
+          "comparison": "LT",
+          "expected_direction": "DECREASE",
+          "metric": "mean_forward_return_1d(funding_rate_t-1 > FUNDSURGE20) - mean_forward_return_1d(funding_rate_t-1 <= FUNDSURGE20)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "funding_rate_t-1 <= FUNDSURGE20_t",
+          "upper_group": "funding_rate_t-1 > FUNDSURGE20_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "funding_rate_avg_20",
+          "parameters": {
+            "window": 20
+          },
+          "strategy_id": "FUNDING_RATE_SURGE"
+        },
+        "instrument": "ETH-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | funding_rate_t-1 > FUNDSURGE20_t) - mean(return_t+1 | funding_rate_t-1 <= FUNDSURGE20_t)",
+          "name": "mean_forward_return_1d(funding_rate_t-1 > FUNDSURGE20) - mean_forward_return_1d(funding_rate_t-1 <= FUNDSURGE20)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_FUNDSURGE20_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-11T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-12T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-16T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-17T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-18T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-19T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-25T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2025-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2025-01-01T00:00:00Z",
+            "start_utc": "2024-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "created_at": "2026-09-29T05:28:55.263311Z",
+      "experiment_id": "EXPERIMENT|10a20157-e6d7-4c85-8a9a-f615d087dbd1",
+      "record_id": "EXPERIMENT_VERSION|EXPERIMENT|10a20157-e6d7-4c85-8a9a-f615d087dbd1|1|dbcfc3a2f20e601b8cd362c5b9d44a40baf6abeda3829afcd19fab4f3ef323a3",
+      "references": {
+        "dataset": {
+          "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|494e6a61717ef38cb75b469121f63d3926d3b5c4bf3901cf893584f99381fca9",
+          "dataset_sha256": "2aae4ea704a7867f230fb4cc73a351dffe4e2cc7c50c60499a201521f383f704",
+          "evaluable_period": {
+            "end_exclusive_utc": "2025-01-01T00:00:00Z",
+            "start_utc": "2024-01-01T00:00:00Z"
+          },
+          "hypothesis_id": "HYPOTHESIS|b16e5dd8-d83b-48dd-8243-9bf7dd626ee7",
+          "hypothesis_version": 1,
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-11T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-12T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-16T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-17T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-18T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-19T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-25T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2025-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "hypothesis": {
+          "code_revision": "84d0f366136615a0a4c9e31c19b796944fffba7c",
+          "hypothesis_id": "HYPOTHESIS|b16e5dd8-d83b-48dd-8243-9bf7dd626ee7",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|b16e5dd8-d83b-48dd-8243-9bf7dd626ee7|1|36b7b1d9a9ca576fff5e9effa89e40d54ab3a9d1d03c79b51b5cf19c9b2e200b",
+          "system_version": "0.1.0",
+          "version": 1
+        }
+      },
+      "revision_reason": "OOS_2024_FUNDING_REVERSAL",
+      "status": "CONDITIONS_FIXED",
+      "version": 1
+    },
+    {
+      "conditions": {
+        "acceptance_criterion": {
+          "comparison": "LT",
+          "expected_direction": "DECREASE",
+          "metric": "mean_forward_return_1d(funding_rate_t-1 > FUNDSURGE20) - mean_forward_return_1d(funding_rate_t-1 <= FUNDSURGE20)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "funding_rate_t-1 <= FUNDSURGE20_t",
+          "upper_group": "funding_rate_t-1 > FUNDSURGE20_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "funding_rate_avg_20",
+          "parameters": {
+            "window": 20
+          },
+          "strategy_id": "FUNDING_RATE_SURGE"
+        },
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | funding_rate_t-1 > FUNDSURGE20_t) - mean(return_t+1 | funding_rate_t-1 <= FUNDSURGE20_t)",
+          "name": "mean_forward_return_1d(funding_rate_t-1 > FUNDSURGE20) - mean_forward_return_1d(funding_rate_t-1 <= FUNDSURGE20)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_FUNDSURGE20_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-11T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-12T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-16T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-17T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-18T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-19T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-25T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2025-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2025-01-01T00:00:00Z",
+            "start_utc": "2024-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "created_at": "2026-09-29T05:28:55.442636Z",
+      "experiment_id": "EXPERIMENT|ec5ab92d-061e-4d41-8e26-ea59d1c71fe1",
+      "record_id": "EXPERIMENT_VERSION|EXPERIMENT|ec5ab92d-061e-4d41-8e26-ea59d1c71fe1|1|1899501eed2c22c88a941f242b753ab035fee696aa71b94801561df17ce7a073",
+      "references": {
+        "dataset": {
+          "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|c53a6306abc8fa60ef20e394d0d6cd286b1e87f83420abfca553a4d61cd4b191",
+          "dataset_sha256": "2241840a0d071bfe98822b136a50b6d190f79bb5ae8efd353c319dc3351aa4d3",
+          "evaluable_period": {
+            "end_exclusive_utc": "2025-01-01T00:00:00Z",
+            "start_utc": "2024-01-01T00:00:00Z"
+          },
+          "hypothesis_id": "HYPOTHESIS|f00246c7-95e5-4ece-a939-d1401ceab470",
+          "hypothesis_version": 1,
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-11T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-12T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-16T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-17T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-18T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-19T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-25T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FUNDSURGE20_WARMUP",
+              "timestamp": "2023-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2025-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "hypothesis": {
+          "code_revision": "84d0f366136615a0a4c9e31c19b796944fffba7c",
+          "hypothesis_id": "HYPOTHESIS|f00246c7-95e5-4ece-a939-d1401ceab470",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|f00246c7-95e5-4ece-a939-d1401ceab470|1|099775627b6251cdb82c6a9be29592a93589c4a6ba8a0b17a99d37a2afb75a8a",
+          "system_version": "0.1.0",
+          "version": 1
+        }
+      },
+      "revision_reason": "OOS_2024_FUNDING_REVERSAL",
+      "status": "CONDITIONS_FIXED",
+      "version": 1
+    }
+  ],
+  "schema_version": "1"
+}

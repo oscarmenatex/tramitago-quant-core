@@ -994,6 +994,86 @@
       "system_version": "0.1.0",
       "target_metric": "mean_forward_return_1d(funding_rate_t-1 > FUNDSURGE20) - mean_forward_return_1d(funding_rate_t-1 <= FUNDSURGE20)",
       "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "LT",
+        "expected_direction": "DECREASE",
+        "metric": "mean_forward_return_1d(funding_rate_t-1 > FUNDSURGE20) - mean_forward_return_1d(funding_rate_t-1 <= FUNDSURGE20)",
+        "threshold": "0"
+      },
+      "code_revision": "84d0f366136615a0a4c9e31c19b796944fffba7c",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2025-01-01T00:00:00Z",
+          "start_utc": "2024-01-01T00:00:00Z"
+        },
+        "universe": [
+          "ETH-USD"
+        ],
+        "variables": [
+          "funding_rate",
+          "funding_rate_avg_20",
+          "forward_return_1d"
+        ]
+      },
+      "creation_context": {
+        "created_by": "oscar+claude-analysis",
+        "provenance": [
+          "DISCOVERY|artifacts/live-run-1",
+          "SNAPSHOT_SHA256|a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f",
+          "ANALYSIS|tramitago-quant-core-docs/Prueba Fuera de Muestra - Reversion de Funding Rate, 2024 (2026-09-29).txt"
+        ]
+      },
+      "creation_timestamp": "2026-09-29T12:00:00Z",
+      "description": "For ETH-USD, the mean t+1 return when the prior day mean perpetual funding rate (Hyperliquid ETH) exceeds its own trailing 20-day average is LOWER than the mean t+1 return otherwise -- pre-declared DECREASE direction, evaluated out of sample on 2024 to test an observation made on BTC 2025 (all 5 folds negative). Direction was declared in writing before any 2024 data was examined.",
+      "expected_direction": "DECREASE",
+      "hypothesis_id": "HYPOTHESIS|b16e5dd8-d83b-48dd-8243-9bf7dd626ee7",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|b16e5dd8-d83b-48dd-8243-9bf7dd626ee7|1|36b7b1d9a9ca576fff5e9effa89e40d54ab3a9d1d03c79b51b5cf19c9b2e200b",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_return_1d(funding_rate_t-1 > FUNDSURGE20) - mean_forward_return_1d(funding_rate_t-1 <= FUNDSURGE20)",
+      "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "LT",
+        "expected_direction": "DECREASE",
+        "metric": "mean_forward_return_1d(funding_rate_t-1 > FUNDSURGE20) - mean_forward_return_1d(funding_rate_t-1 <= FUNDSURGE20)",
+        "threshold": "0"
+      },
+      "code_revision": "84d0f366136615a0a4c9e31c19b796944fffba7c",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2025-01-01T00:00:00Z",
+          "start_utc": "2024-01-01T00:00:00Z"
+        },
+        "universe": [
+          "BTC-USD"
+        ],
+        "variables": [
+          "funding_rate",
+          "funding_rate_avg_20",
+          "forward_return_1d"
+        ]
+      },
+      "creation_context": {
+        "created_by": "oscar+claude-analysis",
+        "provenance": [
+          "DISCOVERY|artifacts/live-run-1",
+          "SNAPSHOT_SHA256|a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f",
+          "ANALYSIS|tramitago-quant-core-docs/Prueba Fuera de Muestra - Reversion de Funding Rate, 2024 (2026-09-29).txt"
+        ]
+      },
+      "creation_timestamp": "2026-09-29T12:00:00Z",
+      "description": "For BTC-USD, the mean t+1 return when the prior day mean perpetual funding rate (Hyperliquid BTC) exceeds its own trailing 20-day average is LOWER than the mean t+1 return otherwise -- pre-declared DECREASE direction, evaluated out of sample on 2024 to test an observation made on BTC 2025 (all 5 folds negative). Direction was declared in writing before any 2024 data was examined.",
+      "expected_direction": "DECREASE",
+      "hypothesis_id": "HYPOTHESIS|f00246c7-95e5-4ece-a939-d1401ceab470",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|f00246c7-95e5-4ece-a939-d1401ceab470|1|099775627b6251cdb82c6a9be29592a93589c4a6ba8a0b17a99d37a2afb75a8a",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_return_1d(funding_rate_t-1 > FUNDSURGE20) - mean_forward_return_1d(funding_rate_t-1 <= FUNDSURGE20)",
+      "version": 1
     }
   ],
   "schema_version": "2"
