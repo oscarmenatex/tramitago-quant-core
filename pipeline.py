@@ -173,6 +173,14 @@ from tramitago_quant_core.data.binance_funding_rate import (
     _binance_funding_rate_raw_content, capture_binance_funding_rate,
     verified_binance_funding_rate_capture,
 )
+from tramitago_quant_core.data.okx_funding_rate import (
+    OKX_FUNDING_RATE_CAPTURE_SCHEMA_VERSION, OKX_FUNDING_RATE_SOURCE,
+    OKX_FUNDING_RATE_MAX_RECORDS_PER_REQUEST, OKX_FUNDING_RATE_INTERVAL_SECONDS,
+    OKX_FUNDING_RATE_REQUEST_HEADERS, _okx_funding_rate_headers, _okx_funding_rate_endpoint,
+    _okx_funding_rate_url, _okx_funding_rate_live_get, _okx_funding_rate_response,
+    _okx_funding_rate_parse, _okx_funding_rate_daily_series, _okx_funding_rate_capture_content,
+    _okx_funding_rate_raw_content, capture_okx_funding_rate, verified_okx_funding_rate_capture,
+)
 from tramitago_quant_core.research.hypothesis_generation import (
     HYPOTHESIS_GENERATION_SEARCH_SPACE_ID, HYPOTHESIS_GENERATION_INSTRUMENT,
     HYPOTHESIS_GENERATION_SMA_WINDOWS, HYPOTHESIS_GENERATION_MOMENTUM_LOOKBACKS,
