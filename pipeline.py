@@ -56,7 +56,8 @@ from tramitago_quant_core.research.historical_dataset import (
     _hypothesis_dataset_validation, create_hypothesis_dataset, verified_hypothesis_dataset,
     _hypothesis_dataset_default_strategy, _hypothesis_dataset_warmup_role,
     _hypothesis_dataset_support_policy, _hypothesis_dataset_columns, _hypothesis_dataset_schema,
-    _hypothesis_dataset_forward_column,
+    _hypothesis_dataset_forward_column, BASE_OHLCV_VARIABLES,
+    _hypothesis_dataset_auxiliary_variables, _hypothesis_dataset_merge_auxiliary,
 )
 from tramitago_quant_core.research.experiment import (
     EXPERIMENT_CONDITIONS_REGISTRY_SCHEMA_VERSION, EXPERIMENT_CONDITIONS_SCHEMA_VERSION, EXPERIMENT_CONDITIONS_STATUS, EXPERIMENT_COSTS_NOT_APPLICABLE,
@@ -160,7 +161,17 @@ from tramitago_quant_core.research.walk_forward import (
 )
 from tramitago_quant_core.strategy_contract.strategy import (
     sma_crossover_strategy, momentum_crossover_strategy, volume_surge_strategy,
-    _strategy_classify_rows,
+    funding_rate_sign_strategy, _strategy_classify_rows,
+)
+from tramitago_quant_core.data.binance_funding_rate import (
+    BINANCE_FUNDING_RATE_CAPTURE_SCHEMA_VERSION, BINANCE_FUNDING_RATE_SOURCE,
+    BINANCE_FUNDING_RATE_MAX_RECORDS_PER_REQUEST, BINANCE_FUNDING_RATE_INTERVAL_SECONDS,
+    BINANCE_FUNDING_RATE_REQUEST_HEADERS, _binance_funding_rate_headers,
+    _binance_funding_rate_endpoint, _binance_funding_rate_url, _binance_funding_rate_windows,
+    _binance_funding_rate_live_get, _binance_funding_rate_response, _binance_funding_rate_parse,
+    _binance_funding_rate_daily_series, _binance_funding_rate_capture_content,
+    _binance_funding_rate_raw_content, capture_binance_funding_rate,
+    verified_binance_funding_rate_capture,
 )
 from tramitago_quant_core.research.hypothesis_generation import (
     HYPOTHESIS_GENERATION_SEARCH_SPACE_ID, HYPOTHESIS_GENERATION_INSTRUMENT,

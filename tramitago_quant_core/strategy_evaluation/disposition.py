@@ -241,7 +241,7 @@ def constitute_disposition(registry_path, *, research_result_registry_path, rese
                            research_result_record_id, research_execution_registry_path,
                            legacy_result_registry_path, experiment_registry_path,
                            hypothesis_registry_path, dataset_directory, disposed_at,
-                           disposition_code_revision):
+                           disposition_code_revision, auxiliary_verifiers=None):
     """M2.4-T1: judge a Research Result against its Hypothesis's predefined criterion.
 
     Never promotes a strategy to PAPER or LIVE -- it only issues a
@@ -254,7 +254,8 @@ def constitute_disposition(registry_path, *, research_result_registry_path, rese
         research_execution_registry_path=research_execution_registry_path,
         legacy_result_registry_path=legacy_result_registry_path,
         experiment_registry_path=experiment_registry_path,
-        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory)
+        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory,
+        auxiliary_verifiers=auxiliary_verifiers)
     if result["record_id"] != research_result_record_id:
         raise ValueError("Research Result seal does not match the requested Disposition")
     execution_reference = result["references"]["research_execution"]
@@ -262,7 +263,8 @@ def constitute_disposition(registry_path, *, research_result_registry_path, rese
         research_execution_registry_path, execution_reference["execution_id"],
         legacy_result_registry_path=legacy_result_registry_path,
         experiment_registry_path=experiment_registry_path,
-        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory)
+        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory,
+        auxiliary_verifiers=auxiliary_verifiers)
     hypothesis = _disposition_hypothesis(execution, hypothesis_registry_path)
     if result["scientific_result"]["criterion"] != hypothesis["acceptance_criterion"]:
         raise ValueError("Disposition criterion is incompatible with the governing Hypothesis")
@@ -283,7 +285,7 @@ def constitute_disposition(registry_path, *, research_result_registry_path, rese
                 legacy_result_registry_path=legacy_result_registry_path,
                 experiment_registry_path=experiment_registry_path,
                 hypothesis_registry_path=hypothesis_registry_path,
-                dataset_directory=dataset_directory)
+                dataset_directory=dataset_directory, auxiliary_verifiers=auxiliary_verifiers)
     outcome, outcome_reason = _disposition_outcome(
         hypothesis["acceptance_criterion"], result["scientific_result"])
     record = _disposition_record(
@@ -306,7 +308,8 @@ def load_disposition(registry_path, disposition_id):
 
 def verified_disposition(registry_path, disposition_id, *, research_result_registry_path,
                          research_execution_registry_path, legacy_result_registry_path,
-                         experiment_registry_path, hypothesis_registry_path, dataset_directory):
+                         experiment_registry_path, hypothesis_registry_path, dataset_directory,
+                         auxiliary_verifiers=None):
     """Reload a Disposition and reproduce its outcome from the Hypothesis's own criterion."""
     record = load_disposition(registry_path, disposition_id)
     result_reference = record["references"]["research_result"]
@@ -315,7 +318,8 @@ def verified_disposition(registry_path, disposition_id, *, research_result_regis
         research_execution_registry_path=research_execution_registry_path,
         legacy_result_registry_path=legacy_result_registry_path,
         experiment_registry_path=experiment_registry_path,
-        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory)
+        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory,
+        auxiliary_verifiers=auxiliary_verifiers)
     if result["record_id"] != result_reference["record_id"]:
         raise ValueError("Disposition Research Result reference is invalid")
     execution_reference = result["references"]["research_execution"]
@@ -323,7 +327,8 @@ def verified_disposition(registry_path, disposition_id, *, research_result_regis
         research_execution_registry_path, execution_reference["execution_id"],
         legacy_result_registry_path=legacy_result_registry_path,
         experiment_registry_path=experiment_registry_path,
-        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory)
+        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory,
+        auxiliary_verifiers=auxiliary_verifiers)
     hypothesis = _disposition_hypothesis(execution, hypothesis_registry_path)
     if result["scientific_result"]["criterion"] != hypothesis["acceptance_criterion"]:
         raise ValueError("Disposition criterion is incompatible with the governing Hypothesis")

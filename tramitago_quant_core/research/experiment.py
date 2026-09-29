@@ -25,10 +25,12 @@ from tramitago_quant_core.research.historical_dataset import (
     HYPOTHESIS_DATASET_WARMUP_ROLE,
     HYPOTHESIS_DATASET_EVALUATION_ROLE, HYPOTHESIS_DATASET_FORWARD_ROLE,
     _hypothesis_dataset_columns, _hypothesis_dataset_warmup_role,
-    _hypothesis_dataset_forward_column, verified_hypothesis_dataset,
+    _hypothesis_dataset_forward_column, _hypothesis_dataset_auxiliary_variables,
+    verified_hypothesis_dataset,
 )
 from tramitago_quant_core.strategy_contract.strategy import (
     sma_crossover_strategy, momentum_crossover_strategy, volume_surge_strategy,
+    funding_rate_sign_strategy,
 )
 
 # M4.1 production wiring (2026-09-28): an Experiment's indicator is described
@@ -42,6 +44,7 @@ _EXPERIMENT_STRATEGY_CONSTRUCTORS = {
     "SMA_CROSSOVER": lambda parameters: sma_crossover_strategy(parameters["window"]),
     "MOMENTUM_CROSSOVER": lambda parameters: momentum_crossover_strategy(parameters["lookback"]),
     "VOLUME_SURGE": lambda parameters: volume_surge_strategy(parameters["window"]),
+    "FUNDING_RATE_SIGN": lambda parameters: funding_rate_sign_strategy(),
 }
 
 
@@ -428,10 +431,11 @@ def _persist_experiment_conditions(registry_path, record):
 
 
 def _experiment_inputs(hypothesis_registry_path, dataset_directory, hypothesis_id,
-                       hypothesis_version, dataset_id, strategy=None, horizon=1):
+                       hypothesis_version, dataset_id, strategy=None, horizon=1,
+                       auxiliary_verifiers=None):
     hypothesis = load_hypothesis(hypothesis_registry_path, hypothesis_id, hypothesis_version)
     dataset = verified_hypothesis_dataset(
-        dataset_directory, hypothesis_registry_path, strategy, horizon)
+        dataset_directory, hypothesis_registry_path, strategy, horizon, auxiliary_verifiers)
     selection = json.loads((Path(dataset_directory) / "selection.json").read_bytes())
     if dataset["dataset_id"] != dataset_id:
         raise ValueError("Dataset identity does not match the experiment reference")
@@ -446,13 +450,13 @@ def _experiment_inputs(hypothesis_registry_path, dataset_directory, hypothesis_i
 def constitute_experiment_conditions(registry_path, *, hypothesis_registry_path,
                                      dataset_directory, hypothesis_id, hypothesis_version,
                                      dataset_id, created_at, revision_reason, strategy=None,
-                                     horizon=1):
+                                     horizon=1, auxiliary_verifiers=None):
     """Fix one real experiment definition without calculating or executing it."""
     if not _explicit_utc(created_at) or not _hypothesis_text_is_valid(revision_reason):
         raise ValueError("Experiment creation time and revision reason are required")
     hypothesis, dataset, selection, references = _experiment_inputs(
         hypothesis_registry_path, dataset_directory, hypothesis_id, hypothesis_version,
-        dataset_id, strategy, horizon)
+        dataset_id, strategy, horizon, auxiliary_verifiers)
     experiment_id = "EXPERIMENT|" + str(uuid.uuid4())
     record = _experiment_record(
         experiment_id, 1, references,
@@ -464,7 +468,7 @@ def constitute_experiment_conditions(registry_path, *, hypothesis_registry_path,
 def revise_experiment_conditions(registry_path, experiment_id, *, hypothesis_registry_path,
                                  dataset_directory, hypothesis_id, hypothesis_version,
                                  dataset_id, created_at, revision_reason, strategy=None,
-                                 horizon=1):
+                                 horizon=1, auxiliary_verifiers=None):
     """Append a new sealed version while retaining every prior experiment definition."""
     if not _experiment_id_is_valid(experiment_id) or not _explicit_utc(created_at) \
             or not _hypothesis_text_is_valid(revision_reason):
@@ -476,7 +480,7 @@ def revise_experiment_conditions(registry_path, experiment_id, *, hypothesis_reg
         raise ValueError("Experiment identity is not registered")
     hypothesis, dataset, selection, references = _experiment_inputs(
         hypothesis_registry_path, dataset_directory, hypothesis_id, hypothesis_version,
-        dataset_id, strategy, horizon)
+        dataset_id, strategy, horizon, auxiliary_verifiers)
     record = _experiment_record(
         experiment_id, len(prior) + 1, references,
         _experiment_conditions(hypothesis, dataset, selection, strategy, horizon), created_at,
@@ -498,7 +502,8 @@ def load_experiment_conditions(registry_path, experiment_id, version):
 
 
 def verified_experiment_conditions(registry_path, experiment_id, version, *,
-                                   hypothesis_registry_path, dataset_directory):
+                                   hypothesis_registry_path, dataset_directory,
+                                   auxiliary_verifiers=None):
     """Reload a sealed definition and prove that its external immutable references agree."""
     record = load_experiment_conditions(registry_path, experiment_id, version)
     reference = record["references"]
@@ -506,7 +511,8 @@ def verified_experiment_conditions(registry_path, experiment_id, version, *,
     horizon = _experiment_conditions_horizon(record["conditions"])
     hypothesis, dataset, selection, expected_references = _experiment_inputs(
         hypothesis_registry_path, dataset_directory, reference["hypothesis"]["hypothesis_id"],
-        reference["hypothesis"]["version"], reference["dataset"]["dataset_id"], strategy, horizon)
+        reference["hypothesis"]["version"], reference["dataset"]["dataset_id"], strategy, horizon,
+        auxiliary_verifiers)
     if (reference != expected_references
             or record["conditions"] != _experiment_conditions(
                 hypothesis, dataset, selection, strategy, horizon)):
@@ -590,6 +596,7 @@ def _experiment_result_dataset_rows(dataset_directory, conditions):
     horizon = _experiment_conditions_horizon(conditions)
     column_name = strategy["column_name"]
     forward_column = _hypothesis_dataset_forward_column(horizon)
+    auxiliary_variables = _hypothesis_dataset_auxiliary_variables(strategy)
     warmup = strategy["required_inputs"]["warmup_periods"]
     columns = _hypothesis_dataset_columns(strategy, horizon)
     try:
@@ -616,17 +623,20 @@ def _experiment_result_dataset_rows(dataset_directory, conditions):
             indicator_value = None if row[column_name] == "" else float(row[column_name])
             forward = (None if row[forward_column] == ""
                        else float(row[forward_column]))
+            auxiliary_values = {name: float(row[name]) for name in auxiliary_variables}
         except (TypeError, ValueError) as error:
             raise ValueError("Historical dataset has a nonnumeric experiment input") from error
         if (not _explicit_utc(row["timestamp"]) or not math.isfinite(close) or close <= 0
                 or not math.isfinite(open_price) or not math.isfinite(high)
                 or not math.isfinite(low) or not math.isfinite(volume)
                 or (indicator_value is not None and not math.isfinite(indicator_value))
-                or (forward is not None and not math.isfinite(forward))):
+                or (forward is not None and not math.isfinite(forward))
+                or not all(math.isfinite(value) for value in auxiliary_values.values())):
             raise ValueError("Historical dataset has an invalid experiment input")
         rows.append({
             "instrument": row["instrument"], "timestamp": row["timestamp"],
             "open": open_price, "high": high, "low": low, "close": close, "volume": volume,
+            **auxiliary_values,
             column_name: indicator_value, forward_column: forward,
             "row_role": row["row_role"], "source_row": number,
         })
@@ -920,10 +930,11 @@ def _persist_experiment_result(registry_path, record):
 
 def _verified_experiment_result_inputs(experiment_registry_path, hypothesis_registry_path,
                                        dataset_directory, experiment_id, experiment_version,
-                                       experiment_record_id):
+                                       experiment_record_id, auxiliary_verifiers=None):
     experiment = verified_experiment_conditions(
         experiment_registry_path, experiment_id, experiment_version,
-        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory)
+        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory,
+        auxiliary_verifiers=auxiliary_verifiers)
     if experiment["record_id"] != experiment_record_id:
         raise ValueError("Experiment seal does not match the requested execution")
     hypothesis = load_hypothesis(
@@ -932,7 +943,7 @@ def _verified_experiment_result_inputs(experiment_registry_path, hypothesis_regi
     strategy = _experiment_conditions_strategy(experiment["conditions"])
     horizon = _experiment_conditions_horizon(experiment["conditions"])
     dataset = verified_hypothesis_dataset(
-        dataset_directory, hypothesis_registry_path, strategy, horizon)
+        dataset_directory, hypothesis_registry_path, strategy, horizon, auxiliary_verifiers)
     references = _experiment_result_references(experiment)
     expected_hypothesis_reference = {
         "hypothesis_id": hypothesis["hypothesis_id"], "version": hypothesis["version"],
@@ -949,11 +960,12 @@ def _verified_experiment_result_inputs(experiment_registry_path, hypothesis_regi
 
 def execute_experiment_result(registry_path, *, experiment_registry_path,
                               hypothesis_registry_path, dataset_directory, experiment_id,
-                              experiment_version, experiment_record_id, execution_code_revision):
+                              experiment_version, experiment_record_id, execution_code_revision,
+                              auxiliary_verifiers=None):
     """Execute one sealed definition locally and persist one deterministic aggregate result."""
     experiment, hypothesis, dataset, references = _verified_experiment_result_inputs(
         experiment_registry_path, hypothesis_registry_path, dataset_directory, experiment_id,
-        experiment_version, experiment_record_id)
+        experiment_version, experiment_record_id, auxiliary_verifiers)
     result_id = _experiment_result_id(references)
     path = Path(registry_path)
     if path.exists():
@@ -964,7 +976,8 @@ def execute_experiment_result(registry_path, *, experiment_registry_path,
                 raise ValueError("Experiment result identity is ambiguous")
             return verified_experiment_result(
                 registry_path, result_id, experiment_registry_path=experiment_registry_path,
-                hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory)
+                hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory,
+                auxiliary_verifiers=auxiliary_verifiers)
     evidence = _experiment_result_dataset_rows(dataset_directory, experiment["conditions"])
     evaluation = _experiment_result_evaluation(
         experiment["conditions"]["temporal_split"]["independent_evaluation_period"], evidence,
@@ -987,13 +1000,15 @@ def load_experiment_result(registry_path, result_id):
 
 
 def verified_experiment_result(registry_path, result_id, *, experiment_registry_path,
-                               hypothesis_registry_path, dataset_directory):
+                               hypothesis_registry_path, dataset_directory,
+                               auxiliary_verifiers=None):
     """Reload a result and independently recalculate it from the sealed dataset."""
     record = load_experiment_result(registry_path, result_id)
     reference = record["references"]["experiment"]
     experiment, hypothesis, dataset, references = _verified_experiment_result_inputs(
         experiment_registry_path, hypothesis_registry_path, dataset_directory,
-        reference["experiment_id"], reference["version"], reference["record_id"])
+        reference["experiment_id"], reference["version"], reference["record_id"],
+        auxiliary_verifiers)
     if (record["references"] != references
             or record["inputs"] != _experiment_result_inputs(
                 experiment, hypothesis, dataset, dataset_directory)):

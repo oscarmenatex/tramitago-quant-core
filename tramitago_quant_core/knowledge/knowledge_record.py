@@ -215,12 +215,12 @@ def _persist_knowledge_record(registry_path, record):
 
 
 def _knowledge_experiment(result, experiment_registry_path, hypothesis_registry_path,
-                          dataset_directory):
+                          dataset_directory, auxiliary_verifiers=None):
     experiment_reference = result["references"]["experiment"]
     experiment = verified_experiment_conditions(
         experiment_registry_path, experiment_reference["experiment_id"],
         experiment_reference["version"], hypothesis_registry_path=hypothesis_registry_path,
-        dataset_directory=dataset_directory)
+        dataset_directory=dataset_directory, auxiliary_verifiers=auxiliary_verifiers)
     if experiment["record_id"] != experiment_reference["record_id"]:
         raise ValueError("Knowledge experiment reference is invalid")
     return experiment
@@ -231,7 +231,7 @@ def constitute_knowledge_record(registry_path, *, disposition_registry_path, dis
                                 research_execution_registry_path, legacy_result_registry_path,
                                 experiment_registry_path, hypothesis_registry_path,
                                 dataset_directory, interpretation, limitations, preserved_at,
-                                knowledge_code_revision):
+                                knowledge_code_revision, auxiliary_verifiers=None):
     """M2.4-T2: preserve hypothesis, methodology, results, interpretation, and limitations.
 
     Structured, query-able, and permanent (DOC-004 REQ-004-004/P-004-004):
@@ -245,7 +245,8 @@ def constitute_knowledge_record(registry_path, *, disposition_registry_path, dis
         research_execution_registry_path=research_execution_registry_path,
         legacy_result_registry_path=legacy_result_registry_path,
         experiment_registry_path=experiment_registry_path,
-        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory)
+        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory,
+        auxiliary_verifiers=auxiliary_verifiers)
     if disposition["record_id"] != disposition_record_id:
         raise ValueError("Disposition seal does not match the requested Knowledge record")
     hypothesis_reference = disposition["references"]["hypothesis"]
@@ -260,9 +261,11 @@ def constitute_knowledge_record(registry_path, *, disposition_registry_path, dis
         research_execution_registry_path=research_execution_registry_path,
         legacy_result_registry_path=legacy_result_registry_path,
         experiment_registry_path=experiment_registry_path,
-        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory)
+        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory,
+        auxiliary_verifiers=auxiliary_verifiers)
     experiment = _knowledge_experiment(
-        result, experiment_registry_path, hypothesis_registry_path, dataset_directory)
+        result, experiment_registry_path, hypothesis_registry_path, dataset_directory,
+        auxiliary_verifiers)
 
     if not _knowledge_limitations_are_valid(limitations):
         raise ValueError("Knowledge limitations must be a nonempty list of distinct statements")
@@ -286,7 +289,7 @@ def constitute_knowledge_record(registry_path, *, disposition_registry_path, dis
                 legacy_result_registry_path=legacy_result_registry_path,
                 experiment_registry_path=experiment_registry_path,
                 hypothesis_registry_path=hypothesis_registry_path,
-                dataset_directory=dataset_directory)
+                dataset_directory=dataset_directory, auxiliary_verifiers=auxiliary_verifiers)
     record = _knowledge_record(
         knowledge_id, references, _knowledge_hypothesis_snapshot(hypothesis),
         experiment["conditions"], _knowledge_results(disposition), interpretation, limitations,
@@ -324,7 +327,7 @@ def query_knowledge(registry_path, *, hypothesis_id=None, outcome=None):
 def verified_knowledge(registry_path, knowledge_id, *, disposition_registry_path,
                        research_result_registry_path, research_execution_registry_path,
                        legacy_result_registry_path, experiment_registry_path,
-                       hypothesis_registry_path, dataset_directory):
+                       hypothesis_registry_path, dataset_directory, auxiliary_verifiers=None):
     """Reload a Knowledge record and reproduce it from the sealed research chain."""
     record = load_knowledge(registry_path, knowledge_id)
     disposition_reference = record["references"]["disposition"]
@@ -334,7 +337,8 @@ def verified_knowledge(registry_path, knowledge_id, *, disposition_registry_path
         research_execution_registry_path=research_execution_registry_path,
         legacy_result_registry_path=legacy_result_registry_path,
         experiment_registry_path=experiment_registry_path,
-        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory)
+        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory,
+        auxiliary_verifiers=auxiliary_verifiers)
     if disposition["record_id"] != disposition_reference["record_id"]:
         raise ValueError("Knowledge Disposition reference is invalid")
     hypothesis_reference = disposition["references"]["hypothesis"]
@@ -349,9 +353,11 @@ def verified_knowledge(registry_path, knowledge_id, *, disposition_registry_path
         research_execution_registry_path=research_execution_registry_path,
         legacy_result_registry_path=legacy_result_registry_path,
         experiment_registry_path=experiment_registry_path,
-        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory)
+        hypothesis_registry_path=hypothesis_registry_path, dataset_directory=dataset_directory,
+        auxiliary_verifiers=auxiliary_verifiers)
     experiment = _knowledge_experiment(
-        result, experiment_registry_path, hypothesis_registry_path, dataset_directory)
+        result, experiment_registry_path, hypothesis_registry_path, dataset_directory,
+        auxiliary_verifiers)
     references = _knowledge_references(disposition, result, experiment)
     expected = _knowledge_record(
         record["knowledge_id"], references, _knowledge_hypothesis_snapshot(hypothesis),
