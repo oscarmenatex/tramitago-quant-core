@@ -68,6 +68,9 @@ HORIZON         = 1
 STRATEGY        = p.sma_crossover_strategy(WINDOW)
 EVALUABLE_START = "2024-01-01T00:00:00Z"
 EVALUABLE_END   = "2025-01-01T00:00:00Z"
+# The partition requires the evaluable period to divide evenly into folds, and
+# 2024 is a leap year: 366 days rules out 5, so 6 folds of 61 calendar days.
+FOLD_COUNT      = 6
 
 # Derived from the Strategy contract rather than written by hand: the column the
 # Strategy actually emits ("sma_close_200") and the warmup it actually needs are
@@ -294,12 +297,12 @@ def main():
     print(f"       disposition: {disp_rec['outcome']}")
 
     # -- STEP 9: walk-forward partition ---------------------------------------
-    print("\n[9/11] Constituting walk-forward partition (5 folds)...")
+    print(f"\n[9/11] Constituting walk-forward partition ({FOLD_COUNT} folds)...")
     part_rec = constitute_walk_forward_partition(
         PARTITIONS,
         dataset_directory=DATASET_DIR,
         hypothesis_registry_path=HYPOTHESES,
-        fold_count=5,
+        fold_count=FOLD_COUNT,
         partitioned_at=NOW,
         partition_code_revision=code_revision,
         strategy=STRATEGY,
@@ -309,8 +312,8 @@ def main():
     print(f"       partition_id: {PART_ID}")
 
     # -- STEP 10: walk-forward folds ------------------------------------------
-    print("\n[10/11] Running 5 walk-forward folds...")
-    for fold_index in range(5):
+    print(f"\n[10/11] Running {FOLD_COUNT} walk-forward folds...")
+    for fold_index in range(FOLD_COUNT):
         fold_rec = constitute_walk_forward_fold_result(
             FOLD_RESULTS,
             partition_registry_path=PARTITIONS,
@@ -345,7 +348,7 @@ def main():
         experiment_registry_path=EXPERIMENTS,
         hypothesis_registry_path=HYPOTHESES,
         dataset_directory=DATASET_DIR,
-        minimum_folds_required=5,
+        minimum_folds_required=FOLD_COUNT,
         consistency_threshold="0.70",
         validated_at=NOW,
         validation_code_revision=code_revision,
@@ -356,7 +359,7 @@ def main():
                   if s["criterion_result"] == "MET")
     print(f"       outcome: {val_rec['outcome']}")
     print(f"       consistency: {val_rec['consistency_ratio']}")
-    print(f"       passing_folds: {passing} / 5")
+    print(f"       passing_folds: {passing} / {FOLD_COUNT}")
 
     # -- knowledge record ------------------------------------------------------
     validated = val_rec["outcome"] == "VALIDATED"
@@ -369,7 +372,7 @@ def main():
         f"de 200 dias filtra mercados bajistas y mejora el retorno ajustado al riesgo.\n\n"
         f"Resultado muestra completa: metric={evaluation.get('metric')}, criterio GT 0 -> "
         f"{disp_rec['outcome']}. Walk-forward independiente (5 folds sobre 2024): "
-        f"{passing}/5 folds MET, consistencia {val_rec['consistency_ratio']}, "
+        f"{passing}/{FOLD_COUNT} folds MET, consistencia {val_rec['consistency_ratio']}, "
         f"{val_rec['outcome']} (umbral 70%).\n\n"
         f"Contexto: 30a hipotesis real del proyecto. El eje Nivel 5 (otro mercado) era el "
         f"ultimo item del catalogo sin explorar; este es su primer dato. "
@@ -404,7 +407,7 @@ def main():
     print(f"  Hypothesis:          {HYP_ID}")
     print(f"  Disposition:         {disp_rec['outcome']}")
     print(f"  Statistical verdict: {val_rec['outcome']} "
-          f"({val_rec['consistency_ratio']} consistency, {passing}/5 folds)")
+          f"({val_rec['consistency_ratio']} consistency, {passing}/{FOLD_COUNT} folds)")
     print(f"  Knowledge:           {kr_rec['knowledge_id']}")
     print()
     return 0

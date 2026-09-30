@@ -630,6 +630,13 @@ def _experiment_result_execution(code_revision):
     return {"code_revision": code_revision, "pipeline_sha256": digest(source)}
 
 
+def _experiment_dataset_is_equity(dataset_directory):
+    """True when the sealed dataset came from a market with a trading calendar."""
+    from tramitago_quant_core.data.alpaca_equity_series import ALPACA_EQUITY_BARS_CAPTURE_KIND
+    manifest = json.loads((Path(dataset_directory) / "manifest.json").read_bytes())
+    return manifest.get("input_kind") == ALPACA_EQUITY_BARS_CAPTURE_KIND
+
+
 def _experiment_result_dataset_rows(dataset_directory, conditions):
     """Parse the sealed CSV and derive only its independently evaluable observations.
 
@@ -698,11 +705,20 @@ def _experiment_result_dataset_rows(dataset_directory, conditions):
         })
 
     frequency = conditions["frequency_seconds"]
+    # A market with sessions and holidays has no calendar-day grid: consecutive
+    # bars are consecutive TRADING days, so "contiguous" can only mean strictly
+    # increasing. Coverage is not weakened by dropping the arithmetic -- it is
+    # proved one layer down, where the capture verifies every bar against the
+    # sealed exchange calendar and the verifier re-runs that check independently.
+    is_equity = _experiment_dataset_is_equity(dataset_directory)
     for index, row in enumerate(rows):
         if row["instrument"] != conditions["instrument"]:
             raise ValueError("Historical dataset instrument is incompatible with experiment")
-        if index and epoch(row["timestamp"]) != epoch(rows[index - 1]["timestamp"]) + frequency:
-            raise ValueError("Historical dataset has noncontiguous experiment rows")
+        if index:
+            previous, current = epoch(rows[index - 1]["timestamp"]), epoch(row["timestamp"])
+            contiguous = current > previous if is_equity else current == previous + frequency
+            if not contiguous:
+                raise ValueError("Historical dataset has noncontiguous experiment rows")
     support_rows = [{"timestamp": row["timestamp"], "row_role": row["row_role"]}
                     for row in rows if row["row_role"] != HYPOTHESIS_DATASET_EVALUATION_ROLE]
     if support_rows != conditions["population"]["support_rows"]:
@@ -710,7 +726,9 @@ def _experiment_result_dataset_rows(dataset_directory, conditions):
 
     period = conditions["temporal_split"]["independent_evaluation_period"]
     start, end = epoch(period["start_utc"]), epoch(period["end_exclusive_utc"])
-    expected_timestamps = [iso(value) for value in range(start, end, frequency)]
+    expected_timestamps = (
+        [row["timestamp"] for row in rows if start <= epoch(row["timestamp"]) < end]
+        if is_equity else [iso(value) for value in range(start, end, frequency)])
     evidence = []
     for index, row in enumerate(rows):
         timestamp = epoch(row["timestamp"])
@@ -727,8 +745,11 @@ def _experiment_result_dataset_rows(dataset_directory, conditions):
         signal = strategy["compute"](window_rows)
         indicator_value = signal["indicator_value"]
         next_row = rows[index + horizon]
+        forward_timestamp = epoch(next_row["timestamp"])
+        forward_supported = (forward_timestamp > timestamp if is_equity
+                             else forward_timestamp == timestamp + horizon * frequency)
         if (not math.isfinite(indicator_value) or row[column_name] != indicator_value
-                or epoch(next_row["timestamp"]) != timestamp + horizon * frequency):
+                or not forward_supported):
             raise ValueError("Historical dataset indicator or forward-return support is invalid")
         forward_return = outcome["compute"](row, next_row)
         if not math.isfinite(forward_return) or row[forward_column] != forward_return:
