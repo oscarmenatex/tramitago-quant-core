@@ -34,6 +34,11 @@ from tramitago_quant_core.data.acquisition import (
     _coinbase_public_request_headers, _coinbase_public_request,
     normalize, validate, indicators, dataset_bytes,
 )
+from tramitago_quant_core.risk.risk_control import (
+    RISK_CONTROL_SCHEMA_VERSION, RISK_CONTROL_COMPLETED, RISK_CONTROL_BLOCKED,
+    RISK_LIMIT_TOTAL_EXPOSURE, RISK_LIMIT_MAX_DRAWDOWN, _risk_decimal, risk_contract,
+    _equity_max_drawdown, evaluate_risk_control,
+)
 from tramitago_quant_core.research.finding import (
     FINDING_REGISTRY_SCHEMA_VERSION, FINDING_STATUS_OPEN, FINDING_STATUS_PROMOTED,
     FINDING_STATUS_DISCARDED, FINDING_STATUSES, _finding_id_is_valid, _new_finding_id,
