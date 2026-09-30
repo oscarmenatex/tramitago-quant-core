@@ -191,8 +191,9 @@ def main():
     print(f"       hypothesis_id: {HYP_ID}")
 
     # -- STEP 3: create sealed dataset (equity primary source) -----------------
+    # publish() creates DATASET_DIR itself and refuses to write over an existing
+    # directory whose contents differ, so pre-creating it would trip that guard.
     print("\n[3/11] Creating sealed hypothesis dataset (Alpaca equity bars)...")
-    DATASET_DIR.mkdir(parents=True, exist_ok=True)
     manifest = create_hypothesis_dataset(
         HYPOTHESES, HYP_ID, HYP_VER, DATASET_DIR,
         strategy=STRATEGY,
