@@ -502,13 +502,12 @@ def create_hypothesis_dataset(registry_path, hypothesis_id, version, output, *,
     instrument data.  Required for equity instruments (NYSE, NASDAQ) where bars
     are only available on trading days (not every calendar day).  Structure:
       {
-        "rows":           [{instrument, timestamp, open, high, low, close, volume}, ...],
-        "capture":        <sealed provider capture dict>,
-        "raw":            <sealed provider raw bytes>,
-        "source":         <source string for the config>,
-        "capture_period": {"start_utc": ..., "end_exclusive_utc": ...},
+        "rows":    [{instrument, timestamp, open, high, low, close, volume}, ...],
+        "capture": <sealed provider capture dict, carrying "kind", "source"
+                    and "capture_period">,
+        "raw":     <sealed provider raw bytes>,
       }
-    When provided: the config's source and capture_period come from primary_source;
+    When provided: the config's source and capture_period come from the capture;
     forward-return check uses positional indexing (trading days, not calendar days);
     expected row counts are derived from actual bar counts rather than the
     calendar formula.  All existing sealed datasets (primary_source=None) are
@@ -531,9 +530,12 @@ def create_hypothesis_dataset(registry_path, hypothesis_id, version, output, *,
 
     if primary_source is not None:
         # ── Nivel 5 / equity path: use pre-captured rows, skip Coinbase fetch ──
+        # Read from the capture, never from the caller: verified_hypothesis_dataset
+        # re-derives these same two from the sealed capture, so taking them from
+        # anywhere else lets a dataset seal that can never be verified again.
         config = {**config,
-                  "source": primary_source["source"],
-                  "capture_period": primary_source["capture_period"]}
+                  "source": primary_source["capture"]["source"],
+                  "capture_period": primary_source["capture"]["capture_period"]}
         ps_capture_bytes = encoded(primary_source["capture"])
         ps_raw_bytes = (primary_source["raw"] if isinstance(primary_source["raw"], bytes)
                         else primary_source["raw"].encode("utf-8"))
@@ -774,8 +776,18 @@ def verified_hypothesis_dataset(directory, registry_path=None, strategy=None, ho
     if registry_path is not None:
         hypothesis = load_hypothesis(registry_path, identity["hypothesis_id"],
                                      identity["hypothesis_version"])
+        expected_config = _hypothesis_dataset_config(hypothesis, strategy, horizon)
+        if is_equity:
+            # The provider determines these two, not the Hypothesis, so they are
+            # re-read from the sealed capture rather than re-derived from the
+            # Coinbase defaults. Not circular: the capture's own sha256 is in the
+            # manifest and its capture_id was re-derived from its content above,
+            # so a tampered source or capture_period fails this same comparison.
+            expected_config = {**expected_config,
+                               "source": capture["source"],
+                               "capture_period": capture["capture_period"]}
         expected_id, expected_identity = _hypothesis_dataset_identity(
-            hypothesis, _hypothesis_dataset_config(hypothesis, strategy, horizon), identity["hashes"])
+            hypothesis, expected_config, identity["hashes"])
         if expected_identity != identity or expected_id != manifest["dataset_id"]:
             raise ValueError("Historical dataset is not linked to its Hypothesis version")
     selection = json.loads((directory / "selection.json").read_bytes())

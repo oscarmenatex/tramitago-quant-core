@@ -27,7 +27,6 @@ sys.path.insert(0, str(REPO))
 
 import pipeline as p
 from tramitago_quant_core.data.alpaca_equity_series import (
-    ALPACA_EQUITY_BARS_SOURCE,
     capture_alpaca_equity_bars,
 )
 from tramitago_quant_core.research.hypothesis import constitute_hypothesis
@@ -199,13 +198,7 @@ def main():
         strategy=STRATEGY,
         horizon=HORIZON,
         acquired_at=NOW,
-        primary_source={
-            "rows": rows,
-            "capture": capture,
-            "raw": raw_bytes,
-            "source": ALPACA_EQUITY_BARS_SOURCE,
-            "capture_period": capture["capture_period"],
-        },
+        primary_source={"rows": rows, "capture": capture, "raw": raw_bytes},
     )
     DATASET_ID = manifest["dataset_id"]
     print(f"       dataset_id: {DATASET_ID}")
