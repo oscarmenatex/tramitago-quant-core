@@ -1201,6 +1201,47 @@
       "system_version": "0.1.0",
       "target_metric": "mean_forward_spread_return_1d(ETH/ATOM > PAIRRATIO20) - mean_forward_spread_return_1d(ETH/ATOM <= PAIRRATIO20)",
       "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "GT",
+        "expected_direction": "INCREASE",
+        "metric": "mean_forward_return_1d(close_t > sma_close_50) - mean_forward_return_1d(close_t <= sma_close_50)",
+        "threshold": "0"
+      },
+      "code_revision": "b91e0c235d723980d2cc756ecfb0810e8999ceaf",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2025-01-01T00:00:00Z",
+          "start_utc": "2024-01-01T00:00:00Z"
+        },
+        "universe": [
+          "SPY"
+        ],
+        "variables": [
+          "close",
+          "sma_close_50",
+          "forward_return_1d"
+        ]
+      },
+      "creation_context": {
+        "created_by": "Oscar Carmenate Rodriguez",
+        "provenance": [
+          "DISCOVERY|artifacts/live-run-1",
+          "SNAPSHOT_SHA256|a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f",
+          "KNOWLEDGE|b154409262618e2436ad19dbfdab4da2e43c97678d56ec5192cc992b4c2cd521",
+          "ANALYSIS|nivel-5-spy-sma50-us-equities-2024"
+        ]
+      },
+      "creation_timestamp": "2026-09-30T23:13:09.336760Z",
+      "description": "For SPY (S&P 500 ETF), the mean t+1 return when the close is ABOVE its own trailing 50-day simple moving average is HIGHER than when it is below -- SMA_CROSSOVER(50) on SPY, 2024 full year. Direction INCREASE pre-declared on the trend-following prior (Brock, Lakonishok & LeBaron 1992; Faber 2007: price above its own trailing average marks the regime that carries the positive drift). First Nivel 5 Hypothesis of the project (US equities, a market with overnight gaps, sessions and holidays that crypto does not have).\n\nWindow history, declared before execution: SMA(200) was run first on this exact instrument and period and returned INCONCLUSIVE -- SPY closed above its 200-day average on every trading day of 2024, leaving the lower group empty and the difference of means undefined. The window moved to 50 on that validity ground alone: an undefined comparison is not an unfavourable one, and no metric from that run existed to shop for. 50 is a window the cited literature itself tests (Brock et al. examine 1, 2, 5, 50, 150 and 200 day averages), not one selected here. Period, folds, direction and acceptance criterion are unchanged from the original pre-declaration.\n\nPre-declared caveats: (1) SPY SMA(50) is among the most widely known signals in finance and may be fully arbitraged; (2) 2024 was a strong bull year, so positive drift favours the INCREASE direction -- walk-forward consistency across sub-periods, not the full-sample mean, is the real test; (3) this is the second window tried on one period, and the result carries that.",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|e6545e85-7baa-4f34-b96f-ed77852193e3",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|e6545e85-7baa-4f34-b96f-ed77852193e3|1|b5ac069b1df21621cdc7e0b32f9264fc935ff5e7017092f3644b6411c0b1fcbb",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_return_1d(close_t > sma_close_50) - mean_forward_return_1d(close_t <= sma_close_50)",
+      "version": 1
     }
   ],
   "schema_version": "2"
