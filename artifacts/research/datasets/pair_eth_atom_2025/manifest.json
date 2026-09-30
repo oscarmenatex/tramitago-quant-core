@@ -1,0 +1,102 @@
+{
+  "audit_sha256": "8e8f76e0edeba0f3698a5fc267c21a5d4440a760822eb8fda8830190b53ed6a1",
+  "capture_sha256": "d0b1f3cce50f686a342d1a74530bdba3e2b1eb308633f21cee1313b68993dd96",
+  "code_sha256": "2a69397809da1e648578761b09884b022800c01c74e867ac7be48c749bcb1ebe",
+  "columns": [
+    "instrument",
+    "timestamp",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "pair_close",
+    "pair_ratio_avg_20",
+    "row_role",
+    "forward_spread_return_1d"
+  ],
+  "config": {
+    "capture_period": {
+      "end_exclusive_utc": "2026-01-02T00:00:00Z",
+      "start_utc": "2024-12-12T00:00:00Z"
+    },
+    "duplicate_policy": "reject entire dataset",
+    "evaluable_period": {
+      "end_exclusive_utc": "2026-01-01T00:00:00Z",
+      "start_utc": "2025-01-01T00:00:00Z"
+    },
+    "frequency_seconds": 86400,
+    "instrument": "ETH-USD",
+    "missing_policy": "reject entire dataset; no imputation",
+    "schema_version": "1",
+    "source": "Coinbase Exchange public candles",
+    "support_policy": "exactly 20 PAIRRATIO20 warm-up rows before and one forward-return row after the evaluable period",
+    "temporal_policy": "reject rows outside the declared capture period",
+    "timezone": "UTC"
+  },
+  "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|393e4af00341f979674740abdb0081c43de65a469510573416395a437d6d00f4",
+  "dataset_sha256": "4c5d1f16a7be7632697376003c2003947b25990cdbf2ee416f20703521d0f177",
+  "identity": {
+    "code_revision": "018a0b972d656af9da368994ec8231dece2ef94f",
+    "config": {
+      "capture_period": {
+        "end_exclusive_utc": "2026-01-02T00:00:00Z",
+        "start_utc": "2024-12-12T00:00:00Z"
+      },
+      "duplicate_policy": "reject entire dataset",
+      "evaluable_period": {
+        "end_exclusive_utc": "2026-01-01T00:00:00Z",
+        "start_utc": "2025-01-01T00:00:00Z"
+      },
+      "frequency_seconds": 86400,
+      "instrument": "ETH-USD",
+      "missing_policy": "reject entire dataset; no imputation",
+      "schema_version": "1",
+      "source": "Coinbase Exchange public candles",
+      "support_policy": "exactly 20 PAIRRATIO20 warm-up rows before and one forward-return row after the evaluable period",
+      "temporal_policy": "reject rows outside the declared capture period",
+      "timezone": "UTC"
+    },
+    "hashes": {
+      "capture_sha256": "d0b1f3cce50f686a342d1a74530bdba3e2b1eb308633f21cee1313b68993dd96",
+      "code_sha256": "2a69397809da1e648578761b09884b022800c01c74e867ac7be48c749bcb1ebe",
+      "dataset_sha256": "4c5d1f16a7be7632697376003c2003947b25990cdbf2ee416f20703521d0f177",
+      "pair_close_capture_sha256": "a4655065dbc453652b0e636f229794b24ff58fedf70c58d833b6266f6eb26f0d",
+      "pair_close_raw_sha256": "34c794a2ff868e4ef7e7548716c26f1c890a4c0dd4597086fb70e71b3cadf88a",
+      "raw_sha256": "79b47fea5f3667e14227574b0a2030766857d052c22425290dcac2f21a2085dd",
+      "selection_sha256": "42f595e19d096ed7f3008d88f50953795e359f96b26f2c6abde1271a4b304409",
+      "validation_sha256": "fba3aaeec60f8631d5ce5492f0f4a6acfe5f42b1652e79c83f10ee30e30900e9"
+    },
+    "hypothesis_id": "HYPOTHESIS|1cd6b785-5e99-417a-b3c0-5ffc4a403127",
+    "hypothesis_version": 1,
+    "schema_version": "1",
+    "system_version": "0.1.0"
+  },
+  "input_kind": "historical-hypothesis-dataset",
+  "pair_close_capture_sha256": "a4655065dbc453652b0e636f229794b24ff58fedf70c58d833b6266f6eb26f0d",
+  "pair_close_raw_sha256": "34c794a2ff868e4ef7e7548716c26f1c890a4c0dd4597086fb70e71b3cadf88a",
+  "range": [
+    "2024-12-12T00:00:00Z",
+    "2026-01-01T00:00:00Z"
+  ],
+  "raw_sha256": "79b47fea5f3667e14227574b0a2030766857d052c22425290dcac2f21a2085dd",
+  "replay": "create_hypothesis_dataset(<registry>, <hypothesis_id>, <version>, <output>)",
+  "rows": 386,
+  "runtime": "3.14.3",
+  "schema": {
+    "close": "finite float64",
+    "forward_spread_return_1d": "nullable finite float64; defined only for EVALUATION rows",
+    "high": "finite float64",
+    "instrument": "string",
+    "low": "finite float64",
+    "open": "finite float64",
+    "pair_close": "nullable finite float64",
+    "pair_ratio_avg_20": "nullable finite float64",
+    "row_role": "SUPPORT_PAIRRATIO20_WARMUP | EVALUATION | SUPPORT_FORWARD_RETURN",
+    "timestamp": "UTC ISO8601 bucket start",
+    "volume": "finite float64"
+  },
+  "selection_sha256": "42f595e19d096ed7f3008d88f50953795e359f96b26f2c6abde1271a4b304409",
+  "status": "PASS",
+  "validation_sha256": "fba3aaeec60f8631d5ce5492f0f4a6acfe5f42b1652e79c83f10ee30e30900e9"
+}
