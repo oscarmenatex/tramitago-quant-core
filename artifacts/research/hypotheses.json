@@ -1159,6 +1159,48 @@
       "system_version": "0.1.0",
       "target_metric": "mean_forward_spread_return_1d(ETH/BTC > PAIRRATIO20) - mean_forward_spread_return_1d(ETH/BTC <= PAIRRATIO20)",
       "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "LT",
+        "expected_direction": "DECREASE",
+        "metric": "mean_forward_spread_return_1d(ETH/ATOM > PAIRRATIO20) - mean_forward_spread_return_1d(ETH/ATOM <= PAIRRATIO20)",
+        "threshold": "0"
+      },
+      "code_revision": "018a0b972d656af9da368994ec8231dece2ef94f",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2026-01-01T00:00:00Z",
+          "start_utc": "2025-01-01T00:00:00Z"
+        },
+        "universe": [
+          "ETH-USD"
+        ],
+        "variables": [
+          "close",
+          "pair_close",
+          "pair_ratio_avg_20",
+          "forward_spread_return_1d"
+        ]
+      },
+      "creation_context": {
+        "created_by": "Oscar Carmenate Rodriguez",
+        "provenance": [
+          "DISCOVERY|artifacts/live-run-1",
+          "SNAPSHOT_SHA256|a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f",
+          "KNOWLEDGE|b154409262618e2436ad19dbfdab4da2e43c97678d56ec5192cc992b4c2cd521",
+          "ANALYSIS|via-7C-eth-atom-second-pair-relative-value-2026-09-30"
+        ]
+      },
+      "creation_timestamp": "2026-09-30T12:00:00Z",
+      "description": "For the ETH-USD / ATOM-USD pair, the mean t+1 return of a market-neutral position (long ETH, short ATOM) when the ETH/ATOM ratio is above its own trailing 20-day average is LOWER than when it is below -- PAIR_RATIO_REVERSION on the ETH/ATOM pair, the second relative-value Hypothesis. Direction DECREASE pre-declared on the pairs-trading reversion prior (same as the ETH/BTC hypothesis, 2026-09-29). Honest additional caveat: the ETH/BTC result showed momentum rather than reversion in 2025, which weakens this prior; ATOM-USD may behave differently given its smaller market cap and Cosmos ecosystem dynamics.",
+      "expected_direction": "DECREASE",
+      "hypothesis_id": "HYPOTHESIS|1cd6b785-5e99-417a-b3c0-5ffc4a403127",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|1cd6b785-5e99-417a-b3c0-5ffc4a403127|1|35f5db82288427a3a3dbd50cf0a6742706ecb57fbf243b45f1dc5a1d835a944e",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_spread_return_1d(ETH/ATOM > PAIRRATIO20) - mean_forward_spread_return_1d(ETH/ATOM <= PAIRRATIO20)",
+      "version": 1
     }
   ],
   "schema_version": "2"

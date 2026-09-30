@@ -1,0 +1,69 @@
+{
+  "dispositions": [
+    {
+      "criterion_applied": {
+        "comparison": "LT",
+        "expected_direction": "DECREASE",
+        "metric": "mean_forward_spread_return_1d(ETH/ATOM > PAIRRATIO20) - mean_forward_spread_return_1d(ETH/ATOM <= PAIRRATIO20)",
+        "threshold": "0"
+      },
+      "disposition_id": "DISPOSITION|a68125abc4393f10d6913e4f3b31d55b5ac0b6ebce2fa6dbc17a087bbe229136",
+      "materialization": {
+        "disposed_at": "2026-09-30T12:00:00Z",
+        "disposition_code_revision": "018a0b972d656af9da368994ec8231dece2ef94f",
+        "pipeline_sha256": "2a69397809da1e648578761b09884b022800c01c74e867ac7be48c749bcb1ebe"
+      },
+      "outcome": "REJECTED",
+      "outcome_reason": null,
+      "record_id": "DISPOSITION_RECORD|DISPOSITION|a68125abc4393f10d6913e4f3b31d55b5ac0b6ebce2fa6dbc17a087bbe229136|40e3b0e68bdc4cd6ffad3ef01818a3c554dafcfa8e8f3dbe1b4c5e001f6129a3",
+      "references": {
+        "hypothesis": {
+          "code_revision": "018a0b972d656af9da368994ec8231dece2ef94f",
+          "hypothesis_id": "HYPOTHESIS|1cd6b785-5e99-417a-b3c0-5ffc4a403127",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|1cd6b785-5e99-417a-b3c0-5ffc4a403127|1|35f5db82288427a3a3dbd50cf0a6742706ecb57fbf243b45f1dc5a1d835a944e",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_execution": {
+          "execution_id": "RESEARCH_EXECUTION|1369fb26f579063966d4a512bef18c0ddbcd3717b92cdf40dd21f89d604175ba",
+          "record_id": "RESEARCH_EXECUTION_RECORD|RESEARCH_EXECUTION|1369fb26f579063966d4a512bef18c0ddbcd3717b92cdf40dd21f89d604175ba|ef65f479a5d2be64c216543ff2dfa970dcd2de8052b14acbfb0477fffe01bb02"
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|3ed3a15044cba10ecf9fe205605950d7654edb546649b5650f72c61d040333ce|948bfb6386013ae446be062dbf9034574e7aa12713769f25d6f44ebe645d95fa",
+          "research_result_id": "RESEARCH_RESULT|3ed3a15044cba10ecf9fe205605950d7654edb546649b5650f72c61d040333ce"
+        }
+      },
+      "schema_version": "1",
+      "scientific_result": {
+        "criterion": {
+          "comparison": "LT",
+          "expected_direction": "DECREASE",
+          "metric": "mean_forward_spread_return_1d(ETH/ATOM > PAIRRATIO20) - mean_forward_spread_return_1d(ETH/ATOM <= PAIRRATIO20)",
+          "threshold": "0"
+        },
+        "criterion_result": "NOT_MET",
+        "groups": {
+          "lower_or_equal": {
+            "count": 116,
+            "mean_return_t_plus_1": 0.0012122110845126837,
+            "rule": "close_t / pair_close_t <= PAIRRATIO20_t"
+          },
+          "upper": {
+            "count": 249,
+            "mean_return_t_plus_1": 0.0034361065581478235,
+            "rule": "close_t / pair_close_t > PAIRRATIO20_t"
+          }
+        },
+        "inconclusive_reason": null,
+        "metric": 0.00222389547363514,
+        "observation_count": 365,
+        "period": {
+          "end_exclusive_utc": "2026-01-01T00:00:00Z",
+          "start_utc": "2025-01-01T00:00:00Z"
+        }
+      },
+      "status": "ISSUED"
+    }
+  ],
+  "schema_version": "1"
+}
