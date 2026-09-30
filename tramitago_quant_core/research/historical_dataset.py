@@ -320,7 +320,16 @@ def _hypothesis_dataset_capture_rows(raw_bytes, capture, config):
     return payload
 
 
-def _hypothesis_dataset_rows(rows, config, strategy=None, horizon=1, auxiliary_series=None):
+def _hypothesis_dataset_rows(rows, config, strategy=None, horizon=1, auxiliary_series=None, *,
+                             contiguous=True):
+    """Build the final labelled rows from raw OHLCV rows.
+
+    Nivel 5 extension (2026-09-30): `contiguous=False` skips the timestamp-
+    arithmetic forward-return check (timestamp + N*86400) and uses positional
+    indexing only.  Required for equity datasets where weekends/holidays create
+    legitimate gaps in the daily bar sequence.  Defaults to True, reproducing
+    the original check for all existing sealed datasets unchanged.
+    """
     strategy = strategy or _hypothesis_dataset_default_strategy()
     outcome = strategy_outcome(strategy)
     forward_column = _hypothesis_dataset_forward_column(horizon, strategy)
@@ -348,8 +357,9 @@ def _hypothesis_dataset_rows(rows, config, strategy=None, horizon=1, auxiliary_s
             role = HYPOTHESIS_DATASET_EVALUATION_ROLE
         forward_return = None
         if role == HYPOTHESIS_DATASET_EVALUATION_ROLE:
-            if (index + horizon >= len(derived)
-                    or epoch(derived[index + horizon]["timestamp"]) != timestamp + horizon * 86400):
+            if index + horizon >= len(derived):
+                raise ValueError("Evaluation row lacks its forward-horizon close")
+            if contiguous and epoch(derived[index + horizon]["timestamp"]) != timestamp + horizon * 86400:
                 raise ValueError("Evaluation row lacks its forward-horizon close")
             forward_return = outcome["compute"](row, derived[index + horizon])
             if not math.isfinite(forward_return):
@@ -375,24 +385,36 @@ def _hypothesis_dataset_bytes(rows, strategy=None, horizon=1):
     return stream.getvalue().encode("utf-8")
 
 
-def _hypothesis_dataset_selection(hypothesis, config, rows, strategy=None, horizon=1):
+def _hypothesis_dataset_selection(hypothesis, config, rows, strategy=None, horizon=1, *,
+                                   expected_evaluable_count=None, expected_warmup_count=None):
     """Etapa 2.8 extension (2026-09-29): `evaluable_row_count` is derived
     from the Hypothesis's own evaluable_period instead of a hardcoded 365 --
     every already-sealed real Hypothesis Dataset (BTC-USD, ETH-USD) used
     exactly one full calendar year, which is exactly why this reproduces
     365 for them unchanged. Found while sourcing funding-rate history from
     OKX (Binance's own history is geoblocked from every reachable network),
-    whose public retention only covers ~3 months, not a full year."""
+    whose public retention only covers ~3 months, not a full year.
+
+    Nivel 5 extension (2026-09-30): `expected_evaluable_count` and
+    `expected_warmup_count` override the calendar-formula defaults.  Required
+    for equity datasets where only trading days appear (not every calendar day).
+    Both default to None (calendar formula), preserving all prior sealed
+    datasets unchanged.
+    """
     strategy = strategy or _hypothesis_dataset_default_strategy()
     forward_column = _hypothesis_dataset_forward_column(horizon, strategy)
     forward_key = "support_forward_return" if horizon == 1 else f"support_forward_return_{horizon}d"
     warmup = strategy["required_inputs"]["warmup_periods"]
     warmup_role = _hypothesis_dataset_warmup_role(strategy)
     column_name = strategy["column_name"]
-    expected_support_roles = [warmup_role] * warmup + [HYPOTHESIS_DATASET_FORWARD_ROLE] * horizon
     period = config["evaluable_period"]
-    expected_evaluable_count = (
-        (epoch(period["end_exclusive_utc"]) - epoch(period["start_utc"])) // config["frequency_seconds"])
+    if expected_evaluable_count is None:
+        expected_evaluable_count = (
+            (epoch(period["end_exclusive_utc"]) - epoch(period["start_utc"])) // config["frequency_seconds"])
+    if expected_warmup_count is None:
+        expected_warmup_count = warmup
+    expected_support_roles = (
+        [warmup_role] * expected_warmup_count + [HYPOTHESIS_DATASET_FORWARD_ROLE] * horizon)
     support_rows = [{"timestamp": row["timestamp"], "row_role": row["row_role"]}
                     for row in rows if row["row_role"] != HYPOTHESIS_DATASET_EVALUATION_ROLE]
     evaluation_rows = [row for row in rows if row["row_role"] == HYPOTHESIS_DATASET_EVALUATION_ROLE]
@@ -462,7 +484,7 @@ def _hypothesis_dataset_validation(payload, config):
 
 def create_hypothesis_dataset(registry_path, hypothesis_id, version, output, *,
                               transport=None, acquired_at=None, strategy=None, horizon=1,
-                              auxiliary_sources=None):
+                              auxiliary_sources=None, primary_source=None):
     """Capture and publish a sealed historical dataset; never evaluate the Hypothesis.
 
     Etapa 2.8 extension (2026-09-28): `auxiliary_sources` is a mapping
@@ -474,6 +496,23 @@ def create_hypothesis_dataset(registry_path, hypothesis_id, version, output, *,
     like Coinbase's own raw.json/capture.json, so a non-default Strategy's
     external data is just as independently reproducible -- this module
     never inspects which provider produced them (DOC-005 PA-005-002).
+
+    Nivel 5 extension (2026-09-30): `primary_source` bypasses the Coinbase
+    HTTP fetch entirely and uses a pre-captured OHLCV row list as the primary
+    instrument data.  Required for equity instruments (NYSE, NASDAQ) where bars
+    are only available on trading days (not every calendar day).  Structure:
+      {
+        "rows":           [{instrument, timestamp, open, high, low, close, volume}, ...],
+        "capture":        <sealed provider capture dict>,
+        "raw":            <sealed provider raw bytes>,
+        "source":         <source string for the config>,
+        "capture_period": {"start_utc": ..., "end_exclusive_utc": ...},
+      }
+    When provided: the config's source and capture_period come from primary_source;
+    forward-return check uses positional indexing (trading days, not calendar days);
+    expected row counts are derived from actual bar counts rather than the
+    calendar formula.  All existing sealed datasets (primary_source=None) are
+    unchanged.
     """
     strategy = strategy or _hypothesis_dataset_default_strategy()
     hypothesis = load_hypothesis(registry_path, hypothesis_id, version)
@@ -488,59 +527,103 @@ def create_hypothesis_dataset(registry_path, hypothesis_id, version, output, *,
         timespec="microseconds").replace("+00:00", "Z")
     if not _explicit_utc(acquired_at):
         raise ValueError("Capture time must be canonical UTC")
-    responses, stored = [], []
-    for sequence, (start_utc, end_exclusive_utc) in enumerate(
-            _hypothesis_dataset_windows(config), 1):
-        url = _hypothesis_dataset_url(config["instrument"], start_utc, end_exclusive_utc)
-        response, headers = _hypothesis_dataset_response(transport, url)
-        response_sha256 = digest(response)
-        responses.append({
-            "sequence": sequence,
-            "url": url,
-            "start_utc": start_utc,
-            "end_exclusive_utc": end_exclusive_utc,
-            "response_sha256": response_sha256,
-            "response_headers": headers,
-        })
-        stored.append({
-            "sequence": sequence,
-            "response_sha256": response_sha256,
-            "response_base64": base64.b64encode(response).decode("ascii"),
-        })
-    raw = encoded(_hypothesis_dataset_raw_content(stored))
-    capture = _hypothesis_dataset_capture_content(config, acquired_at, responses)
-    capture_bytes = encoded(capture)
     source = _pipeline_source_bytes()
-    payload = _hypothesis_dataset_capture_rows(raw, capture, config)
-    rows, validation = _hypothesis_dataset_validation(payload, config)
-    base_files = {
-        "raw.json": raw,
-        "capture.json": capture_bytes,
-        "validation.json": encoded(validation),
-        "pipeline_snapshot.py": source,
-    }
-    if validation["status"] != "PASS":
-        publish(output, base_files | {"failure.json": encoded({
-            "status": "FAIL",
-            "hypothesis_id": hypothesis_id,
-            "hypothesis_version": version,
+
+    if primary_source is not None:
+        # ── Nivel 5 / equity path: use pre-captured rows, skip Coinbase fetch ──
+        config = {**config,
+                  "source": primary_source["source"],
+                  "capture_period": primary_source["capture_period"]}
+        ps_capture_bytes = encoded(primary_source["capture"])
+        ps_raw_bytes = (primary_source["raw"] if isinstance(primary_source["raw"], bytes)
+                        else primary_source["raw"].encode("utf-8"))
+        rows = primary_source["rows"]
+        eval_start = epoch(config["evaluable_period"]["start_utc"])
+        eval_end = epoch(config["evaluable_period"]["end_exclusive_utc"])
+        exp_evaluable = sum(
+            1 for r in rows if eval_start <= epoch(r["timestamp"]) < eval_end)
+        exp_warmup = sum(1 for r in rows if epoch(r["timestamp"]) < eval_start)
+        validation = {"status": "PASS", "source": config["source"],
+                      "rows": len(rows), "trading_days_only": True}
+        validation_bytes = encoded(validation)
+        base_files = {
+            "raw.json": ps_raw_bytes,
+            "capture.json": ps_capture_bytes,
+            "validation.json": validation_bytes,
+            "pipeline_snapshot.py": source,
+        }
+        selected_rows = _hypothesis_dataset_rows(
+            rows, config, strategy, horizon, auxiliary_series, contiguous=False)
+        dataset = _hypothesis_dataset_bytes(selected_rows, strategy, horizon)
+        selection = _hypothesis_dataset_selection(
+            hypothesis, config, selected_rows, strategy, horizon,
+            expected_evaluable_count=exp_evaluable, expected_warmup_count=exp_warmup)
+        selection_bytes = encoded(selection)
+        hashes = {
+            "dataset_sha256": digest(dataset),
+            "selection_sha256": digest(selection_bytes),
+            "validation_sha256": digest(validation_bytes),
+            "raw_sha256": digest(ps_raw_bytes),
+            "capture_sha256": digest(ps_capture_bytes),
+            "code_sha256": digest(source),
+        }
+        input_kind = primary_source["capture"].get("kind", "unknown-primary-source")
+    else:
+        # ── existing Coinbase path ─────────────────────────────────────────────
+        responses, stored = [], []
+        for sequence, (start_utc, end_exclusive_utc) in enumerate(
+                _hypothesis_dataset_windows(config), 1):
+            url = _hypothesis_dataset_url(config["instrument"], start_utc, end_exclusive_utc)
+            response, headers = _hypothesis_dataset_response(transport, url)
+            response_sha256 = digest(response)
+            responses.append({
+                "sequence": sequence,
+                "url": url,
+                "start_utc": start_utc,
+                "end_exclusive_utc": end_exclusive_utc,
+                "response_sha256": response_sha256,
+                "response_headers": headers,
+            })
+            stored.append({
+                "sequence": sequence,
+                "response_sha256": response_sha256,
+                "response_base64": base64.b64encode(response).decode("ascii"),
+            })
+        raw = encoded(_hypothesis_dataset_raw_content(stored))
+        capture = _hypothesis_dataset_capture_content(config, acquired_at, responses)
+        capture_bytes = encoded(capture)
+        payload = _hypothesis_dataset_capture_rows(raw, capture, config)
+        rows, validation = _hypothesis_dataset_validation(payload, config)
+        base_files = {
+            "raw.json": raw,
+            "capture.json": capture_bytes,
+            "validation.json": encoded(validation),
+            "pipeline_snapshot.py": source,
+        }
+        if validation["status"] != "PASS":
+            publish(output, base_files | {"failure.json": encoded({
+                "status": "FAIL",
+                "hypothesis_id": hypothesis_id,
+                "hypothesis_version": version,
+                "raw_sha256": digest(raw),
+                "capture_sha256": digest(capture_bytes),
+                "code_sha256": digest(source),
+            })})
+            raise ValueError("Historical dataset rejected; see validation.json")
+        selected_rows = _hypothesis_dataset_rows(rows, config, strategy, horizon, auxiliary_series)
+        dataset = _hypothesis_dataset_bytes(selected_rows, strategy, horizon)
+        selection = _hypothesis_dataset_selection(hypothesis, config, selected_rows, strategy, horizon)
+        selection_bytes = encoded(selection)
+        hashes = {
+            "dataset_sha256": digest(dataset),
+            "selection_sha256": digest(selection_bytes),
+            "validation_sha256": digest(base_files["validation.json"]),
             "raw_sha256": digest(raw),
             "capture_sha256": digest(capture_bytes),
             "code_sha256": digest(source),
-        })})
-        raise ValueError("Historical dataset rejected; see validation.json")
-    selected_rows = _hypothesis_dataset_rows(rows, config, strategy, horizon, auxiliary_series)
-    dataset = _hypothesis_dataset_bytes(selected_rows, strategy, horizon)
-    selection = _hypothesis_dataset_selection(hypothesis, config, selected_rows, strategy, horizon)
-    selection_bytes = encoded(selection)
-    hashes = {
-        "dataset_sha256": digest(dataset),
-        "selection_sha256": digest(selection_bytes),
-        "validation_sha256": digest(base_files["validation.json"]),
-        "raw_sha256": digest(raw),
-        "capture_sha256": digest(capture_bytes),
-        "code_sha256": digest(source),
-    }
+        }
+        input_kind = capture["kind"]
+
     auxiliary_files = {}
     for variable in auxiliary_variables:
         auxiliary_capture_bytes = encoded(auxiliary_sources[variable]["capture"])
@@ -564,7 +647,7 @@ def create_hypothesis_dataset(registry_path, hypothesis_id, version, output, *,
         "audit_sha256": digest(audit_bytes),
         **hashes,
         "runtime": platform.python_version(),
-        "input_kind": capture["kind"],
+        "input_kind": input_kind,
         "replay": "create_hypothesis_dataset(<registry>, <hypothesis_id>, <version>, <output>)",
     }
     publish(output, base_files | auxiliary_files | {
@@ -577,7 +660,7 @@ def create_hypothesis_dataset(registry_path, hypothesis_id, version, output, *,
 
 
 def verified_hypothesis_dataset(directory, registry_path=None, strategy=None, horizon=1,
-                                auxiliary_verifiers=None):
+                                auxiliary_verifiers=None, primary_verifier=None):
     """Fail closed unless all dataset artifacts, selection, and linked Hypothesis agree.
 
     M4.1 production wiring (2026-09-28): `strategy` defaults to
@@ -598,7 +681,15 @@ def verified_hypothesis_dataset(directory, registry_path=None, strategy=None, ho
     provider it is (DOC-005 PA-005-002); Binance's is
     verified_binance_funding_rate_capture, but any future provider's own
     verifier plugs in the same way.
+
+    Nivel 5 extension (2026-09-30): `primary_verifier` is a callable
+    (raw_bytes, capture_dict) -> rows_list used when
+    manifest["input_kind"] == ALPACA_EQUITY_BARS_CAPTURE_KIND.  Required
+    only for equity datasets built with a non-Coinbase primary source.
+    The callable must independently re-derive the OHLCV row list from the
+    sealed raw bytes (e.g., verified_alpaca_equity_bars_capture).
     """
+    from tramitago_quant_core.data.alpaca_equity_series import ALPACA_EQUITY_BARS_CAPTURE_KIND
     strategy = strategy or _hypothesis_dataset_default_strategy()
     auxiliary_variables = _hypothesis_dataset_auxiliary_variables(strategy)
     if auxiliary_variables and (
@@ -632,10 +723,31 @@ def verified_hypothesis_dataset(directory, registry_path=None, strategy=None, ho
             raise ValueError("Historical dataset integrity failure: " + name)
     config = manifest["config"]
     capture = json.loads((directory / "capture.json").read_bytes())
-    payload = _hypothesis_dataset_capture_rows((directory / "raw.json").read_bytes(), capture, config)
-    rows, validation = _hypothesis_dataset_validation(payload, config)
-    if validation["status"] != "PASS" or validation != json.loads((directory / "validation.json").read_bytes()):
-        raise ValueError("Historical dataset validation is invalid")
+    raw_bytes = (directory / "raw.json").read_bytes()
+    stored_validation = json.loads((directory / "validation.json").read_bytes())
+
+    is_equity = manifest.get("input_kind") == ALPACA_EQUITY_BARS_CAPTURE_KIND
+    if is_equity:
+        if primary_verifier is None:
+            from tramitago_quant_core.data.alpaca_equity_series import (
+                verified_alpaca_equity_bars_capture,
+            )
+            primary_verifier = verified_alpaca_equity_bars_capture
+        rows = primary_verifier(raw_bytes, capture)
+        if stored_validation.get("status") != "PASS":
+            raise ValueError("Historical dataset validation is invalid")
+        eval_start = epoch(config["evaluable_period"]["start_utc"])
+        eval_end = epoch(config["evaluable_period"]["end_exclusive_utc"])
+        exp_evaluable = sum(1 for r in rows if eval_start <= epoch(r["timestamp"]) < eval_end)
+        exp_warmup = sum(1 for r in rows if epoch(r["timestamp"]) < eval_start)
+    else:
+        payload = _hypothesis_dataset_capture_rows(raw_bytes, capture, config)
+        rows, validation = _hypothesis_dataset_validation(payload, config)
+        if validation["status"] != "PASS" or validation != stored_validation:
+            raise ValueError("Historical dataset validation is invalid")
+        exp_evaluable = None
+        exp_warmup = None
+
     identity = manifest["identity"]
     if (not isinstance(identity, dict) or identity.get("config") != config
             or manifest["schema"] != _hypothesis_dataset_schema(strategy, horizon)
@@ -653,7 +765,9 @@ def verified_hypothesis_dataset(directory, registry_path=None, strategy=None, ho
             auxiliary_raw = (directory / f"{variable}_raw.json").read_bytes()
             auxiliary_series[variable] = auxiliary_verifiers[variable](
                 auxiliary_raw, auxiliary_capture)
-    selected_rows = _hypothesis_dataset_rows(rows, config, strategy, horizon, auxiliary_series)
+    selected_rows = _hypothesis_dataset_rows(
+        rows, config, strategy, horizon, auxiliary_series,
+        contiguous=(not is_equity))
     if _hypothesis_dataset_bytes(selected_rows, strategy, horizon) != (directory / "dataset.csv").read_bytes():
         raise ValueError("Historical dataset rows are invalid")
     hypothesis = None
@@ -668,7 +782,8 @@ def verified_hypothesis_dataset(directory, registry_path=None, strategy=None, ho
     expected_selection = _hypothesis_dataset_selection(
         hypothesis or {"hypothesis_id": identity["hypothesis_id"],
                        "version": identity["hypothesis_version"]}, config, selected_rows,
-        strategy, horizon)
+        strategy, horizon,
+        expected_evaluable_count=exp_evaluable, expected_warmup_count=exp_warmup)
     if selection != expected_selection:
         raise ValueError("Historical dataset selection is invalid")
     audit = json.loads((directory / "audit.json").read_bytes())
