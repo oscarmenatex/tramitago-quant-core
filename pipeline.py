@@ -34,6 +34,14 @@ from tramitago_quant_core.data.acquisition import (
     _coinbase_public_request_headers, _coinbase_public_request,
     normalize, validate, indicators, dataset_bytes,
 )
+from tramitago_quant_core.governance.investment_committee import (
+    INVESTMENT_COMMITTEE_REGISTRY_SCHEMA_VERSION, INVESTMENT_COMMITTEE_SCHEMA_VERSION,
+    INVESTMENT_COMMITTEE_STATUS, IC_CORE_MEMBERS, IC_OPTIONAL_MEMBER, IC_MEMBERS,
+    IC_MEMBER_ROLES, IC_VERDICTS, COMMITTEE_DECISIONS, _committee_id_is_valid,
+    committee_evaluation, committee_decision, _load_committee_registry,
+    constitute_investment_committee,
+    load_investment_committee, verified_investment_committee,
+)
 from tramitago_quant_core.risk.risk_control import (
     RISK_CONTROL_SCHEMA_VERSION, RISK_CONTROL_COMPLETED, RISK_CONTROL_BLOCKED,
     RISK_LIMIT_TOTAL_EXPOSURE, RISK_LIMIT_MAX_DRAWDOWN, _risk_decimal, risk_contract,
