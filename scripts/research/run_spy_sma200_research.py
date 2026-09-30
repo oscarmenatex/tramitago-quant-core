@@ -96,6 +96,11 @@ LIMITATIONS = [
 ]
 
 
+def _fmt(metric):
+    """An empty group leaves the metric undefined, so it prints as None."""
+    return "None" if metric is None else f"{metric:.6f}"
+
+
 def _code_revision():
     """Record the exact commit that produced this evidence."""
     try:
@@ -242,8 +247,13 @@ def main():
     )
     RES_ID, RES_REC_ID = res_rec["result_id"], res_rec["record_id"]
     evaluation = res_rec.get("evaluation", {})
+    groups = evaluation.get("groups", {})
     print(f"       result: {evaluation.get('criterion_result')}  "
-          f"metric={evaluation.get('metric')}")
+          f"metric={_fmt(evaluation.get('metric'))}")
+    print(f"       groups: UPPER n={groups.get('upper', {}).get('count')}  "
+          f"LOWER_OR_EQUAL n={groups.get('lower_or_equal', {}).get('count')}")
+    if evaluation.get("inconclusive_reason"):
+        print(f"       inconclusive_reason: {evaluation['inconclusive_reason']}")
 
     # -- STEP 6: research execution -------------------------------------------
     print("\n[6/11] Constituting research execution...")
@@ -332,8 +342,10 @@ def main():
             horizon=HORIZON,
         )
         ev = fold_rec["evaluation"]
+        g = ev.get("groups", {})
         print(f"       fold {fold_index}: {ev['criterion_result']}"
-              f"  metric={ev['metric']:.6f}"
+              f"  metric={_fmt(ev['metric'])}"
+              f"  n={g.get('upper', {}).get('count')}/{g.get('lower_or_equal', {}).get('count')}"
               f"  {fold_rec['fold_period']['start_utc'][:10]}"
               f" -> {fold_rec['fold_period']['end_exclusive_utc'][:10]}")
 
