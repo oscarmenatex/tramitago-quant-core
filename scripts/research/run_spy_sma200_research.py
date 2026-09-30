@@ -67,9 +67,18 @@ SYMBOL          = "SPY"
 WINDOW          = 200
 HORIZON         = 1
 STRATEGY        = p.sma_crossover_strategy(WINDOW)
-WARMUP_PERIODS  = WINDOW - 1          # 199 trading days, not calendar days
 EVALUABLE_START = "2024-01-01T00:00:00Z"
 EVALUABLE_END   = "2025-01-01T00:00:00Z"
+
+# Derived from the Strategy contract rather than written by hand: the column the
+# Strategy actually emits ("sma_close_200") and the warmup it actually needs are
+# what _hypothesis_dataset_config validates the Hypothesis against.
+SIGNAL_COLUMN   = STRATEGY["column_name"]
+FORWARD_COLUMN  = f"forward_return_{HORIZON}d"
+WARMUP_PERIODS  = STRATEGY["required_inputs"]["warmup_periods"]   # trading days
+VARIABLES       = ["close", SIGNAL_COLUMN, FORWARD_COLUMN]
+METRIC = (f"mean_{FORWARD_COLUMN}(close_t > {SIGNAL_COLUMN}) - "
+          f"mean_{FORWARD_COLUMN}(close_t <= {SIGNAL_COLUMN})")
 
 NOW = datetime.now(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")
 
@@ -150,10 +159,7 @@ def main():
             "positive drift favours the INCREASE direction -- walk-forward consistency "
             "across sub-periods, not the full-sample mean, is the real test."
         ),
-        target_metric=(
-            "mean_forward_return_1d(SMA_CROSSOVER(200)=UPPER) - "
-            "mean_forward_return_1d(SMA_CROSSOVER(200)=LOWER)"
-        ),
+        target_metric=METRIC,
         expected_direction="INCREASE",
         constraints={
             "period": {
@@ -161,15 +167,12 @@ def main():
                 "end_exclusive_utc": EVALUABLE_END,
             },
             "universe": [SYMBOL],
-            "variables": ["close", "sma_200", "forward_return_1d"],
+            "variables": VARIABLES,
         },
         acceptance_criterion={
             "comparison": "GT",
             "expected_direction": "INCREASE",
-            "metric": (
-                "mean_forward_return_1d(SMA_CROSSOVER(200)=UPPER) - "
-                "mean_forward_return_1d(SMA_CROSSOVER(200)=LOWER)"
-            ),
+            "metric": METRIC,
             "threshold": "0",
         },
         creation_timestamp=NOW,
