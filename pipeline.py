@@ -6749,9 +6749,34 @@ def evaluate(input_dir, output):
     return payload
 
 
+def run_risk_control_gate(input_path, output):
+    """CAP-005 Risk Control as an operational CLI gate (Etapa 4.5, M4.5-T1
+    wired into the chain, 2026-09-29). Reads one JSON with the declared
+    parametric limits plus the proposed exposure and realized equity curve,
+    runs evaluate_risk_control, and maps its COMPLETED/BLOCKED outcome onto
+    the CLI's PASS/FAIL status so it can gate a scripted order sequence
+    (a BLOCKED gate exits non-zero, halting the run before submit). It only
+    gates; it never sizes or submits."""
+    payload = json.loads(Path(input_path).read_bytes())
+    contract = risk_contract(
+        max_total_exposure_usd=payload["max_total_exposure_usd"],
+        max_drawdown_ratio=payload["max_drawdown_ratio"])
+    evaluation = evaluate_risk_control(
+        contract=contract,
+        proposed_total_exposure_usd=payload["proposed_total_exposure_usd"],
+        equity_curve=payload.get("equity_curve", []))
+    result = {**evaluation,
+              "status": "PASS" if evaluation["outcome"] == RISK_CONTROL_COMPLETED else "FAIL"}
+    publish(output, {"risk-control-gate.json": encoded(result)})
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
+    risk_gate = commands.add_parser("risk-control-gate")
+    risk_gate.add_argument("--input", required=True)
+    risk_gate.add_argument("--output", required=True)
     live = commands.add_parser("acquire")
     live.add_argument("--output", required=True)
     replay = commands.add_parser("run")
@@ -6962,6 +6987,8 @@ def main():
                 Path(args.state), Path(args.fixture), Path(args.acceptance),
                 Path(args.indicator), Path(args.cycle), Path(args.output),
                 args.cycle_id, args.processing_instant)
+        elif args.command == "risk-control-gate":
+            result = run_risk_control_gate(args.input, args.output)
         elif args.command == "execute-virtual":
             result = execute_virtual(args.state, args.output)
         elif args.command == "prepare-real-order":
