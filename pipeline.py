@@ -6757,6 +6757,35 @@ def evaluate(input_dir, output):
     return payload
 
 
+def run_investment_committee_gate(input_path, registry, output):
+    """CAP-010 Investment Committee as an operational CLI gate (Etapa 4.5,
+    M4.5-T3 wired into the chain, 2026-09-29). Reads one JSON with the
+    recommendation reference and the up-to-five declared evaluations
+    (IC-1..IC-4 required, IC-5 optional -- each verdict a judgment read off
+    the sealed evidence it references), seals the committee decision, and maps
+    it onto the CLI's PASS/FAIL status. Only a full APPROVED lets a scripted
+    order sequence proceed; REDUCED, REJECTED and DEFERRED all halt it (a
+    REDUCED means re-run with a smaller size, not a silent pass-through). Sits
+    AFTER the risk gate and BEFORE order preparation, per DOC-009 §5."""
+    payload = json.loads(Path(input_path).read_bytes())
+    evaluations = [committee_evaluation(
+        member=item["member"], verdict=item["verdict"],
+        evidence_reference=item["evidence_reference"], rationale=item["rationale"])
+        for item in payload["evaluations"]]
+    record = constitute_investment_committee(
+        registry, recommendation_reference=payload["recommendation_reference"],
+        evaluations=evaluations, decided_at=payload["decided_at"],
+        committee_code_revision=payload["committee_code_revision"])
+    approved = record["decision"]["outcome"] == "APPROVED"
+    result = {
+        "committee_id": record["committee_id"],
+        "decision": record["decision"],
+        "status": "PASS" if approved else "FAIL",
+    }
+    publish(output, {"investment-committee-gate.json": encoded(result)})
+    return result
+
+
 def run_risk_control_gate(input_path, output):
     """CAP-005 Risk Control as an operational CLI gate (Etapa 4.5, M4.5-T1
     wired into the chain, 2026-09-29). Reads one JSON with the declared
@@ -6785,6 +6814,10 @@ def main():
     risk_gate = commands.add_parser("risk-control-gate")
     risk_gate.add_argument("--input", required=True)
     risk_gate.add_argument("--output", required=True)
+    committee_gate = commands.add_parser("investment-committee-gate")
+    committee_gate.add_argument("--input", required=True)
+    committee_gate.add_argument("--registry", required=True)
+    committee_gate.add_argument("--output", required=True)
     live = commands.add_parser("acquire")
     live.add_argument("--output", required=True)
     replay = commands.add_parser("run")
@@ -6997,6 +7030,8 @@ def main():
                 args.cycle_id, args.processing_instant)
         elif args.command == "risk-control-gate":
             result = run_risk_control_gate(args.input, args.output)
+        elif args.command == "investment-committee-gate":
+            result = run_investment_committee_gate(args.input, args.registry, args.output)
         elif args.command == "execute-virtual":
             result = execute_virtual(args.state, args.output)
         elif args.command == "prepare-real-order":
