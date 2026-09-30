@@ -1,4 +1,4 @@
-"""SPY SMA(200) research pipeline -- Nivel 5 (US equities via Alpaca).
+"""SPY SMA(window) research pipeline -- Nivel 5 (US equities via Alpaca).
 
 Academic basis: Brock, Lakonishok & LeBaron (1992); Faber (2007).
 Instrument: SPY (S&P 500 ETF), 2024 full year, direction INCREASE.
@@ -13,7 +13,7 @@ the two Alpaca credentials as ENVIRONMENT VARIABLES -- never in a file:
 
     export ALPACA_PAPER_API_KEY_ID=...
     export ALPACA_PAPER_API_SECRET_KEY=...
-    python3.11 -B scripts/research/run_spy_sma200_research.py
+    python3.11 -B scripts/research/run_spy_sma_research.py
 """
 
 import os
@@ -48,22 +48,15 @@ from tramitago_quant_core.research.walk_forward import (
 from tramitago_quant_core.knowledge.knowledge_record import constitute_knowledge_record
 
 # -- CONFIG --------------------------------------------------------------------
-ARTIFACTS           = REPO / "artifacts" / "research"
-HYPOTHESES          = ARTIFACTS / "hypotheses.json"
-DATASET_DIR         = ARTIFACTS / "datasets" / "spy_sma200_2024"
-
-EXPERIMENTS         = ARTIFACTS / "experiments-spy-sma200-2024.json"
-EXPERIMENT_RESULTS  = ARTIFACTS / "experiment-results-spy-sma200-2024.json"
-RESEARCH_EXECUTIONS = ARTIFACTS / "research-executions-spy-sma200-2024.json"
-RESEARCH_RESULTS    = ARTIFACTS / "research-results-spy-sma200-2024.json"
-DISPOSITIONS        = ARTIFACTS / "dispositions-spy-sma200-2024.json"
-PARTITIONS          = ARTIFACTS / "walk-forward-partitions-spy-sma200-2024.json"
-FOLD_RESULTS        = ARTIFACTS / "walk-forward-fold-results-spy-sma200-2024.json"
-STATISTICAL_VALS    = ARTIFACTS / "statistical-validations-spy-sma200-2024.json"
-KNOWLEDGE           = ARTIFACTS / "knowledge-spy-sma200-2024.json"
-
 SYMBOL          = "SPY"
-WINDOW          = 200
+# SMA(200) was run first and came back INCONCLUSIVE with an empty group: SPY
+# closed above its 200-day average on every trading day of 2024, so the
+# difference of means was undefined. The window moved to 50, which crosses
+# several times a year and leaves both groups observable inside the period that
+# was already pre-declared. 50 is not invented to rescue the test -- Brock,
+# Lakonishok & LeBaron (1992) tested 1, 2, 5, 50, 150 and 200 day averages.
+# Nothing else moved: same instrument, same period, same folds, same criterion.
+WINDOW          = 50
 HORIZON         = 1
 STRATEGY        = p.sma_crossover_strategy(WINDOW)
 EVALUABLE_START = "2024-01-01T00:00:00Z"
@@ -73,7 +66,7 @@ EVALUABLE_END   = "2025-01-01T00:00:00Z"
 FOLD_COUNT      = 6
 
 # Derived from the Strategy contract rather than written by hand: the column the
-# Strategy actually emits ("sma_close_200") and the warmup it actually needs are
+# Strategy actually emits ("sma_close_50") and the warmup it actually needs are
 # what _hypothesis_dataset_config validates the Hypothesis against.
 SIGNAL_COLUMN   = STRATEGY["column_name"]
 FORWARD_COLUMN  = f"forward_return_{HORIZON}d"
@@ -82,17 +75,38 @@ VARIABLES       = ["close", SIGNAL_COLUMN, FORWARD_COLUMN]
 METRIC = (f"mean_{FORWARD_COLUMN}(close_t > {SIGNAL_COLUMN}) - "
           f"mean_{FORWARD_COLUMN}(close_t <= {SIGNAL_COLUMN})")
 
+# Named after the window so a re-run with a different one cannot land on top of
+# another window's sealed evidence.
+SLUG                = f"spy-sma{WINDOW}-2024"
+ARTIFACTS           = REPO / "artifacts" / "research"
+HYPOTHESES          = ARTIFACTS / "hypotheses.json"
+DATASET_DIR         = ARTIFACTS / "datasets" / SLUG.replace("-", "_")
+EXPERIMENTS         = ARTIFACTS / f"experiments-{SLUG}.json"
+EXPERIMENT_RESULTS  = ARTIFACTS / f"experiment-results-{SLUG}.json"
+RESEARCH_EXECUTIONS = ARTIFACTS / f"research-executions-{SLUG}.json"
+RESEARCH_RESULTS    = ARTIFACTS / f"research-results-{SLUG}.json"
+DISPOSITIONS        = ARTIFACTS / f"dispositions-{SLUG}.json"
+PARTITIONS          = ARTIFACTS / f"walk-forward-partitions-{SLUG}.json"
+FOLD_RESULTS        = ARTIFACTS / f"walk-forward-fold-results-{SLUG}.json"
+STATISTICAL_VALS    = ARTIFACTS / f"statistical-validations-{SLUG}.json"
+KNOWLEDGE           = ARTIFACTS / f"knowledge-{SLUG}.json"
+
 NOW = datetime.now(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")
 
 LIMITATIONS = [
-    "SPY SMA(200) is a widely-known signal -- any edge may be crowded out or arbitraged.",
+    f"SPY SMA({WINDOW}) is a widely-known signal -- any edge may be crowded out or arbitraged.",
     "2024 was a strong bull-market year. The INCREASE direction benefits from positive "
     "drift; walk-forward consistency across sub-periods is the real test, not the "
     "full-sample mean.",
     "Daily bars only (IEX feed). No transaction costs (Nivel 4 not built) -- the measured "
     "edge is gross of bid-ask spread and commissions.",
     "Single instrument, single period, single window: one data point on the equity axis.",
-    "The 199-day SMA warmup comes from 2023, a year outside the evaluable period.",
+    f"The {WARMUP_PERIODS}-day SMA warmup comes from 2023, a year outside the evaluable period.",
+    f"SMA({WINDOW}) was reached after SMA(200) returned INCONCLUSIVE on this same period for "
+    "lack of any observation below the average. The window was changed on that validity "
+    "ground alone -- a comparison with an empty group is undefined, not unfavourable -- and "
+    "no metric from the SMA(200) run informed the choice. Even so, this is a second window "
+    "tried on one period, and the result should be read with that in mind.",
 ]
 
 
@@ -127,7 +141,7 @@ def _alpaca_credential_injector():
 
 def main():
     print("=" * 70)
-    print("SPY SMA(200) Research Pipeline -- Nivel 5 (US equities, Alpaca)")
+    print(f"SPY SMA({WINDOW}) Research Pipeline -- Nivel 5 (US equities, Alpaca)")
     print("=" * 70)
 
     code_revision = _code_revision()
@@ -154,17 +168,27 @@ def main():
     hyp_rec = constitute_hypothesis(
         HYPOTHESES,
         description=(
-            "For SPY (S&P 500 ETF), the mean t+1 return when the close is ABOVE its own "
-            "trailing 200-day simple moving average is HIGHER than when it is below -- "
-            "SMA_CROSSOVER(200) on SPY, 2024 full year. Direction INCREASE pre-declared on "
-            "the trend-following prior (Brock, Lakonishok & LeBaron 1992; Faber 2007: "
-            "holding only above the 200-day average filters bear markets and improves "
-            "risk-adjusted returns). First Nivel 5 Hypothesis of the project (US equities, "
-            "a market with overnight gaps, sessions and holidays that crypto does not have). "
-            "Pre-declared caveats: (1) SPY SMA(200) is among the most widely known signals "
-            "in finance and may be fully arbitraged; (2) 2024 was a strong bull year, so "
-            "positive drift favours the INCREASE direction -- walk-forward consistency "
-            "across sub-periods, not the full-sample mean, is the real test."
+            f"For SPY (S&P 500 ETF), the mean t+1 return when the close is ABOVE its own "
+            f"trailing {WINDOW}-day simple moving average is HIGHER than when it is below -- "
+            f"SMA_CROSSOVER({WINDOW}) on SPY, 2024 full year. Direction INCREASE pre-declared "
+            f"on the trend-following prior (Brock, Lakonishok & LeBaron 1992; Faber 2007: "
+            f"price above its own trailing average marks the regime that carries the positive "
+            f"drift). First Nivel 5 Hypothesis of the project (US equities, a market with "
+            f"overnight gaps, sessions and holidays that crypto does not have).\n\n"
+            f"Window history, declared before execution: SMA(200) was run first on this exact "
+            f"instrument and period and returned INCONCLUSIVE -- SPY closed above its 200-day "
+            f"average on every trading day of 2024, leaving the lower group empty and the "
+            f"difference of means undefined. The window moved to {WINDOW} on that validity "
+            f"ground alone: an undefined comparison is not an unfavourable one, and no metric "
+            f"from that run existed to shop for. {WINDOW} is a window the cited literature "
+            f"itself tests (Brock et al. examine 1, 2, 5, 50, 150 and 200 day averages), not "
+            f"one selected here. Period, folds, direction and acceptance criterion are "
+            f"unchanged from the original pre-declaration.\n\n"
+            f"Pre-declared caveats: (1) SPY SMA({WINDOW}) is among the most widely known "
+            f"signals in finance and may be fully arbitraged; (2) 2024 was a strong bull year, "
+            f"so positive drift favours the INCREASE direction -- walk-forward consistency "
+            f"across sub-periods, not the full-sample mean, is the real test; (3) this is the "
+            f"second window tried on one period, and the result carries that."
         ),
         target_metric=METRIC,
         expected_direction="INCREASE",
@@ -189,7 +213,7 @@ def main():
             "DISCOVERY|artifacts/live-run-1",
             "SNAPSHOT_SHA256|a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f",
             "KNOWLEDGE|b154409262618e2436ad19dbfdab4da2e43c97678d56ec5192cc992b4c2cd521",
-            "ANALYSIS|nivel-5-spy-sma200-us-equities-2024",
+            f"ANALYSIS|nivel-5-spy-sma{WINDOW}-us-equities-2024",
         ],
         code_revision=code_revision,
         system_version="0.1.0",
@@ -223,8 +247,8 @@ def main():
         dataset_id=DATASET_ID,
         created_at=NOW,
         revision_reason=(
-            "First experiment for SPY SMA(200) hypothesis "
-            "(Nivel 5, US equities, Alpaca daily bars, 2024)"
+            f"First experiment for SPY SMA({WINDOW}) hypothesis "
+            f"(Nivel 5, US equities, Alpaca daily bars, 2024)"
         ),
         strategy=STRATEGY,
         horizon=HORIZON,
@@ -376,22 +400,30 @@ def main():
     # -- knowledge record ------------------------------------------------------
     validated = val_rec["outcome"] == "VALIDATED"
     interpretation = (
-        f"SMA_CROSSOVER(200) sobre SPY (S&P 500 ETF), ano 2024 completo. Primera hipotesis "
-        f"de Nivel 5 del proyecto: renta variable de EE.UU. via Alpaca (barras diarias, feed "
-        f"IEX, ajustadas por splits), un mercado con huecos de overnight, sesiones y festivos "
-        f"que el crypto no tiene. Direccion INCREASE pre-declarada sobre el prior de Brock, "
-        f"Lakonishok & LeBaron (1992) y Faber (2007): mantenerse solo por encima de la media "
-        f"de 200 dias filtra mercados bajistas y mejora el retorno ajustado al riesgo.\n\n"
-        f"Resultado muestra completa: metric={evaluation.get('metric')}, criterio GT 0 -> "
-        f"{disp_rec['outcome']}. Walk-forward independiente (5 folds sobre 2024): "
-        f"{passing}/{FOLD_COUNT} folds MET, consistencia {val_rec['consistency_ratio']}, "
-        f"{val_rec['outcome']} (umbral 70%).\n\n"
-        f"Contexto: 30a hipotesis real del proyecto. El eje Nivel 5 (otro mercado) era el "
-        f"ultimo item del catalogo sin explorar; este es su primer dato. "
+        f"SMA_CROSSOVER({WINDOW}) sobre SPY (S&P 500 ETF), ano 2024 completo. Primera "
+        f"hipotesis de Nivel 5 del proyecto: renta variable de EE.UU. via Alpaca (barras "
+        f"diarias, feed IEX, ajustadas por splits), un mercado con huecos de overnight, "
+        f"sesiones y festivos que el crypto no tiene. Direccion INCREASE pre-declarada sobre "
+        f"el prior de Brock, Lakonishok & LeBaron (1992) y Faber (2007): el precio por encima "
+        f"de su propia media movil marca el regimen que lleva la deriva positiva.\n\n"
+        f"Historial de ventana: SMA(200) se ejecuto primero sobre este mismo instrumento y "
+        f"periodo y devolvio INCONCLUSIVE -- SPY cerro por encima de su media de 200 dias "
+        f"todos los dias habiles de 2024, dejando el grupo inferior vacio y la diferencia de "
+        f"medias indefinida. La ventana paso a {WINDOW} por ese motivo de validez y solo por "
+        f"ese: una comparacion indefinida no es una desfavorable, y no existia metrica alguna "
+        f"de aquella corrida con la que elegir. {WINDOW} es una ventana que la propia "
+        f"literatura citada examina. Periodo, folds, direccion y criterio de aceptacion no se "
+        f"tocaron.\n\n"
+        f"Resultado muestra completa: metric={_fmt(evaluation.get('metric'))}, criterio GT 0 "
+        f"-> {disp_rec['outcome']}. Walk-forward independiente ({FOLD_COUNT} folds sobre "
+        f"2024): {passing}/{FOLD_COUNT} folds MET, consistencia "
+        f"{val_rec['consistency_ratio']}, {val_rec['outcome']} (umbral 70%).\n\n"
+        f"Contexto: el eje Nivel 5 (otro mercado) era el ultimo item del catalogo sin "
+        f"explorar; este es su primer dato con ambos grupos observables. "
         + ("Bloqueador 1 RESUELTO: primera hipotesis que supera la barra Fase 0->1."
            if validated else
            "Bloqueador 1 sigue abierto: el eje Nivel 5 no queda cerrado por un solo "
-           "resultado, pero este instrumento/senal/periodo concreto queda descartado.")
+           "resultado, pero esta combinacion instrumento/senal/periodo queda descartada.")
     )
 
     print("\n[Knowledge record] Saving...")
