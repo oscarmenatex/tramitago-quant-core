@@ -77,6 +77,63 @@ class CaptureTests(unittest.TestCase):
                 "BTC", START, END, "2026-09-30T00:00:00Z", transport=_transport(bad))
 
 
+class BackfillRefusalTests(unittest.TestCase):
+    """Hyperliquid serves candles for dates BEFORE its perpetual traded.
+
+    Real prices, volume 0, trades 0, derived from the oracle rather than its own
+    book. BTC's first genuinely traded candle is 2023-02-26. A basis computed
+    against an oracle price is (oracle - spot)/spot, and the oracle derives from
+    spot, so it is near zero BY CONSTRUCTION -- an artefact that looks like a
+    reassuringly tight basis and would poison any tail estimate built on it.
+    """
+
+    def test_a_candle_with_no_trades_is_refused(self):
+        backfilled = _candles(["100", "101", "102", "103", "104"])
+        backfilled[2]["n"] = 0
+        backfilled[2]["v"] = "0"
+        with self.assertRaises(ValueError) as caught:
+            capture_hyperliquid_perpetual_price(
+                "BTC", START, END, "2026-09-30T00:00:00Z", transport=_transport(backfilled))
+        self.assertIn("no trades", str(caught.exception))
+        self.assertIn("oracle backfill", str(caught.exception))
+
+    def test_the_trade_count_is_required_not_optional(self):
+        without = _candles(["100", "101", "102", "103", "104"])
+        for candle in without:
+            del candle["n"]
+        with self.assertRaises(ValueError):
+            capture_hyperliquid_perpetual_price(
+                "BTC", START, END, "2026-09-30T00:00:00Z", transport=_transport(without))
+
+
+class IntervalTests(unittest.TestCase):
+    """Daily closes hide intraday gaps, and liquidation happens intraday."""
+
+    def test_an_hourly_capture_seals_and_re_derives(self):
+        start, end = "2025-01-01T00:00:00Z", "2025-01-01T05:00:00Z"
+        hourly = [{"t": (p.epoch(start) + i * 3600) * 1000, "s": "BTC", "i": "1h",
+                   "o": "100", "h": "100", "l": "100", "c": str(100 + i), "v": "1", "n": 7}
+                  for i in range(5)]
+        series, capture, raw = capture_hyperliquid_perpetual_price(
+            "BTC", start, end, "2026-09-30T00:00:00Z", interval="1h",
+            transport=_transport(hourly))
+        self.assertEqual(len(series), 5)
+        self.assertEqual(capture["interval"], "1h")
+        self.assertEqual(verified_hyperliquid_perpetual_price_capture(raw, capture), series)
+
+    def test_an_unsupported_interval_is_refused(self):
+        with self.assertRaises(ValueError):
+            capture_hyperliquid_perpetual_price(
+                "BTC", START, END, "2026-09-30T00:00:00Z", interval="3h",
+                transport=_transport([]))
+
+    def test_a_period_not_aligned_to_the_interval_is_refused(self):
+        with self.assertRaises(ValueError):
+            capture_hyperliquid_perpetual_price(
+                "BTC", "2025-01-01T00:30:00Z", "2025-01-02T00:30:00Z",
+                "2026-09-30T00:00:00Z", interval="1h", transport=_transport([]))
+
+
 class BasisTests(unittest.TestCase):
     def test_the_basis_is_perp_over_spot(self):
         spot = {"2025-01-01T00:00:00Z": 100.0, "2025-01-02T00:00:00Z": 100.0}
