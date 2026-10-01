@@ -211,12 +211,13 @@ from tramitago_quant_core.research.walk_forward import (
 )
 from tramitago_quant_core.strategy_contract.strategy import (
     sma_crossover_strategy, momentum_crossover_strategy, volume_surge_strategy,
+    carry_funding_threshold_strategy,
     funding_rate_sign_strategy, sma_volume_confirmation_strategy, intraday_range_strategy,
     funding_rate_surge_strategy, signal_portfolio_strategy, pair_ratio_reversion_strategy,
     _strategy_classify_rows,
 )
 from tramitago_quant_core.strategy_contract.outcome import (
-    OUTCOME_SCHEMA_VERSION, close_return_outcome, spread_return_outcome, strategy_outcome,
+    OUTCOME_SCHEMA_VERSION, close_return_outcome, spread_return_outcome, strategy_outcome, carry_return_outcome,
 )
 from tramitago_quant_core.data.coinbase_close_series import (
     COINBASE_CLOSE_SERIES_CAPTURE_SCHEMA_VERSION, COINBASE_CLOSE_SERIES_SOURCE,
