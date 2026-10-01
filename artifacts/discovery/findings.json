@@ -1,0 +1,32 @@
+{
+  "findings": [
+    {
+      "created_at": "2026-10-01T05:55:27.356324Z",
+      "created_by": "bounded-discovery-runner",
+      "exploration_context": "Bounded Discovery scan DISCOVERY_SCAN|a16a27e1afaf957e81ec8546220dfc704627509c99e48398d3800c2609f600c6 over Discovery Space DISCOVERY_SPACE|00911e622c39e47a337ee3991a67c104f2f04216c808a71822a2cee35937985f, discovery window 2024-01-01T00:00:00Z to 2025-01-01T00:00:00Z. Holdout reserved and unread: 2025-01-01T00:00:00Z to 2026-01-01T00:00:00Z.",
+      "finding_id": "FINDING|c359b456-ae78-41b3-8dd7-d1e076db445b",
+      "history": [
+        {
+          "at": "2026-10-01T05:55:27.356324Z",
+          "note": "constituted",
+          "status": "OPEN"
+        }
+      ],
+      "observation": "On the discovery window alone, MOMENTUM_CROSSOVER{'lookback': 3} shows a difference of mean CLOSE_RETURN between its two groups of 0.002932669295. This is an observation selected out of 17 candidates, not evidence. The same scan's worst candidate scored -0.002867260994 and its median 0.000598365252, with 10 positive and 7 negative.",
+      "schema_version": "1",
+      "status": "OPEN",
+      "supporting_evidence": [
+        "DISCOVERY_SCAN|a16a27e1afaf957e81ec8546220dfc704627509c99e48398d3800c2609f600c6",
+        "DISCOVERY_SPACE|00911e622c39e47a337ee3991a67c104f2f04216c808a71822a2cee35937985f",
+        "CANDIDATES_EXAMINED|17",
+        "SELECTED_RANK|0",
+        "EFFECT_ON_DISCOVERY_WINDOW|0.002932669295",
+        "SCAN_EFFECT_SPREAD|worst=-0.002867260994|median=0.000598365252|positive=10|negative=7",
+        "MINORITY_STATE_FREQUENCY|0.450276243094",
+        "SUPPORT|UPPER=199|LOWER=163",
+        "HOLDOUT_UNREAD|2025-01-01T00:00:00Z|2026-01-01T00:00:00Z"
+      ]
+    }
+  ],
+  "schema_version": "1"
+}

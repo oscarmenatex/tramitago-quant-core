@@ -1,0 +1,266 @@
+{
+  "scans": [
+    {
+      "materialization": {
+        "pipeline_sha256": "73f75c6d641076947c065867fc66ce7a93a27a6e4774cf312a7911b780173a1d",
+        "scan_code_revision": "bce32d751156e0544146125631b710edeeba26f3",
+        "scanned_at": "2026-10-01T05:55:27.324650Z"
+      },
+      "observations": [
+        {
+          "declared_order": 0,
+          "effect": "0.001110186581",
+          "examinable": true,
+          "lower_count": 165,
+          "minority_state_frequency": "0.454545454545",
+          "outcome_id": "CLOSE_RETURN",
+          "parameters": {
+            "window": 3
+          },
+          "reason": "examinable",
+          "strategy_id": "SMA_CROSSOVER",
+          "upper_count": 198
+        },
+        {
+          "declared_order": 1,
+          "effect": "0.001434597576",
+          "examinable": true,
+          "lower_count": 163,
+          "minority_state_frequency": "0.451523545706",
+          "outcome_id": "CLOSE_RETURN",
+          "parameters": {
+            "window": 5
+          },
+          "reason": "examinable",
+          "strategy_id": "SMA_CROSSOVER",
+          "upper_count": 198
+        },
+        {
+          "declared_order": 2,
+          "effect": "0.000658878218",
+          "examinable": true,
+          "lower_count": 160,
+          "minority_state_frequency": "0.445682451253",
+          "outcome_id": "CLOSE_RETURN",
+          "parameters": {
+            "window": 7
+          },
+          "reason": "examinable",
+          "strategy_id": "SMA_CROSSOVER",
+          "upper_count": 199
+        },
+        {
+          "declared_order": 3,
+          "effect": "0.001325254960",
+          "examinable": true,
+          "lower_count": 154,
+          "minority_state_frequency": "0.432584269663",
+          "outcome_id": "CLOSE_RETURN",
+          "parameters": {
+            "window": 10
+          },
+          "reason": "examinable",
+          "strategy_id": "SMA_CROSSOVER",
+          "upper_count": 202
+        },
+        {
+          "declared_order": 4,
+          "effect": "0.000866314539",
+          "examinable": true,
+          "lower_count": 143,
+          "minority_state_frequency": "0.413294797688",
+          "outcome_id": "CLOSE_RETURN",
+          "parameters": {
+            "window": 20
+          },
+          "reason": "examinable",
+          "strategy_id": "SMA_CROSSOVER",
+          "upper_count": 203
+        },
+        {
+          "declared_order": 5,
+          "effect": "-0.001789754784",
+          "examinable": true,
+          "lower_count": 174,
+          "minority_state_frequency": "0.478021978022",
+          "outcome_id": "CLOSE_RETURN",
+          "parameters": {
+            "lookback": 1
+          },
+          "reason": "examinable",
+          "strategy_id": "MOMENTUM_CROSSOVER",
+          "upper_count": 190
+        },
+        {
+          "declared_order": 6,
+          "effect": "0.002054056246",
+          "examinable": true,
+          "lower_count": 167,
+          "minority_state_frequency": "0.460055096419",
+          "outcome_id": "CLOSE_RETURN",
+          "parameters": {
+            "lookback": 2
+          },
+          "reason": "examinable",
+          "strategy_id": "MOMENTUM_CROSSOVER",
+          "upper_count": 196
+        },
+        {
+          "declared_order": 7,
+          "effect": "0.002932669295",
+          "examinable": true,
+          "lower_count": 163,
+          "minority_state_frequency": "0.450276243094",
+          "outcome_id": "CLOSE_RETURN",
+          "parameters": {
+            "lookback": 3
+          },
+          "reason": "examinable",
+          "strategy_id": "MOMENTUM_CROSSOVER",
+          "upper_count": 199
+        },
+        {
+          "declared_order": 8,
+          "effect": "-0.000654732867",
+          "examinable": true,
+          "lower_count": 159,
+          "minority_state_frequency": "0.441666666667",
+          "outcome_id": "CLOSE_RETURN",
+          "parameters": {
+            "lookback": 5
+          },
+          "reason": "examinable",
+          "strategy_id": "MOMENTUM_CROSSOVER",
+          "upper_count": 201
+        },
+        {
+          "declared_order": 9,
+          "effect": "0.000199784258",
+          "examinable": true,
+          "lower_count": 158,
+          "minority_state_frequency": "0.441340782123",
+          "outcome_id": "CLOSE_RETURN",
+          "parameters": {
+            "lookback": 7
+          },
+          "reason": "examinable",
+          "strategy_id": "MOMENTUM_CROSSOVER",
+          "upper_count": 200
+        },
+        {
+          "declared_order": 10,
+          "effect": "0.001966092169",
+          "examinable": true,
+          "lower_count": 153,
+          "minority_state_frequency": "0.430985915493",
+          "outcome_id": "CLOSE_RETURN",
+          "parameters": {
+            "lookback": 10
+          },
+          "reason": "examinable",
+          "strategy_id": "MOMENTUM_CROSSOVER",
+          "upper_count": 202
+        },
+        {
+          "declared_order": 11,
+          "effect": "-0.002867260994",
+          "examinable": true,
+          "lower_count": 174,
+          "minority_state_frequency": "0.483333333333",
+          "outcome_id": "CLOSE_RETURN",
+          "parameters": {
+            "window": 5
+          },
+          "reason": "examinable",
+          "strategy_id": "VOLUME_SURGE",
+          "upper_count": 186
+        },
+        {
+          "declared_order": 12,
+          "effect": "-0.001007676486",
+          "examinable": true,
+          "lower_count": 188,
+          "minority_state_frequency": "0.470422535211",
+          "outcome_id": "CLOSE_RETURN",
+          "parameters": {
+            "window": 10
+          },
+          "reason": "examinable",
+          "strategy_id": "VOLUME_SURGE",
+          "upper_count": 167
+        },
+        {
+          "declared_order": 13,
+          "effect": "0.000598365252",
+          "examinable": true,
+          "lower_count": 185,
+          "minority_state_frequency": "0.463768115942",
+          "outcome_id": "CLOSE_RETURN",
+          "parameters": {
+            "window": 20
+          },
+          "reason": "examinable",
+          "strategy_id": "VOLUME_SURGE",
+          "upper_count": 160
+        },
+        {
+          "declared_order": 14,
+          "effect": "-0.001887781486",
+          "examinable": true,
+          "lower_count": 196,
+          "minority_state_frequency": "0.455555555556",
+          "outcome_id": "CLOSE_RETURN",
+          "parameters": {
+            "window": 5
+          },
+          "reason": "examinable",
+          "strategy_id": "INTRADAY_RANGE",
+          "upper_count": 164
+        },
+        {
+          "declared_order": 15,
+          "effect": "-0.000832725786",
+          "examinable": true,
+          "lower_count": 208,
+          "minority_state_frequency": "0.414084507042",
+          "outcome_id": "CLOSE_RETURN",
+          "parameters": {
+            "window": 10
+          },
+          "reason": "examinable",
+          "strategy_id": "INTRADAY_RANGE",
+          "upper_count": 147
+        },
+        {
+          "declared_order": 16,
+          "effect": "-0.000039492454",
+          "examinable": true,
+          "lower_count": 200,
+          "minority_state_frequency": "0.420289855072",
+          "outcome_id": "CLOSE_RETURN",
+          "parameters": {
+            "window": 20
+          },
+          "reason": "examinable",
+          "strategy_id": "INTRADAY_RANGE",
+          "upper_count": 145
+        }
+      ],
+      "record_id": "DISCOVERY_SCAN_RECORD|bf6ee102fb23448faf247421276e8399db364c1f60f1a61b0ef1d92513944368",
+      "scan_id": "DISCOVERY_SCAN|a16a27e1afaf957e81ec8546220dfc704627509c99e48398d3800c2609f600c6",
+      "schema_version": "1",
+      "space_id": "DISCOVERY_SPACE|00911e622c39e47a337ee3991a67c104f2f04216c808a71822a2cee35937985f",
+      "summary": {
+        "best_effect": "0.002932669295",
+        "candidates_examinable": 17,
+        "candidates_examined": 17,
+        "candidates_refused": 0,
+        "median_effect": "0.000598365252",
+        "negative_effects": 7,
+        "positive_effects": 10,
+        "worst_effect": "-0.002867260994"
+      }
+    }
+  ],
+  "schema_version": "1"
+}

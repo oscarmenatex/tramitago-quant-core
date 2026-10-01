@@ -87,6 +87,13 @@ from tramitago_quant_core.research.finding import (
     _finding_registry_is_valid, _load_finding_registry, _persist_finding_registry,
     constitute_finding, load_finding, promote_finding, discard_finding, query_findings,
 )
+from tramitago_quant_core.research.discovery import (
+    DISCOVERY_SPACE_REGISTRY_SCHEMA_VERSION, DISCOVERY_SPACE_SCHEMA_VERSION,
+    DISCOVERY_SCAN_REGISTRY_SCHEMA_VERSION, DISCOVERY_SCAN_SCHEMA_VERSION,
+    candidate_strategy, minority_state_frequency, candidate_is_examinable,
+    constitute_discovery_space, load_discovery_space, scan_discovery_space,
+    rank_observations, constitute_discovery_scan, load_discovery_scan, finding_from_scan,
+)
 from tramitago_quant_core.research.hypothesis import (
     HYPOTHESIS_REGISTRY_SCHEMA_VERSION, HYPOTHESIS_ACCEPTANCE_COMPARISONS,
     _hypothesis_id_is_valid, _hypothesis_constraints_are_valid,

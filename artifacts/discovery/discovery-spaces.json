@@ -1,0 +1,126 @@
+{
+  "schema_version": "1",
+  "spaces": [
+    {
+      "candidates": [
+        {
+          "parameters": {
+            "window": 3
+          },
+          "strategy_id": "SMA_CROSSOVER"
+        },
+        {
+          "parameters": {
+            "window": 5
+          },
+          "strategy_id": "SMA_CROSSOVER"
+        },
+        {
+          "parameters": {
+            "window": 7
+          },
+          "strategy_id": "SMA_CROSSOVER"
+        },
+        {
+          "parameters": {
+            "window": 10
+          },
+          "strategy_id": "SMA_CROSSOVER"
+        },
+        {
+          "parameters": {
+            "window": 20
+          },
+          "strategy_id": "SMA_CROSSOVER"
+        },
+        {
+          "parameters": {
+            "lookback": 1
+          },
+          "strategy_id": "MOMENTUM_CROSSOVER"
+        },
+        {
+          "parameters": {
+            "lookback": 2
+          },
+          "strategy_id": "MOMENTUM_CROSSOVER"
+        },
+        {
+          "parameters": {
+            "lookback": 3
+          },
+          "strategy_id": "MOMENTUM_CROSSOVER"
+        },
+        {
+          "parameters": {
+            "lookback": 5
+          },
+          "strategy_id": "MOMENTUM_CROSSOVER"
+        },
+        {
+          "parameters": {
+            "lookback": 7
+          },
+          "strategy_id": "MOMENTUM_CROSSOVER"
+        },
+        {
+          "parameters": {
+            "lookback": 10
+          },
+          "strategy_id": "MOMENTUM_CROSSOVER"
+        },
+        {
+          "parameters": {
+            "window": 5
+          },
+          "strategy_id": "VOLUME_SURGE"
+        },
+        {
+          "parameters": {
+            "window": 10
+          },
+          "strategy_id": "VOLUME_SURGE"
+        },
+        {
+          "parameters": {
+            "window": 20
+          },
+          "strategy_id": "VOLUME_SURGE"
+        },
+        {
+          "parameters": {
+            "window": 5
+          },
+          "strategy_id": "INTRADAY_RANGE"
+        },
+        {
+          "parameters": {
+            "window": 10
+          },
+          "strategy_id": "INTRADAY_RANGE"
+        },
+        {
+          "parameters": {
+            "window": 20
+          },
+          "strategy_id": "INTRADAY_RANGE"
+        }
+      ],
+      "declared_at": "2026-10-01T05:55:27.069828Z",
+      "declared_by": "bounded-discovery-runner",
+      "discovery_window": {
+        "end_exclusive_utc": "2025-01-01T00:00:00Z",
+        "start_utc": "2024-01-01T00:00:00Z"
+      },
+      "holdout_window": {
+        "end_exclusive_utc": "2026-01-01T00:00:00Z",
+        "start_utc": "2025-01-01T00:00:00Z"
+      },
+      "justification": "The four single-instrument Strategy families already expressible in the sealed Strategy contract on daily OHLCV (SMA_CROSSOVER, MOMENTUM_CROSSOVER, VOLUME_SURGE, INTRADAY_RANGE), over the same short period lengths for every family so none is favoured by a wider grid. Windows are capped at 20 so no candidate loses a materially larger slice of the discovery window to warmup than another. N=17, declared complete: no family, window or instrument may be added to THIS space afterwards; a wider search is a new space with its own written justification. The axis is one this project has already measured as empty, which is why it was chosen first -- a mechanism that returns an impressive finding here is telling us about itself, not about the market.",
+      "minimum_minority_state_frequency": "0.20",
+      "minimum_support": 30,
+      "schema_version": "1",
+      "space_id": "DISCOVERY_SPACE|00911e622c39e47a337ee3991a67c104f2f04216c808a71822a2cee35937985f"
+    }
+  ]
+}
