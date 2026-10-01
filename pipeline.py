@@ -49,6 +49,11 @@ from tramitago_quant_core.risk.risk_control import (
     RISK_LIMIT_TOTAL_EXPOSURE, RISK_LIMIT_MAX_DRAWDOWN, _risk_decimal, risk_contract,
     _equity_max_drawdown, evaluate_risk_control,
 )
+from tramitago_quant_core.risk.carry_tail import (
+    CARRY_TAIL_SCHEMA_VERSION, COLLATERAL_SHARED, COLLATERAL_SEPARATE, COLLATERAL_MODES,
+    stress_scenario, verified_stress_scenario, liquidation_move, survives_stress,
+    loss_fraction_at_liquidation, maximum_safe_leverage, basis_is_unmeasured,
+)
 from tramitago_quant_core.risk.capacity_model import (
     CAPACITY_CONTRACT_SCHEMA_VERSION, IMPACT_SQUARE_ROOT, IMPACT_LINEAR, IMPACT_FORMS,
     capacity_contract, verified_capacity_contract, impact_rate, net_sharpe_at,
