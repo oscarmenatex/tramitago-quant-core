@@ -1,0 +1,96 @@
+{
+  "audit_sha256": "11288e6cedafde7336371d90102b81d8d590ab37f8f77acb4e7f6386455dd30e",
+  "capture_sha256": "9d5dee737959267e945f12215ffc162718559ce0eb17cf9999038974e76ae3b8",
+  "code_sha256": "3d73621d10689b4ad7d00361316475e49591104927b14e189a5c5b4938327ffa",
+  "columns": [
+    "instrument",
+    "timestamp",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "range_avg_20",
+    "row_role",
+    "forward_return_1d"
+  ],
+  "config": {
+    "capture_period": {
+      "end_exclusive_utc": "2025-01-03T00:00:00Z",
+      "start_utc": "2023-12-01T00:00:00Z"
+    },
+    "duplicate_policy": "reject entire dataset",
+    "evaluable_period": {
+      "end_exclusive_utc": "2025-01-01T00:00:00Z",
+      "start_utc": "2024-01-01T00:00:00Z"
+    },
+    "frequency_seconds": 86400,
+    "instrument": "SPY",
+    "missing_policy": "reject entire dataset; no imputation",
+    "schema_version": "1",
+    "source": "Alpaca Data API v2 (daily equity bars, split-adjusted)",
+    "support_policy": "exactly 20 RANGE20 warm-up rows before and one forward-return row after the evaluable period",
+    "temporal_policy": "reject rows outside the declared capture period",
+    "timezone": "UTC"
+  },
+  "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|c868b8fcd914442381b5efba1e09b4b07bd7ba6277dbfba2f1335509440a4dbb",
+  "dataset_sha256": "1215d1857ead65b3c2d037388359100ea36e98b3afb015e4263dd9f9b88c0378",
+  "identity": {
+    "code_revision": "d4d88e5bcb88596f6bac32138f90bdf3f1b70352",
+    "config": {
+      "capture_period": {
+        "end_exclusive_utc": "2025-01-03T00:00:00Z",
+        "start_utc": "2023-12-01T00:00:00Z"
+      },
+      "duplicate_policy": "reject entire dataset",
+      "evaluable_period": {
+        "end_exclusive_utc": "2025-01-01T00:00:00Z",
+        "start_utc": "2024-01-01T00:00:00Z"
+      },
+      "frequency_seconds": 86400,
+      "instrument": "SPY",
+      "missing_policy": "reject entire dataset; no imputation",
+      "schema_version": "1",
+      "source": "Alpaca Data API v2 (daily equity bars, split-adjusted)",
+      "support_policy": "exactly 20 RANGE20 warm-up rows before and one forward-return row after the evaluable period",
+      "temporal_policy": "reject rows outside the declared capture period",
+      "timezone": "UTC"
+    },
+    "hashes": {
+      "capture_sha256": "9d5dee737959267e945f12215ffc162718559ce0eb17cf9999038974e76ae3b8",
+      "code_sha256": "3d73621d10689b4ad7d00361316475e49591104927b14e189a5c5b4938327ffa",
+      "dataset_sha256": "1215d1857ead65b3c2d037388359100ea36e98b3afb015e4263dd9f9b88c0378",
+      "raw_sha256": "72d6981cf55b5cebd76be3e82417c3432f668d1f812eb64fa4458a928958024b",
+      "selection_sha256": "99bc326a134c0144656e6ad907fed015d4aef018d6344a2e909d3b54d3d3ef4b",
+      "validation_sha256": "0f7bdeb3c5fd9ac59fb046c5e970f43860e14cc985fab184da2473554a107538"
+    },
+    "hypothesis_id": "HYPOTHESIS|91584d8b-fcae-47f6-a105-0539e767d055",
+    "hypothesis_version": 1,
+    "schema_version": "1",
+    "system_version": "0.1.0"
+  },
+  "input_kind": "alpaca-equity-bars",
+  "range": [
+    "2023-12-01T00:00:00Z",
+    "2025-01-02T00:00:00Z"
+  ],
+  "raw_sha256": "72d6981cf55b5cebd76be3e82417c3432f668d1f812eb64fa4458a928958024b",
+  "replay": "create_hypothesis_dataset(<registry>, <hypothesis_id>, <version>, <output>)",
+  "rows": 273,
+  "runtime": "3.14.3",
+  "schema": {
+    "close": "finite float64",
+    "forward_return_1d": "nullable finite float64; defined only for EVALUATION rows",
+    "high": "finite float64",
+    "instrument": "string",
+    "low": "finite float64",
+    "open": "finite float64",
+    "range_avg_20": "nullable finite float64",
+    "row_role": "SUPPORT_RANGE20_WARMUP | EVALUATION | SUPPORT_FORWARD_RETURN",
+    "timestamp": "UTC ISO8601 bucket start",
+    "volume": "finite float64"
+  },
+  "selection_sha256": "99bc326a134c0144656e6ad907fed015d4aef018d6344a2e909d3b54d3d3ef4b",
+  "status": "PASS",
+  "validation_sha256": "0f7bdeb3c5fd9ac59fb046c5e970f43860e14cc985fab184da2473554a107538"
+}

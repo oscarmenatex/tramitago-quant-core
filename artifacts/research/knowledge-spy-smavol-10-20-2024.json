@@ -1,0 +1,241 @@
+{
+  "records": [
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_10 AND volsurge20) - mean_forward_return_1d(close_t <= sma_close_10 AND volsurge20)",
+          "threshold": "0"
+        },
+        "description": "For SPY, the mean t+1 return when close_t is ABOVE its trailing 10-day average AND volume_t is ABOVE its trailing 20-day average is HIGHER than otherwise. Direction INCREASE pre-declared on VOLUME AS CONFIRMATION (Blume, Easley & O'Hara 1994: volume carries information about the quality of a price signal that price alone does not), the formal basis for the practitioner premise that a price move on rising volume is more reliable than one without it.\n\nPre-declared caveats: (1) A conjunction is the highest class-imbalance risk in this batch: it can only shrink the UPPER group relative to either condition alone. It is expected to be dominated by the volume term, since close above a 10-day average is common. (2) Combining two signals that may individually carry no edge does not create one; this project already refuted a four-signal portfolio on those grounds. (3) Blume/Easley/O'Hara is a theoretical microstructure result, not a documented trading edge at daily frequency on an index ETF.",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|47844c44-41b7-4c31-84f7-68cba14905ba",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|47844c44-41b7-4c31-84f7-68cba14905ba|1|ba57f6ce183e44ecc17c721347f049201e54c2bb999591b42b5cc7e7c2dc1258",
+        "target_metric": "mean_forward_return_1d(close_t > sma_close_10 AND volsurge20) - mean_forward_return_1d(close_t <= sma_close_10 AND volsurge20)",
+        "version": 1
+      },
+      "interpretation": "spy-smavol-10-20-2024: SPY 2024, direccion INCREASE pre-declarada. Muestra completa metric=-0.000805, grupos 47/205, criterio GT 0 -> REJECTED. Walk-forward 2/6 folds MET, consistencia 0.3333333333333333, NOT_VALIDATED (umbral 70%).\n\nUna de las cuatro hipotesis de renta variable declaradas conjuntamente ANTES de ejecutar ninguna, para alcanzar el minimo de cinco que la regla de parada sellada exige antes de poder declarar agotada la poblacion. La estrategia ya existia en el repositorio y la direccion procede de literatura publicada, no de observacion previa sobre estos datos.",
+      "knowledge_id": "KNOWLEDGE|7c6a898ffd768c32e8e4d852b6cf875696271d247e4d44826f85c90d659191e6",
+      "limitations": [
+        "Daily bars only (IEX feed). No transaction costs -- Nivel 4 is not built, so any measured edge is gross of spread and commissions.",
+        "Single instrument (SPY), single period (2024), single horizon (1 day).",
+        "2024 was a strong bull-market year, which flatters any direction that is long-biased.",
+        "This is one of four hypotheses declared together before any was executed, to reach the five-hypothesis minimum the sealed stopping rule requires before its exhaustion test may fire. It is not a result selected from a wider search.",
+        "A conjunction is the highest class-imbalance risk in this batch: it can only shrink the UPPER group relative to either condition alone. It is expected to be dominated by the volume term, since close above a 10-day average is common.",
+        "Combining two signals that may individually carry no edge does not create one; this project already refuted a four-signal portfolio on those grounds.",
+        "Blume/Easley/O'Hara is a theoretical microstructure result, not a documented trading edge at daily frequency on an index ETF."
+      ],
+      "materialization": {
+        "knowledge_code_revision": "d4d88e5bcb88596f6bac32138f90bdf3f1b70352",
+        "pipeline_sha256": "3d73621d10689b4ad7d00361316475e49591104927b14e189a5c5b4938327ffa",
+        "preserved_at": "2026-10-01T02:08:57.925604Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_10 AND volsurge20) - mean_forward_return_1d(close_t <= sma_close_10 AND volsurge20)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "NOT (close_t > SMA10_t AND volume_t > VOLAVG20_t)",
+          "upper_group": "close_t > SMA10_t AND volume_t > VOLAVG20_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "sma_close_10_confirm_vol_20",
+          "parameters": {
+            "sma_window": 10,
+            "volume_window": 20
+          },
+          "strategy_id": "SMA_VOLUME_CONFIRMATION"
+        },
+        "instrument": "SPY",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > SMA10_t AND volume_t > VOLAVG20_t) - mean(return_t+1 | NOT (close_t > SMA10_t AND volume_t > VOLAVG20_t))",
+          "name": "mean_forward_return_1d(close_t > sma_close_10 AND volsurge20) - mean_forward_return_1d(close_t <= sma_close_10 AND volsurge20)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_SMA10CONFIRM20_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_SMA10CONFIRM20_WARMUP",
+              "timestamp": "2023-12-01T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10CONFIRM20_WARMUP",
+              "timestamp": "2023-12-04T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10CONFIRM20_WARMUP",
+              "timestamp": "2023-12-05T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10CONFIRM20_WARMUP",
+              "timestamp": "2023-12-06T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10CONFIRM20_WARMUP",
+              "timestamp": "2023-12-07T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10CONFIRM20_WARMUP",
+              "timestamp": "2023-12-08T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10CONFIRM20_WARMUP",
+              "timestamp": "2023-12-11T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10CONFIRM20_WARMUP",
+              "timestamp": "2023-12-12T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10CONFIRM20_WARMUP",
+              "timestamp": "2023-12-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10CONFIRM20_WARMUP",
+              "timestamp": "2023-12-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10CONFIRM20_WARMUP",
+              "timestamp": "2023-12-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10CONFIRM20_WARMUP",
+              "timestamp": "2023-12-18T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10CONFIRM20_WARMUP",
+              "timestamp": "2023-12-19T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10CONFIRM20_WARMUP",
+              "timestamp": "2023-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10CONFIRM20_WARMUP",
+              "timestamp": "2023-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10CONFIRM20_WARMUP",
+              "timestamp": "2023-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10CONFIRM20_WARMUP",
+              "timestamp": "2023-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10CONFIRM20_WARMUP",
+              "timestamp": "2023-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10CONFIRM20_WARMUP",
+              "timestamp": "2023-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA10CONFIRM20_WARMUP",
+              "timestamp": "2023-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2025-01-02T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2025-01-01T00:00:00Z",
+            "start_utc": "2024-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|7c6a898ffd768c32e8e4d852b6cf875696271d247e4d44826f85c90d659191e6|912f90c6281b00f015282cdc99aee97ae045f510b1c143285b99c1f5467be517",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|4ddf66a23bfe9664ad812e627ce0db52bcd8d99869f0d81838b1c22377482657",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|4ddf66a23bfe9664ad812e627ce0db52bcd8d99869f0d81838b1c22377482657|0f2181f9d197d2432d4d21be4055a2cb4058a7d4ff660b949c8ab2ab9d01064d"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|22288924-2f36-4cee-a9f7-842372cac127",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|22288924-2f36-4cee-a9f7-842372cac127|1|5a67161b22c6e337ad1946b1560bfa35e1b57bbc322d998b06ca4dd34e80b893",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "d4d88e5bcb88596f6bac32138f90bdf3f1b70352",
+          "hypothesis_id": "HYPOTHESIS|47844c44-41b7-4c31-84f7-68cba14905ba",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|47844c44-41b7-4c31-84f7-68cba14905ba|1|ba57f6ce183e44ecc17c721347f049201e54c2bb999591b42b5cc7e7c2dc1258",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|61b036842c2f85b0af451e720776ee1e1d4a6315e3171ced55d4be3c1946674d|e796892e7573676adec61bf5b195ab4cd86d36db0e169cc5c2fd8d0ecaab0418",
+          "research_result_id": "RESEARCH_RESULT|61b036842c2f85b0af451e720776ee1e1d4a6315e3171ced55d4be3c1946674d"
+        }
+      },
+      "results": {
+        "outcome": "REJECTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(close_t > sma_close_10 AND volsurge20) - mean_forward_return_1d(close_t <= sma_close_10 AND volsurge20)",
+            "threshold": "0"
+          },
+          "criterion_result": "NOT_MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 205,
+              "mean_return_t_plus_1": 0.0010761862372778205,
+              "rule": "NOT (close_t > SMA10_t AND volume_t > VOLAVG20_t)"
+            },
+            "upper": {
+              "count": 47,
+              "mean_return_t_plus_1": 0.00027139442066167736,
+              "rule": "close_t > SMA10_t AND volume_t > VOLAVG20_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": -0.0008047918166161431,
+          "observation_count": 252,
+          "period": {
+            "end_exclusive_utc": "2025-01-01T00:00:00Z",
+            "start_utc": "2024-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    }
+  ],
+  "schema_version": "1"
+}

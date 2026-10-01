@@ -1,0 +1,96 @@
+{
+  "audit_sha256": "baa195402d9faf7f212cad29600190f451bd2cdf897ba071c25152473129e3b3",
+  "capture_sha256": "82cf2029377d7513d757ad9a3b183b83e1c8bef46ea135ccb2d63d221132a0ca",
+  "code_sha256": "3d73621d10689b4ad7d00361316475e49591104927b14e189a5c5b4938327ffa",
+  "columns": [
+    "instrument",
+    "timestamp",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "close_lag_10",
+    "row_role",
+    "forward_return_1d"
+  ],
+  "config": {
+    "capture_period": {
+      "end_exclusive_utc": "2024-01-03T00:00:00Z",
+      "start_utc": "2022-12-16T00:00:00Z"
+    },
+    "duplicate_policy": "reject entire dataset",
+    "evaluable_period": {
+      "end_exclusive_utc": "2024-01-01T00:00:00Z",
+      "start_utc": "2023-01-01T00:00:00Z"
+    },
+    "frequency_seconds": 86400,
+    "instrument": "SPY",
+    "missing_policy": "reject entire dataset; no imputation",
+    "schema_version": "1",
+    "source": "Alpaca Data API v2 (daily equity bars, split-adjusted)",
+    "support_policy": "exactly ten MOM10 warm-up rows before and one forward-return row after the evaluable period",
+    "temporal_policy": "reject rows outside the declared capture period",
+    "timezone": "UTC"
+  },
+  "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|24063112c646d47599b3faa9b831acf8e3a7c0a6a1fd72b0e256b23c8989b88b",
+  "dataset_sha256": "8fd342cf993e26476c90fe61f77e2f34437d91cf30ea297d4534ab145e04dc1c",
+  "identity": {
+    "code_revision": "4d0513f6d571049e88e09d558ddc7a8d47cb1169",
+    "config": {
+      "capture_period": {
+        "end_exclusive_utc": "2024-01-03T00:00:00Z",
+        "start_utc": "2022-12-16T00:00:00Z"
+      },
+      "duplicate_policy": "reject entire dataset",
+      "evaluable_period": {
+        "end_exclusive_utc": "2024-01-01T00:00:00Z",
+        "start_utc": "2023-01-01T00:00:00Z"
+      },
+      "frequency_seconds": 86400,
+      "instrument": "SPY",
+      "missing_policy": "reject entire dataset; no imputation",
+      "schema_version": "1",
+      "source": "Alpaca Data API v2 (daily equity bars, split-adjusted)",
+      "support_policy": "exactly ten MOM10 warm-up rows before and one forward-return row after the evaluable period",
+      "temporal_policy": "reject rows outside the declared capture period",
+      "timezone": "UTC"
+    },
+    "hashes": {
+      "capture_sha256": "82cf2029377d7513d757ad9a3b183b83e1c8bef46ea135ccb2d63d221132a0ca",
+      "code_sha256": "3d73621d10689b4ad7d00361316475e49591104927b14e189a5c5b4938327ffa",
+      "dataset_sha256": "8fd342cf993e26476c90fe61f77e2f34437d91cf30ea297d4534ab145e04dc1c",
+      "raw_sha256": "632f1d09342ddc0ba710e5ad3683c062434de41231f59b83176d4bf4904c49a9",
+      "selection_sha256": "d7abf1a301586d2143f9973eb9295cfdd3cad82179402afb266664265b4b8ae8",
+      "validation_sha256": "e225e77173510706f3e909233d5fa0ea0bdde7e325f1ea25ee71d057f43e0e8b"
+    },
+    "hypothesis_id": "HYPOTHESIS|2a774f7d-6e2f-4a8e-8754-ea4b8623c96d",
+    "hypothesis_version": 1,
+    "schema_version": "1",
+    "system_version": "0.1.0"
+  },
+  "input_kind": "alpaca-equity-bars",
+  "range": [
+    "2022-12-16T00:00:00Z",
+    "2024-01-02T00:00:00Z"
+  ],
+  "raw_sha256": "632f1d09342ddc0ba710e5ad3683c062434de41231f59b83176d4bf4904c49a9",
+  "replay": "create_hypothesis_dataset(<registry>, <hypothesis_id>, <version>, <output>)",
+  "rows": 261,
+  "runtime": "3.14.3",
+  "schema": {
+    "close": "finite float64",
+    "close_lag_10": "nullable finite float64",
+    "forward_return_1d": "nullable finite float64; defined only for EVALUATION rows",
+    "high": "finite float64",
+    "instrument": "string",
+    "low": "finite float64",
+    "open": "finite float64",
+    "row_role": "SUPPORT_MOM10_WARMUP | EVALUATION | SUPPORT_FORWARD_RETURN",
+    "timestamp": "UTC ISO8601 bucket start",
+    "volume": "finite float64"
+  },
+  "selection_sha256": "d7abf1a301586d2143f9973eb9295cfdd3cad82179402afb266664265b4b8ae8",
+  "status": "PASS",
+  "validation_sha256": "e225e77173510706f3e909233d5fa0ea0bdde7e325f1ea25ee71d057f43e0e8b"
+}

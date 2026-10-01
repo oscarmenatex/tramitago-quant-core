@@ -1,0 +1,96 @@
+{
+  "audit_sha256": "8674f44d1608e20eb02f2cc5f6af1434aec7c6fa424dd0a3e46953146d0ae822",
+  "capture_sha256": "bae93d77ce623bd0009b0ecd63336fdb200e75f5164d53c7cdaf22ff5a5d2e85",
+  "code_sha256": "3d73621d10689b4ad7d00361316475e49591104927b14e189a5c5b4938327ffa",
+  "columns": [
+    "instrument",
+    "timestamp",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "sma_close_10_confirm_vol_20",
+    "row_role",
+    "forward_return_1d"
+  ],
+  "config": {
+    "capture_period": {
+      "end_exclusive_utc": "2025-01-03T00:00:00Z",
+      "start_utc": "2023-12-01T00:00:00Z"
+    },
+    "duplicate_policy": "reject entire dataset",
+    "evaluable_period": {
+      "end_exclusive_utc": "2025-01-01T00:00:00Z",
+      "start_utc": "2024-01-01T00:00:00Z"
+    },
+    "frequency_seconds": 86400,
+    "instrument": "SPY",
+    "missing_policy": "reject entire dataset; no imputation",
+    "schema_version": "1",
+    "source": "Alpaca Data API v2 (daily equity bars, split-adjusted)",
+    "support_policy": "exactly 20 SMA10CONFIRM20 warm-up rows before and one forward-return row after the evaluable period",
+    "temporal_policy": "reject rows outside the declared capture period",
+    "timezone": "UTC"
+  },
+  "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|e3f4259d793208fa5f2de14825e6600214770e0c4767ab5cfad44612b1515210",
+  "dataset_sha256": "81a5976b47b9b78ef55e22fa832b45c990ef69af9eb75c86e568b8b823520366",
+  "identity": {
+    "code_revision": "d4d88e5bcb88596f6bac32138f90bdf3f1b70352",
+    "config": {
+      "capture_period": {
+        "end_exclusive_utc": "2025-01-03T00:00:00Z",
+        "start_utc": "2023-12-01T00:00:00Z"
+      },
+      "duplicate_policy": "reject entire dataset",
+      "evaluable_period": {
+        "end_exclusive_utc": "2025-01-01T00:00:00Z",
+        "start_utc": "2024-01-01T00:00:00Z"
+      },
+      "frequency_seconds": 86400,
+      "instrument": "SPY",
+      "missing_policy": "reject entire dataset; no imputation",
+      "schema_version": "1",
+      "source": "Alpaca Data API v2 (daily equity bars, split-adjusted)",
+      "support_policy": "exactly 20 SMA10CONFIRM20 warm-up rows before and one forward-return row after the evaluable period",
+      "temporal_policy": "reject rows outside the declared capture period",
+      "timezone": "UTC"
+    },
+    "hashes": {
+      "capture_sha256": "bae93d77ce623bd0009b0ecd63336fdb200e75f5164d53c7cdaf22ff5a5d2e85",
+      "code_sha256": "3d73621d10689b4ad7d00361316475e49591104927b14e189a5c5b4938327ffa",
+      "dataset_sha256": "81a5976b47b9b78ef55e22fa832b45c990ef69af9eb75c86e568b8b823520366",
+      "raw_sha256": "72d6981cf55b5cebd76be3e82417c3432f668d1f812eb64fa4458a928958024b",
+      "selection_sha256": "c1d4c4cfcf892ffa9698c8557a33e2abe4e5f4d2a6128ba06e94e6afe5ac42ae",
+      "validation_sha256": "0f7bdeb3c5fd9ac59fb046c5e970f43860e14cc985fab184da2473554a107538"
+    },
+    "hypothesis_id": "HYPOTHESIS|47844c44-41b7-4c31-84f7-68cba14905ba",
+    "hypothesis_version": 1,
+    "schema_version": "1",
+    "system_version": "0.1.0"
+  },
+  "input_kind": "alpaca-equity-bars",
+  "range": [
+    "2023-12-01T00:00:00Z",
+    "2025-01-02T00:00:00Z"
+  ],
+  "raw_sha256": "72d6981cf55b5cebd76be3e82417c3432f668d1f812eb64fa4458a928958024b",
+  "replay": "create_hypothesis_dataset(<registry>, <hypothesis_id>, <version>, <output>)",
+  "rows": 273,
+  "runtime": "3.14.3",
+  "schema": {
+    "close": "finite float64",
+    "forward_return_1d": "nullable finite float64; defined only for EVALUATION rows",
+    "high": "finite float64",
+    "instrument": "string",
+    "low": "finite float64",
+    "open": "finite float64",
+    "row_role": "SUPPORT_SMA10CONFIRM20_WARMUP | EVALUATION | SUPPORT_FORWARD_RETURN",
+    "sma_close_10_confirm_vol_20": "nullable finite float64",
+    "timestamp": "UTC ISO8601 bucket start",
+    "volume": "finite float64"
+  },
+  "selection_sha256": "c1d4c4cfcf892ffa9698c8557a33e2abe4e5f4d2a6128ba06e94e6afe5ac42ae",
+  "status": "PASS",
+  "validation_sha256": "0f7bdeb3c5fd9ac59fb046c5e970f43860e14cc985fab184da2473554a107538"
+}

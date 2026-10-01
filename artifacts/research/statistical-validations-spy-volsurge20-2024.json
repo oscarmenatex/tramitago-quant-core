@@ -1,0 +1,162 @@
+{
+  "schema_version": "1",
+  "validations": [
+    {
+      "consistency_ratio": 0.3333333333333333,
+      "consistency_threshold": "0.70",
+      "fold_summaries": [
+        {
+          "beats_baseline": true,
+          "criterion_result": "MET",
+          "fold_index": 0,
+          "metric": 0.0009662224075563082,
+          "period": {
+            "end_exclusive_utc": "2024-03-02T00:00:00Z",
+            "start_utc": "2024-01-01T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.06499267003961498,
+            "max_drawdown": 0.013608578242163993,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": 3.586845883270878
+          }
+        },
+        {
+          "beats_baseline": true,
+          "criterion_result": "MET",
+          "fold_index": 1,
+          "metric": 0.0014489561358786898,
+          "period": {
+            "end_exclusive_utc": "2024-05-02T00:00:00Z",
+            "start_utc": "2024-03-02T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.08342415858027918,
+            "max_drawdown": 0.022430019548175313,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": 1.0287869875514155
+          }
+        },
+        {
+          "beats_baseline": false,
+          "criterion_result": "NOT_MET",
+          "fold_index": 2,
+          "metric": -0.0024945093173774757,
+          "period": {
+            "end_exclusive_utc": "2024-07-02T00:00:00Z",
+            "start_utc": "2024-05-02T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.048862250050423967,
+            "max_drawdown": 0.013640073057941139,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": 2.0671374494142567
+          }
+        },
+        {
+          "beats_baseline": false,
+          "criterion_result": "NOT_MET",
+          "fold_index": 3,
+          "metric": -0.00281449826812105,
+          "period": {
+            "end_exclusive_utc": "2024-09-01T00:00:00Z",
+            "start_utc": "2024-07-02T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.14999325535812294,
+            "max_drawdown": 0.05991161498443012,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": -1.450469296806023
+          }
+        },
+        {
+          "beats_baseline": false,
+          "criterion_result": "NOT_MET",
+          "fold_index": 4,
+          "metric": -0.00021947536575906356,
+          "period": {
+            "end_exclusive_utc": "2024-11-01T00:00:00Z",
+            "start_utc": "2024-09-01T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.08686809849915317,
+            "max_drawdown": 0.022759651745668668,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": 1.3180594856315173
+          }
+        },
+        {
+          "beats_baseline": false,
+          "criterion_result": "NOT_MET",
+          "fold_index": 5,
+          "metric": -0.0015934715531168537,
+          "period": {
+            "end_exclusive_utc": "2025-01-01T00:00:00Z",
+            "start_utc": "2024-11-01T00:00:00Z"
+          },
+          "risk_analytics": {
+            "annualized_volatility": 0.1405087679366055,
+            "max_drawdown": 0.048395558359865226,
+            "rule": "SMA_CROSSOVER_LONG_ONLY_DESCRIPTIVE",
+            "sharpe_ratio": -0.06193843677463907
+          }
+        }
+      ],
+      "materialization": {
+        "pipeline_sha256": "3d73621d10689b4ad7d00361316475e49591104927b14e189a5c5b4938327ffa",
+        "validated_at": "2026-10-01T02:08:57.925604Z",
+        "validation_code_revision": "d4d88e5bcb88596f6bac32138f90bdf3f1b70352"
+      },
+      "minimum_folds_required": 6,
+      "outcome": "NOT_VALIDATED",
+      "outcome_reason": "CONSISTENCY_BELOW_THRESHOLD",
+      "record_id": "STATISTICAL_VALIDATION_RECORD|STATISTICAL_VALIDATION|96b1480aec5246801c4087a345ab40a37f629c7c792d7743fb4b052a040fc748|da773fe20fb5e2061e198c5835e1e67dd8fb82e7cfc079885ba0262ad067336b",
+      "reference": {
+        "fold_results": [
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|b1e0508dbddd935ed9367780c9be310c66b825f285962c7469d812ff4caa493e",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|b1e0508dbddd935ed9367780c9be310c66b825f285962c7469d812ff4caa493e|138039a75ed6dd8b946f77c2fcac4264a29e3ff3a0aa20e4ffa12e4dc8011725"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|a5801c53f5776caa5d6fc9fa4c8b559210d6d2b2b139151705ff25a159543bb3",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|a5801c53f5776caa5d6fc9fa4c8b559210d6d2b2b139151705ff25a159543bb3|f2bb24505eeabb457751c9bb2b28c4751f198c8e8b7390dcdb64d45886f8ebac"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|a7021be365437bd0863276bac13930bd51cd244b6181aeeaee7ce25efe08b445",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|a7021be365437bd0863276bac13930bd51cd244b6181aeeaee7ce25efe08b445|226e039cf5232ec605a92fe014d6c7efb95103cf2f1cdc9ac4686074ddc9e857"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|b1bfaa290e3ad36254e930e8e3e3b47a2aaf50a69e9f41e345d35aacdbf1f9e5",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|b1bfaa290e3ad36254e930e8e3e3b47a2aaf50a69e9f41e345d35aacdbf1f9e5|8469180bcaac65bd67f714dd9bc405dacbbdf9b95b0315a57cbab3213c44d3d0"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|ce6b0db1f2f75fe9b09109546c23eaa3559b8ad62487de085a3db05485b7949c",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|ce6b0db1f2f75fe9b09109546c23eaa3559b8ad62487de085a3db05485b7949c|0c4bcf81b55131b898db94c73e07ef101c569e488c4e1519f596e8624eb85ed9"
+          },
+          {
+            "fold_result_id": "WALK_FORWARD_FOLD_RESULT|6f90f087d5397573f5922e4ee2b66bf83d061f33e8c8787b59873ba88a91dcb5",
+            "record_id": "WALK_FORWARD_FOLD_RESULT_RECORD|WALK_FORWARD_FOLD_RESULT|6f90f087d5397573f5922e4ee2b66bf83d061f33e8c8787b59873ba88a91dcb5|b5769f5ddf24d74775c7ce050773f76b9b0692b60d2f0dbdabbd6270e7a18d75"
+          }
+        ],
+        "partition": {
+          "partition_id": "WALK_FORWARD_PARTITION|2cc69dc99ca2a2ae37ff2b5eee740bee86cc4d90c020c17173fd2a0611f93e2b",
+          "record_id": "WALK_FORWARD_PARTITION_RECORD|WALK_FORWARD_PARTITION|2cc69dc99ca2a2ae37ff2b5eee740bee86cc4d90c020c17173fd2a0611f93e2b|6f1f95bcd822c05efa935cd4c8f2c9474e18f439c2be3eff5e8159fe10d7f9d5"
+        }
+      },
+      "risk_analytics_summary": {
+        "max_drawdown_worst": 0.05991161498443012,
+        "sharpe_ratio_max": 3.586845883270878,
+        "sharpe_ratio_mean": 1.0814036787145676,
+        "sharpe_ratio_min": -1.450469296806023
+      },
+      "schema_version": "1",
+      "sensitivity": {
+        "fold_metric_max": 0.0014489561358786898,
+        "fold_metric_mean": -0.0007844626601565741,
+        "fold_metric_min": -0.00281449826812105
+      },
+      "status": "ISSUED",
+      "validation_id": "STATISTICAL_VALIDATION|96b1480aec5246801c4087a345ab40a37f629c7c792d7743fb4b052a040fc748"
+    }
+  ]
+}

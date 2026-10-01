@@ -1,0 +1,61 @@
+{
+  "evaluable_period": {
+    "end_exclusive_utc": "2024-01-01T00:00:00Z",
+    "start_utc": "2023-01-01T00:00:00Z"
+  },
+  "evaluable_row_count": 250,
+  "hypothesis_id": "HYPOTHESIS|2a774f7d-6e2f-4a8e-8754-ea4b8623c96d",
+  "hypothesis_version": 1,
+  "row_roles": {
+    "evaluable": "EVALUATION",
+    "support_forward_return": "SUPPORT_FORWARD_RETURN",
+    "support_mom10_warmup": "SUPPORT_MOM10_WARMUP"
+  },
+  "schema_version": "1",
+  "support_rows": [
+    {
+      "row_role": "SUPPORT_MOM10_WARMUP",
+      "timestamp": "2022-12-16T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_MOM10_WARMUP",
+      "timestamp": "2022-12-19T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_MOM10_WARMUP",
+      "timestamp": "2022-12-20T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_MOM10_WARMUP",
+      "timestamp": "2022-12-21T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_MOM10_WARMUP",
+      "timestamp": "2022-12-22T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_MOM10_WARMUP",
+      "timestamp": "2022-12-23T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_MOM10_WARMUP",
+      "timestamp": "2022-12-27T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_MOM10_WARMUP",
+      "timestamp": "2022-12-28T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_MOM10_WARMUP",
+      "timestamp": "2022-12-29T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_MOM10_WARMUP",
+      "timestamp": "2022-12-30T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_FORWARD_RETURN",
+      "timestamp": "2024-01-02T00:00:00Z"
+    }
+  ]
+}
