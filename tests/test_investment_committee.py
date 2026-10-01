@@ -60,11 +60,13 @@ class CommitteeRecordTests(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.registry = Path(self.tmp.name) / "committees.json"
 
-    def _constitute(self, evaluations):
+    def _constitute(self, evaluations, purpose=None, evidence_resolver=None):
         return p.constitute_investment_committee(
             self.registry, recommendation_reference="RECOMMENDATION|r1",
             evaluations=evaluations, decided_at="2026-09-29T15:00:00Z",
-            committee_code_revision="0" * 40)
+            committee_code_revision="0" * 40,
+            purpose=purpose or p.COMMITTEE_PURPOSE_MACHINERY,
+            evidence_resolver=evidence_resolver)
 
     def test_constituted_record_keeps_all_evaluations_separately(self):
         record = self._constitute(_core(v2="REDUCE"))

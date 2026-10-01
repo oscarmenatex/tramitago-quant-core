@@ -9,6 +9,7 @@ import unittest
 from unittest.mock import patch
 
 import pipeline as p
+from committee_fixture import sealed_machinery_committee
 
 
 class RealOrderProposalTests(unittest.TestCase):
@@ -45,8 +46,10 @@ class RealOrderProposalTests(unittest.TestCase):
         return config
 
     def prepare(self, root, identity, config=None, output="proposal"):
+        registry, committee_id = sealed_machinery_committee(root)
         return p.prepare_real_order_proposal(
-            root / "state.json", root / output, identity, config or self.config())
+            root / "state.json", root / output, identity, config or self.config(),
+            committee_registry_path=registry, committee_id=committee_id)
 
     def test_valid_enter_is_bounded_pending_and_never_sent(self):
         root, decisions = self.state(closes=[10, 11, 12])

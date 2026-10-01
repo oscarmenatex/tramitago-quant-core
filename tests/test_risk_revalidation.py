@@ -8,6 +8,7 @@ import unittest
 from unittest.mock import patch
 
 import pipeline as p
+from committee_fixture import sealed_machinery_committee
 
 
 class PostApprovalRiskRevalidationTests(unittest.TestCase):
@@ -50,8 +51,10 @@ class PostApprovalRiskRevalidationTests(unittest.TestCase):
         path = root / "state.json"
         path.write_bytes(p.encoded(state))
         config = self.risk()
+        registry, committee_id = sealed_machinery_committee(root)
         proposal = p.prepare_real_order_proposal(
-            path, root / "proposal", decision["identity"], config)["proposal"]
+            path, root / "proposal", decision["identity"], config,
+            committee_registry_path=registry, committee_id=committee_id)["proposal"]
         if review is not None:
             p.record_manual_approval(
                 path, root / "approval", proposal["identity"],

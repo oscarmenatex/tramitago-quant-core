@@ -8,6 +8,7 @@ import unittest
 from unittest.mock import patch
 
 import pipeline as p
+from committee_fixture import sealed_machinery_committee
 
 
 class ManualApprovalGateTests(unittest.TestCase):
@@ -49,8 +50,10 @@ class ManualApprovalGateTests(unittest.TestCase):
         path.write_bytes(p.encoded(state))
         risk = self.risk()
         risk["risk_contract_identity"] = p.phase4_risk_contract_identity(risk)
+        registry, committee_id = sealed_machinery_committee(root)
         result = p.prepare_real_order_proposal(
-            path, root / "proposal", decision["identity"], risk)
+            path, root / "proposal", decision["identity"], risk,
+            committee_registry_path=registry, committee_id=committee_id)
         return root, result["proposal"]
 
     def review(self, root, proposal, decision="APPROVED", output="approval",

@@ -10,9 +10,10 @@ from pathlib import Path
 import pipeline as p
 
 
-def _payload(v2="APPROVE"):
+def _payload(v2="APPROVE", purpose="MACHINERY_VERIFICATION"):
     return {
         "recommendation_reference": "RECOMMENDATION|r1",
+        "purpose": purpose,
         "decided_at": "2026-09-29T15:00:00Z",
         "committee_code_revision": "0" * 40,
         "evaluations": [
