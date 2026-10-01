@@ -34,7 +34,7 @@ from tramitago_quant_core.strategy_contract.strategy import (
     sma_crossover_strategy, momentum_crossover_strategy, volume_surge_strategy,
     funding_rate_sign_strategy, sma_volume_confirmation_strategy, intraday_range_strategy,
     funding_rate_surge_strategy, signal_portfolio_strategy,
-    pair_ratio_reversion_strategy,
+    pair_ratio_reversion_strategy, carry_funding_threshold_strategy,
 )
 from tramitago_quant_core.strategy_contract.outcome import strategy_outcome
 
@@ -59,6 +59,12 @@ _EXPERIMENT_STRATEGY_CONSTRUCTORS = {
     "SIGNAL_PORTFOLIO": lambda parameters: signal_portfolio_strategy(
         parameters["sma_window"], parameters["volume_window"],
         parameters["range_window"], parameters["funding_window"]),
+    # The threshold is not a constructor argument: it is fixed at zero, the only
+    # parameter-free boundary, and is carried in parameters only so the sealed
+    # record states it. Reconstructing from it would invite a later version to
+    # vary it, which is the whole thing the choice of zero exists to prevent.
+    "CARRY_FUNDING_THRESHOLD": lambda parameters: carry_funding_threshold_strategy(
+        parameters["funding_variable"], parameters["perpetual_variable"]),
 }
 
 

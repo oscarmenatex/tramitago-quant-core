@@ -1,0 +1,25 @@
+{
+  "evaluable_period": {
+    "end_exclusive_utc": "2025-01-01T00:00:00Z",
+    "start_utc": "2024-01-01T00:00:00Z"
+  },
+  "evaluable_row_count": 366,
+  "hypothesis_id": "HYPOTHESIS|99055988-d2f0-422f-be61-a4b4e3f6093e",
+  "hypothesis_version": 1,
+  "row_roles": {
+    "evaluable": "EVALUATION",
+    "support_carryfunding_warmup": "SUPPORT_CARRYFUNDING_WARMUP",
+    "support_forward_return": "SUPPORT_FORWARD_RETURN"
+  },
+  "schema_version": "1",
+  "support_rows": [
+    {
+      "row_role": "SUPPORT_CARRYFUNDING_WARMUP",
+      "timestamp": "2023-12-31T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_FORWARD_RETURN",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ]
+}
