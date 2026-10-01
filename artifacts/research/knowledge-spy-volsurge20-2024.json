@@ -1,0 +1,240 @@
+{
+  "records": [
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(volume_t > VOLSURGE20_t) - mean_forward_return_1d(volume_t <= VOLSURGE20_t)",
+          "threshold": "0"
+        },
+        "description": "For SPY, the mean t+1 return when volume_t is ABOVE its own trailing 20-day average is HIGHER than when it is at or below it. Direction INCREASE pre-declared on the HIGH-VOLUME RETURN PREMIUM (Gervais, Kaniel & Mingelgrin 2001): securities experiencing unusually high trading volume subsequently earn higher returns, attributed to the visibility such volume confers.\n\nPre-declared caveats: (1) The original premium is CROSS-SECTIONAL on individual stocks over 1-20 day horizons. Its transfer to a single broad-index ETF is not established and may not hold at all. (2) Volume for an ETF reflects creation/redemption and hedging flow as well as directional interest, so the mechanism may not be the one documented. (3) Class balance expected to be reasonable: volume mean-reverts around its own trailing average, so both states recur by construction.",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|21384a9c-6781-49c4-a6d5-c79451551cd3",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|21384a9c-6781-49c4-a6d5-c79451551cd3|1|b8d081c3e2cb3c8b8b3f8332be8604483acf939df357a141e3049cb8ac9d8f45",
+        "target_metric": "mean_forward_return_1d(volume_t > VOLSURGE20_t) - mean_forward_return_1d(volume_t <= VOLSURGE20_t)",
+        "version": 1
+      },
+      "interpretation": "spy-volsurge20-2024: SPY 2024, direccion INCREASE pre-declarada. Muestra completa metric=-0.000920, grupos 97/155, criterio GT 0 -> REJECTED. Walk-forward 2/6 folds MET, consistencia 0.3333333333333333, NOT_VALIDATED (umbral 70%).\n\nUna de las cuatro hipotesis de renta variable declaradas conjuntamente ANTES de ejecutar ninguna, para alcanzar el minimo de cinco que la regla de parada sellada exige antes de poder declarar agotada la poblacion. La estrategia ya existia en el repositorio y la direccion procede de literatura publicada, no de observacion previa sobre estos datos.",
+      "knowledge_id": "KNOWLEDGE|81ea3ed04b3919c86c7fe53fa19045a0da60ed9c219e4fda05c5a2fd4a2d002c",
+      "limitations": [
+        "Daily bars only (IEX feed). No transaction costs -- Nivel 4 is not built, so any measured edge is gross of spread and commissions.",
+        "Single instrument (SPY), single period (2024), single horizon (1 day).",
+        "2024 was a strong bull-market year, which flatters any direction that is long-biased.",
+        "This is one of four hypotheses declared together before any was executed, to reach the five-hypothesis minimum the sealed stopping rule requires before its exhaustion test may fire. It is not a result selected from a wider search.",
+        "The original premium is CROSS-SECTIONAL on individual stocks over 1-20 day horizons. Its transfer to a single broad-index ETF is not established and may not hold at all.",
+        "Volume for an ETF reflects creation/redemption and hedging flow as well as directional interest, so the mechanism may not be the one documented.",
+        "Class balance expected to be reasonable: volume mean-reverts around its own trailing average, so both states recur by construction."
+      ],
+      "materialization": {
+        "knowledge_code_revision": "d4d88e5bcb88596f6bac32138f90bdf3f1b70352",
+        "pipeline_sha256": "3d73621d10689b4ad7d00361316475e49591104927b14e189a5c5b4938327ffa",
+        "preserved_at": "2026-10-01T02:08:57.925604Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(volume_t > VOLSURGE20_t) - mean_forward_return_1d(volume_t <= VOLSURGE20_t)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "volume_t <= VOLSURGE20_t",
+          "upper_group": "volume_t > VOLSURGE20_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "volume_avg_20",
+          "parameters": {
+            "window": 20
+          },
+          "strategy_id": "VOLUME_SURGE"
+        },
+        "instrument": "SPY",
+        "metric": {
+          "formula": "mean(return_t+1 | volume_t > VOLSURGE20_t) - mean(return_t+1 | volume_t <= VOLSURGE20_t)",
+          "name": "mean_forward_return_1d(volume_t > VOLSURGE20_t) - mean_forward_return_1d(volume_t <= VOLSURGE20_t)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_VOLSURGE20_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2023-12-01T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2023-12-04T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2023-12-05T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2023-12-06T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2023-12-07T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2023-12-08T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2023-12-11T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2023-12-12T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2023-12-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2023-12-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2023-12-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2023-12-18T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2023-12-19T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2023-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2023-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2023-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2023-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2023-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2023-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_VOLSURGE20_WARMUP",
+              "timestamp": "2023-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2025-01-02T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2025-01-01T00:00:00Z",
+            "start_utc": "2024-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|81ea3ed04b3919c86c7fe53fa19045a0da60ed9c219e4fda05c5a2fd4a2d002c|44198b2cce4277415e305e094809a8ed60c9e245f31dce5d2c18e31b746603f8",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|aee486c33ae4d32deed44d9f914ea42f09b5e2e1ddea7923899f193a37528a07",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|aee486c33ae4d32deed44d9f914ea42f09b5e2e1ddea7923899f193a37528a07|37cfbd07254084fe60d626bd0277e84a3a6f05c7d59f88b9553f05dcff50478f"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|636ff0cd-fc41-4f2c-8d18-8ef5db3e1b1d",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|636ff0cd-fc41-4f2c-8d18-8ef5db3e1b1d|1|b8df324d195f720e2245599048fb57303bc01fe3c1690066d1594fca3005cb0e",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "d4d88e5bcb88596f6bac32138f90bdf3f1b70352",
+          "hypothesis_id": "HYPOTHESIS|21384a9c-6781-49c4-a6d5-c79451551cd3",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|21384a9c-6781-49c4-a6d5-c79451551cd3|1|b8d081c3e2cb3c8b8b3f8332be8604483acf939df357a141e3049cb8ac9d8f45",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|d8668f72cb87fccba132b0272e52ed72c2117962c6c84730dee9183c9b463f53|bbaff9ac0af2ecb5c65f2c1505691814f8960b286e19c1c53b385c85d046b377",
+          "research_result_id": "RESEARCH_RESULT|d8668f72cb87fccba132b0272e52ed72c2117962c6c84730dee9183c9b463f53"
+        }
+      },
+      "results": {
+        "outcome": "REJECTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(volume_t > VOLSURGE20_t) - mean_forward_return_1d(volume_t <= VOLSURGE20_t)",
+            "threshold": "0"
+          },
+          "criterion_result": "NOT_MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 155,
+              "mean_return_t_plus_1": 0.001280301868210652,
+              "rule": "volume_t <= VOLSURGE20_t"
+            },
+            "upper": {
+              "count": 97,
+              "mean_return_t_plus_1": 0.00036007141072578346,
+              "rule": "volume_t > VOLSURGE20_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": -0.0009202304574848685,
+          "observation_count": 252,
+          "period": {
+            "end_exclusive_utc": "2025-01-01T00:00:00Z",
+            "start_utc": "2024-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    }
+  ],
+  "schema_version": "1"
+}

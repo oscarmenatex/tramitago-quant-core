@@ -1,0 +1,200 @@
+{
+  "records": [
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "LT",
+          "expected_direction": "DECREASE",
+          "metric": "mean_forward_return_1d(close_t > MOM10_t) - mean_forward_return_1d(close_t <= MOM10_t)",
+          "threshold": "0"
+        },
+        "description": "For SPY, the mean t+1 return when close_t is ABOVE its own value 10 trading days earlier is LOWER than when it is at or below it. Direction DECREASE pre-declared on the SHORT-HORIZON REVERSAL prior (Jegadeesh 1990, monthly reversals; Lehmann 1990, weekly reversals): at daily-to-monthly horizons reversal dominates, while momentum proper is a 3-12 month phenomenon (Jegadeesh & Titman 1993), so a 10-day lookback against a 1-day forward return sits in the reversal regime, not the momentum one.\n\nPre-declared caveats: (1) The reversal literature is largely cross-sectional across many stocks; a single index ETF is a much weaker test of it. (2) This project's crypto evidence also showed reversal signs. That observation did NOT motivate this direction -- the Jegadeesh/Lehmann prior predates it and is independent -- but the coincidence is recorded rather than hidden. (3) Class balance risk: a lagged-close comparison skews upward in a trending year. Both states are expected to occur, but not evenly.",
+        "expected_direction": "DECREASE",
+        "hypothesis_id": "HYPOTHESIS|7f2dc4c8-0807-4802-a3e2-611cfa03000a",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|7f2dc4c8-0807-4802-a3e2-611cfa03000a|1|e041694cce4b5cef3f84a633793077cb220bd541899d6bc4da7512a29d6bd1b5",
+        "target_metric": "mean_forward_return_1d(close_t > MOM10_t) - mean_forward_return_1d(close_t <= MOM10_t)",
+        "version": 1
+      },
+      "interpretation": "spy-mom10-2024: SPY 2024, direccion DECREASE pre-declarada. Muestra completa metric=-0.000911, grupos 174/78, criterio LT 0 -> ACCEPTED. Walk-forward 5/6 folds MET, consistencia 0.8333333333333334, VALIDATED (umbral 70%).\n\nUna de las cuatro hipotesis de renta variable declaradas conjuntamente ANTES de ejecutar ninguna, para alcanzar el minimo de cinco que la regla de parada sellada exige antes de poder declarar agotada la poblacion. La estrategia ya existia en el repositorio y la direccion procede de literatura publicada, no de observacion previa sobre estos datos.",
+      "knowledge_id": "KNOWLEDGE|389f4fd17ae7cdfc721652582fef4e1bb41c5adabb9c6c809706642d813e9eaa",
+      "limitations": [
+        "Daily bars only (IEX feed). No transaction costs -- Nivel 4 is not built, so any measured edge is gross of spread and commissions.",
+        "Single instrument (SPY), single period (2024), single horizon (1 day).",
+        "2024 was a strong bull-market year, which flatters any direction that is long-biased.",
+        "This is one of four hypotheses declared together before any was executed, to reach the five-hypothesis minimum the sealed stopping rule requires before its exhaustion test may fire. It is not a result selected from a wider search.",
+        "The reversal literature is largely cross-sectional across many stocks; a single index ETF is a much weaker test of it.",
+        "This project's crypto evidence also showed reversal signs. That observation did NOT motivate this direction -- the Jegadeesh/Lehmann prior predates it and is independent -- but the coincidence is recorded rather than hidden.",
+        "Class balance risk: a lagged-close comparison skews upward in a trending year. Both states are expected to occur, but not evenly."
+      ],
+      "materialization": {
+        "knowledge_code_revision": "d4d88e5bcb88596f6bac32138f90bdf3f1b70352",
+        "pipeline_sha256": "3d73621d10689b4ad7d00361316475e49591104927b14e189a5c5b4938327ffa",
+        "preserved_at": "2026-10-01T02:08:57.925604Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "LT",
+          "expected_direction": "DECREASE",
+          "metric": "mean_forward_return_1d(close_t > MOM10_t) - mean_forward_return_1d(close_t <= MOM10_t)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= MOM10_t",
+          "upper_group": "close_t > MOM10_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "close_lag_10",
+          "parameters": {
+            "lookback": 10
+          },
+          "strategy_id": "MOMENTUM_CROSSOVER"
+        },
+        "instrument": "SPY",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > MOM10_t) - mean(return_t+1 | close_t <= MOM10_t)",
+          "name": "mean_forward_return_1d(close_t > MOM10_t) - mean_forward_return_1d(close_t <= MOM10_t)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_MOM10_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2023-12-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2023-12-18T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2023-12-19T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2023-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2023-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2023-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2023-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2023-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2023-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2023-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2025-01-02T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2025-01-01T00:00:00Z",
+            "start_utc": "2024-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|389f4fd17ae7cdfc721652582fef4e1bb41c5adabb9c6c809706642d813e9eaa|3f18d43e4e587176abe6761a543add6c8925e3767c045e8d658af5c21e0e5415",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|70c1a1c88e2ca79f153f0aba095a8f4735fab1a58937ee895bf7d6c4101b6613",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|70c1a1c88e2ca79f153f0aba095a8f4735fab1a58937ee895bf7d6c4101b6613|7ff07643706256ef6fe31b2c915ecb9db9fc1c5823f58c6df37caa682decc53a"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|99bdf812-f9c9-4ce0-99b1-f378f51b3cf4",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|99bdf812-f9c9-4ce0-99b1-f378f51b3cf4|1|2470bba5f1c8efcecaea85e6894ee8501a36346564f7e98bfc083eef26e16e5f",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "d4d88e5bcb88596f6bac32138f90bdf3f1b70352",
+          "hypothesis_id": "HYPOTHESIS|7f2dc4c8-0807-4802-a3e2-611cfa03000a",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|7f2dc4c8-0807-4802-a3e2-611cfa03000a|1|e041694cce4b5cef3f84a633793077cb220bd541899d6bc4da7512a29d6bd1b5",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|a67b94126f8e10c24f06e82cabd4f54efc1031506b16ae072365a5d9bc0e4e85|f8cb58d02d54237c8fd094a409ac2439e705355c162b3a5f93615c97f374991f",
+          "research_result_id": "RESEARCH_RESULT|a67b94126f8e10c24f06e82cabd4f54efc1031506b16ae072365a5d9bc0e4e85"
+        }
+      },
+      "results": {
+        "outcome": "ACCEPTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "LT",
+            "expected_direction": "DECREASE",
+            "metric": "mean_forward_return_1d(close_t > MOM10_t) - mean_forward_return_1d(close_t <= MOM10_t)",
+            "threshold": "0"
+          },
+          "criterion_result": "MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 78,
+              "mean_return_t_plus_1": 0.0015554296549865792,
+              "rule": "close_t <= MOM10_t"
+            },
+            "upper": {
+              "count": 174,
+              "mean_return_t_plus_1": 0.0006439666857706832,
+              "rule": "close_t > MOM10_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": -0.0009114629692158959,
+          "observation_count": 252,
+          "period": {
+            "end_exclusive_utc": "2025-01-01T00:00:00Z",
+            "start_utc": "2024-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    }
+  ],
+  "schema_version": "1"
+}

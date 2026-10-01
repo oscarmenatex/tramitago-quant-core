@@ -1,0 +1,240 @@
+{
+  "records": [
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "LT",
+          "expected_direction": "DECREASE",
+          "metric": "mean_forward_return_1d((high-low)/close > RANGE20) - mean_forward_return_1d((high-low)/close <= RANGE20)",
+          "threshold": "0"
+        },
+        "description": "For SPY, the mean t+1 return when the intraday range (high-low)/close is ABOVE its own trailing 20-day average is LOWER than when it is at or below it. Direction DECREASE pre-declared on the LOW-VOLATILITY ANOMALY (Ang, Hodrick, Xing & Zhang 2006; Baker, Bradley & Wurgler 2011): high-volatility assets earn lower returns than the risk-return relation predicts, with realised intraday range standing in for realised volatility.\n\nPre-declared caveats: (1) The anomaly is documented CROSS-SECTIONALLY and at monthly horizons. A 1-day forward return on one ETF is a far weaker test, and the sign need not survive at that frequency. (2) Intraday range also spikes on news days, where the next-day return is dominated by the news rather than by any volatility premium. (3) Class balance expected to be reasonable: range mean-reverts around its own trailing average.",
+        "expected_direction": "DECREASE",
+        "hypothesis_id": "HYPOTHESIS|91584d8b-fcae-47f6-a105-0539e767d055",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|91584d8b-fcae-47f6-a105-0539e767d055|1|8117d4769061d696956694916dac47394b36a15642048b952951bb99d88ac122",
+        "target_metric": "mean_forward_return_1d((high-low)/close > RANGE20) - mean_forward_return_1d((high-low)/close <= RANGE20)",
+        "version": 1
+      },
+      "interpretation": "spy-range20-2024: SPY 2024, direccion DECREASE pre-declarada. Muestra completa metric=0.002552, grupos 102/150, criterio LT 0 -> REJECTED. Walk-forward 1/6 folds MET, consistencia 0.16666666666666666, NOT_VALIDATED (umbral 70%).\n\nUna de las cuatro hipotesis de renta variable declaradas conjuntamente ANTES de ejecutar ninguna, para alcanzar el minimo de cinco que la regla de parada sellada exige antes de poder declarar agotada la poblacion. La estrategia ya existia en el repositorio y la direccion procede de literatura publicada, no de observacion previa sobre estos datos.",
+      "knowledge_id": "KNOWLEDGE|a109e59d4bc49015a8c1c7f2ed079365c1fbb239ab6dc74657aa69da079229b5",
+      "limitations": [
+        "Daily bars only (IEX feed). No transaction costs -- Nivel 4 is not built, so any measured edge is gross of spread and commissions.",
+        "Single instrument (SPY), single period (2024), single horizon (1 day).",
+        "2024 was a strong bull-market year, which flatters any direction that is long-biased.",
+        "This is one of four hypotheses declared together before any was executed, to reach the five-hypothesis minimum the sealed stopping rule requires before its exhaustion test may fire. It is not a result selected from a wider search.",
+        "The anomaly is documented CROSS-SECTIONALLY and at monthly horizons. A 1-day forward return on one ETF is a far weaker test, and the sign need not survive at that frequency.",
+        "Intraday range also spikes on news days, where the next-day return is dominated by the news rather than by any volatility premium.",
+        "Class balance expected to be reasonable: range mean-reverts around its own trailing average."
+      ],
+      "materialization": {
+        "knowledge_code_revision": "d4d88e5bcb88596f6bac32138f90bdf3f1b70352",
+        "pipeline_sha256": "3d73621d10689b4ad7d00361316475e49591104927b14e189a5c5b4938327ffa",
+        "preserved_at": "2026-10-01T02:08:57.925604Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "LT",
+          "expected_direction": "DECREASE",
+          "metric": "mean_forward_return_1d((high-low)/close > RANGE20) - mean_forward_return_1d((high-low)/close <= RANGE20)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "(high_t - low_t) / close_t <= RANGE20_t",
+          "upper_group": "(high_t - low_t) / close_t > RANGE20_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "range_avg_20",
+          "parameters": {
+            "window": 20
+          },
+          "strategy_id": "INTRADAY_RANGE"
+        },
+        "instrument": "SPY",
+        "metric": {
+          "formula": "mean(return_t+1 | (high_t - low_t) / close_t > RANGE20_t) - mean(return_t+1 | (high_t - low_t) / close_t <= RANGE20_t)",
+          "name": "mean_forward_return_1d((high-low)/close > RANGE20) - mean_forward_return_1d((high-low)/close <= RANGE20)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_RANGE20_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2023-12-01T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2023-12-04T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2023-12-05T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2023-12-06T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2023-12-07T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2023-12-08T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2023-12-11T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2023-12-12T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2023-12-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2023-12-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2023-12-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2023-12-18T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2023-12-19T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2023-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2023-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2023-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2023-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2023-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2023-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_RANGE20_WARMUP",
+              "timestamp": "2023-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2025-01-02T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2025-01-01T00:00:00Z",
+            "start_utc": "2024-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|a109e59d4bc49015a8c1c7f2ed079365c1fbb239ab6dc74657aa69da079229b5|db246181522cb558ac55ee22c4359ffb4c66a8deb933a6499bc7d79501d74b35",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|d80607265379e69908dacd019c514b42fdd3eabf4a1c3230d235de3299deb6ff",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|d80607265379e69908dacd019c514b42fdd3eabf4a1c3230d235de3299deb6ff|d6425a83fefec53fa0a266df5c6eea350b27fb241a0fe5a697fbd7f14a874116"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|f8eba377-9425-470d-8e04-b426cdbe693a",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|f8eba377-9425-470d-8e04-b426cdbe693a|1|458fa85a20aca60ec22de0365d92661cd16caa1812a5522fc9d631037eff05d9",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "d4d88e5bcb88596f6bac32138f90bdf3f1b70352",
+          "hypothesis_id": "HYPOTHESIS|91584d8b-fcae-47f6-a105-0539e767d055",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|91584d8b-fcae-47f6-a105-0539e767d055|1|8117d4769061d696956694916dac47394b36a15642048b952951bb99d88ac122",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|0cb6cbc3658542403f73a0830086b40a0e6b14437b701c048fe4e414546c40f9|feadebf725e574bc7b291bf641c8d9b2ff720373e5b3cd944fd2e2720ac0fd3c",
+          "research_result_id": "RESEARCH_RESULT|0cb6cbc3658542403f73a0830086b40a0e6b14437b701c048fe4e414546c40f9"
+        }
+      },
+      "results": {
+        "outcome": "REJECTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "LT",
+            "expected_direction": "DECREASE",
+            "metric": "mean_forward_return_1d((high-low)/close > RANGE20) - mean_forward_return_1d((high-low)/close <= RANGE20)",
+            "threshold": "0"
+          },
+          "criterion_result": "NOT_MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 150,
+              "mean_return_t_plus_1": -0.00010702833290329172,
+              "rule": "(high_t - low_t) / close_t <= RANGE20_t"
+            },
+            "upper": {
+              "count": 102,
+              "mean_return_t_plus_1": 0.0024453722191033903,
+              "rule": "(high_t - low_t) / close_t > RANGE20_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": 0.002552400552006682,
+          "observation_count": 252,
+          "period": {
+            "end_exclusive_utc": "2025-01-01T00:00:00Z",
+            "start_utc": "2024-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    }
+  ],
+  "schema_version": "1"
+}

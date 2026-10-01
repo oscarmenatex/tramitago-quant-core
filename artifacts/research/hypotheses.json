@@ -1242,6 +1242,174 @@
       "system_version": "0.1.0",
       "target_metric": "mean_forward_return_1d(close_t > sma_close_50) - mean_forward_return_1d(close_t <= sma_close_50)",
       "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "LT",
+        "expected_direction": "DECREASE",
+        "metric": "mean_forward_return_1d(close_t > MOM10_t) - mean_forward_return_1d(close_t <= MOM10_t)",
+        "threshold": "0"
+      },
+      "code_revision": "d4d88e5bcb88596f6bac32138f90bdf3f1b70352",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2025-01-01T00:00:00Z",
+          "start_utc": "2024-01-01T00:00:00Z"
+        },
+        "universe": [
+          "SPY"
+        ],
+        "variables": [
+          "close",
+          "close_lag_10",
+          "forward_return_1d"
+        ]
+      },
+      "creation_context": {
+        "created_by": "Oscar Carmenate Rodriguez",
+        "provenance": [
+          "DISCOVERY|artifacts/live-run-1",
+          "SNAPSHOT_SHA256|a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f",
+          "KNOWLEDGE|b154409262618e2436ad19dbfdab4da2e43c97678d56ec5192cc992b4c2cd521",
+          "ANALYSIS|nivel-5-spy-mom10-2024"
+        ]
+      },
+      "creation_timestamp": "2026-10-01T02:08:57.925604Z",
+      "description": "For SPY, the mean t+1 return when close_t is ABOVE its own value 10 trading days earlier is LOWER than when it is at or below it. Direction DECREASE pre-declared on the SHORT-HORIZON REVERSAL prior (Jegadeesh 1990, monthly reversals; Lehmann 1990, weekly reversals): at daily-to-monthly horizons reversal dominates, while momentum proper is a 3-12 month phenomenon (Jegadeesh & Titman 1993), so a 10-day lookback against a 1-day forward return sits in the reversal regime, not the momentum one.\n\nPre-declared caveats: (1) The reversal literature is largely cross-sectional across many stocks; a single index ETF is a much weaker test of it. (2) This project's crypto evidence also showed reversal signs. That observation did NOT motivate this direction -- the Jegadeesh/Lehmann prior predates it and is independent -- but the coincidence is recorded rather than hidden. (3) Class balance risk: a lagged-close comparison skews upward in a trending year. Both states are expected to occur, but not evenly.",
+      "expected_direction": "DECREASE",
+      "hypothesis_id": "HYPOTHESIS|7f2dc4c8-0807-4802-a3e2-611cfa03000a",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|7f2dc4c8-0807-4802-a3e2-611cfa03000a|1|e041694cce4b5cef3f84a633793077cb220bd541899d6bc4da7512a29d6bd1b5",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_return_1d(close_t > MOM10_t) - mean_forward_return_1d(close_t <= MOM10_t)",
+      "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "GT",
+        "expected_direction": "INCREASE",
+        "metric": "mean_forward_return_1d(volume_t > VOLSURGE20_t) - mean_forward_return_1d(volume_t <= VOLSURGE20_t)",
+        "threshold": "0"
+      },
+      "code_revision": "d4d88e5bcb88596f6bac32138f90bdf3f1b70352",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2025-01-01T00:00:00Z",
+          "start_utc": "2024-01-01T00:00:00Z"
+        },
+        "universe": [
+          "SPY"
+        ],
+        "variables": [
+          "close",
+          "forward_return_1d",
+          "volume",
+          "volume_avg_20"
+        ]
+      },
+      "creation_context": {
+        "created_by": "Oscar Carmenate Rodriguez",
+        "provenance": [
+          "DISCOVERY|artifacts/live-run-1",
+          "SNAPSHOT_SHA256|a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f",
+          "KNOWLEDGE|b154409262618e2436ad19dbfdab4da2e43c97678d56ec5192cc992b4c2cd521",
+          "ANALYSIS|nivel-5-spy-volsurge20-2024"
+        ]
+      },
+      "creation_timestamp": "2026-10-01T02:08:57.925604Z",
+      "description": "For SPY, the mean t+1 return when volume_t is ABOVE its own trailing 20-day average is HIGHER than when it is at or below it. Direction INCREASE pre-declared on the HIGH-VOLUME RETURN PREMIUM (Gervais, Kaniel & Mingelgrin 2001): securities experiencing unusually high trading volume subsequently earn higher returns, attributed to the visibility such volume confers.\n\nPre-declared caveats: (1) The original premium is CROSS-SECTIONAL on individual stocks over 1-20 day horizons. Its transfer to a single broad-index ETF is not established and may not hold at all. (2) Volume for an ETF reflects creation/redemption and hedging flow as well as directional interest, so the mechanism may not be the one documented. (3) Class balance expected to be reasonable: volume mean-reverts around its own trailing average, so both states recur by construction.",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|21384a9c-6781-49c4-a6d5-c79451551cd3",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|21384a9c-6781-49c4-a6d5-c79451551cd3|1|b8d081c3e2cb3c8b8b3f8332be8604483acf939df357a141e3049cb8ac9d8f45",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_return_1d(volume_t > VOLSURGE20_t) - mean_forward_return_1d(volume_t <= VOLSURGE20_t)",
+      "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "LT",
+        "expected_direction": "DECREASE",
+        "metric": "mean_forward_return_1d((high-low)/close > RANGE20) - mean_forward_return_1d((high-low)/close <= RANGE20)",
+        "threshold": "0"
+      },
+      "code_revision": "d4d88e5bcb88596f6bac32138f90bdf3f1b70352",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2025-01-01T00:00:00Z",
+          "start_utc": "2024-01-01T00:00:00Z"
+        },
+        "universe": [
+          "SPY"
+        ],
+        "variables": [
+          "close",
+          "forward_return_1d",
+          "high",
+          "low",
+          "range_avg_20"
+        ]
+      },
+      "creation_context": {
+        "created_by": "Oscar Carmenate Rodriguez",
+        "provenance": [
+          "DISCOVERY|artifacts/live-run-1",
+          "SNAPSHOT_SHA256|a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f",
+          "KNOWLEDGE|b154409262618e2436ad19dbfdab4da2e43c97678d56ec5192cc992b4c2cd521",
+          "ANALYSIS|nivel-5-spy-range20-2024"
+        ]
+      },
+      "creation_timestamp": "2026-10-01T02:08:57.925604Z",
+      "description": "For SPY, the mean t+1 return when the intraday range (high-low)/close is ABOVE its own trailing 20-day average is LOWER than when it is at or below it. Direction DECREASE pre-declared on the LOW-VOLATILITY ANOMALY (Ang, Hodrick, Xing & Zhang 2006; Baker, Bradley & Wurgler 2011): high-volatility assets earn lower returns than the risk-return relation predicts, with realised intraday range standing in for realised volatility.\n\nPre-declared caveats: (1) The anomaly is documented CROSS-SECTIONALLY and at monthly horizons. A 1-day forward return on one ETF is a far weaker test, and the sign need not survive at that frequency. (2) Intraday range also spikes on news days, where the next-day return is dominated by the news rather than by any volatility premium. (3) Class balance expected to be reasonable: range mean-reverts around its own trailing average.",
+      "expected_direction": "DECREASE",
+      "hypothesis_id": "HYPOTHESIS|91584d8b-fcae-47f6-a105-0539e767d055",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|91584d8b-fcae-47f6-a105-0539e767d055|1|8117d4769061d696956694916dac47394b36a15642048b952951bb99d88ac122",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_return_1d((high-low)/close > RANGE20) - mean_forward_return_1d((high-low)/close <= RANGE20)",
+      "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "GT",
+        "expected_direction": "INCREASE",
+        "metric": "mean_forward_return_1d(close_t > sma_close_10 AND volsurge20) - mean_forward_return_1d(close_t <= sma_close_10 AND volsurge20)",
+        "threshold": "0"
+      },
+      "code_revision": "d4d88e5bcb88596f6bac32138f90bdf3f1b70352",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2025-01-01T00:00:00Z",
+          "start_utc": "2024-01-01T00:00:00Z"
+        },
+        "universe": [
+          "SPY"
+        ],
+        "variables": [
+          "close",
+          "forward_return_1d",
+          "sma_close_10_confirm_vol_20",
+          "volume"
+        ]
+      },
+      "creation_context": {
+        "created_by": "Oscar Carmenate Rodriguez",
+        "provenance": [
+          "DISCOVERY|artifacts/live-run-1",
+          "SNAPSHOT_SHA256|a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f",
+          "KNOWLEDGE|b154409262618e2436ad19dbfdab4da2e43c97678d56ec5192cc992b4c2cd521",
+          "ANALYSIS|nivel-5-spy-smavol-10-20-2024"
+        ]
+      },
+      "creation_timestamp": "2026-10-01T02:08:57.925604Z",
+      "description": "For SPY, the mean t+1 return when close_t is ABOVE its trailing 10-day average AND volume_t is ABOVE its trailing 20-day average is HIGHER than otherwise. Direction INCREASE pre-declared on VOLUME AS CONFIRMATION (Blume, Easley & O'Hara 1994: volume carries information about the quality of a price signal that price alone does not), the formal basis for the practitioner premise that a price move on rising volume is more reliable than one without it.\n\nPre-declared caveats: (1) A conjunction is the highest class-imbalance risk in this batch: it can only shrink the UPPER group relative to either condition alone. It is expected to be dominated by the volume term, since close above a 10-day average is common. (2) Combining two signals that may individually carry no edge does not create one; this project already refuted a four-signal portfolio on those grounds. (3) Blume/Easley/O'Hara is a theoretical microstructure result, not a documented trading edge at daily frequency on an index ETF.",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|47844c44-41b7-4c31-84f7-68cba14905ba",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|47844c44-41b7-4c31-84f7-68cba14905ba|1|ba57f6ce183e44ecc17c721347f049201e54c2bb999591b42b5cc7e7c2dc1258",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_return_1d(close_t > sma_close_10 AND volsurge20) - mean_forward_return_1d(close_t <= sma_close_10 AND volsurge20)",
+      "version": 1
     }
   ],
   "schema_version": "2"
