@@ -18,7 +18,11 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-User=tramitago
+# opc, not tramitago: the tramitago account does not exist on the VM. A unit
+# declaring it never starts, and the loop would look installed while producing
+# no ticks at all. /var/lib/tramitago-quant-core/forward-paper must be owned by
+# opc for the same reason.
+User=opc
 WorkingDirectory=/opt/tramitago-quant-core
 Environment=PYTHONDONTWRITEBYTECODE=1
 # python3.11+ required: shared/util.py uses datetime.fromisoformat with offsets.
