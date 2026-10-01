@@ -1,0 +1,14 @@
+[Unit]
+Description=Supervise the machinery verification loop every 15 minutes
+
+[Timer]
+OnBootSec=5min
+# Slower than the tick it watches (5min), so a single missed tick does not
+# produce a verdict, and faster than the staleness tolerance so a stopped loop
+# is reported within the hour.
+OnUnitActiveSec=15min
+AccuracySec=1min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

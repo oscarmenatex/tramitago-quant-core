@@ -64,6 +64,10 @@ from tramitago_quant_core.risk.capacity_model import (
     capacity_contract, verified_capacity_contract, impact_rate, net_sharpe_at,
     capacity_ceiling, tranche_is_admissible, ceiling_from_realised_impact,
 )
+from tramitago_quant_core.risk.operational_supervision import (
+    SUPERVISION_OK, SUPERVISION_STALE, SUPERVISION_DEGRADED, SUPERVISION_STATES,
+    read_observations, tick_success_rate, staleness_seconds, supervise,
+)
 from tramitago_quant_core.risk.degradation_monitor import (
     MONITORING_CONTRACT_SCHEMA_VERSION, DEGRADES_BELOW, DEGRADES_ABOVE,
     DEGRADATION_DIRECTIONS, ACTION_SUSPEND, ACTION_RETIRE, MONITOR_ACTIONS,

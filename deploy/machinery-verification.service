@@ -18,8 +18,12 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-User=tramitago
-WorkingDirectory=/opt/tramitago-quant-core
+# The deployed VM runs as opc, with the checkout in its home and the data
+# directory owned by opc. The tramitago account does not exist there and never
+# did. These two lines are what was actually installed, hand-corrected at
+# install time; the repo kept the unreachable values until 2026-10-01.
+User=opc
+WorkingDirectory=/home/opc/tramitago-quant-core
 Environment=PYTHONDONTWRITEBYTECODE=1
 # python3.11+ required: shared/util.py uses datetime.fromisoformat with offsets.
 ExecStart=/usr/bin/python3.11 -B scripts/operations/run_machinery_verification.py --data-dir /var/lib/tramitago-quant-core/forward-paper
