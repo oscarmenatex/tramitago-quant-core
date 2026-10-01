@@ -107,11 +107,27 @@ def _candidate_is_valid(candidate):
     """A candidate names a Strategy the SEALED machinery already knows how to
     rebuild. That restriction is deliberate: Discovery must not be able to
     propose something the validation layer cannot later re-derive from its own
-    record, or a Finding could be unpromotable by construction."""
+    record, or a Finding could be unpromotable by construction.
+
+    `series` is OPTIONAL and names which price series the candidate is measured
+    on. It exists because a relative-value Strategy carries its second leg as a
+    column name ("pair_close"), not as the pair's identity -- so without it,
+    PAIR_RATIO_REVERSION(5) on ETH/ETC and on SOL/AVAX are the SAME candidate
+    and a space of eighteen pair-window combinations collapses to three. The
+    alternative, one scan per pair, would hide the multiplicity across pairs,
+    which is precisely the laundering this module exists to prevent.
+
+    Optional rather than versioned, on purpose: field presence is the
+    discriminator, the same additive pattern the Outcome contract uses, so every
+    already-sealed space and scan reverifies byte for byte.
+    """
     return (isinstance(candidate, dict)
-            and set(candidate) == {"strategy_id", "parameters"}
+            and set(candidate) in ({"strategy_id", "parameters"},
+                                   {"strategy_id", "parameters", "series"})
             and candidate.get("strategy_id") in _EXPERIMENT_STRATEGY_CONSTRUCTORS
-            and isinstance(candidate.get("parameters"), dict))
+            and isinstance(candidate.get("parameters"), dict)
+            and ("series" not in candidate
+                 or _hypothesis_text_is_valid(candidate.get("series"))))
 
 
 def candidate_strategy(candidate):
@@ -156,6 +172,10 @@ def _discovery_space_record_is_valid(record):
             or not isinstance(candidates, list) or not candidates
             or not all(_candidate_is_valid(item) for item in candidates)
             or len({encoded(item) for item in candidates}) != len(candidates)
+            # All or none. A space mixing series-bearing candidates with
+            # series-less ones could not say what the series-less ones were
+            # measured on, and its multiplicity would be unreadable.
+            or len({"series" in item for item in candidates}) != 1
             or not _window_is_valid(record.get("discovery_window"))
             or not _window_is_valid(record.get("holdout_window"))
             or not _windows_are_disjoint(record["discovery_window"], record["holdout_window"])
@@ -267,7 +287,7 @@ def minority_state_frequency(upper_count, lower_count):
     return min(upper_count, lower_count) / total
 
 
-def _candidate_observation(strategy, rows, horizon=1):
+def _candidate_observation(strategy, rows, horizon=1, series=None):
     """Measure one candidate on the discovery rows. Returns counts, the minority
     state frequency, and the difference of group means of the Strategy's own
     declared Outcome -- never a verdict, and never a p-value: a number that has
@@ -289,6 +309,9 @@ def _candidate_observation(strategy, rows, horizon=1):
     return {
         "strategy_id": strategy["strategy_id"],
         "parameters": strategy["parameters"],
+        # Present only when the candidate declared one, so a scan sealed before
+        # series existed hashes to exactly the same identity it always did.
+        **({"series": series} if series is not None else {}),
         "outcome_id": outcome["outcome_id"],
         "upper_count": len(upper),
         "lower_count": len(lower),
@@ -326,6 +349,26 @@ def _rows_within_window(rows, window):
     return all(start <= epoch(row["timestamp"]) < end for row in rows)
 
 
+def _candidate_rows(candidate, rows):
+    """Resolve the rows a candidate is measured on.
+
+    `rows` is a plain list when the space declares no series, and a mapping from
+    series label to rows when it does. Mixing the two forms is refused rather
+    than guessed at: silently measuring every candidate on the same series would
+    produce a scan whose observations all look distinct and are not.
+    """
+    series = candidate.get("series")
+    if series is None:
+        if isinstance(rows, dict):
+            raise ValueError("This Discovery Space declares no series, so rows must be a list")
+        return None, rows
+    if not isinstance(rows, dict):
+        raise ValueError("This Discovery Space declares series, so rows must be keyed by series")
+    if series not in rows:
+        raise ValueError(f"No rows were supplied for declared series {series}")
+    return series, rows[series]
+
+
 def _discovery_scan_id(space_id, observations):
     content = {"schema_version": DISCOVERY_SCAN_SCHEMA_VERSION,
                "space_id": space_id, "observations": observations}
@@ -351,14 +394,17 @@ def scan_discovery_space(space, rows, *, horizon=1):
         raise ValueError("Discovery Space record is invalid")
     if not rows:
         raise ValueError("A Discovery scan needs rows")
-    if not _rows_within_window(rows, space["discovery_window"]):
-        raise ValueError(
-            "Discovery rows fall outside the declared discovery window; the holdout "
-            "must never be read by a scan")
+    for one_series in (rows.values() if isinstance(rows, dict) else [rows]):
+        if not one_series or not _rows_within_window(one_series, space["discovery_window"]):
+            raise ValueError(
+                "Discovery rows fall outside the declared discovery window; the holdout "
+                "must never be read by a scan")
 
     observations = []
     for index, candidate in enumerate(space["candidates"]):
-        observation = _candidate_observation(candidate_strategy(candidate), rows, horizon)
+        series, candidate_rows = _candidate_rows(candidate, rows)
+        observation = _candidate_observation(
+            candidate_strategy(candidate), candidate_rows, horizon, series)
         examinable, reason = candidate_is_examinable(observation, space)
         observations.append({**observation, "declared_order": index,
                              "examinable": examinable, "reason": reason})
@@ -544,7 +590,8 @@ def finding_from_scan(finding_registry_path, *, scan, space, rank=0, created_by,
     return constitute_finding(
         finding_registry_path,
         observation=(
-            f"On the discovery window alone, {chosen['strategy_id']}{chosen['parameters']} "
+            f"On the discovery window alone, {chosen['strategy_id']}{chosen['parameters']}"
+            f"{' on ' + chosen['series'] if 'series' in chosen else ''} "
             f"shows a difference of mean {chosen['outcome_id']} between its two groups of "
             f"{chosen['effect']}. This is an observation selected out of "
             f"{scan['summary']['candidates_examined']} candidates, not evidence. The same scan's "
@@ -571,6 +618,7 @@ def finding_from_scan(finding_registry_path, *, scan, space, rank=0, created_by,
             f"|negative={scan['summary']['negative_effects']}",
             f"MINORITY_STATE_FREQUENCY|{chosen['minority_state_frequency']}",
             f"SUPPORT|UPPER={chosen['upper_count']}|LOWER={chosen['lower_count']}",
+            *([f"SERIES|{chosen['series']}"] if "series" in chosen else []),
             f"HOLDOUT_UNREAD|{space['holdout_window']['start_utc']}|"
             f"{space['holdout_window']['end_exclusive_utc']}",
         ],

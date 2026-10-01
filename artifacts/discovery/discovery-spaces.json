@@ -121,6 +121,169 @@
       "minimum_support": 30,
       "schema_version": "1",
       "space_id": "DISCOVERY_SPACE|00911e622c39e47a337ee3991a67c104f2f04216c808a71822a2cee35937985f"
+    },
+    {
+      "candidates": [
+        {
+          "parameters": {
+            "pair_variable": "pair_close",
+            "window": 5
+          },
+          "series": "ETH-USD/ETC-USD",
+          "strategy_id": "PAIR_RATIO_REVERSION"
+        },
+        {
+          "parameters": {
+            "pair_variable": "pair_close",
+            "window": 10
+          },
+          "series": "ETH-USD/ETC-USD",
+          "strategy_id": "PAIR_RATIO_REVERSION"
+        },
+        {
+          "parameters": {
+            "pair_variable": "pair_close",
+            "window": 20
+          },
+          "series": "ETH-USD/ETC-USD",
+          "strategy_id": "PAIR_RATIO_REVERSION"
+        },
+        {
+          "parameters": {
+            "pair_variable": "pair_close",
+            "window": 5
+          },
+          "series": "BTC-USD/BCH-USD",
+          "strategy_id": "PAIR_RATIO_REVERSION"
+        },
+        {
+          "parameters": {
+            "pair_variable": "pair_close",
+            "window": 10
+          },
+          "series": "BTC-USD/BCH-USD",
+          "strategy_id": "PAIR_RATIO_REVERSION"
+        },
+        {
+          "parameters": {
+            "pair_variable": "pair_close",
+            "window": 20
+          },
+          "series": "BTC-USD/BCH-USD",
+          "strategy_id": "PAIR_RATIO_REVERSION"
+        },
+        {
+          "parameters": {
+            "pair_variable": "pair_close",
+            "window": 5
+          },
+          "series": "BTC-USD/LTC-USD",
+          "strategy_id": "PAIR_RATIO_REVERSION"
+        },
+        {
+          "parameters": {
+            "pair_variable": "pair_close",
+            "window": 10
+          },
+          "series": "BTC-USD/LTC-USD",
+          "strategy_id": "PAIR_RATIO_REVERSION"
+        },
+        {
+          "parameters": {
+            "pair_variable": "pair_close",
+            "window": 20
+          },
+          "series": "BTC-USD/LTC-USD",
+          "strategy_id": "PAIR_RATIO_REVERSION"
+        },
+        {
+          "parameters": {
+            "pair_variable": "pair_close",
+            "window": 5
+          },
+          "series": "ETH-USD/SOL-USD",
+          "strategy_id": "PAIR_RATIO_REVERSION"
+        },
+        {
+          "parameters": {
+            "pair_variable": "pair_close",
+            "window": 10
+          },
+          "series": "ETH-USD/SOL-USD",
+          "strategy_id": "PAIR_RATIO_REVERSION"
+        },
+        {
+          "parameters": {
+            "pair_variable": "pair_close",
+            "window": 20
+          },
+          "series": "ETH-USD/SOL-USD",
+          "strategy_id": "PAIR_RATIO_REVERSION"
+        },
+        {
+          "parameters": {
+            "pair_variable": "pair_close",
+            "window": 5
+          },
+          "series": "SOL-USD/AVAX-USD",
+          "strategy_id": "PAIR_RATIO_REVERSION"
+        },
+        {
+          "parameters": {
+            "pair_variable": "pair_close",
+            "window": 10
+          },
+          "series": "SOL-USD/AVAX-USD",
+          "strategy_id": "PAIR_RATIO_REVERSION"
+        },
+        {
+          "parameters": {
+            "pair_variable": "pair_close",
+            "window": 20
+          },
+          "series": "SOL-USD/AVAX-USD",
+          "strategy_id": "PAIR_RATIO_REVERSION"
+        },
+        {
+          "parameters": {
+            "pair_variable": "pair_close",
+            "window": 5
+          },
+          "series": "ADA-USD/DOT-USD",
+          "strategy_id": "PAIR_RATIO_REVERSION"
+        },
+        {
+          "parameters": {
+            "pair_variable": "pair_close",
+            "window": 10
+          },
+          "series": "ADA-USD/DOT-USD",
+          "strategy_id": "PAIR_RATIO_REVERSION"
+        },
+        {
+          "parameters": {
+            "pair_variable": "pair_close",
+            "window": 20
+          },
+          "series": "ADA-USD/DOT-USD",
+          "strategy_id": "PAIR_RATIO_REVERSION"
+        }
+      ],
+      "declared_at": "2026-10-01T12:02:14.402870Z",
+      "declared_by": "relative-value-discovery-runner",
+      "discovery_window": {
+        "end_exclusive_utc": "2025-01-01T00:00:00Z",
+        "start_utc": "2024-01-01T00:00:00Z"
+      },
+      "holdout_window": {
+        "end_exclusive_utc": "2026-01-01T00:00:00Z",
+        "start_utc": "2025-01-01T00:00:00Z"
+      },
+      "justification": "V\u00eda 7.C (relative value), the only axis the hypothesis catalogue leaves open at low cost and does not record as measured dead -- the aggregate signal measurement covered single-instrument directional prediction only, never a spread. Six pairs x three PAIR_RATIO_REVERSION windows, N=18, declared complete. The pairs are chosen by STRUCTURAL relationship stated in advance -- protocol lineage (ETH/ETC, BTC/BCH, BTC/LTC) or competing platforms of the same generation (ETH/SOL, SOL/AVAX, ADA/DOT) -- never by correlation measured in the data, which would snoop the space itself. ETH/BTC is excluded although it is the pair already tested: its Hypothesis was evaluated on 2025, which is this space's holdout. Windows 5/10/20 are short, medium and long relative to a daily ratio and are the same three for every pair, so no pair is favoured by a wider grid. No pair, window or instrument may be added to THIS space afterwards.",
+      "minimum_minority_state_frequency": "0.20",
+      "minimum_support": 30,
+      "schema_version": "1",
+      "space_id": "DISCOVERY_SPACE|664c59fa8283ff60a956d442979f68c74ed810a8abc9172591a84b2a8a4e2d45"
     }
   ]
 }

@@ -26,6 +26,34 @@
         "SUPPORT|UPPER=199|LOWER=163",
         "HOLDOUT_UNREAD|2025-01-01T00:00:00Z|2026-01-01T00:00:00Z"
       ]
+    },
+    {
+      "created_at": "2026-10-01T12:02:17.610353Z",
+      "created_by": "relative-value-discovery-runner",
+      "exploration_context": "Bounded Discovery scan DISCOVERY_SCAN|34917189c337ac570a1908b4f9fb2160ffcc3e1757044b65409a82a748be03be over Discovery Space DISCOVERY_SPACE|664c59fa8283ff60a956d442979f68c74ed810a8abc9172591a84b2a8a4e2d45, discovery window 2024-01-01T00:00:00Z to 2025-01-01T00:00:00Z. Holdout reserved and unread: 2025-01-01T00:00:00Z to 2026-01-01T00:00:00Z.",
+      "finding_id": "FINDING|fceb6cc7-adbf-476d-9985-9303b0c0b77d",
+      "history": [
+        {
+          "at": "2026-10-01T12:02:17.610353Z",
+          "note": "constituted",
+          "status": "OPEN"
+        }
+      ],
+      "observation": "On the discovery window alone, PAIR_RATIO_REVERSION{'window': 5, 'pair_variable': 'pair_close'} on ETH-USD/SOL-USD shows a difference of mean SPREAD_RETURN between its two groups of 0.006125167847. This is an observation selected out of 18 candidates, not evidence. The same scan's worst candidate scored -0.008637126680 and its median -0.001060880464, with 8 positive and 10 negative.",
+      "schema_version": "1",
+      "status": "OPEN",
+      "supporting_evidence": [
+        "DISCOVERY_SCAN|34917189c337ac570a1908b4f9fb2160ffcc3e1757044b65409a82a748be03be",
+        "DISCOVERY_SPACE|664c59fa8283ff60a956d442979f68c74ed810a8abc9172591a84b2a8a4e2d45",
+        "CANDIDATES_EXAMINED|18",
+        "SELECTED_RANK|0",
+        "EFFECT_ON_DISCOVERY_WINDOW|0.006125167847",
+        "SCAN_EFFECT_SPREAD|worst=-0.008637126680|median=-0.001060880464|positive=8|negative=10",
+        "MINORITY_STATE_FREQUENCY|0.475000000000",
+        "SUPPORT|UPPER=171|LOWER=189",
+        "SERIES|ETH-USD/SOL-USD",
+        "HOLDOUT_UNREAD|2025-01-01T00:00:00Z|2026-01-01T00:00:00Z"
+      ]
     }
   ],
   "schema_version": "1"

@@ -273,6 +273,110 @@ class ScanTests(unittest.TestCase):
                 load_discovery_scan(path, record["scan_id"])
 
 
+PAIR_CANDIDATES = [
+    {"strategy_id": "PAIR_RATIO_REVERSION",
+     "parameters": {"window": window, "pair_variable": "pair_close"}, "series": series}
+    for series in ("ETH-USD/ETC-USD", "BTC-USD/LTC-USD")
+    for window in (5, 10)
+]
+
+
+def _pair_rows(count=120, drift=0.0, start="2025-01-01T00:00:00Z"):
+    base = p.epoch(start)
+    return [{"timestamp": p.iso(base + index * DAY),
+             "close": 100.0 + index + (2.0 if index % 4 == 0 else 0.0),
+             "pair_close": 50.0 + index * (0.5 + drift)}
+            for index in range(count)]
+
+
+class SeriesTests(unittest.TestCase):
+    """A relative-value Strategy carries its second leg as a COLUMN NAME, not as
+    the pair's identity -- so without a series the same eighteen pair-window
+    combinations collapse to three candidates."""
+
+    def test_without_a_series_pair_candidates_are_indistinguishable(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            bare = [{k: v for k, v in item.items() if k != "series"}
+                    for item in PAIR_CANDIDATES]
+            with self.assertRaises(ValueError):
+                _space(Path(tmp) / "spaces.json", candidates=bare)
+
+    def test_a_space_cannot_mix_series_bearing_and_series_less_candidates(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(ValueError):
+                _space(Path(tmp) / "spaces.json",
+                       candidates=[PAIR_CANDIDATES[0], CANDIDATES[0]])
+
+    def test_each_candidate_is_measured_on_its_own_series(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            space = _space(Path(tmp) / "spaces.json", candidates=PAIR_CANDIDATES)
+            observations = scan_discovery_space(space, {
+                "ETH-USD/ETC-USD": _pair_rows(drift=0.0),
+                "BTC-USD/LTC-USD": _pair_rows(drift=0.01)})
+            self.assertEqual(len(observations), 4)
+            self.assertEqual({item["series"] for item in observations},
+                             {"ETH-USD/ETC-USD", "BTC-USD/LTC-USD"})
+            # Different legs, different numbers -- the series is not decoration.
+            by_series = {}
+            for item in observations:
+                by_series.setdefault(item["series"], []).append(item["effect"])
+            self.assertNotEqual(by_series["ETH-USD/ETC-USD"], by_series["BTC-USD/LTC-USD"])
+
+    def test_the_outcome_measured_is_the_spread_not_one_leg(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            space = _space(Path(tmp) / "spaces.json", candidates=PAIR_CANDIDATES)
+            observations = scan_discovery_space(space, {
+                "ETH-USD/ETC-USD": _pair_rows(), "BTC-USD/LTC-USD": _pair_rows(drift=0.01)})
+            self.assertEqual({item["outcome_id"] for item in observations}, {"SPREAD_RETURN"})
+
+    def test_rows_for_a_declared_series_cannot_be_missing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            space = _space(Path(tmp) / "spaces.json", candidates=PAIR_CANDIDATES)
+            with self.assertRaises(ValueError) as caught:
+                scan_discovery_space(space, {"ETH-USD/ETC-USD": _pair_rows()})
+            self.assertIn("BTC-USD/LTC-USD", str(caught.exception))
+
+    def test_the_two_row_forms_are_never_guessed_between(self):
+        # Measuring every candidate on the same series would produce a scan whose
+        # observations all look distinct and are not.
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "spaces.json"
+            with_series = _space(path, candidates=PAIR_CANDIDATES)
+            without = _space(path)
+            with self.assertRaises(ValueError):
+                scan_discovery_space(with_series, _pair_rows())
+            with self.assertRaises(ValueError):
+                scan_discovery_space(without, {"BTC-USD": _trending_rows(100)})
+
+    def test_the_holdout_guard_covers_every_series(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            space = _space(Path(tmp) / "spaces.json", candidates=PAIR_CANDIDATES)
+            with self.assertRaises(ValueError):
+                scan_discovery_space(space, {
+                    "ETH-USD/ETC-USD": _pair_rows(100),
+                    "BTC-USD/LTC-USD": _pair_rows(300)})
+
+    def test_a_series_less_observation_keeps_its_original_identity(self):
+        # The additive pattern earns its keep only if already-sealed scans
+        # reverify byte for byte.
+        observation = _candidate_observation(candidate_strategy(CANDIDATES[0]),
+                                             _trending_rows(100))
+        self.assertNotIn("series", observation)
+
+    def test_the_finding_names_the_series_it_was_measured_on(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            space = _space(Path(tmp) / "spaces.json", candidates=PAIR_CANDIDATES)
+            observations = scan_discovery_space(space, {
+                "ETH-USD/ETC-USD": _pair_rows(), "BTC-USD/LTC-USD": _pair_rows(drift=0.01)})
+            scan = constitute_discovery_scan(
+                Path(tmp) / "scans.json", space=space, observations=observations,
+                scanned_at="2025-07-01T00:00:00Z", scan_code_revision=REVISION)
+            finding = finding_from_scan(Path(tmp) / "findings.json", scan=scan, space=space,
+                                        created_by="test", created_at="2025-07-01T00:00:00Z")
+            self.assertTrue(any(item.startswith("SERIES|")
+                                for item in finding["supporting_evidence"]))
+
+
 class FindingTests(unittest.TestCase):
     def _sealed(self, tmp, **space_overrides):
         space = _space(Path(tmp) / "spaces.json", **space_overrides)
