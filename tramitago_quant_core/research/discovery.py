@@ -58,7 +58,7 @@ from tramitago_quant_core.shared.util import (
     _hypothesis_code_revision_is_valid, _pipeline_source_bytes,
 )
 from tramitago_quant_core.research.experiment import _EXPERIMENT_STRATEGY_CONSTRUCTORS
-from tramitago_quant_core.research.finding import constitute_finding
+from tramitago_quant_core.research.finding import constitute_finding, query_findings
 from tramitago_quant_core.strategy_contract.strategy import _strategy_classify_rows
 from tramitago_quant_core.strategy_contract.outcome import strategy_outcome
 
@@ -537,9 +537,22 @@ def constitute_discovery_scan(registry_path, *, space, observations, scanned_at,
                 else {"schema_version": DISCOVERY_SCAN_REGISTRY_SCHEMA_VERSION, "scans": []})
     matches = [item for item in registry["scans"] if item["scan_id"] == record["scan_id"]]
     if matches:
-        if len(matches) == 1 and matches[0] == record:
-            return matches[0]
-        raise ValueError("Discovery Scan identity already exists with different content")
+        if len(matches) != 1:
+            raise ValueError("Discovery Scan is registered ambiguously")
+        # The ORIGINAL comes back, materialization and all, and that is a
+        # deliberate departure from the Hypothesis Generation Batch registry,
+        # which refuses a re-seal whose content differs at all.
+        #
+        # A batch is a one-time act: it constitutes new Hypotheses, so running it
+        # twice means two different things happened. A scan is a pure function of
+        # (space, rows) over a window that is already in the past -- re-running it
+        # must reproduce it, and the identity already covers the space and EVERY
+        # observation. What can still differ is only when it was sealed, by which
+        # revision, against which pipeline source. None of those change what was
+        # measured; identical observations from a later revision is reassurance,
+        # not a conflict. Raising on it would make a runner unrunnable twice,
+        # which is how this was found.
+        return matches[0]
     registry["scans"].append(record)
     if not _discovery_scan_registry_is_valid(registry):
         raise ValueError("Constructed Discovery Scan registry is invalid")
@@ -555,6 +568,25 @@ def load_discovery_scan(registry_path, scan_id):
     if len(matches) != 1:
         raise ValueError("Discovery Scan is not registered unambiguously")
     return matches[0]
+
+
+def _finding_already_derived(registry_path, scan_id, rank):
+    """The Finding previously derived from this scan at this rank, if any.
+
+    Matched on the evidence the Finding already carries rather than on a new
+    stored key, so nothing has to be added to the Finding contract and an
+    already-sealed Finding is recognised by its own record. A DISCARDED one
+    counts: re-running a runner must not quietly resurrect an observation
+    somebody judged not worth testing.
+    """
+    if not Path(registry_path).exists():
+        return None
+    marker = f"SELECTED_RANK|{rank}"
+    for record in query_findings(registry_path):
+        evidence = record["supporting_evidence"]
+        if scan_id in evidence and marker in evidence:
+            return record
+    return None
 
 
 def finding_from_scan(finding_registry_path, *, scan, space, rank=0, created_by, created_at):
@@ -586,6 +618,18 @@ def finding_from_scan(finding_registry_path, *, scan, space, rank=0, created_by,
     if not isinstance(rank, int) or isinstance(rank, bool) or not 0 <= rank < len(ranked):
         raise ValueError("Requested rank is outside this scan's examinable candidates")
     chosen = ranked[rank]
+
+    # A scan is idempotent; without this the Finding was not, so re-running a
+    # runner minted a SECOND Finding for the same observation. That is not a
+    # cosmetic duplicate: the Finding registry is how anyone asks what is still
+    # OPEN and awaiting a decision, and one observation appearing as two makes
+    # the search look broader than it was -- the same misreading the sealed
+    # multiplicity exists to prevent. Identity stays a UUID, because a Finding's
+    # status is mutable; what is deduplicated is the DERIVATION, keyed on the
+    # evidence already recorded.
+    existing = _finding_already_derived(finding_registry_path, scan["scan_id"], rank)
+    if existing is not None:
+        return existing
 
     return constitute_finding(
         finding_registry_path,
