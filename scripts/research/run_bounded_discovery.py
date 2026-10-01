@@ -43,7 +43,7 @@ from tramitago_quant_core.data.acquisition import (
 )
 from tramitago_quant_core.research.discovery import (
     constitute_discovery_space, scan_discovery_space, rank_observations,
-    constitute_discovery_scan, finding_from_scan,
+    constitute_discovery_scan, finding_from_scan, discovery_rows_digest,
 )
 
 INSTRUMENT = "BTC-USD"
@@ -147,6 +147,7 @@ def main():
 
     observations = scan_discovery_space(space, rows)
     scan = constitute_discovery_scan(scans, space=space, observations=observations,
+        rows_digest=discovery_rows_digest(rows),
                                      scanned_at=_now(), scan_code_revision=_code_revision())
     print(f"scan         {scan['scan_id']}")
     print(f"summary      {json.dumps(scan['summary'], sort_keys=True)}")

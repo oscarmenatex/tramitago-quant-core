@@ -16,13 +16,15 @@ import pipeline as p
 from tramitago_quant_core.research.discovery import (
     constitute_discovery_space, load_discovery_space, candidate_strategy,
     minority_state_frequency, scan_discovery_space, rank_observations,
-    candidate_is_examinable, constitute_discovery_scan, load_discovery_scan,
+    candidate_is_examinable, constitute_discovery_scan, load_discovery_scan, discovery_rows_digest,
     finding_from_scan, _candidate_observation,
 )
 from tramitago_quant_core.research.finding import load_finding, FINDING_STATUS_OPEN
 
 DAY = 86400
 REVISION = "a" * 40
+# Most tests do not care WHICH rows a scan read, only that one is required.
+_DIGEST = discovery_rows_digest([{"placeholder": True}])
 DISCOVERY = {"start_utc": "2025-01-01T00:00:00Z", "end_exclusive_utc": "2025-07-01T00:00:00Z"}
 HOLDOUT = {"start_utc": "2025-07-01T00:00:00Z", "end_exclusive_utc": "2026-01-01T00:00:00Z"}
 CANDIDATES = [{"strategy_id": "SMA_CROSSOVER", "parameters": {"window": window}}
@@ -206,7 +208,8 @@ class ScanTests(unittest.TestCase):
             self.assertEqual(len(observations), len(CANDIDATES))
             self.assertTrue(any(not item["examinable"] for item in observations))
             record = constitute_discovery_scan(
-                Path(tmp) / "scans.json", space=space, observations=observations,
+Path(tmp) / "scans.json", space=space, observations=observations,
+rows_digest=_DIGEST,
                 scanned_at="2025-07-01T00:00:00Z", scan_code_revision=REVISION)
             self.assertEqual(record["summary"]["candidates_examined"], len(CANDIDATES))
             self.assertEqual(
@@ -221,7 +224,8 @@ class ScanTests(unittest.TestCase):
             space = _space(Path(tmp) / "spaces.json")
             observations = scan_discovery_space(space, _trending_rows(100))
             record = constitute_discovery_scan(
-                Path(tmp) / "scans.json", space=space, observations=observations,
+Path(tmp) / "scans.json", space=space, observations=observations,
+rows_digest=_DIGEST,
                 scanned_at="2025-07-01T00:00:00Z", scan_code_revision=REVISION)
             summary = record["summary"]
             self.assertLessEqual(float(summary["worst_effect"]), float(summary["best_effect"]))
@@ -234,7 +238,8 @@ class ScanTests(unittest.TestCase):
             space = _space(Path(tmp) / "spaces.json")
             observations = scan_discovery_space(space, _trending_rows(100))
             scan = constitute_discovery_scan(
-                Path(tmp) / "scans.json", space=space, observations=observations,
+Path(tmp) / "scans.json", space=space, observations=observations,
+rows_digest=_DIGEST,
                 scanned_at="2025-07-01T00:00:00Z", scan_code_revision=REVISION)
             finding = finding_from_scan(Path(tmp) / "findings.json", scan=scan, space=space,
                                         created_by="test", created_at="2025-07-01T00:00:00Z")
@@ -260,10 +265,14 @@ class ScanTests(unittest.TestCase):
             space = _space(Path(tmp) / "spaces.json")
             path = Path(tmp) / "scans.json"
             observations = scan_discovery_space(space, _trending_rows(100))
-            first = constitute_discovery_scan(path, space=space, observations=observations,
+            first = constitute_discovery_scan(
+path, space=space, observations=observations,
+rows_digest=_DIGEST,
                                               scanned_at="2025-07-01T00:00:00Z",
                                               scan_code_revision=REVISION)
-            later = constitute_discovery_scan(path, space=space, observations=observations,
+            later = constitute_discovery_scan(
+path, space=space, observations=observations,
+rows_digest=_DIGEST,
                                               scanned_at="2025-12-31T00:00:00Z",
                                               scan_code_revision="b" * 40)
             self.assertEqual(later, first)
@@ -277,10 +286,12 @@ class ScanTests(unittest.TestCase):
             space = _space(Path(tmp) / "spaces.json")
             path = Path(tmp) / "scans.json"
             first = constitute_discovery_scan(
-                path, space=space, observations=scan_discovery_space(space, _trending_rows(100)),
+path, space=space, observations=scan_discovery_space(space, _trending_rows(100)),
+rows_digest=_DIGEST,
                 scanned_at="2025-07-01T00:00:00Z", scan_code_revision=REVISION)
             other = constitute_discovery_scan(
-                path, space=space, observations=scan_discovery_space(space, _choppy_rows(150)),
+path, space=space, observations=scan_discovery_space(space, _choppy_rows(150)),
+rows_digest=_DIGEST,
                 scanned_at="2025-07-01T00:00:00Z", scan_code_revision=REVISION)
             self.assertNotEqual(first["scan_id"], other["scan_id"])
             self.assertEqual(len(json.loads(path.read_bytes())["scans"]), 2)
@@ -290,10 +301,14 @@ class ScanTests(unittest.TestCase):
             space = _space(Path(tmp) / "spaces.json")
             path = Path(tmp) / "scans.json"
             observations = scan_discovery_space(space, _trending_rows(100))
-            first = constitute_discovery_scan(path, space=space, observations=observations,
+            first = constitute_discovery_scan(
+path, space=space, observations=observations,
+rows_digest=_DIGEST,
                                               scanned_at="2025-07-01T00:00:00Z",
                                               scan_code_revision=REVISION)
-            again = constitute_discovery_scan(path, space=space, observations=observations,
+            again = constitute_discovery_scan(
+path, space=space, observations=observations,
+rows_digest=_DIGEST,
                                               scanned_at="2025-07-01T00:00:00Z",
                                               scan_code_revision=REVISION)
             self.assertEqual(first, again)
@@ -304,7 +319,9 @@ class ScanTests(unittest.TestCase):
             space = _space(Path(tmp) / "spaces.json")
             path = Path(tmp) / "scans.json"
             observations = scan_discovery_space(space, _trending_rows(100))
-            record = constitute_discovery_scan(path, space=space, observations=observations,
+            record = constitute_discovery_scan(
+path, space=space, observations=observations,
+rows_digest=_DIGEST,
                                                scanned_at="2025-07-01T00:00:00Z",
                                                scan_code_revision=REVISION)
             raw = path.read_text("utf-8").replace(
@@ -410,7 +427,8 @@ class SeriesTests(unittest.TestCase):
             observations = scan_discovery_space(space, {
                 "ETH-USD/ETC-USD": _pair_rows(), "BTC-USD/LTC-USD": _pair_rows(drift=0.01)})
             scan = constitute_discovery_scan(
-                Path(tmp) / "scans.json", space=space, observations=observations,
+Path(tmp) / "scans.json", space=space, observations=observations,
+rows_digest=_DIGEST,
                 scanned_at="2025-07-01T00:00:00Z", scan_code_revision=REVISION)
             finding = finding_from_scan(Path(tmp) / "findings.json", scan=scan, space=space,
                                         created_by="test", created_at="2025-07-01T00:00:00Z")
@@ -423,7 +441,8 @@ class FindingTests(unittest.TestCase):
         space = _space(Path(tmp) / "spaces.json", **space_overrides)
         observations = scan_discovery_space(space, _trending_rows(100))
         scan = constitute_discovery_scan(
-            Path(tmp) / "scans.json", space=space, observations=observations,
+Path(tmp) / "scans.json", space=space, observations=observations,
+rows_digest=_DIGEST,
             scanned_at="2025-07-01T00:00:00Z", scan_code_revision=REVISION)
         return space, scan
 
@@ -491,7 +510,8 @@ class FindingTests(unittest.TestCase):
             observations = scan_discovery_space(space, _choppy_rows(150))
             self.assertGreater(len(rank_observations(observations)), 1)
             scan = constitute_discovery_scan(
-                Path(tmp) / "scans.json", space=space, observations=observations,
+Path(tmp) / "scans.json", space=space, observations=observations,
+rows_digest=_DIGEST,
                 scanned_at="2025-07-01T00:00:00Z", scan_code_revision=REVISION)
             path = Path(tmp) / "findings.json"
             best = finding_from_scan(path, scan=scan, space=space, rank=0, created_by="test",
@@ -542,3 +562,90 @@ class FindingTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class RowsAnchorTests(unittest.TestCase):
+    """A sealed scan could always be re-verified against its own observations,
+    but nothing said WHICH rows produced them: the runners hashed their responses
+    and printed the digests to a terminal. The chain ended in the air."""
+
+    def test_a_scan_cannot_be_sealed_without_a_rows_digest(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            space = _space(Path(tmp) / "spaces.json")
+            rows = _trending_rows(100)
+            with self.assertRaises(TypeError):
+                constitute_discovery_scan(
+                    Path(tmp) / "scans.json", space=space,
+                    observations=scan_discovery_space(space, rows),
+                    scanned_at="2025-07-01T00:00:00Z", scan_code_revision=REVISION)
+
+    def test_the_digest_is_per_series(self):
+        digests = discovery_rows_digest({"A": _trending_rows(50), "B": _choppy_rows(50)})
+        self.assertEqual(set(digests), {"A", "B"})
+        self.assertNotEqual(digests["A"], digests["B"])
+        self.assertEqual(set(discovery_rows_digest(_trending_rows(50))), {""})
+
+    def test_identical_rows_hash_identically(self):
+        self.assertEqual(discovery_rows_digest(_trending_rows(80)),
+                         discovery_rows_digest(_trending_rows(80)))
+
+    def test_a_record_sealed_before_the_field_existed_still_validates(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            space = _space(Path(tmp) / "spaces.json")
+            observations = scan_discovery_space(space, _trending_rows(100))
+            legacy = p._discovery_scan_record(
+                space["space_id"], observations, p._discovery_scan_summary(observations),
+                p._discovery_scan_materialization("2025-07-01T00:00:00Z", REVISION))
+            self.assertNotIn("rows_digest", legacy)
+            self.assertTrue(p._discovery_scan_record_is_valid(legacy))
+
+    def test_an_unanchored_record_can_be_enriched_without_moving_its_identity(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            space = _space(Path(tmp) / "spaces.json")
+            path = Path(tmp) / "scans.json"
+            rows = _trending_rows(100)
+            observations = scan_discovery_space(space, rows)
+            legacy = p._discovery_scan_record(
+                space["space_id"], observations, p._discovery_scan_summary(observations),
+                p._discovery_scan_materialization("2025-07-01T00:00:00Z", REVISION))
+            path.write_bytes(p.encoded({"schema_version": "1", "scans": [legacy]}))
+            enriched = constitute_discovery_scan(
+                path, space=space, observations=observations,
+                rows_digest=discovery_rows_digest(rows),
+                scanned_at="2025-12-31T00:00:00Z", scan_code_revision="b" * 40)
+            self.assertEqual(enriched["scan_id"], legacy["scan_id"])
+            self.assertEqual(enriched["rows_digest"], discovery_rows_digest(rows))
+            self.assertEqual(len(json.loads(path.read_bytes())["scans"]), 1)
+
+    def test_the_same_observations_from_different_rows_is_refused_loudly(self):
+        # The property the anchor buys: a scan claiming to be the same
+        # measurement cannot quietly have been computed from other data.
+        with tempfile.TemporaryDirectory() as tmp:
+            space = _space(Path(tmp) / "spaces.json")
+            path = Path(tmp) / "scans.json"
+            rows = _trending_rows(100)
+            observations = scan_discovery_space(space, rows)
+            constitute_discovery_scan(
+                path, space=space, observations=observations,
+                rows_digest=discovery_rows_digest(rows),
+                scanned_at="2025-07-01T00:00:00Z", scan_code_revision=REVISION)
+            with self.assertRaises(ValueError) as caught:
+                constitute_discovery_scan(
+                    path, space=space, observations=observations,
+                    rows_digest=discovery_rows_digest(_choppy_rows(150)),
+                    scanned_at="2025-07-01T00:00:00Z", scan_code_revision=REVISION)
+            self.assertIn("different rows", str(caught.exception))
+
+    def test_the_finding_points_at_the_rows(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            space = _space(Path(tmp) / "spaces.json")
+            rows = _trending_rows(100)
+            scan = constitute_discovery_scan(
+                Path(tmp) / "scans.json", space=space,
+                observations=scan_discovery_space(space, rows),
+                rows_digest=discovery_rows_digest(rows),
+                scanned_at="2025-07-01T00:00:00Z", scan_code_revision=REVISION)
+            finding = finding_from_scan(Path(tmp) / "findings.json", scan=scan, space=space,
+                                        created_by="test", created_at="2025-07-01T00:00:00Z")
+            self.assertTrue(any(item.startswith("ROWS_SHA256|")
+                                for item in finding["supporting_evidence"]))

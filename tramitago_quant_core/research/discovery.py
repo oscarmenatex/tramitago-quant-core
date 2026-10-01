@@ -369,6 +369,32 @@ def _candidate_rows(candidate, rows):
     return series, rows[series]
 
 
+def discovery_rows_digest(rows):
+    """Hash the rows a scan actually read, per series.
+
+    THE ANCHOR A SCAN WAS MISSING. A sealed scan could always be re-verified
+    against its own observations, but nothing said WHICH rows produced them: the
+    runners hashed their fetched responses and printed the digests to a terminal.
+    A Dataset can be re-derived from stored raw bytes; a scan could not, so the
+    chain Finding -> Scan -> Space ended in the air.
+
+    The rows are hashed as the scan saw them, canonically, rather than the
+    responses that produced them -- the same rows assembled from a different
+    endpoint, or from a cache, are the same measurement, and it is the
+    measurement's input that has to be pinned.
+    """
+    if isinstance(rows, dict):
+        return {series: digest(encoded(series_rows)) for series, series_rows in rows.items()}
+    return {"": digest(encoded(rows))}
+
+
+def _rows_digest_is_valid(value):
+    return (isinstance(value, dict) and bool(value)
+            and all(isinstance(key, str) for key in value)
+            and all(isinstance(item, str) and re.fullmatch(r"[0-9a-f]{64}", item)
+                    for item in value.values()))
+
+
 def _discovery_scan_id(space_id, observations):
     content = {"schema_version": DISCOVERY_SCAN_SCHEMA_VERSION,
                "space_id": space_id, "observations": observations}
@@ -463,7 +489,8 @@ def _discovery_scan_materialization(scanned_at, scan_code_revision):
             "pipeline_sha256": digest(_pipeline_source_bytes())}
 
 
-def _discovery_scan_record(space_id, observations, summary, materialization):
+def _discovery_scan_record(space_id, observations, summary, materialization,
+                           rows_digest=None):
     content = {
         "scan_id": _discovery_scan_id(space_id, observations),
         "schema_version": DISCOVERY_SCAN_SCHEMA_VERSION,
@@ -471,6 +498,11 @@ def _discovery_scan_record(space_id, observations, summary, materialization):
         "observations": observations,
         "summary": summary,
         "materialization": materialization,
+        # Present only when the scan was sealed with one, so the two scans sealed
+        # before this field existed keep validating exactly as they were written.
+        # Deliberately OUTSIDE the identity: the digest says where the numbers
+        # came from, it does not define which measurement this is.
+        **({} if rows_digest is None else {"rows_digest": rows_digest}),
     }
     return {**content, "record_id": "DISCOVERY_SCAN_RECORD|" + digest(encoded(content))}
 
@@ -478,7 +510,9 @@ def _discovery_scan_record(space_id, observations, summary, materialization):
 def _discovery_scan_record_is_valid(record):
     fields = {"scan_id", "schema_version", "space_id", "observations", "summary",
               "materialization", "record_id"}
-    if not isinstance(record, dict) or set(record) != fields:
+    if not isinstance(record, dict) or set(record) not in (fields, fields | {"rows_digest"}):
+        return False
+    if "rows_digest" in record and not _rows_digest_is_valid(record["rows_digest"]):
         return False
     observations = record.get("observations")
     materialization = record.get("materialization")
@@ -494,7 +528,8 @@ def _discovery_scan_record_is_valid(record):
             or not re.fullmatch(r"[0-9a-f]{64}", materialization.get("pipeline_sha256", ""))):
         return False
     expected = _discovery_scan_record(
-        record["space_id"], observations, _discovery_scan_summary(observations), materialization)
+        record["space_id"], observations, _discovery_scan_summary(observations), materialization,
+        record.get("rows_digest"))
     return record == expected
 
 
@@ -519,16 +554,25 @@ def _load_discovery_scan_registry(registry_path):
     return registry
 
 
-def constitute_discovery_scan(registry_path, *, space, observations, scanned_at,
+def constitute_discovery_scan(registry_path, *, space, observations, rows_digest, scanned_at,
                               scan_code_revision):
     """Seal one scan: every candidate examined, with its own refusal reason where
-    it was refused. Idempotent on identical content, like every other sealed
-    record here."""
+    it was refused, and the digest of the rows it read.
+
+    `rows_digest` is REQUIRED here while records without one still validate. New
+    scans cannot be sealed unanchored; the two that already were stay readable as
+    what they are. A record that lacks one can be ENRICHED by re-sealing with the
+    digest -- it gains provenance it never had, and the identity does not move,
+    because the measurement did not. What it can never do is change or lose one:
+    a stored digest that disagrees with the supplied one means the rows changed
+    under a scan that claims to be the same, and that is refused loudly."""
     if not _discovery_space_record_is_valid(space):
         raise ValueError("Discovery Space record is invalid")
+    if not _rows_digest_is_valid(rows_digest):
+        raise ValueError("A Discovery scan must be sealed with the digest of the rows it read")
     record = _discovery_scan_record(
         space["space_id"], observations, _discovery_scan_summary(observations),
-        _discovery_scan_materialization(scanned_at, scan_code_revision))
+        _discovery_scan_materialization(scanned_at, scan_code_revision), rows_digest)
     if not _discovery_scan_record_is_valid(record):
         raise ValueError("Discovery Scan record is invalid")
 
@@ -539,6 +583,21 @@ def constitute_discovery_scan(registry_path, *, space, observations, scanned_at,
     if matches:
         if len(matches) != 1:
             raise ValueError("Discovery Scan is registered ambiguously")
+        stored = matches[0].get("rows_digest")
+        if stored is not None and stored != rows_digest:
+            raise ValueError(
+                "Discovery Scan already exists with a different rows digest: the same "
+                "observations were produced from different rows")
+        if stored is None:
+            enriched = _discovery_scan_record(
+                matches[0]["space_id"], matches[0]["observations"], matches[0]["summary"],
+                matches[0]["materialization"], rows_digest)
+            registry["scans"] = [enriched if item["scan_id"] == enriched["scan_id"] else item
+                                 for item in registry["scans"]]
+            if not _discovery_scan_registry_is_valid(registry):
+                raise ValueError("Enriched Discovery Scan registry is invalid")
+            _atomic_write(path, encoded(registry))
+            return enriched
         # The ORIGINAL comes back, materialization and all, and that is a
         # deliberate departure from the Hypothesis Generation Batch registry,
         # which refuses a re-seal whose content differs at all.
@@ -665,5 +724,7 @@ def finding_from_scan(finding_registry_path, *, scan, space, rank=0, created_by,
             *([f"SERIES|{chosen['series']}"] if "series" in chosen else []),
             f"HOLDOUT_UNREAD|{space['holdout_window']['start_utc']}|"
             f"{space['holdout_window']['end_exclusive_utc']}",
+            *([f"ROWS_SHA256|{series or 'ALL'}|{value}"
+               for series, value in sorted(scan.get("rows_digest", {}).items())]),
         ],
         created_by=created_by, created_at=created_at)
