@@ -7,6 +7,7 @@ multiplicity travels with the observation, and the representativeness gate runs
 before anything expensive does.
 """
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -48,6 +49,13 @@ def _rows(closes, start="2025-01-01T00:00:00Z"):
     base = p.epoch(start)
     return [{"timestamp": p.iso(base + index * DAY), "close": float(close)}
             for index, close in enumerate(closes)]
+
+
+def _choppy_rows(count=150):
+    # Oscillating around a slow drift, so both groups stay well populated and
+    # several candidates clear the representativeness floor.
+    return _rows([100.0 + index * 0.1 + (5.0 if (index // 3) % 2 else -5.0)
+                  for index in range(count)])
 
 
 def _trending_rows(count=120):
@@ -244,6 +252,39 @@ class ScanTests(unittest.TestCase):
             effects = [item["effect"] for item in ranked]
             self.assertEqual(effects, sorted(effects, reverse=True))
 
+    def test_re_sealing_later_keeps_the_first_sealing(self):
+        # A scan is a pure function of (space, rows) over a window already in the
+        # past, so a later run must reproduce it rather than collide with it. Only
+        # the materialization can differ, and none of it changes what was measured.
+        with tempfile.TemporaryDirectory() as tmp:
+            space = _space(Path(tmp) / "spaces.json")
+            path = Path(tmp) / "scans.json"
+            observations = scan_discovery_space(space, _trending_rows(100))
+            first = constitute_discovery_scan(path, space=space, observations=observations,
+                                              scanned_at="2025-07-01T00:00:00Z",
+                                              scan_code_revision=REVISION)
+            later = constitute_discovery_scan(path, space=space, observations=observations,
+                                              scanned_at="2025-12-31T00:00:00Z",
+                                              scan_code_revision="b" * 40)
+            self.assertEqual(later, first)
+            self.assertEqual(later["materialization"]["scanned_at"], "2025-07-01T00:00:00Z")
+            self.assertEqual(len(json.loads(path.read_bytes())["scans"]), 1)
+
+    def test_a_scan_of_different_rows_is_a_different_scan(self):
+        # Idempotency must not become amnesia: different measurements are
+        # different records, not a silent reuse of the first.
+        with tempfile.TemporaryDirectory() as tmp:
+            space = _space(Path(tmp) / "spaces.json")
+            path = Path(tmp) / "scans.json"
+            first = constitute_discovery_scan(
+                path, space=space, observations=scan_discovery_space(space, _trending_rows(100)),
+                scanned_at="2025-07-01T00:00:00Z", scan_code_revision=REVISION)
+            other = constitute_discovery_scan(
+                path, space=space, observations=scan_discovery_space(space, _choppy_rows(150)),
+                scanned_at="2025-07-01T00:00:00Z", scan_code_revision=REVISION)
+            self.assertNotEqual(first["scan_id"], other["scan_id"])
+            self.assertEqual(len(json.loads(path.read_bytes())["scans"]), 2)
+
     def test_a_sealed_scan_round_trips_and_is_idempotent(self):
         with tempfile.TemporaryDirectory() as tmp:
             space = _space(Path(tmp) / "spaces.json")
@@ -427,6 +468,53 @@ class FindingTests(unittest.TestCase):
                                         created_at="2025-07-01T00:00:00Z")
             self.assertEqual(load_finding(path, finding["finding_id"])["status"],
                              FINDING_STATUS_OPEN)
+
+    def test_re_running_does_not_mint_a_second_finding(self):
+        # Found by asking whether Discovery was ready to deploy: the space and
+        # the scan were idempotent and the Finding was not, so every re-run made
+        # the search look broader than it had been.
+        with tempfile.TemporaryDirectory() as tmp:
+            space, scan = self._sealed(tmp)
+            path = Path(tmp) / "findings.json"
+            first = finding_from_scan(path, scan=scan, space=space, created_by="test",
+                                      created_at="2025-07-01T00:00:00Z")
+            again = finding_from_scan(path, scan=scan, space=space, created_by="test",
+                                      created_at="2025-12-31T00:00:00Z")
+            self.assertEqual(first["finding_id"], again["finding_id"])
+            self.assertEqual(len(p.query_findings(path)), 1)
+
+    def test_a_different_rank_of_the_same_scan_is_a_different_finding(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            # A choppy series, so more than one candidate clears the
+            # representativeness floor and a second rank exists at all.
+            space = _space(Path(tmp) / "spaces.json")
+            observations = scan_discovery_space(space, _choppy_rows(150))
+            self.assertGreater(len(rank_observations(observations)), 1)
+            scan = constitute_discovery_scan(
+                Path(tmp) / "scans.json", space=space, observations=observations,
+                scanned_at="2025-07-01T00:00:00Z", scan_code_revision=REVISION)
+            path = Path(tmp) / "findings.json"
+            best = finding_from_scan(path, scan=scan, space=space, rank=0, created_by="test",
+                                     created_at="2025-07-01T00:00:00Z")
+            second = finding_from_scan(path, scan=scan, space=space, rank=1, created_by="test",
+                                       created_at="2025-07-01T00:00:00Z")
+            self.assertNotEqual(best["finding_id"], second["finding_id"])
+
+    def test_a_discarded_finding_is_not_resurrected_by_a_re_run(self):
+        # Re-running must not quietly reopen an observation somebody judged not
+        # worth testing.
+        with tempfile.TemporaryDirectory() as tmp:
+            space, scan = self._sealed(tmp)
+            path = Path(tmp) / "findings.json"
+            finding = finding_from_scan(path, scan=scan, space=space, created_by="test",
+                                        created_at="2025-07-01T00:00:00Z")
+            p.discard_finding(path, finding["finding_id"], reason="not worth a cycle",
+                              at="2025-07-02T00:00:00Z")
+            again = finding_from_scan(path, scan=scan, space=space, created_by="test",
+                                      created_at="2025-07-03T00:00:00Z")
+            self.assertEqual(again["finding_id"], finding["finding_id"])
+            self.assertEqual(again["status"], p.FINDING_STATUS_DISCARDED)
+            self.assertEqual(len(p.query_findings(path)), 1)
 
     def test_a_scan_with_nothing_examinable_produces_no_finding(self):
         with tempfile.TemporaryDirectory() as tmp:
