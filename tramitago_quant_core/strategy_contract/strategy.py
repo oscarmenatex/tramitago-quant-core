@@ -8,7 +8,9 @@ module decomposition). No behavior change.
 
 import math
 
-from tramitago_quant_core.strategy_contract.outcome import spread_return_outcome
+from tramitago_quant_core.strategy_contract.outcome import (
+    spread_return_outcome, carry_return_outcome,
+)
 
 
 # M4.1 -- Strategy contract (proof of concept, DOC-002 SS3.1/SS3.5/SS6.1).
@@ -495,3 +497,61 @@ def _strategy_classify_rows(strategy, rows):
         result.append({**row, column_name: signal["indicator_value"], "group": signal["group"]})
     return result
 
+
+
+def carry_funding_threshold_strategy(funding_variable="funding_rate",
+                                     perpetual_variable="perp_close"):
+    """The EXIT RULE of a carry, expressed as something the Core can judge.
+
+    The destination is now harvesting risk premia, and its defining clause is
+    "stop exploiting it when the evidence stops supporting it". That exit rule
+    is currently a DECLARED threshold inside a monitoring contract -- a
+    conjecture nobody has tested. This Strategy turns it into a Hypothesis.
+
+    Why this rather than "does carry pay": whether the premium exists is already
+    measured (10.63%-24.14% annualised gross on sealed funding), and it is a
+    LEVEL claim about one group, which the M2.x apparatus structurally cannot
+    express. Forcing it in would certify what is not in doubt. Whether the
+    threshold DISCRIMINATES is a two-group comparison, which is exactly the
+    shape the apparatus judges natively.
+
+    THE THRESHOLD IS ZERO, and that choice is the integrity of the test. Zero is
+    the only parameter-free boundary available: it is the point where the
+    economics invert, from being paid to hold the position to paying to hold it.
+    Any other number would have to come from looking at the data first, which is
+    the failure every sealed Hypothesis in this project was built to avoid --
+    the same reasoning that made funding_rate_sign_strategy use a sign rather
+    than a tuned percentile.
+
+    No lookahead: the day is classified by THAT DAY'S funding, which is known
+    when the decision is made, while the Outcome takes its funding from the
+    following row. Reading both from the same row would place the signal inside
+    its own outcome.
+    """
+    indicator_name = "CARRYFUNDING"
+    column_name = "funding_rate_lag_1"
+
+    def compute(window_rows):
+        if len(window_rows) != 2:
+            raise ValueError("Strategy compute window has the wrong length")
+        indicator_value = window_rows[0][funding_variable]
+        if not math.isfinite(indicator_value):
+            raise ValueError("Non-finite indicator")
+        group = "UPPER" if indicator_value >= 0 else "LOWER_OR_EQUAL"
+        return {"indicator_value": indicator_value, "group": group}
+
+    return {
+        "schema_version": STRATEGY_SCHEMA_VERSION,
+        "strategy_id": "CARRY_FUNDING_THRESHOLD",
+        "parameters": {"funding_variable": funding_variable,
+                       "perpetual_variable": perpetual_variable,
+                       "threshold": "0"},
+        "indicator_name": indicator_name,
+        "column_name": column_name,
+        "required_inputs": {"variables": [funding_variable, perpetual_variable],
+                            "warmup_periods": 1},
+        "upper_group_description": f"{indicator_name}_t >= 0 (the premium is being paid)",
+        "lower_or_equal_group_description": f"{indicator_name}_t < 0 (the premium has inverted)",
+        "outcome": carry_return_outcome(funding_variable, perpetual_variable),
+        "compute": compute,
+    }

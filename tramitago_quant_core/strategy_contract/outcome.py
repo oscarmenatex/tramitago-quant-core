@@ -86,6 +86,60 @@ def spread_return_outcome(pair_variable):
     }
 
 
+def carry_return_outcome(funding_variable="funding_rate", perpetual_variable="perp_close"):
+    """The return of a CASH-AND-CARRY: long spot, short perpetual, equal notional.
+
+        funding_received_over_the_period  -  (basis_t+h  -  basis_t)
+        where basis = (perpetual - spot) / spot
+
+    Two components, and both are needed. The funding is what the position is
+    PAID for bearing the risk. The basis change is the mark-to-market on the
+    spread: a short perpetual loses when the perpetual pulls further above spot.
+    Measuring only the funding would describe a position that cannot lose, which
+    is not the one being held.
+
+    LOOKAHEAD, and the reason the funding comes from the FUTURE row: the signal
+    that classifies a day reads that day's funding, which is known at the time.
+    The return earned by holding from t to t+h is the funding paid DURING that
+    interval, which is the next row's. Taking both from the same row would put
+    the signal inside its own outcome and guarantee a spurious result.
+
+    This is the first Outcome whose return is not a price change at all. A
+    premium is a cash flow plus a spread mark, and that is why a Hypothesis
+    about one cannot be expressed by changing the Strategy alone.
+    """
+    if not isinstance(funding_variable, str) or not funding_variable:
+        raise ValueError("Funding variable name is required")
+    if not isinstance(perpetual_variable, str) or not perpetual_variable:
+        raise ValueError("Perpetual variable name is required")
+
+    def column(horizon):
+        return f"forward_carry_return_{horizon}d"
+
+    def _basis(row):
+        spot = row["close"]
+        if spot <= 0:
+            raise ValueError("Non-positive spot close in carry outcome")
+        return (row[perpetual_variable] - spot) / spot
+
+    def compute(row, future_row):
+        return future_row[funding_variable] - (_basis(future_row) - _basis(row))
+
+    return {
+        "schema_version": OUTCOME_SCHEMA_VERSION,
+        "outcome_id": "CARRY_RETURN",
+        "parameters": {"funding_variable": funding_variable,
+                       "perpetual_variable": perpetual_variable},
+        "required_inputs": {"variables": ["close", funding_variable, perpetual_variable]},
+        "column": column,
+        "name": lambda horizon: f"carry_return_t+{horizon}",
+        "formula": lambda horizon: (
+            f"{funding_variable}_t+{horizon} - (basis_t+{horizon} - basis_t), "
+            f"basis = ({perpetual_variable} - close) / close"),
+        "compute": compute,
+    }
+
+
 def strategy_outcome(strategy):
     """Resolve the Outcome a Strategy declares, defaulting to the close
     return. Field presence IS the discriminator -- never a version flag --
