@@ -55,20 +55,26 @@ class CarryOutcomeTests(unittest.TestCase):
 class NoLookaheadTests(unittest.TestCase):
     """The property that decides whether a positive result would mean anything."""
 
-    def test_the_signal_reads_today_and_the_outcome_reads_tomorrow(self):
-        # Taking both from the same row would put the signal inside its own
-        # outcome and manufacture the result.
+    def test_the_signal_reads_the_prior_period_and_the_outcome_the_next(self):
+        # The window is [t-1, t] and the row being classified is t. The signal
+        # reads t-1 because t's funding is still accruing when the decision is
+        # made; the outcome reads t+1 because that is what is paid while the
+        # position is held. Two periods apart, so they cannot overlap.
         strategy = carry_funding_threshold_strategy()
         outcome = strategy["outcome"]
-        today, tomorrow = _row(100.0, 100.0, 0.0010), _row(100.0, 100.0, -0.0050)
-        signal = strategy["compute"]([today, tomorrow])
-        self.assertEqual(signal["indicator_value"], 0.0010)      # today's funding
-        self.assertAlmostEqual(outcome["compute"](today, tomorrow), -0.0050)  # tomorrow's
+        prior, current, following = (_row(100.0, 100.0, 0.0010),
+                                     _row(100.0, 100.0, 0.0030),
+                                     _row(100.0, 100.0, -0.0050))
+        signal = strategy["compute"]([prior, current])
+        self.assertEqual(signal["indicator_value"], 0.0010)              # t-1
+        self.assertAlmostEqual(outcome["compute"](current, following), -0.0050)   # t+1
 
-    def test_the_classified_day_is_the_first_of_the_window(self):
+    def test_the_current_period_funding_never_reaches_the_signal(self):
+        # The exact lookahead this guards against: t's own funding must not
+        # influence t's classification.
         strategy = carry_funding_threshold_strategy()
-        positive_today = strategy["compute"]([_row(100., 100., 0.001), _row(100., 100., -0.9)])
-        self.assertEqual(positive_today["group"], "UPPER")
+        classified = strategy["compute"]([_row(100., 100., 0.001), _row(100., 100., -0.9)])
+        self.assertEqual(classified["group"], "UPPER")   # decided by +0.001, not -0.9
 
 
 class ThresholdTests(unittest.TestCase):

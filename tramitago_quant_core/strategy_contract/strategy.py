@@ -523,10 +523,14 @@ def carry_funding_threshold_strategy(funding_variable="funding_rate",
     the same reasoning that made funding_rate_sign_strategy use a sign rather
     than a tuned percentile.
 
-    No lookahead: the day is classified by THAT DAY'S funding, which is known
-    when the decision is made, while the Outcome takes its funding from the
-    following row. Reading both from the same row would place the signal inside
-    its own outcome.
+    NO LOOKAHEAD, and the mechanics are worth stating exactly because an earlier
+    draft of this docstring got them wrong. A row at time t is classified by the
+    funding of t-1 -- the column is named funding_rate_lag_1 for that reason --
+    never by t's own, which is still accruing when the decision is made. The
+    Outcome then takes its funding from t+1, which is what is actually paid
+    while the position is held. Signal and outcome therefore read funding two
+    periods apart and cannot overlap. Same discipline as
+    funding_rate_sign_strategy, which uses the prior day for the same reason.
     """
     indicator_name = "CARRYFUNDING"
     column_name = "funding_rate_lag_1"
