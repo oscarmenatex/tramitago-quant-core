@@ -1,0 +1,68 @@
+{
+  "acquired_at": "2026-10-01T23:18:50.207930Z",
+  "capture_id": "BITMEX_FUNDING_RATE_CAPTURE|b700d67e7c490264f5683dd37d07dbda78dfd099a828b47c7bef7dd08155662c",
+  "capture_period": {
+    "end_exclusive_utc": "2021-01-01T00:00:00Z",
+    "start_utc": "2019-01-01T00:00:00Z"
+  },
+  "kind": "bitmex-funding-rate-capture",
+  "responses": [
+    {
+      "response_headers": {
+        "Content-Type": "application/json;charset=utf-8",
+        "Date": "Thu, 01 Oct 2026 23:18:50 GMT"
+      },
+      "response_sha256": "9201e2d339898fa8817c8646728e18f87d8e697fad2e18dd7aab5c6883b59a08",
+      "sequence": 1,
+      "url": "https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&startTime=2019-01-01T00%3A00%3A00Z&endTime=2021-01-01T00%3A00%3A00Z&count=500&reverse=false"
+    },
+    {
+      "response_headers": {
+        "Content-Type": "application/json;charset=utf-8",
+        "Date": "Thu, 01 Oct 2026 23:18:50 GMT"
+      },
+      "response_sha256": "5bc23a0cc0421df81fad438398ace7229e71904a4a9d93f69871a6e91fc1adac",
+      "sequence": 2,
+      "url": "https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&startTime=2019-06-16T12%3A00%3A01Z&endTime=2021-01-01T00%3A00%3A00Z&count=500&reverse=false"
+    },
+    {
+      "response_headers": {
+        "Content-Type": "application/json;charset=utf-8",
+        "Date": "Thu, 01 Oct 2026 23:18:51 GMT"
+      },
+      "response_sha256": "10ab74cde54224429daa76dc6a0f992e515ab21013cac1c978cdefd6ad900a83",
+      "sequence": 3,
+      "url": "https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&startTime=2019-11-30T04%3A00%3A01Z&endTime=2021-01-01T00%3A00%3A00Z&count=500&reverse=false"
+    },
+    {
+      "response_headers": {
+        "Content-Type": "application/json;charset=utf-8",
+        "Date": "Thu, 01 Oct 2026 23:18:52 GMT"
+      },
+      "response_sha256": "1318caeaf4b9bd651cbbc95dbe457cee54e8c8cc49b0c367ee6dd689b8f4f640",
+      "sequence": 4,
+      "url": "https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&startTime=2020-05-14T20%3A00%3A01Z&endTime=2021-01-01T00%3A00%3A00Z&count=500&reverse=false"
+    },
+    {
+      "response_headers": {
+        "Content-Type": "application/json;charset=utf-8",
+        "Date": "Thu, 01 Oct 2026 23:18:52 GMT"
+      },
+      "response_sha256": "c5d4d046536dea464ef45abf432744c3897302a05eeb3cc2486b6649201b6112",
+      "sequence": 5,
+      "url": "https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&startTime=2020-10-28T12%3A00%3A01Z&endTime=2021-01-01T00%3A00%3A00Z&count=500&reverse=false"
+    },
+    {
+      "response_headers": {
+        "Content-Type": "application/json;charset=utf-8",
+        "Date": "Thu, 01 Oct 2026 23:18:53 GMT"
+      },
+      "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "sequence": 6,
+      "url": "https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&startTime=2020-12-31T20%3A00%3A01Z&endTime=2021-01-01T00%3A00%3A00Z&count=500&reverse=false"
+    }
+  ],
+  "schema_version": "1",
+  "source": "BitMEX public perpetual funding history",
+  "symbol": "XBTUSD"
+}

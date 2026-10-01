@@ -87,6 +87,12 @@ from tramitago_quant_core.research.finding import (
     _finding_registry_is_valid, _load_finding_registry, _persist_finding_registry,
     constitute_finding, load_finding, promote_finding, discard_finding, query_findings,
 )
+from tramitago_quant_core.data.bitmex_funding_rate import (
+    BITMEX_FUNDING_RATE_CAPTURE_SCHEMA_VERSION, BITMEX_FUNDING_RATE_CAPTURE_KIND,
+    BITMEX_FUNDING_RATE_SOURCE, BITMEX_FUNDING_RATE_INTERVAL_SECONDS,
+    BITMEX_FUNDING_PAYMENTS_PER_DAY,
+    capture_bitmex_funding_rate, verified_bitmex_funding_rate_capture,
+)
 from tramitago_quant_core.research.level_claim import (
     LEVEL_CLAIM_SCHEMA_VERSION, LEVEL_CLAIM_VALIDATION_SCHEMA_VERSION,
     LEVEL_CLAIM_VALIDATION_REGISTRY_SCHEMA_VERSION, LEVEL_CLAIM_VALIDATION_STATUS,
