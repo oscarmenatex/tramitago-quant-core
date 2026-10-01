@@ -104,6 +104,8 @@ from tramitago_quant_core.research.discovery import (
     candidate_strategy, minority_state_frequency, candidate_is_examinable,
     constitute_discovery_space, load_discovery_space, scan_discovery_space,
     rank_observations, constitute_discovery_scan, load_discovery_scan, finding_from_scan,
+    discovery_rows_digest, _discovery_scan_record, _discovery_scan_summary,
+    _discovery_scan_materialization, _discovery_scan_record_is_valid,
 )
 from tramitago_quant_core.research.hypothesis import (
     HYPOTHESIS_REGISTRY_SCHEMA_VERSION, HYPOTHESIS_ACCEPTANCE_COMPARISONS,

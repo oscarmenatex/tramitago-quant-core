@@ -246,7 +246,10 @@
           "upper_count": 145
         }
       ],
-      "record_id": "DISCOVERY_SCAN_RECORD|bf6ee102fb23448faf247421276e8399db364c1f60f1a61b0ef1d92513944368",
+      "record_id": "DISCOVERY_SCAN_RECORD|fdf0f2301d00c5aa59db78e1b2232649d291bad92936ebd052f346d330c430c0",
+      "rows_digest": {
+        "": "abf034dd5797b02c98c184dc51f2acd5e11bf6cbe9b75d49e143716d7c593eab"
+      },
       "scan_id": "DISCOVERY_SCAN|a16a27e1afaf957e81ec8546220dfc704627509c99e48398d3800c2609f600c6",
       "schema_version": "1",
       "space_id": "DISCOVERY_SPACE|00911e622c39e47a337ee3991a67c104f2f04216c808a71822a2cee35937985f",
@@ -557,7 +560,15 @@
           "upper_count": 208
         }
       ],
-      "record_id": "DISCOVERY_SCAN_RECORD|afd606ded385aaf5dd8bb4b4eaffe59f2ad2f08bfe1ea9f2eef21d081bac4c14",
+      "record_id": "DISCOVERY_SCAN_RECORD|9a149958af5e9b4d279117dda6f19f53031f29f0b11bab52a0ae7ae6a90e3d62",
+      "rows_digest": {
+        "ADA-USD/DOT-USD": "e7a461dde5da0c2a3a9aded0b1dcbb961e95cc2d84bc036672099c2fa9e593e0",
+        "BTC-USD/BCH-USD": "1a71ce23ef12d350901f38a663233b4a878c535f8cffb25e1d10af806085dbf8",
+        "BTC-USD/LTC-USD": "f5197edf3cf4d7e39094c609cea1e4cb97ae5608da448e026b923ae382f2c078",
+        "ETH-USD/ETC-USD": "9a297d628b28385f21043e818ade9e95ac92f522bf4bc9f304e3f37370bdc1ec",
+        "ETH-USD/SOL-USD": "42b3b4afb949ef1a3988d8fe14ed9c1363ea207de90c8651744ebc09fa8c1f98",
+        "SOL-USD/AVAX-USD": "05152d8f4cc3bcd40c2d84f67c6441c00d62126b3a51871ef2750c8f39d0777e"
+      },
       "scan_id": "DISCOVERY_SCAN|34917189c337ac570a1908b4f9fb2160ffcc3e1757044b65409a82a748be03be",
       "schema_version": "1",
       "space_id": "DISCOVERY_SPACE|664c59fa8283ff60a956d442979f68c74ed810a8abc9172591a84b2a8a4e2d45",
