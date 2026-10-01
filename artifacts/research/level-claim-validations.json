@@ -165,6 +165,171 @@
       "schema_version": "1",
       "status": "ISSUED",
       "validation_id": "LEVEL_CLAIM_VALIDATION|26225a47b0b38cffdb42195d43f5a089ade1d794c943f98b1242c340b1263ec8"
+    },
+    {
+      "adverse_period_frequency": "0.002739726027",
+      "claim": {
+        "adverse_period_threshold": "-0.01",
+        "bootstrap_block_periods": 5,
+        "bootstrap_resamples": 2000,
+        "bootstrap_seed": 0,
+        "claim_id": "LEVEL_CLAIM|30741d485b56146b65f5f0b556838560c341da1a66f15820725514128dccbff2",
+        "confidence_level": "0.95",
+        "consistency_threshold": "0.7",
+        "cost_contract_id": "COST_CONTRACT|213846b1e4649a6eca942d5afe78833aa325c1377f3fda9ae2f7465870d8463f",
+        "maximum_drawdown": "0.15",
+        "minimum_adverse_period_frequency": "0.10",
+        "minimum_folds_required": 5,
+        "position_description": "long BTC spot, short BitMEX XBTUSD perpetual, equal notional, held continuously; funding at 3 payments a day",
+        "schema_version": "1",
+        "source": "DOC-011 \u00a79.4 thresholds; same terms as the 2024-2025 run, not re-tuned"
+      },
+      "consistency_ratio": null,
+      "folds": [
+        {
+          "adverse_mean_bound": "-0.000587875241",
+          "adverse_period_frequency": "0.000000000000",
+          "costs": {
+            "contract_id": "COST_CONTRACT|213846b1e4649a6eca942d5afe78833aa325c1377f3fda9ae2f7465870d8463f",
+            "cost_total": "0.002600000000",
+            "gross_total": "-0.045564364417",
+            "net_total": "-0.048164364417",
+            "transitions": 1
+          },
+          "fold_index": 0,
+          "max_drawdown": "0.047095603050",
+          "mean_net_return": "-0.000398052598",
+          "period": {
+            "end_exclusive_utc": "2019-05-01T00:00:00Z",
+            "start_utc": "2019-01-01T00:00:00Z"
+          },
+          "periods": 121,
+          "periods_held": 121,
+          "result": "NOT_MET",
+          "sharpe_ratio": "-7.243624628821"
+        },
+        {
+          "adverse_mean_bound": "0.000264048405",
+          "adverse_period_frequency": "0.000000000000",
+          "costs": {
+            "contract_id": "COST_CONTRACT|213846b1e4649a6eca942d5afe78833aa325c1377f3fda9ae2f7465870d8463f",
+            "cost_total": "0.002600000000",
+            "gross_total": "0.086125684621",
+            "net_total": "0.083525684621",
+            "transitions": 1
+          },
+          "fold_index": 1,
+          "max_drawdown": "0.015334450341",
+          "mean_net_return": "0.000690294914",
+          "period": {
+            "end_exclusive_utc": "2019-08-30T00:00:00Z",
+            "start_utc": "2019-05-02T00:00:00Z"
+          },
+          "periods": 121,
+          "periods_held": 121,
+          "result": "MET",
+          "sharpe_ratio": "6.696219538402"
+        },
+        {
+          "adverse_mean_bound": "0.000093699669",
+          "adverse_period_frequency": "0.000000000000",
+          "costs": {
+            "contract_id": "COST_CONTRACT|213846b1e4649a6eca942d5afe78833aa325c1377f3fda9ae2f7465870d8463f",
+            "cost_total": "0.002600000000",
+            "gross_total": "0.025872546765",
+            "net_total": "0.023272546765",
+            "transitions": 1
+          },
+          "fold_index": 2,
+          "max_drawdown": "0.002442643858",
+          "mean_net_return": "0.000192335097",
+          "period": {
+            "end_exclusive_utc": "2019-12-29T00:00:00Z",
+            "start_utc": "2019-08-31T00:00:00Z"
+          },
+          "periods": 121,
+          "periods_held": 121,
+          "result": "MET",
+          "sharpe_ratio": "4.755612158177"
+        },
+        {
+          "adverse_mean_bound": "-0.001423873044",
+          "adverse_period_frequency": "0.016528925620",
+          "costs": {
+            "contract_id": "COST_CONTRACT|213846b1e4649a6eca942d5afe78833aa325c1377f3fda9ae2f7465870d8463f",
+            "cost_total": "0.002600000000",
+            "gross_total": "-0.014681158016",
+            "net_total": "-0.017281158016",
+            "transitions": 1
+          },
+          "fold_index": 3,
+          "max_drawdown": "0.157666757483",
+          "mean_net_return": "-0.000142819488",
+          "period": {
+            "end_exclusive_utc": "2020-04-28T00:00:00Z",
+            "start_utc": "2019-12-30T00:00:00Z"
+          },
+          "periods": 121,
+          "periods_held": 121,
+          "result": "NOT_MET",
+          "sharpe_ratio": "-0.200298378935"
+        },
+        {
+          "adverse_mean_bound": "0.000226607049",
+          "adverse_period_frequency": "0.000000000000",
+          "costs": {
+            "contract_id": "COST_CONTRACT|213846b1e4649a6eca942d5afe78833aa325c1377f3fda9ae2f7465870d8463f",
+            "cost_total": "0.002600000000",
+            "gross_total": "0.044016931666",
+            "net_total": "0.041416931666",
+            "transitions": 1
+          },
+          "fold_index": 4,
+          "max_drawdown": "0.003977546283",
+          "mean_net_return": "0.000342288691",
+          "period": {
+            "end_exclusive_utc": "2020-08-27T00:00:00Z",
+            "start_utc": "2020-04-29T00:00:00Z"
+          },
+          "periods": 121,
+          "periods_held": 121,
+          "result": "MET",
+          "sharpe_ratio": "6.327331493880"
+        },
+        {
+          "adverse_mean_bound": "0.000183468680",
+          "adverse_period_frequency": "0.000000000000",
+          "costs": {
+            "contract_id": "COST_CONTRACT|213846b1e4649a6eca942d5afe78833aa325c1377f3fda9ae2f7465870d8463f",
+            "cost_total": "0.002600000000",
+            "gross_total": "0.041642544948",
+            "net_total": "0.039042544948",
+            "transitions": 1
+          },
+          "fold_index": 5,
+          "max_drawdown": "0.004547700285",
+          "mean_net_return": "0.000312340360",
+          "period": {
+            "end_exclusive_utc": "2020-12-30T00:00:00Z",
+            "start_utc": "2020-08-28T00:00:00Z"
+          },
+          "periods": 125,
+          "periods_held": 125,
+          "result": "MET",
+          "sharpe_ratio": "5.626858046325"
+        }
+      ],
+      "materialization": {
+        "pipeline_sha256": "f0fdfe5da8be41c9cb66f0a21bbe0d9c3f185e526a2f8b5015c2a7f0f5d23714",
+        "validated_at": "2026-10-01T23:18:55.037591Z",
+        "validation_code_revision": "78b066a181d0ef8c42ef17a608c46dbb29bfdff5"
+      },
+      "outcome": "INSUFFICIENT_EVIDENCE",
+      "outcome_reason": "ADVERSE_PERIODS_BELOW_MINIMUM_FREQUENCY",
+      "record_id": "LEVEL_CLAIM_VALIDATION_RECORD|21cca64cc60dfadc5a1dba0cae3e063c53588881e7aa2075022362bbcee5ac7a",
+      "schema_version": "1",
+      "status": "ISSUED",
+      "validation_id": "LEVEL_CLAIM_VALIDATION|27d844bfa910794cd62b4a3c1153af5fa404e0553ac4df35d919471ff62b73d6"
     }
   ]
 }
