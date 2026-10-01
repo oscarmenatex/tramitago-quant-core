@@ -1,0 +1,401 @@
+{
+  "baseline_gate_ever_binds": false,
+  "best_binomial_p_value": "0.062500",
+  "best_clears_the_whole_search": false,
+  "best_source": "carry-exit-btc-2025",
+  "bonferroni_alpha_for_the_whole_search": "0.00135135",
+  "code_revision": "3df92b32cfea0e64e5e0be3fadad920251a2a428",
+  "fold_metric_mean": "-0.001098542",
+  "fold_metric_median": "-0.000635388",
+  "fold_metric_negative": 111,
+  "fold_metric_positive": 78,
+  "fold_pass_rate": "0.423280",
+  "folds_total": 193,
+  "folds_usable": 189,
+  "kind": "retrospective-multiplicity-audit",
+  "measured_at": "2026-10-01T21:59:30.409123Z",
+  "measurement_id": "MULTIPLICITY_AUDIT|8e79c31041000482a9527b0be7e1731851406d9b4ac44b77ad7710e4bce10576",
+  "outcomes": {
+    "INSUFFICIENT_EVIDENCE": 4,
+    "NOT_VALIDATED": 31,
+    "VALIDATED": 2
+  },
+  "per_search": [
+    {
+      "binomial_p_value": "0.812500",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": false,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 2,
+      "source": "2023-period",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|beac6eb8bca834b1073a83ef32008b7d4796a02e427e06ce8191c581467bf281"
+    },
+    {
+      "binomial_p_value": "0.500000",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": false,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 3,
+      "source": "atom",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|a0e20568b3c506cb5e85ac01e2fd8fcec8fecb22c8e6d3261adea1d64321d9b4"
+    },
+    {
+      "binomial_p_value": "0.187500",
+      "consistency_threshold": "0.70",
+      "corrected_for_a_batch": false,
+      "outcome": "INSUFFICIENT_EVIDENCE",
+      "passing_folds": 4,
+      "source": "carry-exit-btc-2024",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|459803e3b56ed68438f4ba86940ea8a7455b9546f7f9441542f5e793d1a7d475"
+    },
+    {
+      "binomial_p_value": "0.062500",
+      "consistency_threshold": "0.70",
+      "corrected_for_a_batch": false,
+      "outcome": "INSUFFICIENT_EVIDENCE",
+      "passing_folds": 4,
+      "source": "carry-exit-btc-2025",
+      "usable_folds": 4,
+      "validation_id": "STATISTICAL_VALIDATION|42811e3f8c3b8ef0e96a64b8e57e69be2582f810185cca8452899bce1e585e27"
+    },
+    {
+      "binomial_p_value": "0.500000",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": true,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 3,
+      "source": "etapa27",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|08f2383ebae7c1c6b74fc1ee6f4d7eb06ac4d0f4f8d695f633bebcf82faeee4e"
+    },
+    {
+      "binomial_p_value": "0.968750",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": true,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 1,
+      "source": "etapa27",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|fd8c04e175dcb0e1430e7528fd48473239acbaa60b4799b57801e29b52ce3554"
+    },
+    {
+      "binomial_p_value": "0.812500",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": true,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 2,
+      "source": "etapa27",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|25eda255e65acadacf718f75cd0f34188cc8dafc940c73deb921f0013b72d7d1"
+    },
+    {
+      "binomial_p_value": "0.968750",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": true,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 1,
+      "source": "etapa27",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|ef1f832a341ed9685caf3e324b3e8c6c19364bf463aaa26648f234cd6ba9c922"
+    },
+    {
+      "binomial_p_value": "0.812500",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": true,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 2,
+      "source": "etapa27",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|3a3275941628b24d28cd80e546dfc4fe52a64cf7045686acf16caee66248ffdd"
+    },
+    {
+      "binomial_p_value": "0.968750",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": true,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 1,
+      "source": "etapa27",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|bf6a408da353a629ff337d053df80f2c80e43667c0a674863e04a3a3ae7cf1f1"
+    },
+    {
+      "binomial_p_value": "0.812500",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": true,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 2,
+      "source": "etapa27",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|5cbf199f97c2afbfe48f1e0fbbad0b5dfb97148c5c06d01295402503a43fd7b8"
+    },
+    {
+      "binomial_p_value": "1.000000",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": true,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 0,
+      "source": "etapa27",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|b054fa8437a4f9b0f25d65f2cca725d03e11a88f1f3f8bb5bf6ce28345a90ec8"
+    },
+    {
+      "binomial_p_value": "0.500000",
+      "consistency_threshold": "0.6",
+      "corrected_for_a_batch": false,
+      "outcome": "VALIDATED",
+      "passing_folds": 3,
+      "source": "eth",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|d5d2f12463f58d2e99a2eef5f3045544be22a63be5c02e998cdeb03041963ad1"
+    },
+    {
+      "binomial_p_value": "0.343750",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": true,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 4,
+      "source": "funding-oos-2024",
+      "usable_folds": 6,
+      "validation_id": "STATISTICAL_VALIDATION|411c10fb00684fcd26ab581375431440e9d9f594015bd0eeb006fc39dfdd0eca"
+    },
+    {
+      "binomial_p_value": "0.656250",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": true,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 3,
+      "source": "funding-oos-2024",
+      "usable_folds": 6,
+      "validation_id": "STATISTICAL_VALIDATION|2489bc8416fee247a7490888eb84f2213fec07db82fde8eb4cd669bc3fbb2501"
+    },
+    {
+      "binomial_p_value": "0.125000",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": false,
+      "outcome": "INSUFFICIENT_EVIDENCE",
+      "passing_folds": 3,
+      "source": "funding-rate",
+      "usable_folds": 3,
+      "validation_id": "STATISTICAL_VALIDATION|8a8b8d4f33f01bd6f492df5d6984d02a8caff994fc9b74d9430790a5bfe77e4d"
+    },
+    {
+      "binomial_p_value": "1.000000",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": false,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 0,
+      "source": "funding-surge",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|3a194760a91f6db59512f7bdcc99d30b8d4df541244598b0f6f0f19d45c52645"
+    },
+    {
+      "binomial_p_value": "0.968750",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": false,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 1,
+      "source": "horizon5",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|0eea5fa88a52976a4ce23447d91ca35c3c5c1b91d7b230b0c3585f136d748e3f"
+    },
+    {
+      "binomial_p_value": "0.812500",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": false,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 2,
+      "source": "intraday-range",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|6f604210d890b78fbfb20000924d974de2cec974e91a527d1e7051b24df57afe"
+    },
+    {
+      "binomial_p_value": "0.812500",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": true,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 2,
+      "source": "n4-sweep",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|f514521e3920d2a39dad38a1e42d8920b0e01f2db6be3638df5f260b78990086"
+    },
+    {
+      "binomial_p_value": "0.812500",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": true,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 2,
+      "source": "n4-sweep",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|62d74f25de293c4824a42a44b471f256384fb8a1a304a3421624b67322fd5353"
+    },
+    {
+      "binomial_p_value": "0.812500",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": true,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 2,
+      "source": "n4-sweep",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|1c44261f7d95ff113e4bc955fd10a1c38ff5aff15955dfee31361cd833015bd1"
+    },
+    {
+      "binomial_p_value": "0.812500",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": true,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 2,
+      "source": "n4-sweep",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|ac9cc67ee1f4be7ff04ac01a6868cc8896c28524a4e7e1f2c591fd42046c7855"
+    },
+    {
+      "binomial_p_value": "0.812500",
+      "consistency_threshold": "0.70",
+      "corrected_for_a_batch": false,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 2,
+      "source": "pair-eth-atom",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|87546b588d3ada0bf5a22539f0110075fc0e53c5ae37ef537200962307aab141"
+    },
+    {
+      "binomial_p_value": "0.500000",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": false,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 3,
+      "source": "pair-eth-btc",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|2fabd35d8c9cfa264004da9b9611932185059f022b074f95a48ed4427c01e7ef"
+    },
+    {
+      "binomial_p_value": "0.812500",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": false,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 2,
+      "source": "reversal",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|e149562956d60d9239bed03122815698dee4218e70ff5adf1b52644c7818c96e"
+    },
+    {
+      "binomial_p_value": "0.812500",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": false,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 2,
+      "source": "reversal-atom",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|49d26d8bc2d6aff6f282e998e26ed07d5b9469948b39252035f63b87ffb1c1d4"
+    },
+    {
+      "binomial_p_value": "0.890625",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": false,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 2,
+      "source": "signal-portfolio",
+      "usable_folds": 6,
+      "validation_id": "STATISTICAL_VALIDATION|60c195dd2bc1de0732a0a47259693c10819df8f70910133c669c4948c04068a5"
+    },
+    {
+      "binomial_p_value": "0.812500",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": false,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 2,
+      "source": "sma-volume-confirmation",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|77e3a7e0470099b42f8fac5560883917901a4400f919593d2d9a453b06d692cb"
+    },
+    {
+      "binomial_p_value": "0.109375",
+      "consistency_threshold": "0.70",
+      "corrected_for_a_batch": false,
+      "outcome": "VALIDATED",
+      "passing_folds": 5,
+      "source": "spy-mom10-2024",
+      "usable_folds": 6,
+      "validation_id": "STATISTICAL_VALIDATION|2e34161347182cd1b60daa9ca32d04a01f9c2a8fe61ed6c793d29d536cce23cf"
+    },
+    {
+      "binomial_p_value": "0.500000",
+      "consistency_threshold": "0.70",
+      "corrected_for_a_batch": false,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 3,
+      "source": "spy-mom10-oos-2022",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|997eec2fbf9d61d53cbced3c259d536ad7562ebf812da9c1f79950f0e00d0275"
+    },
+    {
+      "binomial_p_value": "0.500000",
+      "consistency_threshold": "0.70",
+      "corrected_for_a_batch": false,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 3,
+      "source": "spy-mom10-oos-2023",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|6c2f9cdff7226b56ad041f7f7bd429ecf500f0dedb5558efd729ae4634ded2e4"
+    },
+    {
+      "binomial_p_value": "0.984375",
+      "consistency_threshold": "0.70",
+      "corrected_for_a_batch": false,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 1,
+      "source": "spy-range20-2024",
+      "usable_folds": 6,
+      "validation_id": "STATISTICAL_VALIDATION|c59df8987b1a381c3407cd7a899e9a7db97658f62f6cfef589f330c8b8925212"
+    },
+    {
+      "binomial_p_value": "1.000000",
+      "consistency_threshold": "0.70",
+      "corrected_for_a_batch": false,
+      "outcome": "INSUFFICIENT_EVIDENCE",
+      "passing_folds": 0,
+      "source": "spy-sma50-2024",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|c9c15545d00d8e3ac389086adff24761b9790048e1024462212f92b9b42540f0"
+    },
+    {
+      "binomial_p_value": "0.890625",
+      "consistency_threshold": "0.70",
+      "corrected_for_a_batch": false,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 2,
+      "source": "spy-smavol-10-20-2024",
+      "usable_folds": 6,
+      "validation_id": "STATISTICAL_VALIDATION|2dcc74981ece09bf1e75b562aed7001d81ecaa9f40f1e51193229c2e593a229e"
+    },
+    {
+      "binomial_p_value": "0.890625",
+      "consistency_threshold": "0.70",
+      "corrected_for_a_batch": false,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 2,
+      "source": "spy-volsurge20-2024",
+      "usable_folds": 6,
+      "validation_id": "STATISTICAL_VALIDATION|96b1480aec5246801c4087a345ab40a37f629c7c792d7743fb4b052a040fc748"
+    },
+    {
+      "binomial_p_value": "0.812500",
+      "consistency_threshold": "0.7",
+      "corrected_for_a_batch": false,
+      "outcome": "NOT_VALIDATED",
+      "passing_folds": 2,
+      "source": "volume-surge",
+      "usable_folds": 5,
+      "validation_id": "STATISTICAL_VALIDATION|cd87fce605b8c8286576bd5029ef08722e3b06746e334ab2afb0a2ca969fd280"
+    }
+  ],
+  "schema_version": "1",
+  "searches": 37,
+  "searches_corrected_for_a_batch": 14,
+  "validated_expected_at_observed_fold_rate": "3.8768",
+  "validated_expected_fair_coin": "6.7656",
+  "validated_observed": 2
+}
