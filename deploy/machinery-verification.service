@@ -1,0 +1,29 @@
+[Unit]
+# Continuous PAPER run DECLARED AS MACHINERY VERIFICATION.
+#
+# It drives SMA3, whose sealed Disposition is REJECTED, and that is deliberate:
+# zero of 38 Hypotheses are validated, so there is no edge to operate, and the
+# purpose split adopted 2026-09-30 exists so the execution path can still be
+# exercised. This can never reach LIVE -- execute_alpaca_live_order refuses any
+# purpose but CAPITAL_ALLOCATION.
+#
+# Its output is OPERATIONAL evidence (does the loop survive unattended) and
+# NEVER performance evidence. A P&L from a rejected signal is the market moving.
+#
+# Supersedes forward-paper-activation.service, which invoked the bare entrypoint
+# with no purpose declared and no longitudinal record. Do not enable both.
+Description=TramitaGO Quant Core - machinery verification tick (one run, then exit)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=tramitago
+WorkingDirectory=/opt/tramitago-quant-core
+Environment=PYTHONDONTWRITEBYTECODE=1
+# python3.11+ required: shared/util.py uses datetime.fromisoformat with offsets.
+ExecStart=/usr/bin/python3.11 -B scripts/operations/run_machinery_verification.py --data-dir /var/lib/tramitago-quant-core/forward-paper
+# A recorded failure still exits 0 on purpose: the scheduler must keep running,
+# because stopping on failure would end the longitudinal observation this exists
+# to produce. Failures are written to observations.jsonl, never swallowed.
+SuccessExitStatus=0
