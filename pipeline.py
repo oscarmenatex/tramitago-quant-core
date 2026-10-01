@@ -49,6 +49,11 @@ from tramitago_quant_core.risk.risk_control import (
     RISK_LIMIT_TOTAL_EXPOSURE, RISK_LIMIT_MAX_DRAWDOWN, _risk_decimal, risk_contract,
     _equity_max_drawdown, evaluate_risk_control,
 )
+from tramitago_quant_core.data.bitmex_perpetual_price import (
+    BITMEX_PERPETUAL_PRICE_SCHEMA_VERSION, BITMEX_PERPETUAL_INTERVALS,
+    BITMEX_INVERSE_SYMBOLS, capture_bitmex_perpetual_price,
+    verified_bitmex_perpetual_price_capture, carry_adverse_excursion,
+)
 from tramitago_quant_core.risk.carry_tail import (
     CARRY_TAIL_SCHEMA_VERSION, COLLATERAL_SHARED, COLLATERAL_SEPARATE, COLLATERAL_MODES,
     stress_scenario, verified_stress_scenario, liquidation_move, survives_stress,
