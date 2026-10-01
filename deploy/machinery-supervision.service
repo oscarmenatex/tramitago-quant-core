@@ -8,11 +8,10 @@ After=network-online.target
 
 [Service]
 Type=oneshot
-# opc, not tramitago: the tramitago account does not exist on the VM, so a unit
-# declaring it fails to start and leaves nothing but a systemd error -- which is
-# exactly the silent death this supervisor exists to catch.
+# Matches what machinery-verification.service actually runs as on the VM: opc,
+# with the checkout in its home. The tramitago account does not exist there.
 User=opc
-WorkingDirectory=/opt/tramitago-quant-core
+WorkingDirectory=/home/opc/tramitago-quant-core
 Environment=PYTHONDONTWRITEBYTECODE=1
 ExecStart=/usr/bin/python3.11 -B scripts/operations/supervise_machinery_verification.py --data-dir /var/lib/tramitago-quant-core/forward-paper
 # Exit 0 on every verdict: a correctly reported DEGRADED is the supervisor
