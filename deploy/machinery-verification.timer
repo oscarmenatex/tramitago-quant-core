@@ -1,0 +1,17 @@
+[Unit]
+# Same cadence T9 ran at. The activation policy decides whether a tick is due;
+# ticking more often than the daily slot is harmless and is what lets the loop
+# recover quickly from a transport failure instead of waiting a day.
+Description=Run the machinery verification tick every 5 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+AccuracySec=30s
+# Persistent so a host that was off catches up rather than silently skipping a
+# day, which would leave a gap in the longitudinal record indistinguishable
+# from a failure to run.
+Persistent=true
+
+[Install]
+WantedBy=timers.target
