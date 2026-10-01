@@ -46,7 +46,23 @@ HYPERLIQUID_PERPETUAL_PRICE_REQUEST_HEADERS = {
 # Required subset rather than an exact field set: the raw bytes are what is
 # sealed, so re-verification re-parses them identically whatever extra fields
 # the venue adds later. Rejecting an unknown extra would only break capture.
-_CANDLE_REQUIRED_FIELDS = {"t", "o", "h", "l", "c"}
+# "n" (trade count) is required because it is what distinguishes a traded
+# candle from a backfilled one -- see _parse.
+_CANDLE_REQUIRED_FIELDS = {"t", "o", "h", "l", "c", "n"}
+
+HYPERLIQUID_PERPETUAL_INTERVALS = {
+    "1m": 60, "5m": 300, "15m": 900, "1h": 3600, "4h": 14400, "1d": 86400,
+}
+
+# Hyperliquid serves candles for dates BEFORE its perpetual actually traded:
+# real prices, volume 0, trades 0, derived from the oracle rather than from its
+# own book. BTC's first genuinely traded candle is 2023-02-26. A basis computed
+# against an oracle price is (oracle - spot)/spot, and since the oracle derives
+# from spot that is near zero BY CONSTRUCTION -- an artefact that would look
+# like a reassuringly tight basis and poison any tail estimate built on it.
+HYPERLIQUID_PERPETUAL_BACKFILL_NOTE = (
+    "candles before the perpetual traded carry real prices with zero trades; "
+    "they are oracle backfill, not market observations")
 
 
 def _headers():
@@ -57,11 +73,11 @@ def _endpoint():
     return "https://api.hyperliquid.xyz/info"
 
 
-def _body(coin, start_ms, end_ms):
+def _body(coin, interval, start_ms, end_ms):
     """The exact request payload, canonically encoded so the sealed capture can
     reproduce it byte for byte."""
     return encoded({"type": "candleSnapshot",
-                    "req": {"coin": coin, "interval": "1d",
+                    "req": {"coin": coin, "interval": interval,
                             "startTime": start_ms, "endTime": end_ms}})
 
 
@@ -100,6 +116,17 @@ def _parse(raw, coin):
             raise ValueError("Invalid Hyperliquid perpetual candle timestamp")
         if "s" in item and item["s"] != coin:
             raise ValueError("Hyperliquid perpetual candle is for another coin")
+        try:
+            trades = int(item["n"])
+        except (TypeError, ValueError) as exc:
+            raise ValueError("Non-integer Hyperliquid perpetual trade count") from exc
+        if trades <= 0:
+            # Refused, never silently kept: this is oracle backfill from before
+            # the perpetual traded, and a basis computed against it is an
+            # artefact that looks like a tight, reassuring spread.
+            raise ValueError(
+                "Hyperliquid perpetual candle has no trades at "
+                + iso(item["t"] // 1000) + "; " + HYPERLIQUID_PERPETUAL_BACKFILL_NOTE)
         values = {}
         for field in ("o", "h", "l", "c"):
             try:
@@ -110,26 +137,28 @@ def _parse(raw, coin):
                 raise ValueError(f"Non-positive Hyperliquid perpetual {field}")
             values[field] = value
         candles.append({"timestamp": item["t"] // 1000, "open": values["o"],
-                        "high": values["h"], "low": values["l"], "close": values["c"]})
+                        "high": values["h"], "low": values["l"], "close": values["c"],
+                        "trades": trades})
     return candles
 
 
-def _daily_close_series(candles, start, end):
-    """One close per UTC day, failing closed unless every day is present.
+def _close_series(candles, start, end, interval_seconds):
+    """One close per interval bucket, failing closed unless every bucket exists.
 
-    A missing day is not filled: a gap is precisely the condition under which
+    A missing bar is not filled: a gap is precisely the condition under which
     the basis matters, so imputing one would erase the observation.
     """
-    by_day = {}
+    by_bucket = {}
     for candle in candles:
         if not start <= candle["timestamp"] < end:
             continue
-        day = (candle["timestamp"] // 86400) * 86400
-        if day in by_day and by_day[day] != candle["close"]:
-            raise ValueError("Hyperliquid perpetual series has conflicting closes for " + iso(day))
-        by_day[day] = candle["close"]
-    expected = {iso(value) for value in range(start, end, 86400)}
-    series = {iso(day): close for day, close in by_day.items()}
+        bucket = (candle["timestamp"] // interval_seconds) * interval_seconds
+        if bucket in by_bucket and by_bucket[bucket] != candle["close"]:
+            raise ValueError(
+                "Hyperliquid perpetual series has conflicting closes for " + iso(bucket))
+        by_bucket[bucket] = candle["close"]
+    expected = {iso(value) for value in range(start, end, interval_seconds)}
+    series = {iso(bucket): close for bucket, close in by_bucket.items()}
     if set(series) != expected:
         missing = sorted(expected - set(series))
         raise ValueError("Hyperliquid perpetual price coverage is incomplete; missing "
@@ -137,12 +166,13 @@ def _daily_close_series(candles, start, end):
     return series
 
 
-def _capture_content(coin, capture_period, acquired_at, responses):
+def _capture_content(coin, interval, capture_period, acquired_at, responses):
     content = {
         "schema_version": HYPERLIQUID_PERPETUAL_PRICE_SCHEMA_VERSION,
         "kind": HYPERLIQUID_PERPETUAL_PRICE_CAPTURE_KIND,
         "source": HYPERLIQUID_PERPETUAL_PRICE_SOURCE,
         "coin": coin,
+        "interval": interval,
         "capture_period": capture_period,
         "acquired_at": acquired_at,
         "responses": responses,
@@ -157,24 +187,35 @@ def _raw_content(stored):
 
 
 def capture_hyperliquid_perpetual_price(coin, start_utc, end_exclusive_utc, acquired_at,
-                                        *, transport=None):
-    """Capture and seal the perpetual daily close series.
+                                        *, interval="1d", transport=None):
+    """Capture and seal the perpetual close series at the requested interval.
 
-    Returns (series, capture, raw) where series maps ISO day -> close, matching
-    the shape coinbase_close_series returns for spot so the two can be paired
-    without either side knowing about the other.
+    Returns (series, capture, raw) where series maps ISO timestamp -> close,
+    matching the shape coinbase_close_series returns for spot so the two can be
+    paired without either side knowing about the other.
+
+    `interval` chooses the resolution, and it matters: daily closes hide
+    intraday gaps while liquidation happens intraday, so a basis meant to inform
+    a tail estimate wants the finest interval the period allows.
     """
+    if interval not in HYPERLIQUID_PERPETUAL_INTERVALS:
+        raise ValueError("Interval must be one of "
+                         + ", ".join(sorted(HYPERLIQUID_PERPETUAL_INTERVALS)))
+    interval_seconds = HYPERLIQUID_PERPETUAL_INTERVALS[interval]
     start, end = epoch(start_utc), epoch(end_exclusive_utc)
     if end <= start:
         raise ValueError("Capture period is empty")
+    if start % interval_seconds or end % interval_seconds:
+        raise ValueError("Capture period must align to the interval")
     capture_period = {"start_utc": iso(start), "end_exclusive_utc": iso(end)}
 
     responses, stored, candles = [], [], []
     sequence, cursor = 1, start
     while cursor < end:
-        window_end = min(cursor + HYPERLIQUID_PERPETUAL_PRICE_MAX_CANDLES_PER_REQUEST * 86400,
-                         end)
-        body = _body(coin, cursor * 1000, window_end * 1000)
+        window_end = min(
+            cursor + HYPERLIQUID_PERPETUAL_PRICE_MAX_CANDLES_PER_REQUEST * interval_seconds,
+            end)
+        body = _body(coin, interval, cursor * 1000, window_end * 1000)
         raw, headers = _response(transport, _endpoint(), body)
         response_sha256 = digest(raw)
         responses.append({"sequence": sequence, "url": _endpoint(),
@@ -188,8 +229,8 @@ def capture_hyperliquid_perpetual_price(coin, start_utc, end_exclusive_utc, acqu
         candles.extend(_parse(raw, coin))
         cursor, sequence = window_end, sequence + 1
 
-    series = _daily_close_series(candles, start, end)
-    capture = _capture_content(coin, capture_period, acquired_at, responses)
+    series = _close_series(candles, start, end, interval_seconds)
+    capture = _capture_content(coin, interval, capture_period, acquired_at, responses)
     return series, capture, _raw_content(stored)
 
 
@@ -201,7 +242,7 @@ def verified_hyperliquid_perpetual_price_capture(raw_bytes, capture):
     """
     if not isinstance(capture, dict):
         raise ValueError("Hyperliquid perpetual price capture is invalid")
-    keys = ("schema_version", "kind", "source", "coin", "capture_period",
+    keys = ("schema_version", "kind", "source", "coin", "interval", "capture_period",
             "acquired_at", "responses")
     content = {key: capture[key] for key in keys if key in capture}
     if (set(capture) != set(content) | {"capture_id"}
@@ -210,6 +251,7 @@ def verified_hyperliquid_perpetual_price_capture(raw_bytes, capture):
             or capture.get("source") != HYPERLIQUID_PERPETUAL_PRICE_SOURCE
             or capture.get("capture_id")
             != "HYPERLIQUID_PERPETUAL_PRICE_CAPTURE|" + digest(encoded(content))
+            or capture.get("interval") not in HYPERLIQUID_PERPETUAL_INTERVALS
             or not isinstance(capture.get("responses"), list)):
         raise ValueError("Hyperliquid perpetual price capture metadata is invalid")
     try:
@@ -239,8 +281,9 @@ def verified_hyperliquid_perpetual_price_capture(raw_bytes, capture):
         candles.extend(_parse(response, capture["coin"]))
 
     period = capture["capture_period"]
-    return _daily_close_series(candles, epoch(period["start_utc"]),
-                               epoch(period["end_exclusive_utc"]))
+    return _close_series(candles, epoch(period["start_utc"]),
+                         epoch(period["end_exclusive_utc"]),
+                         HYPERLIQUID_PERPETUAL_INTERVALS[capture["interval"]])
 
 
 def basis_series(spot_series, perpetual_series):
