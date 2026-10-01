@@ -1,0 +1,197 @@
+{
+  "records": [
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "LT",
+          "expected_direction": "DECREASE",
+          "metric": "mean_forward_return_1d(close_t > MOM10_t) - mean_forward_return_1d(close_t <= MOM10_t)",
+          "threshold": "0"
+        },
+        "description": "OUT-OF-SAMPLE TEST of HYPOTHESIS|7f2dc4c8-0807-4802-a3e2-611cfa03000a (spy-mom10-2024), on SPY 2022. For SPY, the mean t+1 return when close_t is ABOVE its own value 10 trading days earlier is LOWER than when it is at or below it. Instrument, strategy, horizon and direction are copied VERBATIM from the in-sample Hypothesis; only the period moves. Direction DECREASE was pre-declared in 2024 on the short-horizon reversal prior (Jegadeesh 1990; Lehmann 1990) and is LOCKED here -- it cannot be revised by this test.\n\nWhy this period: Grinding bear market. The adversarial case: if the 2024 result is 'dips recover', dips that keep falling should break it.\n\nPre-declared success criterion, fixed before execution: the claim survives out of sample only if the full-sample metric is NEGATIVE in BOTH 2022 and 2023 (one chance in four under the null). A positive metric in either period means the 2024 result is not reproducible, and no further period will be tried. Walk-forward consistency is secondary evidence, reported but not decisive.\n\nWhy the in-sample result needed this: four hypotheses were run together, so one passing is likely by chance (37% under a 0.5 per-fold null, 13.7% under this project's measured 0.389); the sealed stopping rule declares the five-member equity population exhausted at an upper bound of 0.499; and a Sharpe of 2.207 on a -0.09%/day difference is more plausibly exposure than signal, since a DECREASE direction is dip-buying and 2024 delivered sharp V-shaped recoveries.",
+        "expected_direction": "DECREASE",
+        "hypothesis_id": "HYPOTHESIS|c3165704-46b6-4346-9ecf-02c5a7b2631c",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|c3165704-46b6-4346-9ecf-02c5a7b2631c|1|c4eb70e321cdf98935737dfd6ae1e4e30b30563404b5503e017cb7526fd1bb58",
+        "target_metric": "mean_forward_return_1d(close_t > MOM10_t) - mean_forward_return_1d(close_t <= MOM10_t)",
+        "version": 1
+      },
+      "interpretation": "Test FUERA DE MUESTRA de spy-mom10-2024 sobre SPY 2022. Instrumento, estrategia, horizonte y direccion copiados literalmente de la hipotesis en muestra; solo cambia el periodo. Direccion DECREASE BLOQUEADA, no revisable por este test.\n\nResultado: metric=0.000924, grupos 107/144, criterio LT 0 -> REJECTED. Signo POSITIVO, CONTRADICE la muestra. Walk-forward 3/5 folds MET, consistencia 0.6, NOT_VALIDATED.\n\nCriterio primario pre-declarado: la afirmacion sobrevive solo si el signo es negativo en 2022 Y 2023. Un signo positivo en cualquiera de los dos significa que el resultado de 2024 no es reproducible, y no se prueba ningun periodo adicional.",
+      "knowledge_id": "KNOWLEDGE|1049d3adbd6bd9d3ed0b19c3095e6a5c3da82b79159cd748c3288c71472da50b",
+      "limitations": [
+        "Out-of-sample on PERIOD only. Same instrument, same daily frequency, same single strategy -- it does not test transfer across instruments or markets.",
+        "Gross of transaction costs; Nivel 4 is not built.",
+        "A surviving sign is necessary, not sufficient: two periods agreeing is one chance in four under the null.",
+        "Period context: Grinding bear market. The adversarial case: if the 2024 result is 'dips recover', dips that keep falling should break it."
+      ],
+      "materialization": {
+        "knowledge_code_revision": "4d0513f6d571049e88e09d558ddc7a8d47cb1169",
+        "pipeline_sha256": "3d73621d10689b4ad7d00361316475e49591104927b14e189a5c5b4938327ffa",
+        "preserved_at": "2026-10-01T02:21:12.419850Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "LT",
+          "expected_direction": "DECREASE",
+          "metric": "mean_forward_return_1d(close_t > MOM10_t) - mean_forward_return_1d(close_t <= MOM10_t)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= MOM10_t",
+          "upper_group": "close_t > MOM10_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "close_lag_10",
+          "parameters": {
+            "lookback": 10
+          },
+          "strategy_id": "MOMENTUM_CROSSOVER"
+        },
+        "instrument": "SPY",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > MOM10_t) - mean(return_t+1 | close_t <= MOM10_t)",
+          "name": "mean_forward_return_1d(close_t > MOM10_t) - mean_forward_return_1d(close_t <= MOM10_t)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_MOM10_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-17T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2023-01-03T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2023-01-01T00:00:00Z",
+            "start_utc": "2022-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|1049d3adbd6bd9d3ed0b19c3095e6a5c3da82b79159cd748c3288c71472da50b|6a3e0c616fccef7f5a398d0525aa0a9dfe96b1479faa755eef78db2fbb37d65b",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|3221ad770033d4d638b42a805c2fb90a273c92c9de04c8a914488bd5bebc7c26",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|3221ad770033d4d638b42a805c2fb90a273c92c9de04c8a914488bd5bebc7c26|817aa0c1ebe4d6f21bcd15e0f19d17563affdc497a7de5f40698bf03b8e4c139"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|d03093be-c652-4b45-a4f2-bde9d5d3caca",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|d03093be-c652-4b45-a4f2-bde9d5d3caca|1|be6b10d1d1c9e6fb0684b368be1fe2ee91eb602f3173881c9ed4bf6b05a2db08",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "4d0513f6d571049e88e09d558ddc7a8d47cb1169",
+          "hypothesis_id": "HYPOTHESIS|c3165704-46b6-4346-9ecf-02c5a7b2631c",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|c3165704-46b6-4346-9ecf-02c5a7b2631c|1|c4eb70e321cdf98935737dfd6ae1e4e30b30563404b5503e017cb7526fd1bb58",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|16916bd9609227c681cdafe6f9c777421b9d8e0aa22b240ed2316a7608ebb1f0|87aa661641b97340586e4a52864f7f578aeb66adfece5dde617bdee8d59a3746",
+          "research_result_id": "RESEARCH_RESULT|16916bd9609227c681cdafe6f9c777421b9d8e0aa22b240ed2316a7608ebb1f0"
+        }
+      },
+      "results": {
+        "outcome": "REJECTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "LT",
+            "expected_direction": "DECREASE",
+            "metric": "mean_forward_return_1d(close_t > MOM10_t) - mean_forward_return_1d(close_t <= MOM10_t)",
+            "threshold": "0"
+          },
+          "criterion_result": "NOT_MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 144,
+              "mean_return_t_plus_1": -0.0011168993537827537,
+              "rule": "close_t <= MOM10_t"
+            },
+            "upper": {
+              "count": 107,
+              "mean_return_t_plus_1": -0.00019274322836943436,
+              "rule": "close_t > MOM10_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": 0.0009241561254133194,
+          "observation_count": 251,
+          "period": {
+            "end_exclusive_utc": "2023-01-01T00:00:00Z",
+            "start_utc": "2022-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    }
+  ],
+  "schema_version": "1"
+}

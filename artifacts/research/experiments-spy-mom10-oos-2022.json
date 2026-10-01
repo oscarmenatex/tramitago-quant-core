@@ -1,0 +1,184 @@
+{
+  "experiments": [
+    {
+      "conditions": {
+        "acceptance_criterion": {
+          "comparison": "LT",
+          "expected_direction": "DECREASE",
+          "metric": "mean_forward_return_1d(close_t > MOM10_t) - mean_forward_return_1d(close_t <= MOM10_t)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= MOM10_t",
+          "upper_group": "close_t > MOM10_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "close_lag_10",
+          "parameters": {
+            "lookback": 10
+          },
+          "strategy_id": "MOMENTUM_CROSSOVER"
+        },
+        "instrument": "SPY",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > MOM10_t) - mean(return_t+1 | close_t <= MOM10_t)",
+          "name": "mean_forward_return_1d(close_t > MOM10_t) - mean_forward_return_1d(close_t <= MOM10_t)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_MOM10_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-17T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2023-01-03T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2023-01-01T00:00:00Z",
+            "start_utc": "2022-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "created_at": "2026-10-01T02:21:12.419850Z",
+      "experiment_id": "EXPERIMENT|d03093be-c652-4b45-a4f2-bde9d5d3caca",
+      "record_id": "EXPERIMENT_VERSION|EXPERIMENT|d03093be-c652-4b45-a4f2-bde9d5d3caca|1|be6b10d1d1c9e6fb0684b368be1fe2ee91eb602f3173881c9ed4bf6b05a2db08",
+      "references": {
+        "dataset": {
+          "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|5b0df40dacd82a30059370f5b8b832563783be2ee6a0448a21b365d64b42d37e",
+          "dataset_sha256": "f57cab99b64734bd61bf8b433ada7a9af9d76322aec8fcdfc70e384ea332ca28",
+          "evaluable_period": {
+            "end_exclusive_utc": "2023-01-01T00:00:00Z",
+            "start_utc": "2022-01-01T00:00:00Z"
+          },
+          "hypothesis_id": "HYPOTHESIS|c3165704-46b6-4346-9ecf-02c5a7b2631c",
+          "hypothesis_version": 1,
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-17T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_MOM10_WARMUP",
+              "timestamp": "2021-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2023-01-03T00:00:00Z"
+            }
+          ]
+        },
+        "hypothesis": {
+          "code_revision": "4d0513f6d571049e88e09d558ddc7a8d47cb1169",
+          "hypothesis_id": "HYPOTHESIS|c3165704-46b6-4346-9ecf-02c5a7b2631c",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|c3165704-46b6-4346-9ecf-02c5a7b2631c|1|c4eb70e321cdf98935737dfd6ae1e4e30b30563404b5503e017cb7526fd1bb58",
+          "system_version": "0.1.0",
+          "version": 1
+        }
+      },
+      "revision_reason": "Out-of-sample test of spy-mom10-2024 on 2022",
+      "status": "CONDITIONS_FIXED",
+      "version": 1
+    }
+  ],
+  "schema_version": "1"
+}
