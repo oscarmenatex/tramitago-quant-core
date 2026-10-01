@@ -49,6 +49,13 @@ from tramitago_quant_core.risk.risk_control import (
     RISK_LIMIT_TOTAL_EXPOSURE, RISK_LIMIT_MAX_DRAWDOWN, _risk_decimal, risk_contract,
     _equity_max_drawdown, evaluate_risk_control,
 )
+from tramitago_quant_core.risk.degradation_monitor import (
+    MONITORING_CONTRACT_SCHEMA_VERSION, DEGRADES_BELOW, DEGRADES_ABOVE,
+    DEGRADATION_DIRECTIONS, ACTION_SUSPEND, ACTION_RETIRE, MONITOR_ACTIONS,
+    STATE_HEALTHY, STATE_SUSPENDED, STATE_RETIRED, MONITOR_STATES,
+    monitoring_contract, verified_monitoring_contract, detection_latency_seconds,
+    monitoring_is_admissible, evaluate_monitor,
+)
 from tramitago_quant_core.risk.cost_model import (
     COST_CONTRACT_SCHEMA_VERSION, COST_REGIME_ROTATION, COST_REGIME_HOLDING,
     COST_REGIMES, cost_contract, verified_cost_contract, cost_per_side,
