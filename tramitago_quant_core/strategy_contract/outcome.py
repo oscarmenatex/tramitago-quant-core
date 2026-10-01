@@ -86,7 +86,8 @@ def spread_return_outcome(pair_variable):
     }
 
 
-def carry_return_outcome(funding_variable="funding_rate", perpetual_variable="perp_close"):
+def carry_return_outcome(funding_variable="funding_rate", perpetual_variable="perp_close",
+                         payments_per_period=1):
     """The return of a CASH-AND-CARRY: long spot, short perpetual, equal notional.
 
         funding_received_over_the_period  -  (basis_t+h  -  basis_t)
@@ -107,11 +108,30 @@ def carry_return_outcome(funding_variable="funding_rate", perpetual_variable="pe
     This is the first Outcome whose return is not a price change at all. A
     premium is a cash flow plus a spread mark, and that is why a Hypothesis
     about one cannot be expressed by changing the Strategy alone.
+
+    PAYMENTS_PER_PERIOD, AND WHY THE DEFAULT IS WRONG FOR HYPERLIQUID. The
+    funding column is whatever the auxiliary source produced, and Hyperliquid's
+    daily series is the MEAN OF THAT DAY'S HOURLY RATES -- an hourly rate, not
+    the day's funding. Subtracting a full day's basis move from one hour's
+    funding understates the premium by a factor of 24, and the mark-to-market
+    then dominates a quantity it should not. Measured on the sealed BTC 2024
+    dataset: the funding leg reads +1.01% annualised at face value and +24.14%
+    at 24 payments a day, and 24.14% is exactly what the hypothesis catalogue
+    recorded for that instrument and year.
+
+    The default stays 1 ANYWAY, because every already-sealed carry artifact was
+    built with it and must keep reproducing byte for byte -- including the
+    Hypothesis #37 record, whose INSUFFICIENT_EVIDENCE verdict was reached on the
+    understated quantity and should stay readable as what it actually was. A
+    caller measuring a real carry declares the venue's payment frequency.
     """
     if not isinstance(funding_variable, str) or not funding_variable:
         raise ValueError("Funding variable name is required")
     if not isinstance(perpetual_variable, str) or not perpetual_variable:
         raise ValueError("Perpetual variable name is required")
+    if (not isinstance(payments_per_period, int) or isinstance(payments_per_period, bool)
+            or payments_per_period < 1):
+        raise ValueError("Payments per period must be a positive integer")
 
     def column(horizon):
         return f"forward_carry_return_{horizon}d"
@@ -123,18 +143,25 @@ def carry_return_outcome(funding_variable="funding_rate", perpetual_variable="pe
         return (row[perpetual_variable] - spot) / spot
 
     def compute(row, future_row):
-        return future_row[funding_variable] - (_basis(future_row) - _basis(row))
+        return (payments_per_period * future_row[funding_variable]
+                - (_basis(future_row) - _basis(row)))
 
+    multiplier = "" if payments_per_period == 1 else f"{payments_per_period} * "
     return {
         "schema_version": OUTCOME_SCHEMA_VERSION,
         "outcome_id": "CARRY_RETURN",
+        # payments_per_period appears only when it is not 1, the same
+        # field-presence discriminator this module already uses, so every sealed
+        # carry artifact hashes to exactly the identity it always had.
         "parameters": {"funding_variable": funding_variable,
-                       "perpetual_variable": perpetual_variable},
+                       "perpetual_variable": perpetual_variable,
+                       **({} if payments_per_period == 1
+                          else {"payments_per_period": payments_per_period})},
         "required_inputs": {"variables": ["close", funding_variable, perpetual_variable]},
         "column": column,
         "name": lambda horizon: f"carry_return_t+{horizon}",
         "formula": lambda horizon: (
-            f"{funding_variable}_t+{horizon} - (basis_t+{horizon} - basis_t), "
+            f"{multiplier}{funding_variable}_t+{horizon} - (basis_t+{horizon} - basis_t), "
             f"basis = ({perpetual_variable} - close) / close"),
         "compute": compute,
     }
