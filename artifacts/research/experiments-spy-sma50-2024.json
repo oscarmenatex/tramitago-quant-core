@@ -1,0 +1,496 @@
+{
+  "experiments": [
+    {
+      "conditions": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_50) - mean_forward_return_1d(close_t <= sma_close_50)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= SMA50_t",
+          "upper_group": "close_t > SMA50_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "sma_close_50",
+          "parameters": {
+            "window": 50
+          },
+          "strategy_id": "SMA_CROSSOVER"
+        },
+        "instrument": "SPY",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > SMA50_t) - mean(return_t+1 | close_t <= SMA50_t)",
+          "name": "mean_forward_return_1d(close_t > sma_close_50) - mean_forward_return_1d(close_t <= sma_close_50)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_SMA50_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-25T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-01T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-02T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-03T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-06T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-07T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-08T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-09T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-10T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-16T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-17T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-01T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-04T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-05T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-06T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-07T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-08T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-11T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-12T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-18T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-19T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2025-01-02T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2025-01-01T00:00:00Z",
+            "start_utc": "2024-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "created_at": "2026-09-30T23:13:09.336760Z",
+      "experiment_id": "EXPERIMENT|dce1fd43-dee8-4203-becb-34c217210bb6",
+      "record_id": "EXPERIMENT_VERSION|EXPERIMENT|dce1fd43-dee8-4203-becb-34c217210bb6|1|f854149efc191fd6cdce8b91b03633fd5b779706e21fcc2ede997cf5900d92cc",
+      "references": {
+        "dataset": {
+          "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|3747f935c5dd350e91007a00950ac1d303c9e0a1dabee65c9e6bd5c9a7d38a5d",
+          "dataset_sha256": "895451b1286cd34092190e3ed120a3e3fa4e40422874e4361678ff3a61eccfda",
+          "evaluable_period": {
+            "end_exclusive_utc": "2025-01-01T00:00:00Z",
+            "start_utc": "2024-01-01T00:00:00Z"
+          },
+          "hypothesis_id": "HYPOTHESIS|e6545e85-7baa-4f34-b96f-ed77852193e3",
+          "hypothesis_version": 1,
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-25T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-01T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-02T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-03T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-06T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-07T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-08T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-09T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-10T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-16T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-17T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-01T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-04T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-05T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-06T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-07T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-08T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-11T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-12T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-18T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-19T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2025-01-02T00:00:00Z"
+            }
+          ]
+        },
+        "hypothesis": {
+          "code_revision": "b91e0c235d723980d2cc756ecfb0810e8999ceaf",
+          "hypothesis_id": "HYPOTHESIS|e6545e85-7baa-4f34-b96f-ed77852193e3",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|e6545e85-7baa-4f34-b96f-ed77852193e3|1|b5ac069b1df21621cdc7e0b32f9264fc935ff5e7017092f3644b6411c0b1fcbb",
+          "system_version": "0.1.0",
+          "version": 1
+        }
+      },
+      "revision_reason": "First experiment for SPY SMA(50) hypothesis (Nivel 5, US equities, Alpaca daily bars, 2024)",
+      "status": "CONDITIONS_FIXED",
+      "version": 1
+    }
+  ],
+  "schema_version": "1"
+}

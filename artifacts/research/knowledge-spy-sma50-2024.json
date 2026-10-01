@@ -1,0 +1,355 @@
+{
+  "records": [
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_50) - mean_forward_return_1d(close_t <= sma_close_50)",
+          "threshold": "0"
+        },
+        "description": "For SPY (S&P 500 ETF), the mean t+1 return when the close is ABOVE its own trailing 50-day simple moving average is HIGHER than when it is below -- SMA_CROSSOVER(50) on SPY, 2024 full year. Direction INCREASE pre-declared on the trend-following prior (Brock, Lakonishok & LeBaron 1992; Faber 2007: price above its own trailing average marks the regime that carries the positive drift). First Nivel 5 Hypothesis of the project (US equities, a market with overnight gaps, sessions and holidays that crypto does not have).\n\nWindow history, declared before execution: SMA(200) was run first on this exact instrument and period and returned INCONCLUSIVE -- SPY closed above its 200-day average on every trading day of 2024, leaving the lower group empty and the difference of means undefined. The window moved to 50 on that validity ground alone: an undefined comparison is not an unfavourable one, and no metric from that run existed to shop for. 50 is a window the cited literature itself tests (Brock et al. examine 1, 2, 5, 50, 150 and 200 day averages), not one selected here. Period, folds, direction and acceptance criterion are unchanged from the original pre-declaration.\n\nPre-declared caveats: (1) SPY SMA(50) is among the most widely known signals in finance and may be fully arbitraged; (2) 2024 was a strong bull year, so positive drift favours the INCREASE direction -- walk-forward consistency across sub-periods, not the full-sample mean, is the real test; (3) this is the second window tried on one period, and the result carries that.",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|e6545e85-7baa-4f34-b96f-ed77852193e3",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|e6545e85-7baa-4f34-b96f-ed77852193e3|1|b5ac069b1df21621cdc7e0b32f9264fc935ff5e7017092f3644b6411c0b1fcbb",
+        "target_metric": "mean_forward_return_1d(close_t > sma_close_50) - mean_forward_return_1d(close_t <= sma_close_50)",
+        "version": 1
+      },
+      "interpretation": "SMA_CROSSOVER(50) sobre SPY (S&P 500 ETF), ano 2024 completo. Primera hipotesis de Nivel 5 del proyecto: renta variable de EE.UU. via Alpaca (barras diarias, feed IEX, ajustadas por splits), un mercado con huecos de overnight, sesiones y festivos que el crypto no tiene. Direccion INCREASE pre-declarada sobre el prior de Brock, Lakonishok & LeBaron (1992) y Faber (2007): el precio por encima de su propia media movil marca el regimen que lleva la deriva positiva.\n\nHistorial de ventana: SMA(200) se ejecuto primero sobre este mismo instrumento y periodo y devolvio INCONCLUSIVE -- SPY cerro por encima de su media de 200 dias todos los dias habiles de 2024, dejando el grupo inferior vacio y la diferencia de medias indefinida. La ventana paso a 50 por ese motivo de validez y solo por ese: una comparacion indefinida no es una desfavorable, y no existia metrica alguna de aquella corrida con la que elegir. 50 es una ventana que la propia literatura citada examina. Periodo, folds, direccion y criterio de aceptacion no se tocaron.\n\nResultado muestra completa: metric=-0.002953, criterio GT 0 -> REJECTED. Walk-forward independiente (6 folds sobre 2024): 0/6 folds MET, consistencia None, INSUFFICIENT_EVIDENCE (umbral 70%).\n\nContexto: el eje Nivel 5 (otro mercado) era el ultimo item del catalogo sin explorar; este es su primer dato con ambos grupos observables. Bloqueador 1 sigue abierto: el eje Nivel 5 no queda cerrado por un solo resultado, pero esta combinacion instrumento/senal/periodo queda descartada.",
+      "knowledge_id": "KNOWLEDGE|e22937aec8ad661388ab2065fb23a50aaad8a34afdc89ced08e4ac3bb93cf73f",
+      "limitations": [
+        "SPY SMA(50) is a widely-known signal -- any edge may be crowded out or arbitraged.",
+        "2024 was a strong bull-market year. The INCREASE direction benefits from positive drift; walk-forward consistency across sub-periods is the real test, not the full-sample mean.",
+        "Daily bars only (IEX feed). No transaction costs (Nivel 4 not built) -- the measured edge is gross of bid-ask spread and commissions.",
+        "Single instrument, single period, single window: one data point on the equity axis.",
+        "The 49-day SMA warmup comes from 2023, a year outside the evaluable period.",
+        "SMA(50) was reached after SMA(200) returned INCONCLUSIVE on this same period for lack of any observation below the average. The window was changed on that validity ground alone -- a comparison with an empty group is undefined, not unfavourable -- and no metric from the SMA(200) run informed the choice. Even so, this is a second window tried on one period, and the result should be read with that in mind."
+      ],
+      "materialization": {
+        "knowledge_code_revision": "b91e0c235d723980d2cc756ecfb0810e8999ceaf",
+        "pipeline_sha256": "2a69397809da1e648578761b09884b022800c01c74e867ac7be48c749bcb1ebe",
+        "preserved_at": "2026-09-30T23:13:09.336760Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_return_1d(close_t > sma_close_50) - mean_forward_return_1d(close_t <= sma_close_50)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "close_t <= SMA50_t",
+          "upper_group": "close_t > SMA50_t"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "sma_close_50",
+          "parameters": {
+            "window": 50
+          },
+          "strategy_id": "SMA_CROSSOVER"
+        },
+        "instrument": "SPY",
+        "metric": {
+          "formula": "mean(return_t+1 | close_t > SMA50_t) - mean(return_t+1 | close_t <= SMA50_t)",
+          "name": "mean_forward_return_1d(close_t > sma_close_50) - mean_forward_return_1d(close_t <= sma_close_50)"
+        },
+        "outcome": {
+          "formula": "(close_t+1 / close_t) - 1",
+          "name": "return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_SMA50_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-25T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-10-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-01T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-02T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-03T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-06T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-07T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-08T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-09T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-10T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-16T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-17T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-11-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-01T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-04T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-05T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-06T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-07T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-08T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-11T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-12T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-18T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-19T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_SMA50_WARMUP",
+              "timestamp": "2023-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2025-01-02T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2025-01-01T00:00:00Z",
+            "start_utc": "2024-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|e22937aec8ad661388ab2065fb23a50aaad8a34afdc89ced08e4ac3bb93cf73f|a974f6029c4c114a7711bfa469bb3e4a6cb3a1cb21df8ffb70090c36b4fca0df",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|6184f353231c9672b559c3558a8bf32844f746c94f4c795a9a95a5150b9d3807",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|6184f353231c9672b559c3558a8bf32844f746c94f4c795a9a95a5150b9d3807|20a9a213661ad536f311f0ed8cb42a8659c2485119826f5d16fc23943b6973d7"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|dce1fd43-dee8-4203-becb-34c217210bb6",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|dce1fd43-dee8-4203-becb-34c217210bb6|1|f854149efc191fd6cdce8b91b03633fd5b779706e21fcc2ede997cf5900d92cc",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "b91e0c235d723980d2cc756ecfb0810e8999ceaf",
+          "hypothesis_id": "HYPOTHESIS|e6545e85-7baa-4f34-b96f-ed77852193e3",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|e6545e85-7baa-4f34-b96f-ed77852193e3|1|b5ac069b1df21621cdc7e0b32f9264fc935ff5e7017092f3644b6411c0b1fcbb",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|dad17aa7169e2f7d5359603c2d3eabc0b65284a37da3734867ec90f31daebaed|5ffb987680b873198e26a62b01bccd3422e3edf62a737b983294ee22623e61e5",
+          "research_result_id": "RESEARCH_RESULT|dad17aa7169e2f7d5359603c2d3eabc0b65284a37da3734867ec90f31daebaed"
+        }
+      },
+      "results": {
+        "outcome": "REJECTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_return_1d(close_t > sma_close_50) - mean_forward_return_1d(close_t <= sma_close_50)",
+            "threshold": "0"
+          },
+          "criterion_result": "NOT_MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 32,
+              "mean_return_t_plus_1": 0.0035044879098564304,
+              "rule": "close_t <= SMA50_t"
+            },
+            "upper": {
+              "count": 220,
+              "mean_return_t_plus_1": 0.0005510459240802104,
+              "rule": "close_t > SMA50_t"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": -0.00295344198577622,
+          "observation_count": 252,
+          "period": {
+            "end_exclusive_utc": "2025-01-01T00:00:00Z",
+            "start_utc": "2024-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    }
+  ],
+  "schema_version": "1"
+}

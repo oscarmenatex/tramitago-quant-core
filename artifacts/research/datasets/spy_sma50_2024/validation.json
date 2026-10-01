@@ -1,0 +1,6 @@
+{
+  "rows": 302,
+  "source": "Alpaca Data API v2 (daily equity bars, split-adjusted)",
+  "status": "PASS",
+  "trading_days_only": true
+}

@@ -630,6 +630,13 @@ def _experiment_result_execution(code_revision):
     return {"code_revision": code_revision, "pipeline_sha256": digest(source)}
 
 
+def _experiment_dataset_is_equity(dataset_directory):
+    """True when the sealed dataset came from a market with a trading calendar."""
+    from tramitago_quant_core.data.alpaca_equity_series import ALPACA_EQUITY_BARS_CAPTURE_KIND
+    manifest = json.loads((Path(dataset_directory) / "manifest.json").read_bytes())
+    return manifest.get("input_kind") == ALPACA_EQUITY_BARS_CAPTURE_KIND
+
+
 def _experiment_result_dataset_rows(dataset_directory, conditions):
     """Parse the sealed CSV and derive only its independently evaluable observations.
 
@@ -698,11 +705,20 @@ def _experiment_result_dataset_rows(dataset_directory, conditions):
         })
 
     frequency = conditions["frequency_seconds"]
+    # A market with sessions and holidays has no calendar-day grid: consecutive
+    # bars are consecutive TRADING days, so "contiguous" can only mean strictly
+    # increasing. Coverage is not weakened by dropping the arithmetic -- it is
+    # proved one layer down, where the capture verifies every bar against the
+    # sealed exchange calendar and the verifier re-runs that check independently.
+    is_equity = _experiment_dataset_is_equity(dataset_directory)
     for index, row in enumerate(rows):
         if row["instrument"] != conditions["instrument"]:
             raise ValueError("Historical dataset instrument is incompatible with experiment")
-        if index and epoch(row["timestamp"]) != epoch(rows[index - 1]["timestamp"]) + frequency:
-            raise ValueError("Historical dataset has noncontiguous experiment rows")
+        if index:
+            previous, current = epoch(rows[index - 1]["timestamp"]), epoch(row["timestamp"])
+            contiguous = current > previous if is_equity else current == previous + frequency
+            if not contiguous:
+                raise ValueError("Historical dataset has noncontiguous experiment rows")
     support_rows = [{"timestamp": row["timestamp"], "row_role": row["row_role"]}
                     for row in rows if row["row_role"] != HYPOTHESIS_DATASET_EVALUATION_ROLE]
     if support_rows != conditions["population"]["support_rows"]:
@@ -710,7 +726,9 @@ def _experiment_result_dataset_rows(dataset_directory, conditions):
 
     period = conditions["temporal_split"]["independent_evaluation_period"]
     start, end = epoch(period["start_utc"]), epoch(period["end_exclusive_utc"])
-    expected_timestamps = [iso(value) for value in range(start, end, frequency)]
+    expected_timestamps = (
+        [row["timestamp"] for row in rows if start <= epoch(row["timestamp"]) < end]
+        if is_equity else [iso(value) for value in range(start, end, frequency)])
     evidence = []
     for index, row in enumerate(rows):
         timestamp = epoch(row["timestamp"])
@@ -727,8 +745,11 @@ def _experiment_result_dataset_rows(dataset_directory, conditions):
         signal = strategy["compute"](window_rows)
         indicator_value = signal["indicator_value"]
         next_row = rows[index + horizon]
+        forward_timestamp = epoch(next_row["timestamp"])
+        forward_supported = (forward_timestamp > timestamp if is_equity
+                             else forward_timestamp == timestamp + horizon * frequency)
         if (not math.isfinite(indicator_value) or row[column_name] != indicator_value
-                or epoch(next_row["timestamp"]) != timestamp + horizon * frequency):
+                or not forward_supported):
             raise ValueError("Historical dataset indicator or forward-return support is invalid")
         forward_return = outcome["compute"](row, next_row)
         if not math.isfinite(forward_return) or row[forward_column] != forward_return:
@@ -874,9 +895,15 @@ def _experiment_result_record_is_valid(record):
                 >= epoch(evaluation["period"]["end_exclusive_utc"])):
             return False
         period = evaluation["period"]
-        expected_timestamps = [iso(value) for value in range(
-            epoch(period["start_utc"]), epoch(period["end_exclusive_utc"]), 86400)]
-        if len(record["evidence"]) != len(expected_timestamps):
+        calendar_days = (epoch(period["end_exclusive_utc"])
+                         - epoch(period["start_utc"])) // 86400
+        # A bound, not an equality: a market with sessions and holidays has fewer
+        # bars than calendar days, and this record carries no reference to the
+        # calendar that says which. Exact coverage is grounded in
+        # verified_experiment_result, which reloads the sealed conditions and
+        # recomputes every evidence row -- the same division of labour that moved
+        # the Outcome and group-rule checks out of this function.
+        if not record["evidence"] or len(record["evidence"]) > calendar_days:
             return False
         # Vía 7.C (2026-09-29): the close-return identity check that used to
         # live in this loop was removed. This record carries no "conditions",
@@ -924,15 +951,30 @@ def _experiment_result_record_is_valid(record):
             horizon_seconds = epoch(first["next_timestamp"]) - epoch(first["timestamp"])
             if horizon_seconds <= 0 or horizon_seconds % 86400:
                 return False
-        for expected_timestamp, item in zip(expected_timestamps, record["evidence"]):
+        # Ordering and containment rather than a calendar grid: a market with
+        # sessions and holidays skips days, and the gap to the forward bar widens
+        # over a weekend, so neither the timestamps nor the spacing are fixed
+        # arithmetic. Exact coverage and spacing are grounded in
+        # verified_experiment_result, which reloads the sealed conditions and
+        # recomputes every row against the dataset -- the same division of labour
+        # that already moved the Outcome and group-rule checks out of here.
+        period_start, period_end = epoch(period["start_utc"]), epoch(period["end_exclusive_utc"])
+        previous_timestamp = None
+        for item in record["evidence"]:
             if (not isinstance(item, dict) or set(item) != base_evidence_fields | {column_name}
-                    or item["timestamp"] != expected_timestamp
+                    or not _explicit_utc(item.get("timestamp"))
+                    or not _explicit_utc(item.get("next_timestamp"))
                     or item["row_role"] != HYPOTHESIS_DATASET_EVALUATION_ROLE
-                    or item["next_timestamp"] != iso(epoch(item["timestamp"]) + horizon_seconds)
                     or item["group"] not in {"UPPER", "LOWER_OR_EQUAL"}
                     or not all(isinstance(item[name], float) and math.isfinite(item[name])
                                for name in ("close", column_name, "next_close", "return_t_plus_1"))):
                 return False
+            timestamp = epoch(item["timestamp"])
+            if (not period_start <= timestamp < period_end
+                    or epoch(item["next_timestamp"]) <= timestamp
+                    or (previous_timestamp is not None and timestamp <= previous_timestamp)):
+                return False
+            previous_timestamp = timestamp
             # M4.1 production wiring (2026-09-28): "group" is NOT re-derived
             # here as close-vs-indicator -- that comparison is only correct
             # for strategies whose classification variable IS close (SMA,
