@@ -41,7 +41,9 @@ from tramitago_quant_core.governance.investment_committee import (
     committee_evaluation, committee_decision, _load_committee_registry,
     constitute_investment_committee,
     load_investment_committee, verified_investment_committee,
+    COMMITTEE_PURPOSES, COMMITTEE_PURPOSE_MACHINERY, COMMITTEE_PURPOSE_CAPITAL,
 )
+from tramitago_quant_core.governance.evidence_resolution import sealed_evidence_resolver
 from tramitago_quant_core.risk.risk_control import (
     RISK_CONTROL_SCHEMA_VERSION, RISK_CONTROL_COMPLETED, RISK_CONTROL_BLOCKED,
     RISK_LIMIT_TOTAL_EXPOSURE, RISK_LIMIT_MAX_DRAWDOWN, _risk_decimal, risk_contract,
@@ -4379,10 +4381,21 @@ def proposal_is_manually_approved(proposal):
     )
 
 
-def prepare_real_order_proposal(state_path, output, decision_identity, risk_config):
-    """Persist one bounded Alpaca proposal without any broker transport."""
+def prepare_real_order_proposal(state_path, output, decision_identity, risk_config, *,
+                                committee_registry_path, committee_id):
+    """Persist one bounded Alpaca proposal without any broker transport.
+
+    The committee is a DATA DEPENDENCY, not an adjacent CLI call (audit "Vinculo
+    Evidencia-Operacion", 2026-09-30). Before this, the gate wrote a file nothing
+    downstream read, so running the chain out of order -- or not running the gate
+    at all -- produced a valid proposal. The committee is now re-verified here
+    and its sealed purpose is carried into the proposal, which is what lets
+    `execute_alpaca_live_order` refuse a machinery-verification run.
+    """
     state_path = Path(state_path)
     state = json.loads(state_path.read_bytes())
+    committee = verified_investment_committee(committee_registry_path, committee_id)
+    committee_purpose = committee.get("purpose")
     decisions = [item for item in state.get("decisions", [])
                  if item.get("identity") == decision_identity]
     if len(decisions) != 1:
@@ -4455,10 +4468,17 @@ def prepare_real_order_proposal(state_path, output, decision_identity, risk_conf
         reasons.append("risk contract version is not the approved version")
     if risk_config["risk_contract_identity"] != phase4_risk_contract_identity(risk_config):
         reasons.append("risk contract identity does not match its terms")
+    if committee["decision"]["outcome"] != "APPROVED":
+        reasons.append("investment committee did not approve: "
+                       + str(committee["decision"]["outcome"]))
+    if committee_purpose not in COMMITTEE_PURPOSES:
+        reasons.append("investment committee does not declare a supported purpose")
 
     side = {"ENTER": "BUY", "EXIT": "SELL"}.get(action)
     proposal = {
         "identity": f"REAL_ORDER_PROPOSAL|{decision_identity}",
+        "committee_id": committee["committee_id"],
+        "purpose": committee_purpose,
         "decision_identity": decision_identity,
         "decision_timestamp": decision.get("timestamp"),
         "created_at": decision.get("timestamp"),
@@ -4891,6 +4911,14 @@ def _risk_revalidation_is_ready(record, proposal):
         and record.get("approval_identity")
         == proposal.get("approval_record", {}).get("identity")
     )
+
+
+def _request_committee_purpose(state, request):
+    """The sealed committee purpose carried by the proposal this request executes."""
+    proposals = state.get("real_order_proposals", [])
+    proposal = next((item for item in proposals if isinstance(item, dict)
+                     and item.get("identity") == request.get("proposal_id")), None)
+    return (proposal or {}).get("purpose")
 
 
 def prepared_alpaca_request_is_valid(state, request):
@@ -5922,6 +5950,11 @@ def execute_alpaca_live_order(state_path, output, request_id, attempted_at,
         and prepared_alpaca_request_is_valid(state, request)
         and request.get("target_environment") == "LIVE"
         and _live_request_is_fresh(request, attempted_at)
+        # Real capital requires a committee that declared it was allocating it.
+        # A machinery-verification run exists to prove the order path works and
+        # is allowed to ride a rejected signal; this is the line that stops it
+        # ever becoming a capital decision by simply pointing at LIVE.
+        and _request_committee_purpose(state, request) == COMMITTEE_PURPOSE_CAPITAL
         and valid_timeout and callable(credential_provider) and callable(transport)
     )
     if not valid_request:
@@ -6766,19 +6799,31 @@ def run_investment_committee_gate(input_path, registry, output):
     it onto the CLI's PASS/FAIL status. Only a full APPROVED lets a scripted
     order sequence proceed; REDUCED, REJECTED and DEFERRED all halt it (a
     REDUCED means re-run with a smaller size, not a silent pass-through). Sits
-    AFTER the risk gate and BEFORE order preparation, per DOC-009 §5."""
+    AFTER the risk gate and BEFORE order preparation, per DOC-009 §5.
+
+    The payload must declare `purpose` (COMMITTEE_PURPOSES). For
+    CAPITAL_ALLOCATION, IC-1's evidence_reference is resolved against the sealed
+    research registries and an APPROVE on unresolvable or unsupportive evidence
+    is refused -- the binding DOC-008 §10 required and the chain never had."""
     payload = json.loads(Path(input_path).read_bytes())
     evaluations = [committee_evaluation(
         member=item["member"], verdict=item["verdict"],
         evidence_reference=item["evidence_reference"], rationale=item["rationale"])
         for item in payload["evaluations"]]
+    research = Path(registry).parent
     record = constitute_investment_committee(
         registry, recommendation_reference=payload["recommendation_reference"],
         evaluations=evaluations, decided_at=payload["decided_at"],
-        committee_code_revision=payload["committee_code_revision"])
+        committee_code_revision=payload["committee_code_revision"],
+        purpose=payload.get("purpose"),
+        evidence_resolver=sealed_evidence_resolver(
+            disposition_paths=sorted(research.glob("dispositions*.json")),
+            validation_paths=sorted(research.glob("statistical-validations*.json")),
+            knowledge_paths=sorted(research.glob("knowledge*.json"))))
     approved = record["decision"]["outcome"] == "APPROVED"
     result = {
         "committee_id": record["committee_id"],
+        "purpose": record["purpose"],
         "decision": record["decision"],
         "status": "PASS" if approved else "FAIL",
     }
@@ -6892,6 +6937,8 @@ def main():
     proposal.add_argument("--output", required=True)
     proposal.add_argument("--decision-identity", required=True)
     proposal.add_argument("--risk-config", required=True)
+    proposal.add_argument("--committee-registry", required=True)
+    proposal.add_argument("--committee-id", required=True)
     approval = commands.add_parser("record-manual-approval")
     approval.add_argument("--state", required=True)
     approval.add_argument("--output", required=True)
@@ -7037,7 +7084,9 @@ def main():
         elif args.command == "prepare-real-order":
             config = json.loads(Path(args.risk_config).read_bytes())
             result = prepare_real_order_proposal(
-                args.state, args.output, args.decision_identity, config)
+                args.state, args.output, args.decision_identity, config,
+                committee_registry_path=args.committee_registry,
+                committee_id=args.committee_id)
         elif args.command == "record-manual-approval":
             result = record_manual_approval(
                 args.state, args.output, args.proposal_id, args.proposal_identity,

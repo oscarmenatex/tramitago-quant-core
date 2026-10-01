@@ -36,8 +36,24 @@ from tramitago_quant_core.shared.util import (
 )
 
 INVESTMENT_COMMITTEE_REGISTRY_SCHEMA_VERSION = "1"
-INVESTMENT_COMMITTEE_SCHEMA_VERSION = "1"
+INVESTMENT_COMMITTEE_SCHEMA_VERSION = "2"
+INVESTMENT_COMMITTEE_LEGACY_SCHEMA_VERSION = "1"
 INVESTMENT_COMMITTEE_STATUS = "DECIDED"
+
+# Audit "Vinculo Evidencia-Operacion" (2026-09-30). A run through the chain can
+# mean one of two things, and until now the record could not say which, so the
+# committee form offered only strategy judgments and a machinery test had to be
+# dressed as one. Declaring it is what makes the evidence requirement
+# conditional instead of absolute -- an absolute requirement would forbid
+# exercising the execution path at all while no Hypothesis passes DOC-011 2.1.
+COMMITTEE_PURPOSE_MACHINERY = "MACHINERY_VERIFICATION"
+COMMITTEE_PURPOSE_CAPITAL = "CAPITAL_ALLOCATION"
+COMMITTEE_PURPOSES = (COMMITTEE_PURPOSE_MACHINERY, COMMITTEE_PURPOSE_CAPITAL)
+
+# The member whose verdict is a claim ABOUT THE STRATEGY, and therefore the one
+# whose evidence has to resolve. IC-2/IC-3/IC-4 rest on risk, market and capital
+# artifacts, which the research registries do not hold.
+IC_STRATEGY_MEMBER = "IC-1"
 
 IC_CORE_MEMBERS = ("IC-1", "IC-2", "IC-3", "IC-4")
 IC_OPTIONAL_MEMBER = "IC-5"
@@ -120,13 +136,58 @@ def committee_decision(evaluations):
     return {"outcome": outcome, "code": COMMITTEE_DECISIONS[outcome]}
 
 
-def _committee_content(recommendation_reference, evaluations, decision):
+def _committee_content(recommendation_reference, evaluations, decision, purpose,
+                       schema_version=INVESTMENT_COMMITTEE_SCHEMA_VERSION):
+    """Schema 1 records carry no purpose and are still verifiable as written.
+    Only schema 2 is ever constituted, so the gap cannot reopen going forward
+    while the one pre-existing sealed record stays readable as evidence."""
+    if schema_version == INVESTMENT_COMMITTEE_LEGACY_SCHEMA_VERSION:
+        return {
+            "schema_version": INVESTMENT_COMMITTEE_LEGACY_SCHEMA_VERSION,
+            "recommendation_reference": recommendation_reference,
+            "evaluations": evaluations,
+            "decision": decision,
+        }
     return {
         "schema_version": INVESTMENT_COMMITTEE_SCHEMA_VERSION,
         "recommendation_reference": recommendation_reference,
+        "purpose": purpose,
         "evaluations": evaluations,
         "decision": decision,
     }
+
+
+def _committee_evidence_is_bound(purpose, evaluations, evidence_resolver):
+    """Refuse to seal a capital-allocation APPROVE whose strategy evidence does
+    not resolve, or resolves to a verdict that does not support it.
+
+    A machinery-verification run is exempt BY DESIGN, not by oversight: it
+    asserts that the order path works, not that the trade is good, so a rejected
+    signal is a legitimate -- and currently the only available -- input. The
+    exemption is safe only because the purpose is sealed into the record and
+    `execute_alpaca_live_order` refuses anything but CAPITAL_ALLOCATION.
+    """
+    if purpose != COMMITTEE_PURPOSE_CAPITAL:
+        return
+    strategy = [e for e in evaluations if e["member"] == IC_STRATEGY_MEMBER]
+    if len(strategy) != 1:
+        raise ValueError("A capital-allocation committee requires the IC-1 evaluation")
+    if strategy[0]["verdict"] != "APPROVE":
+        return          # a veto or deferral needs no supporting evidence to stand
+    if evidence_resolver is None:
+        raise ValueError(
+            "A capital-allocation committee requires an evidence resolver for IC-1")
+    resolution = evidence_resolver(strategy[0]["evidence_reference"])
+    if not isinstance(resolution, dict) or "supports_capital" not in resolution:
+        raise ValueError("Evidence resolver returned an unusable resolution")
+    if not resolution.get("resolved"):
+        raise ValueError(
+            "IC-1 evidence does not resolve to a sealed artifact: "
+            + str(resolution.get("detail", strategy[0]["evidence_reference"])))
+    if not resolution["supports_capital"]:
+        raise ValueError(
+            "IC-1 cannot approve capital allocation on evidence that does not support it: "
+            + str(resolution.get("detail", "")))
 
 
 def _committee_materialization(decided_at, committee_code_revision):
@@ -140,7 +201,9 @@ def _committee_materialization(decided_at, committee_code_revision):
     }
 
 
-def _validated_committee(recommendation_reference, evaluations, materialization):
+def _validated_committee(recommendation_reference, evaluations, materialization, purpose=None,
+                         schema_version=INVESTMENT_COMMITTEE_SCHEMA_VERSION,
+                         evidence_resolver=None):
     if not _hypothesis_text_is_valid(recommendation_reference):
         raise ValueError("A recommendation reference is required")
     if not isinstance(evaluations, list) or not all(_evaluation_is_valid(e) for e in evaluations):
@@ -150,9 +213,14 @@ def _validated_committee(recommendation_reference, evaluations, materialization)
         raise ValueError("Each committee member evaluates at most once")
     if not set(IC_CORE_MEMBERS).issubset(set(members)):
         raise ValueError("All four core evaluations (IC-1..IC-4) are required")
+    if schema_version != INVESTMENT_COMMITTEE_LEGACY_SCHEMA_VERSION:
+        if purpose not in COMMITTEE_PURPOSES:
+            raise ValueError("A committee must declare its purpose: "
+                             + " or ".join(COMMITTEE_PURPOSES))
     ordered = sorted(evaluations, key=lambda e: e["member"])
     decision = committee_decision(ordered)
-    content = _committee_content(recommendation_reference, ordered, decision)
+    content = _committee_content(recommendation_reference, ordered, decision, purpose,
+                                 schema_version)
     committee_id = "INVESTMENT_COMMITTEE|" + digest(encoded(content))
     record = {
         "committee_id": committee_id,
@@ -179,13 +247,26 @@ def _load_committee_registry(registry_path):
 
 
 def constitute_investment_committee(registry_path, *, recommendation_reference, evaluations,
-                                    decided_at, committee_code_revision):
+                                    decided_at, committee_code_revision, purpose,
+                                    evidence_resolver=None):
     """M4.5-T3: seal one committee decision -- the five independent evaluations
     (IC-5 optional) plus the risk-first aggregate. Idempotent on identical
     content. A REJECTED or DEFERRED decision is preserved exactly like an
-    APPROVED one (DOC-004 REQ-004-004 spirit)."""
+    APPROVED one (DOC-004 REQ-004-004 spirit).
+
+    `purpose` is one of COMMITTEE_PURPOSES and is sealed into the identity.
+    `evidence_resolver` is a callable(evidence_reference) -> {"resolved": bool,
+    "supports_capital": bool, "detail": str}; it is REQUIRED when the purpose is
+    CAPITAL_ALLOCATION and IC-1 approves, and unused otherwise. Injected rather
+    than imported so this module stays ignorant of research vocabulary, the same
+    way the dataset layer takes its verifiers from the caller."""
     materialization = _committee_materialization(decided_at, committee_code_revision)
-    record = _validated_committee(recommendation_reference, evaluations, materialization)
+    if purpose not in COMMITTEE_PURPOSES:
+        raise ValueError("A committee must declare its purpose: " + " or ".join(COMMITTEE_PURPOSES))
+    if isinstance(evaluations, list) and all(_evaluation_is_valid(e) for e in evaluations):
+        _committee_evidence_is_bound(purpose, evaluations, evidence_resolver)
+    record = _validated_committee(recommendation_reference, evaluations, materialization,
+                                  purpose, INVESTMENT_COMMITTEE_SCHEMA_VERSION)
     registry_path = Path(registry_path)
     registry = (_load_committee_registry(registry_path) if registry_path.exists()
                 else {"schema_version": INVESTMENT_COMMITTEE_REGISTRY_SCHEMA_VERSION,
@@ -217,9 +298,17 @@ def verified_investment_committee(registry_path, committee_id):
     identities from the sealed evaluations, failing closed on any tampering --
     a flipped verdict, an altered decision, or a broken hash chain."""
     record = load_investment_committee(registry_path, committee_id)
+    schema_version = record.get("schema_version")
+    if schema_version not in (INVESTMENT_COMMITTEE_SCHEMA_VERSION,
+                              INVESTMENT_COMMITTEE_LEGACY_SCHEMA_VERSION):
+        raise ValueError("Investment Committee schema version is unsupported")
+    # Re-derivation only, never re-adjudication: the resolver is deliberately not
+    # called here. Whether the evidence supported capital was settled when the
+    # record was sealed, and a verdict must not silently change later because a
+    # registry moved. Verification detects tampering; it does not re-decide.
     expected = _validated_committee(
         record.get("recommendation_reference"), record.get("evaluations"),
-        record.get("materialization"))
+        record.get("materialization"), record.get("purpose"), schema_version)
     if record != expected:
         raise ValueError("Investment Committee evaluations or decision are invalid")
     return record

@@ -38,6 +38,9 @@ class AlpacaLiveOrderTests(unittest.TestCase):
     def setUp(self):
         self.builder = request_tests.AlpacaRequestPreparationTests()
         self.builder.setUp()
+        # The LIVE path refuses a machinery-verification purpose by design, so a
+        # test of LIVE itself has to declare the capital purpose it is exercising.
+        self.builder.committee_purpose = p.COMMITTEE_PURPOSE_CAPITAL
         self.addCleanup(self.builder.temporary.cleanup)
 
     def request(self, name, environment="LIVE"):
