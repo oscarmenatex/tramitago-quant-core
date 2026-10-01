@@ -1,0 +1,17 @@
+[Unit]
+# Supervises the machinery-verification loop. Runs on its OWN timer, deliberately
+# NOT inside the tick it watches: a supervisor that only runs when the loop runs
+# cannot report that the loop stopped. Absence is the most likely way an
+# unattended loop dies, and absence leaves no entry in the record.
+Description=TramitaGO Quant Core - supervise the machinery verification loop
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=tramitago
+WorkingDirectory=/opt/tramitago-quant-core
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/usr/bin/python3.11 -B scripts/operations/supervise_machinery_verification.py --data-dir /var/lib/tramitago-quant-core/forward-paper
+# Exit 0 on every verdict: a correctly reported DEGRADED is the supervisor
+# working, not the supervisor crashing.
+SuccessExitStatus=0
