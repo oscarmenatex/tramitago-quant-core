@@ -1,0 +1,43 @@
+{
+  "measurements": [
+    {
+      "ask": "85376.79",
+      "bid": "85376.78",
+      "commission": "0.0",
+      "commission_rate": "0.000000000",
+      "cost_per_side": "0.000017293",
+      "fill_price": "85378.26141886962",
+      "fill_venue": "BOOK",
+      "filled_quantity": "0.05856291656572595",
+      "half_spread_rate": "0.000000059",
+      "measurement_id": "EXECUTION_MEASUREMENT|0975563973bc5470bb1e340d11d138a64c2943e79c28bde8c3632c560bf6e71e",
+      "mid": "85376.785000000",
+      "notional": "5000.000000000",
+      "observed_at": "2026-10-02T03:49:32.513080Z",
+      "schema_version": "1",
+      "side": "BUY",
+      "slippage_rate": "0.000017234",
+      "symbol": "COINBASE_SPOT:BTC-USD"
+    },
+    {
+      "ask": "85371.0",
+      "bid": "85370.0",
+      "commission": "0.0",
+      "commission_rate": "0.000000000",
+      "cost_per_side": "0.000005857",
+      "fill_price": "85370.0",
+      "fill_venue": "BOOK",
+      "filled_quantity": "0.05856858381164343",
+      "half_spread_rate": "0.000005857",
+      "measurement_id": "EXECUTION_MEASUREMENT|622088c1ea62fe63f4c42527b4aef2ac7eea27fc37c56785c255d8917934acee",
+      "mid": "85370.500000000",
+      "notional": "5000.000000000",
+      "observed_at": "2026-10-02T03:49:32.513080Z",
+      "schema_version": "1",
+      "side": "SELL",
+      "slippage_rate": "0.000000000",
+      "symbol": "HYPERLIQUID_PERPETUAL:BTC"
+    }
+  ],
+  "schema_version": "1"
+}
