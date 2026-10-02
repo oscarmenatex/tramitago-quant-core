@@ -20,7 +20,7 @@ from tramitago_quant_core.research.level_claim import (
     load_level_claim_validation, verified_level_claim_validation,
     FOLD_MET, FOLD_NOT_MET, FOLD_INCONCLUSIVE,
     OUTCOME_VALIDATED, OUTCOME_NOT_VALIDATED, OUTCOME_INSUFFICIENT,
-    REASON_ADVERSE_PERIODS_TOO_RARE, REASON_CONSISTENCY_BELOW,
+    REASON_TAIL_NOT_COVERED, REASON_CONSISTENCY_BELOW, adverse_episodes,
     REASON_DRAWDOWN_EXCEEDED, REASON_FOLDS_BELOW_MINIMUM,
 )
 
@@ -41,7 +41,7 @@ def _claim(contract=None, **overrides):
         "cost_contract": contract if contract is not None else _contract(),
         "minimum_folds_required": 3,
         "consistency_threshold": "0.7",
-        "minimum_adverse_period_frequency": "0.10",
+        "minimum_adverse_episodes": 1,
         "adverse_period_threshold": "0",
         "maximum_drawdown": "0.15",
         "confidence_level": "0.95",
@@ -72,13 +72,13 @@ class ClaimDeclarationTests(unittest.TestCase):
         # a quantity nobody could trade.
         with self.assertRaises(TypeError):
             level_claim(position_description="x" * 10, minimum_folds_required=3,
-                        consistency_threshold="0.7", minimum_adverse_period_frequency="0.1",
-                        maximum_drawdown="0.15", source="s")
+                        consistency_threshold="0.7", minimum_adverse_episodes=1,
+                        adverse_period_threshold="0", maximum_drawdown="0.15", source="s")
 
-    def test_a_zero_representativeness_floor_is_refused(self):
-        with self.assertRaises(ValueError) as caught:
-            _claim(minimum_adverse_period_frequency="0")
-        self.assertIn("never observed", str(caught.exception))
+    def test_a_claim_requiring_no_adverse_episode_is_refused(self):
+        # A window with no episode cannot judge a premium at all.
+        with self.assertRaises(ValueError):
+            _claim(minimum_adverse_episodes=0)
 
     def test_every_tunable_term_is_part_of_the_identity(self):
         # A claim re-declared with a friendlier seed is a DIFFERENT claim, which
@@ -86,7 +86,7 @@ class ClaimDeclarationTests(unittest.TestCase):
         base = _claim()
         for field, value in (("bootstrap_seed", 7), ("confidence_level", "0.90"),
                              ("consistency_threshold", "0.5"), ("maximum_drawdown", "0.40"),
-                             ("minimum_adverse_period_frequency", "0.01"),
+                             ("minimum_adverse_episodes", 5),
                              ("adverse_period_threshold", "-0.01"),
                              ("bootstrap_block_periods", 10)):
             self.assertNotEqual(_claim(**{field: value})["claim_id"], base["claim_id"], field)
@@ -176,7 +176,7 @@ class RepresentativenessTests(unittest.TestCase):
         folds = [_fold(claim, contract, index, _series([0.002], 90)) for index in range(5)]
         outcome, reason, consistency, adverse = level_claim_outcome(claim, folds)
         self.assertEqual(outcome, OUTCOME_INSUFFICIENT)
-        self.assertEqual(reason, REASON_ADVERSE_PERIODS_TOO_RARE)
+        self.assertEqual(reason, REASON_TAIL_NOT_COVERED)
         self.assertIsNone(consistency)
 
     def test_representativeness_is_checked_before_consistency(self):
@@ -185,7 +185,7 @@ class RepresentativenessTests(unittest.TestCase):
         contract = _contract(commission="0", half_spread="0", slippage="0")
         claim = _claim(contract=contract, consistency_threshold="0.1")
         folds = [_fold(claim, contract, index, _series([0.002], 90)) for index in range(5)]
-        self.assertEqual(level_claim_outcome(claim, folds)[1], REASON_ADVERSE_PERIODS_TOO_RARE)
+        self.assertEqual(level_claim_outcome(claim, folds)[1], REASON_TAIL_NOT_COVERED)
 
     def test_the_adverse_frequency_is_pooled_not_averaged(self):
         # Averaging would let a few loss-rich folds hide a majority with none.
@@ -308,7 +308,7 @@ class SealingTests(unittest.TestCase):
     def test_the_record_carries_the_claim_it_was_judged_under(self):
         with tempfile.TemporaryDirectory() as tmp:
             record = self._sealed(tmp)
-            self.assertEqual(record["claim"]["minimum_adverse_period_frequency"], "0.10")
+            self.assertEqual(record["claim"]["minimum_adverse_episodes"], 1)
             self.assertTrue(record["claim"]["cost_contract_id"].startswith("COST_CONTRACT|"))
 
 
@@ -325,7 +325,7 @@ class AdverseMagnitudeTests(unittest.TestCase):
         with self.assertRaises(TypeError):
             level_claim(position_description="x" * 10, cost_contract=_contract(),
                         minimum_folds_required=3, consistency_threshold="0.7",
-                        minimum_adverse_period_frequency="0.1", maximum_drawdown="0.15",
+                        minimum_adverse_episodes=1, maximum_drawdown="0.15",
                         source="s")
 
     def test_a_positive_threshold_is_refused(self):
@@ -344,15 +344,90 @@ class AdverseMagnitudeTests(unittest.TestCase):
                  for index in range(5)]
         outcome, reason, _, adverse = level_claim_outcome(claim, folds)
         self.assertEqual(outcome, OUTCOME_INSUFFICIENT)
-        self.assertEqual(reason, REASON_ADVERSE_PERIODS_TOO_RARE)
+        self.assertEqual(reason, REASON_TAIL_NOT_COVERED)
         self.assertEqual(float(adverse), 0.0)
 
     def test_a_window_that_did_contain_the_tail_still_passes(self):
         contract = _contract(commission="0", half_spread="0", slippage="0")
         claim = _claim(contract=contract, adverse_period_threshold="-0.01",
-                       minimum_adverse_period_frequency="0.10")
+                       minimum_adverse_episodes=1)
         folds = [_fold(claim, contract, index, _series([0.006] * 8 + [-0.02, -0.015], 120))
                  for index in range(5)]
         outcome, reason, _, adverse = level_claim_outcome(claim, folds)
         self.assertGreater(float(adverse), 0.10)
-        self.assertNotEqual(reason, REASON_ADVERSE_PERIODS_TOO_RARE)
+        self.assertNotEqual(reason, REASON_TAIL_NOT_COVERED)
+
+
+class TailCoverageTests(unittest.TestCase):
+    """Schema 1 asked for a FREQUENCY of adverse periods, which is the
+    monitorability question. Applied to the measurement question it is
+    unanswerable -- a tail is rare by definition -- and the consequence was
+    measured: a window holding the March 2020 collapse and a placid one came back
+    with the same verdict for the same reason."""
+
+    def test_consecutive_losses_are_one_episode_not_several(self):
+        # March 2020 cost 10.48% on the 12th and 2.21% on the 13th. Counting that
+        # as two observations of the tail is the same overstatement in miniature
+        # that counting daily noise as adverse was.
+        self.assertEqual(adverse_episodes([0.01, -0.02, -0.03, 0.01], -0.01), 1)
+        self.assertEqual(adverse_episodes([-0.02, 0.01, -0.03], -0.01), 2)
+        self.assertEqual(adverse_episodes([0.01, -0.005], -0.01), 0)
+        self.assertEqual(adverse_episodes([], -0.01), 0)
+
+    def test_a_tail_too_rare_for_any_frequency_floor_still_counts_as_covered(self):
+        # Two adverse days in 730 is 0.27% -- below every sane frequency floor,
+        # and exactly what a tail looks like.
+        contract = _contract(commission="0", half_spread="0", slippage="0")
+        claim = _claim(contract=contract, adverse_period_threshold="-0.01",
+                       minimum_adverse_episodes=1)
+        folds = [_fold(claim, contract, index, _series([0.002], 120)) for index in range(4)]
+        folds.append(_fold(claim, contract, 4,
+                           _series([0.002], 118) + [-0.11, -0.03]))
+        outcome, reason, consistency, _ = level_claim_outcome(claim, folds)
+        self.assertNotEqual(reason, REASON_TAIL_NOT_COVERED)
+        self.assertIsNotNone(consistency)
+
+    def test_the_placid_window_is_still_refused(self):
+        contract = _contract(commission="0", half_spread="0", slippage="0")
+        claim = _claim(contract=contract, adverse_period_threshold="-0.01",
+                       minimum_adverse_episodes=1)
+        folds = [_fold(claim, contract, index, _series([0.002, -0.001], 120))
+                 for index in range(5)]
+        outcome, reason, _, _ = level_claim_outcome(claim, folds)
+        self.assertEqual(outcome, OUTCOME_INSUFFICIENT)
+        self.assertEqual(reason, REASON_TAIL_NOT_COVERED)
+
+    def test_the_two_windows_are_now_distinguishable(self):
+        # The property the separation buys, stated as the comparison that failed.
+        contract = _contract(commission="0", half_spread="0", slippage="0")
+        claim = _claim(contract=contract, adverse_period_threshold="-0.01",
+                       minimum_adverse_episodes=1)
+        placid = [_fold(claim, contract, i, _series([0.002, -0.001], 120)) for i in range(5)]
+        with_tail = [_fold(claim, contract, i, _series([0.002, -0.001], 120)) for i in range(4)]
+        with_tail.append(_fold(claim, contract, 4, _series([0.002, -0.001], 118) + [-0.11, -0.03]))
+        self.assertNotEqual(level_claim_outcome(claim, placid)[1],
+                            level_claim_outcome(claim, with_tail)[1])
+
+    def test_the_frequency_survives_as_a_reported_number(self):
+        # It moves to the monitoring contract as a condition of OPERATING, and
+        # stays here only as something the record states.
+        contract = _contract(commission="0", half_spread="0", slippage="0")
+        claim = _claim(contract=contract)
+        fold = _fold(claim, contract, 0, _series([0.002, -0.001], 100))
+        self.assertAlmostEqual(float(fold["adverse_period_frequency"]), 0.5)
+        self.assertIn("adverse_episodes", fold)
+
+    def test_a_schema_1_claim_is_still_judged_by_the_rule_it_was_sealed_under(self):
+        # Never re-adjudicated under a rule that did not exist when it was issued.
+        contract = _contract(commission="0", half_spread="0", slippage="0")
+        modern = _claim(contract=contract)
+        legacy = dict(modern)
+        del legacy["minimum_adverse_episodes"]
+        legacy["schema_version"] = "1"
+        legacy["minimum_adverse_period_frequency"] = "0.99"
+        legacy["claim_id"] = "LEVEL_CLAIM|" + p.digest(p.encoded(
+            {k: v for k, v in legacy.items() if k != "claim_id"}))
+        folds = [_fold(modern, contract, index, _series([0.002, -0.001], 120))
+                 for index in range(5)]
+        self.assertEqual(level_claim_outcome(legacy, folds)[1],
+                         "ADVERSE_PERIODS_BELOW_MINIMUM_FREQUENCY")
