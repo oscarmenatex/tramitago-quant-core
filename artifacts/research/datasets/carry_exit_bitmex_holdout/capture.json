@@ -1,0 +1,72 @@
+{
+  "acquired_at": "2026-10-02T03:04:47.134148Z",
+  "capture_id": "COINBASE_HISTORICAL_CAPTURE|8322eb5f48fea6871ec48ddfff01e1b46eee6e824cf3f2c615ef04d9b0c24988",
+  "config": {
+    "capture_period": {
+      "end_exclusive_utc": "2024-01-08T00:00:00Z",
+      "start_utc": "2021-06-30T00:00:00Z"
+    },
+    "duplicate_policy": "reject entire dataset",
+    "evaluable_period": {
+      "end_exclusive_utc": "2024-01-07T00:00:00Z",
+      "start_utc": "2021-07-01T00:00:00Z"
+    },
+    "frequency_seconds": 86400,
+    "instrument": "BTC-USD",
+    "missing_policy": "reject entire dataset; no imputation",
+    "schema_version": "1",
+    "source": "Coinbase Exchange public candles",
+    "support_policy": "exactly one CARRYFUNDING warm-up rows before and one forward-return row after the evaluable period",
+    "temporal_policy": "reject rows outside the declared capture period",
+    "timezone": "UTC"
+  },
+  "kind": "historical-hypothesis-dataset",
+  "responses": [
+    {
+      "end_exclusive_utc": "2022-04-26T00:00:00Z",
+      "response_headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "Date": "Fri, 02 Oct 2026 03:04:54 GMT"
+      },
+      "response_sha256": "7037168de34f0a3c7b2df9a586c2d58de3e8da4e6557e3bd4b243778750e4c0d",
+      "sequence": 1,
+      "start_utc": "2021-06-30T00:00:00Z",
+      "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400&start=2021-06-30T00%3A00%3A00Z&end=2022-04-25T00%3A00%3A00Z"
+    },
+    {
+      "end_exclusive_utc": "2023-02-20T00:00:00Z",
+      "response_headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "Date": "Fri, 02 Oct 2026 03:04:54 GMT"
+      },
+      "response_sha256": "807e0f71b5f6850fd93295d303f8a2a96430ecd6648d2fd6b2e9daded957bce0",
+      "sequence": 2,
+      "start_utc": "2022-04-26T00:00:00Z",
+      "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400&start=2022-04-26T00%3A00%3A00Z&end=2023-02-19T00%3A00%3A00Z"
+    },
+    {
+      "end_exclusive_utc": "2023-12-17T00:00:00Z",
+      "response_headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "Date": "Fri, 02 Oct 2026 03:04:54 GMT"
+      },
+      "response_sha256": "e43d0b92e4c66a7fd5352c72986c6641411ae7b5e76276a0dd5a81b832074fcf",
+      "sequence": 3,
+      "start_utc": "2023-02-20T00:00:00Z",
+      "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400&start=2023-02-20T00%3A00%3A00Z&end=2023-12-16T00%3A00%3A00Z"
+    },
+    {
+      "end_exclusive_utc": "2024-01-08T00:00:00Z",
+      "response_headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "Date": "Fri, 02 Oct 2026 03:04:54 GMT"
+      },
+      "response_sha256": "c1730c1afffdace32ef778af1628d99fa280d86da67aa14d466b71ca4079e805",
+      "sequence": 4,
+      "start_utc": "2023-12-17T00:00:00Z",
+      "url": "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400&start=2023-12-17T00%3A00%3A00Z&end=2024-01-07T00%3A00%3A00Z"
+    }
+  ],
+  "schema_version": "1",
+  "source": "Coinbase Exchange public candles"
+}

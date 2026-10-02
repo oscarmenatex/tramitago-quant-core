@@ -98,11 +98,16 @@
           "at": "2026-10-02T03:00:09.397886Z",
           "note": "constituted",
           "status": "OPEN"
+        },
+        {
+          "at": "2026-10-02T03:04:47.134148Z",
+          "note": "promoted to HYPOTHESIS|9e3fb960-9354-49b6-82a8-2bac077950e5",
+          "status": "PROMOTED_TO_HYPOTHESIS"
         }
       ],
       "observation": "On the discovery window alone, CARRY_FUNDING_THRESHOLD{'funding_variable': 'funding_rate', 'perpetual_variable': 'perp_close', 'threshold': '0', 'payments_per_period': 3} shows a difference of mean CARRY_RETURN between its two groups of 0.002522895675. This is an observation selected out of 8 candidates, not evidence. The same scan's worst candidate scored 0.000828175706 and its median 0.001525737859, with 8 positive and 0 negative.",
       "schema_version": "1",
-      "status": "OPEN",
+      "status": "PROMOTED_TO_HYPOTHESIS",
       "supporting_evidence": [
         "DISCOVERY_SCAN|6d298f423a308ebca9ea8da0013b63a31668501bc98c77891d4524688baabd10",
         "DISCOVERY_SPACE|e17055eb37188fb7743c88196d5e6e3c1d03c5ca17084fe84de597f38c42e716",

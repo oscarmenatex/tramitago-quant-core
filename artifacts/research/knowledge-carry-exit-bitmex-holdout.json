@@ -1,0 +1,166 @@
+{
+  "records": [
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_carry_return_1d(CARRYFUNDING_t >= 0 (the premium is being paid)) - mean_forward_carry_return_1d(CARRYFUNDING_t < 0 (the premium has inverted))",
+          "threshold": "0"
+        },
+        "description": "For a MARKET-NEUTRAL CARRY in BTC -- long BTC-USD spot, short BitMEX XBTUSD at equal notional -- the mean forward carry return in the group 'CARRYFUNDING_t >= 0 (the premium is being paid)' is HIGHER than in 'CARRYFUNDING_t < 0 (the premium has inverted)'. Direction INCREASE pre-declared.\n\nPROVENANCE AND CORRECTION: selected as rank 0 of 8 candidates in sealed Discovery scan DISCOVERY_SCAN|6d298f423a308ebca9ea8da0013b63a31668501bc98c77891d4524688baabd10, which read 2017-01-01 to 2019-01-01 and nothing else. This period is that space's declared holdout. Bonferroni over 8, and 8 folds so the corrected test is passable at all -- the previous attempt used five against a search of eight, where the smallest attainable p-value (0.03125) exceeded the bar (0.00625) and no outcome could have passed.\n\nFUNDING AT 3 PAYMENTS A DAY, which is BitMEX's eight-hour settlement. The outcome is the funding received MINUS the change in basis: a cash flow plus a spread mark, not a price change.\n\nNO LOOKAHEAD: the row at t is classified by funding at t-1 and the outcome reads t+1, two periods apart. The 1-day warmup precedes the period and feeds the indicator, never the measured outcome.",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|9e3fb960-9354-49b6-82a8-2bac077950e5",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|9e3fb960-9354-49b6-82a8-2bac077950e5|1|999ebfb82f60fffbafe457ff1a7c0e557f7dc6e95f72bd4359e1c641fe8e9194",
+        "target_metric": "mean_forward_carry_return_1d(CARRYFUNDING_t >= 0 (the premium is being paid)) - mean_forward_carry_return_1d(CARRYFUNDING_t < 0 (the premium has inverted))",
+        "version": 1
+      },
+      "interpretation": "Regla de salida del carry BTC en BitMEX XBTUSD, evaluada sobre un HOLDOUT declarado antes del scan. Candidata: CARRY_FUNDING_THRESHOLD {'funding_variable': 'funding_rate', 'perpetual_variable': 'perp_close', 'threshold': '0', 'payments_per_period': 3}, rango 0 de 8 en el scan DISCOVERY_SCAN|6d298f423a308ebca9ea8da0013b63a31668501bc98c77891d4524688baabd10.\n\nEl test es PASABLE por construccion: 8 folds, p minimo alcanzable 0.00391, barra corregida 0.00625. El intento anterior sobre Hyperliquid uso cinco folds contra una busqueda de ocho y no podia pasar.\n\nResultado: metric=0.000338, grupos 589/331, ACCEPTED. Walk-forward 8/8 MET, consistencia 1.0, p binomial 0.00390625 contra alfa None -> VALIDATED.",
+      "knowledge_id": "KNOWLEDGE|cc5f29d80f98b9d9ef64032fc07d717b654a6414c9b8558a87cb612e78eafc8a",
+      "limitations": [
+        "Valida la REGLA DE SALIDA, no si la prima compensa el riesgo. Esa es una afirmacion de nivel, y level_claim ya devolvio NOT_VALIDATED para el carry mantenido de forma continua en 2019-2021 por romper el limite de drawdown.",
+        "Bruto de costes.",
+        "Un venue, un instrumento, un horizonte.",
+        "El warmup de 1 dias precede al periodo y alimenta el indicador, nunca el outcome medido.",
+        "La candidata fue seleccionada como la mejor de 8 sobre la ventana de descubrimiento. La correccion por esa seleccion se aplica aqui; no la deshace.",
+        "BitMEX XBTUSD es un contrato INVERSO: el P&L en USD de un corto no es lineal en el precio, y el Outcome lo trata como si lo fuera. Es una aproximacion, no una identidad."
+      ],
+      "materialization": {
+        "knowledge_code_revision": "d056cbeac54d44328dbab8567c1afa1615bbc18e",
+        "pipeline_sha256": "416496be148463a0a45f8a3ea8e2ed0e1f140911ffce56be2bd8d4341b677b0b",
+        "preserved_at": "2026-10-02T03:04:47.134148Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_carry_return_1d(CARRYFUNDING_t >= 0 (the premium is being paid)) - mean_forward_carry_return_1d(CARRYFUNDING_t < 0 (the premium has inverted))",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "CARRYFUNDING_t < 0 (the premium has inverted)",
+          "upper_group": "CARRYFUNDING_t >= 0 (the premium is being paid)"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "funding_rate_lag_1",
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 3,
+            "perpetual_variable": "perp_close",
+            "threshold": "0"
+          },
+          "strategy_id": "CARRY_FUNDING_THRESHOLD"
+        },
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | CARRYFUNDING_t >= 0 (the premium is being paid)) - mean(return_t+1 | CARRYFUNDING_t < 0 (the premium has inverted))",
+          "name": "mean_forward_carry_return_1d(CARRYFUNDING_t >= 0 (the premium is being paid)) - mean_forward_carry_return_1d(CARRYFUNDING_t < 0 (the premium has inverted))"
+        },
+        "outcome": {
+          "formula": "3 * funding_rate_t+1 - (basis_t+1 - basis_t), basis = (perp_close - close) / close",
+          "name": "carry_return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_CARRYFUNDING_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_CARRYFUNDING_WARMUP",
+              "timestamp": "2021-06-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2024-01-07T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "6d298f423a308ebca9ea8da0013b63a31668501bc98c77891d4524688baabd10"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2024-01-07T00:00:00Z",
+            "start_utc": "2021-07-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|cc5f29d80f98b9d9ef64032fc07d717b654a6414c9b8558a87cb612e78eafc8a|1df807b4e42f96a83bd2477926b1ef06b24492078872b0179088db9b2ca89736",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|b2c40e5b4e965bd8b77d209a18f8d67176c8b555b6960f38af43454b3b32e564",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|b2c40e5b4e965bd8b77d209a18f8d67176c8b555b6960f38af43454b3b32e564|224819683ba77c30727b3388933e1ef973c80f7494874ff3575beab49f175c66"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|c56a8384-606c-4280-8e9a-519366ec3318",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|c56a8384-606c-4280-8e9a-519366ec3318|1|75ba5f6fe5969ec4dc5ac915c94196b87d7a7ac6e32b353c0357f3c5d411bec5",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "d056cbeac54d44328dbab8567c1afa1615bbc18e",
+          "hypothesis_id": "HYPOTHESIS|9e3fb960-9354-49b6-82a8-2bac077950e5",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|9e3fb960-9354-49b6-82a8-2bac077950e5|1|999ebfb82f60fffbafe457ff1a7c0e557f7dc6e95f72bd4359e1c641fe8e9194",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|ed05925a8c5d3196823ed6ae7e419bda35cf708a7afbc0fb25dd4d38f75f4c49|7ead996fe8d56791e03fe08f1ff1c2f0b83037da367035f8e5df18e97f0c65dc",
+          "research_result_id": "RESEARCH_RESULT|ed05925a8c5d3196823ed6ae7e419bda35cf708a7afbc0fb25dd4d38f75f4c49"
+        }
+      },
+      "results": {
+        "outcome": "ACCEPTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_carry_return_1d(CARRYFUNDING_t >= 0 (the premium is being paid)) - mean_forward_carry_return_1d(CARRYFUNDING_t < 0 (the premium has inverted))",
+            "threshold": "0"
+          },
+          "criterion_result": "MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 331,
+              "mean_return_t_plus_1": -0.0001794625906449244,
+              "rule": "CARRYFUNDING_t < 0 (the premium has inverted)"
+            },
+            "upper": {
+              "count": 589,
+              "mean_return_t_plus_1": 0.000158390988227492,
+              "rule": "CARRYFUNDING_t >= 0 (the premium is being paid)"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": 0.0003378535788724164,
+          "observation_count": 920,
+          "period": {
+            "end_exclusive_utc": "2024-01-07T00:00:00Z",
+            "start_utc": "2021-07-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    }
+  ],
+  "schema_version": "1"
+}
