@@ -35,6 +35,7 @@ from tramitago_quant_core.strategy_contract.strategy import (
     funding_rate_sign_strategy, sma_volume_confirmation_strategy, intraday_range_strategy,
     funding_rate_surge_strategy, signal_portfolio_strategy,
     pair_ratio_reversion_strategy, carry_funding_threshold_strategy,
+    carry_funding_surge_strategy,
 )
 from tramitago_quant_core.strategy_contract.outcome import strategy_outcome
 
@@ -66,6 +67,9 @@ _EXPERIMENT_STRATEGY_CONSTRUCTORS = {
     "CARRY_FUNDING_THRESHOLD": lambda parameters: carry_funding_threshold_strategy(
         parameters["funding_variable"], parameters["perpetual_variable"],
         parameters.get("payments_per_period", 1)),
+    "CARRY_FUNDING_SURGE": lambda parameters: carry_funding_surge_strategy(
+        parameters["window"], parameters["funding_variable"],
+        parameters["perpetual_variable"], parameters.get("payments_per_period", 1)),
 }
 
 
