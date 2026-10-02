@@ -62,7 +62,14 @@ SIDES = (SIDE_BUY, SIDE_SELL)
 # this is how a sealed measurement says so about itself.
 FILL_PAPER = "PAPER"
 FILL_LIVE = "LIVE"
-FILL_VENUES = (FILL_PAPER, FILL_LIVE)
+# A real book walked for a real size at a real instant. Not a fill: it has no
+# queue position, so it prices CROSSING and never resting, and it assumes the
+# book does not move while the order executes. For a size small against the
+# visible depth that is nearly true. It is STRONGER evidence of impact than a
+# paper fill -- walking actual depth is a measurement, a paper engine's slippage
+# is an assumption wearing a number -- and WEAKER evidence than a live fill.
+FILL_BOOK = "BOOK"
+FILL_VENUES = (FILL_PAPER, FILL_LIVE, FILL_BOOK)
 
 _PRECISION = 9
 
@@ -213,7 +220,10 @@ def measured_cost_contract(measurements, *, legs, source, quantile="0.5"):
                 f"{quantile} quantile. {source}"
                 + (" PAPER fills report a slippage FLOOR, not an estimate: a paper "
                    "engine has no queue and no market impact."
-                   if FILL_PAPER in venues else "")))
+                   if FILL_PAPER in venues else "")
+                + (" BOOK measurements price crossing a real book at an instant, with "
+                   "no queue position and no allowance for the book moving."
+                   if FILL_BOOK in venues else "")))
 
 
 def round_trip_cost(contract, round_trips):
