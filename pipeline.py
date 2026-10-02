@@ -117,7 +117,8 @@ from tramitago_quant_core.research.level_claim import (
     REASON_TAIL_NOT_COVERED, LEVEL_CLAIM_SCHEMA_VERSIONS, adverse_episodes,
     REASON_CONSISTENCY_BELOW, REASON_DRAWDOWN_EXCEEDED,
     level_claim, verified_level_claim, adverse_period_frequency, adverse_mean_bound,
-    evaluate_fold, level_claim_outcome, constitute_level_claim_validation,
+    evaluate_fold, level_claim_outcome, level_claim_gate_report,
+    constitute_level_claim_validation,
     load_level_claim_validation, verified_level_claim_validation,
 )
 from tramitago_quant_core.research.discovery import (
