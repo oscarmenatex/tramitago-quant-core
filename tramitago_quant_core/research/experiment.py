@@ -64,7 +64,8 @@ _EXPERIMENT_STRATEGY_CONSTRUCTORS = {
     # record states it. Reconstructing from it would invite a later version to
     # vary it, which is the whole thing the choice of zero exists to prevent.
     "CARRY_FUNDING_THRESHOLD": lambda parameters: carry_funding_threshold_strategy(
-        parameters["funding_variable"], parameters["perpetual_variable"]),
+        parameters["funding_variable"], parameters["perpetual_variable"],
+        parameters.get("payments_per_period", 1)),
 }
 
 

@@ -500,7 +500,8 @@ def _strategy_classify_rows(strategy, rows):
 
 
 def carry_funding_threshold_strategy(funding_variable="funding_rate",
-                                     perpetual_variable="perp_close"):
+                                     perpetual_variable="perp_close",
+                                     payments_per_period=1):
     """The EXIT RULE of a carry, expressed as something the Core can judge.
 
     The destination is now harvesting risk premia, and its defining clause is
@@ -522,6 +523,16 @@ def carry_funding_threshold_strategy(funding_variable="funding_rate",
     the failure every sealed Hypothesis in this project was built to avoid --
     the same reasoning that made funding_rate_sign_strategy use a sign rather
     than a tuned percentile.
+
+    PAYMENTS_PER_PERIOD reaches the OUTCOME, never the signal, and the asymmetry
+    is the whole point. The signal reads the SIGN of funding, which no rescaling
+    can change; the outcome adds up what was actually PAID, which rescaling
+    changes by that factor. Hypothesis #37 was sealed with the default of 1
+    against a Hyperliquid series that is an HOURLY rate, so its outcome compared
+    one hour of funding against a full day of basis movement -- the mark
+    dominated a quantity it should not have. The default stays 1 so that record
+    keeps reproducing as what it was; a caller measuring a real carry declares
+    the venue's cadence.
 
     NO LOOKAHEAD, and the mechanics are worth stating exactly because an earlier
     draft of this docstring got them wrong. A row at time t is classified by the
@@ -547,15 +558,21 @@ def carry_funding_threshold_strategy(funding_variable="funding_rate",
     return {
         "schema_version": STRATEGY_SCHEMA_VERSION,
         "strategy_id": "CARRY_FUNDING_THRESHOLD",
+        # payments_per_period appears only when it is not 1, the same
+        # field-presence discriminator the Outcome contract uses, so the sealed
+        # #37 Experiment re-derives its Strategy to the identical identity.
         "parameters": {"funding_variable": funding_variable,
                        "perpetual_variable": perpetual_variable,
-                       "threshold": "0"},
+                       "threshold": "0",
+                       **({} if payments_per_period == 1
+                          else {"payments_per_period": payments_per_period})},
         "indicator_name": indicator_name,
         "column_name": column_name,
         "required_inputs": {"variables": [funding_variable, perpetual_variable],
                             "warmup_periods": 1},
         "upper_group_description": f"{indicator_name}_t >= 0 (the premium is being paid)",
         "lower_or_equal_group_description": f"{indicator_name}_t < 0 (the premium has inverted)",
-        "outcome": carry_return_outcome(funding_variable, perpetual_variable),
+        "outcome": carry_return_outcome(funding_variable, perpetual_variable,
+                                        payments_per_period),
         "compute": compute,
     }

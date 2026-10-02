@@ -1,0 +1,166 @@
+{
+  "records": [
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_carry_return_1d(funding_t-1 >= 0) - mean_forward_carry_return_1d(funding_t-1 < 0)",
+          "threshold": "0"
+        },
+        "description": "For a MARKET-NEUTRAL CARRY in BTC -- long BTC-USD spot, short the Hyperliquid perpetual at equal notional -- the mean forward carry return when funding is AT OR ABOVE zero is HIGHER than when it is below. Direction INCREASE pre-declared.\n\nThe outcome is NOT a price change: it is the funding received over the period MINUS the change in basis, a cash flow plus a spread mark. Measuring only the funding would describe a position that cannot lose, which is not the position held -- and would hide that a liquidation cascade, driving the perpetual below spot, is FAVOURABLE to the short leg.\n\nWHAT THIS TESTS AND WHY: not whether the premium exists -- that is already measured, and is a level claim about one group that the M2.x apparatus structurally cannot express. It tests whether the EXIT RULE discriminates, which is a two-group comparison the apparatus judges natively, and which is the only thing the destination's clause 'stop when the evidence stops supporting it' rests on. Today that rule is a declared threshold nobody has tested.\n\nTHE THRESHOLD IS ZERO because it is the only parameter-free boundary: the point where the economics invert, from being paid to hold to paying to hold. Any other number would come from looking at the data first.\n\nNO LOOKAHEAD: the row at t is classified by funding at t-1, never its own still-accruing rate, and the outcome reads funding at t+1. Signal and outcome are two periods apart and cannot overlap.\n\nSINGLE VENUE: funding and perpetual both from Hyperliquid. Pairing one exchange's funding with another's price would compute a basis nobody could trade. That fixes the period -- 2024-2025 is the whole of what exists where both series are real.\n\nPeriod role: OUT OF SAMPLE. The claim survives only if the full-sample metric is POSITIVE in BOTH 2024 and 2025 -- one chance in four under the null. A negative metric in the out-of-sample year means the in-sample result is not reproducible and NO further period is tried; trying periods until one agrees is the failure this test exists to prevent. Walk-forward consistency is secondary evidence, reported but not decisive.",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|e4113f41-14d9-461d-a78f-606ba05f07d5",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|e4113f41-14d9-461d-a78f-606ba05f07d5|1|300e53491fa3d498fa21900e81300adfb2453f3315488031d8a23811956f95ad",
+        "target_metric": "mean_forward_carry_return_1d(funding_t-1 >= 0) - mean_forward_carry_return_1d(funding_t-1 < 0)",
+        "version": 1
+      },
+      "interpretation": "Regla de salida del carry BTC, OUT OF SAMPLE (2025). Posicion neutral: largo spot, corto perpetuo de Hyperliquid. Umbral CERO, el unico punto sin parametros. Sin lookahead: la senal lee t-1, el outcome lee t+1.\n\nResultado: metric=0.000276, grupos 347/18, criterio GT 0 -> ACCEPTED. Signo POSITIVO, concuerda. Walk-forward 4/5 MET, consistencia None, INSUFFICIENT_EVIDENCE.\n\nValida la REGLA DE SALIDA, no si la prima es adecuada al riesgo. Esa pregunta no cabe en el aparato asociativo de M2.x y seguira sin caber.",
+      "knowledge_id": "KNOWLEDGE|fa0fb1703a281f2ddde0321c986e5df3fa6a82e875a795d52db0975db6bfff56",
+      "limitations": [
+        "Validates the EXIT RULE, not whether the premium is adequate for the risk borne. That question is a comparison of compensation against tail risk and does not fit the M2.x associative apparatus at all.",
+        "Gross of transaction costs. The cost model exists but is not wired into the Outcome; a carry is held rather than rotated, so costs amortise, but that is argued rather than measured here.",
+        "Single instrument, single venue, single horizon, two years -- the whole of what exists where Hyperliquid funding and real perpetual trading overlap.",
+        "Says nothing about venue failure, which is the risk no basis number expresses and which the 2020-03-13 capture failure showed as absence.",
+        "The adverse basis bound measured elsewhere may be regime-dependent: the worst excursions came from 2019 and 2021, not from the years tested here.",
+        "Period role: OUT OF SAMPLE. The claim survives only if the full-sample metric is POSITIVE in BOTH 2024 and 2025 -- one chance in four under the null. A negative metric in the out-of-sample year means the in-sample result is not reproducible and NO further period is tried; trying periods until one agrees is the failure this test exists to prevent. Walk-forward consistency is secondary evidence, reported but not decisive."
+      ],
+      "materialization": {
+        "knowledge_code_revision": "8f59dddce2aba438670276174a7b6fbd77dba87f",
+        "pipeline_sha256": "c0164267d5b4efef5ed20be3b182ee45f0fa04fd93a7e570c27031a5fff979bf",
+        "preserved_at": "2026-10-02T00:04:34.519137Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_carry_return_1d(funding_t-1 >= 0) - mean_forward_carry_return_1d(funding_t-1 < 0)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "CARRYFUNDING_t < 0 (the premium has inverted)",
+          "upper_group": "CARRYFUNDING_t >= 0 (the premium is being paid)"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "funding_rate_lag_1",
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 24,
+            "perpetual_variable": "perp_close",
+            "threshold": "0"
+          },
+          "strategy_id": "CARRY_FUNDING_THRESHOLD"
+        },
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | CARRYFUNDING_t >= 0 (the premium is being paid)) - mean(return_t+1 | CARRYFUNDING_t < 0 (the premium has inverted))",
+          "name": "mean_forward_carry_return_1d(funding_t-1 >= 0) - mean_forward_carry_return_1d(funding_t-1 < 0)"
+        },
+        "outcome": {
+          "formula": "24 * funding_rate_t+1 - (basis_t+1 - basis_t), basis = (perp_close - close) / close",
+          "name": "carry_return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_CARRYFUNDING_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_CARRYFUNDING_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|fa0fb1703a281f2ddde0321c986e5df3fa6a82e875a795d52db0975db6bfff56|59fc0a7319685f5f6ed1f096bc987c87bf57c430c8d616bb0a6be4f76c66d13d",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|871ca91191a5ae167c90361268e8c9a8ed50aad381032ecf723f7bf64e10e75d",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|871ca91191a5ae167c90361268e8c9a8ed50aad381032ecf723f7bf64e10e75d|8bb768fd4b05fd652f0a9955791afa01b1090944deb56b723505c95ee2a3fd3b"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|2973dee5-12b6-47c6-8e57-0d7f2b3101cf",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|2973dee5-12b6-47c6-8e57-0d7f2b3101cf|1|980f036cee7bc471023c8cb1fa250d05d4d93ed38ea6992e55634982444b3fc7",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "8f59dddce2aba438670276174a7b6fbd77dba87f",
+          "hypothesis_id": "HYPOTHESIS|e4113f41-14d9-461d-a78f-606ba05f07d5",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|e4113f41-14d9-461d-a78f-606ba05f07d5|1|300e53491fa3d498fa21900e81300adfb2453f3315488031d8a23811956f95ad",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|03c52b15db04cf91ca450e2679f7efb9e71ae2a0b4c38c446772a5e195b5257b|116964bba5a2a487c9f546d8d0d0c05fec67d9cb98c7c18c9ba0a0081366a41b",
+          "research_result_id": "RESEARCH_RESULT|03c52b15db04cf91ca450e2679f7efb9e71ae2a0b4c38c446772a5e195b5257b"
+        }
+      },
+      "results": {
+        "outcome": "ACCEPTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_carry_return_1d(funding_t-1 >= 0) - mean_forward_carry_return_1d(funding_t-1 < 0)",
+            "threshold": "0"
+          },
+          "criterion_result": "MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 18,
+              "mean_return_t_plus_1": 3.218793884168225e-05,
+              "rule": "CARRYFUNDING_t < 0 (the premium has inverted)"
+            },
+            "upper": {
+              "count": 347,
+              "mean_return_t_plus_1": 0.0003083483707567336,
+              "rule": "CARRYFUNDING_t >= 0 (the premium is being paid)"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": 0.00027616043191505137,
+          "observation_count": 365,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    }
+  ],
+  "schema_version": "1"
+}
