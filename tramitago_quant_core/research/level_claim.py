@@ -426,6 +426,72 @@ def level_claim_outcome(claim, folds):
     return OUTCOME_VALIDATED, None, _fixed(consistency), _fixed(adverse)
 
 
+def level_claim_gate_report(claim, folds):
+    """Every declared gate's standing, whatever the verdict stopped at.
+
+    THE VERDICT NAMES ONE GATE AND THE RECORD USED TO LOSE THE REST. Gates are
+    checked in order and the first refusal ends it, so a gate further down is
+    never evaluated -- and the audit of 2026-10-02 found that the 15% drawdown
+    limit, the number this project's DESTINATION rests on, had NEVER participated
+    in a verdict. It sits last; folds, tail coverage or consistency always fired
+    first. Had it been reached it would have refused three of six level claims.
+
+    The consequence was never a wrong verdict. It was a mis-stated one: a record
+    saying CONSISTENCY_BELOW_THRESHOLD when it could equally have said "and it
+    breaches your risk limit", which for a destination defined by drawdown
+    control is the more decision-relevant sentence by a wide margin.
+
+    So every gate reports its own standing independently of the order: whether it
+    was REACHED, and whether it WOULD refuse. Ordering still decides the single
+    outcome -- re-ordering would change what sealed verdicts recompute to, and
+    gate order is a governance semantic -- but the record no longer forgets what
+    the gates it never reached would have said.
+    """
+    verified_level_claim(claim)
+    usable = [item for item in folds if item["result"] != FOLD_INCONCLUSIVE]
+    outcome, reason, _, _ = level_claim_outcome(claim, folds)
+
+    enough = len(usable) >= claim["minimum_folds_required"]
+    adverse = _aggregate_adverse_frequency(usable)
+    if claim.get("schema_version") == "1":
+        floor = float(claim["minimum_adverse_period_frequency"])
+        covered = adverse is not None and adverse >= floor
+        coverage_detail = (f"frequency {_fixed(adverse)} against {claim['minimum_adverse_period_frequency']}")
+    else:
+        episodes = sum(item.get("adverse_episodes", 0) for item in usable)
+        covered = episodes >= claim["minimum_adverse_episodes"]
+        coverage_detail = f"{episodes} episode(s) against {claim['minimum_adverse_episodes']}"
+    consistency = (sum(1 for item in usable if item["result"] == FOLD_MET) / len(usable)
+                   if usable else None)
+    consistent = consistency is not None and consistency >= float(claim["consistency_threshold"])
+    worst = max((float(item["max_drawdown"]) for item in usable), default=None)
+    within = worst is not None and worst <= float(claim["maximum_drawdown"])
+
+    checks = [
+        ("minimum_folds_required", REASON_FOLDS_BELOW_MINIMUM, enough,
+         f"{len(usable)} usable against {claim['minimum_folds_required']}"),
+        ("tail coverage",
+         REASON_TAIL_NOT_COVERED if claim.get("schema_version") != "1"
+         else REASON_ADVERSE_PERIODS_TOO_RARE, covered, coverage_detail),
+        ("consistency_threshold", REASON_CONSISTENCY_BELOW, consistent,
+         f"{_fixed(consistency)} against {claim['consistency_threshold']}"),
+        ("maximum_drawdown", REASON_DRAWDOWN_EXCEEDED, within,
+         f"worst fold {_fixed(worst)} against {claim['maximum_drawdown']}"),
+    ]
+    report, stopped = [], False
+    for order, (name, refusal, passes, detail) in enumerate(checks, 1):
+        report.append({
+            "gate": name, "order": order, "refusal_reason": refusal,
+            "reached": not stopped,
+            "would_refuse": not passes,
+            "decided_the_verdict": (not stopped) and (not passes) and reason == refusal,
+            "detail": detail,
+        })
+        if not passes:
+            stopped = True
+    return report
+
+
 def _validation_id(claim_id, folds):
     content = {"schema_version": LEVEL_CLAIM_VALIDATION_SCHEMA_VERSION,
                "claim_id": claim_id, "folds": folds}
@@ -446,7 +512,8 @@ def _materialization(validated_at, validation_code_revision):
             "pipeline_sha256": digest(_pipeline_source_bytes())}
 
 
-def _validation_record(claim, folds, outcome, reason, consistency, adverse, materialization):
+def _validation_record(claim, folds, outcome, reason, consistency, adverse, materialization,
+                       gate_report=None):
     content = {
         "validation_id": _validation_id(claim["claim_id"], folds),
         "schema_version": LEVEL_CLAIM_VALIDATION_SCHEMA_VERSION,
@@ -458,6 +525,9 @@ def _validation_record(claim, folds, outcome, reason, consistency, adverse, mate
         "adverse_period_frequency": adverse,
         "materialization": materialization,
         "status": LEVEL_CLAIM_VALIDATION_STATUS,
+        # Present only on records sealed since the gate audit, so every verdict
+        # issued before it keeps reproducing exactly as it was written.
+        **({} if gate_report is None else {"gate_report": gate_report}),
     }
     return {**content, "record_id": "LEVEL_CLAIM_VALIDATION_RECORD|" + digest(encoded(content))}
 
@@ -466,7 +536,7 @@ def _validation_record_is_valid(record):
     fields = {"validation_id", "schema_version", "claim", "folds", "outcome", "outcome_reason",
               "consistency_ratio", "adverse_period_frequency", "materialization", "status",
               "record_id"}
-    if not isinstance(record, dict) or set(record) != fields:
+    if not isinstance(record, dict) or set(record) not in (fields, fields | {"gate_report"}):
         return False
     claim, folds = record.get("claim"), record.get("folds")
     if (not _validation_id_is_valid(record.get("validation_id"))
@@ -485,8 +555,9 @@ def _validation_record_is_valid(record):
     # Re-derive the verdict from the folds. A record whose outcome was edited no
     # longer reproduces, which is the point of recomputing rather than trusting.
     outcome, reason, consistency, adverse = level_claim_outcome(claim, folds)
-    expected = _validation_record(claim, folds, outcome, reason, consistency, adverse,
-                                  record["materialization"])
+    expected = _validation_record(
+        claim, folds, outcome, reason, consistency, adverse, record["materialization"],
+        level_claim_gate_report(claim, folds) if "gate_report" in record else None)
     return record == expected
 
 
@@ -518,8 +589,10 @@ def constitute_level_claim_validation(registry_path, *, claim, folds, validated_
     if not isinstance(folds, list) or not folds:
         raise ValueError("A level claim validation needs folds")
     outcome, reason, consistency, adverse = level_claim_outcome(claim, folds)
-    record = _validation_record(claim, folds, outcome, reason, consistency, adverse,
-                               _materialization(validated_at, validation_code_revision))
+    record = _validation_record(
+        claim, folds, outcome, reason, consistency, adverse,
+        _materialization(validated_at, validation_code_revision),
+        level_claim_gate_report(claim, folds))
     if not _validation_record_is_valid(record):
         raise ValueError("Level Claim Validation record is invalid")
 

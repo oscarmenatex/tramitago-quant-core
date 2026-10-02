@@ -431,3 +431,87 @@ class TailCoverageTests(unittest.TestCase):
                  for index in range(5)]
         self.assertEqual(level_claim_outcome(legacy, folds)[1],
                          "ADVERSE_PERIODS_BELOW_MINIMUM_FREQUENCY")
+
+
+class GateReportTests(unittest.TestCase):
+    """The verdict names one gate and the record used to lose the rest.
+
+    The audit of 2026-10-02 found the 15% drawdown limit -- the number this
+    project's destination rests on -- had NEVER participated in a verdict: it is
+    checked last and something always fired first. It would have refused three of
+    six level claims.
+    """
+
+    def _folds(self, claim, contract, pattern, count=6, periods=120):
+        return [_fold(claim, contract, index, _series(pattern, periods))
+                for index in range(count)]
+
+    def test_every_gate_reports_whether_it_was_reached_and_what_it_would_say(self):
+        contract = _contract(commission="0", half_spread="0", slippage="0")
+        claim = _claim(contract=contract)
+        folds = self._folds(claim, contract, [0.002, -0.001])
+        report = p.level_claim_gate_report(claim, folds)
+        self.assertEqual([item["gate"] for item in report],
+                         ["minimum_folds_required", "tail coverage",
+                          "consistency_threshold", "maximum_drawdown"])
+        self.assertTrue(all({"reached", "would_refuse", "decided_the_verdict"} <= set(item)
+                            for item in report))
+
+    def test_a_gate_the_verdict_never_reached_still_states_its_position(self):
+        # The whole point: a drawdown breach is visible even when consistency
+        # refused first.
+        contract = _contract(commission="0", half_spread="0", slippage="0")
+        claim = _claim(contract=contract, consistency_threshold="0.9",
+                       maximum_drawdown="0.001")
+        folds = [_fold(claim, contract, 0, _series([0.004] * 20 + [-0.02], 120))]
+        folds += [_fold(claim, contract, index, _series([-0.004, 0.001], 120))
+                  for index in range(1, 6)]
+        report = {item["gate"]: item for item in p.level_claim_gate_report(claim, folds)}
+        self.assertTrue(report["consistency_threshold"]["decided_the_verdict"])
+        self.assertFalse(report["maximum_drawdown"]["reached"])
+        self.assertTrue(report["maximum_drawdown"]["would_refuse"])
+
+    def test_exactly_one_gate_decides(self):
+        contract = _contract(commission="0", half_spread="0", slippage="0")
+        claim = _claim(contract=contract, consistency_threshold="0.9")
+        folds = self._folds(claim, contract, [-0.004, 0.001])
+        deciders = [item for item in p.level_claim_gate_report(claim, folds)
+                    if item["decided_the_verdict"]]
+        self.assertEqual(len(deciders), 1)
+
+    def test_a_passing_claim_has_no_decider_and_every_gate_reached(self):
+        contract = _contract(commission="0", half_spread="0", slippage="0")
+        claim = _claim(contract=contract, adverse_period_threshold="-0.01")
+        folds = self._folds(claim, contract, [0.006] * 8 + [-0.02, -0.015])
+        report = p.level_claim_gate_report(claim, folds)
+        if level_claim_outcome(claim, folds)[0] == OUTCOME_VALIDATED:
+            self.assertTrue(all(item["reached"] for item in report))
+            self.assertFalse(any(item["decided_the_verdict"] for item in report))
+
+    def test_a_new_record_carries_the_report_and_an_old_one_still_verifies(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            contract = _contract(commission="0.00001", half_spread="0", slippage="0")
+            claim = _claim(contract=contract)
+            folds = self._folds(claim, contract, [0.004, 0.004, 0.004, -0.001])
+            path = Path(tmp) / "level.json"
+            record = constitute_level_claim_validation(
+                path, claim=claim, folds=folds, validated_at="2026-10-02T00:00:00Z",
+                validation_code_revision=REVISION)
+            self.assertIn("gate_report", record)
+            self.assertEqual(verified_level_claim_validation(path, record["validation_id"]),
+                             record)
+
+    def test_the_report_cannot_be_edited_without_breaking_the_record(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            contract = _contract(commission="0", half_spread="0", slippage="0")
+            claim = _claim(contract=contract, consistency_threshold="0.9")
+            folds = self._folds(claim, contract, [-0.004, 0.001])
+            path = Path(tmp) / "level.json"
+            record = constitute_level_claim_validation(
+                path, claim=claim, folds=folds, validated_at="2026-10-02T00:00:00Z",
+                validation_code_revision=REVISION)
+            raw = path.read_text("utf-8").replace('"would_refuse": true',
+                                                  '"would_refuse": false', 1)
+            path.write_text(raw, encoding="utf-8")
+            with self.assertRaises(ValueError):
+                load_level_claim_validation(path, record["validation_id"])
