@@ -466,6 +466,111 @@
       "minimum_support": 30,
       "schema_version": "1",
       "space_id": "DISCOVERY_SPACE|e17055eb37188fb7743c88196d5e6e3c1d03c5ca17084fe84de597f38c42e716"
+    },
+    {
+      "candidates": [
+        {
+          "parameters": {
+            "window": 5
+          },
+          "strategy_id": "SMA_CROSSOVER"
+        },
+        {
+          "parameters": {
+            "window": 10
+          },
+          "strategy_id": "SMA_CROSSOVER"
+        },
+        {
+          "parameters": {
+            "window": 20
+          },
+          "strategy_id": "SMA_CROSSOVER"
+        },
+        {
+          "parameters": {
+            "window": 50
+          },
+          "strategy_id": "SMA_CROSSOVER"
+        },
+        {
+          "parameters": {
+            "window": 100
+          },
+          "strategy_id": "SMA_CROSSOVER"
+        },
+        {
+          "parameters": {
+            "window": 200
+          },
+          "strategy_id": "SMA_CROSSOVER"
+        },
+        {
+          "parameters": {
+            "window": 10
+          },
+          "strategy_id": "VOLUME_SURGE"
+        },
+        {
+          "parameters": {
+            "window": 20
+          },
+          "strategy_id": "VOLUME_SURGE"
+        },
+        {
+          "parameters": {
+            "window": 50
+          },
+          "strategy_id": "VOLUME_SURGE"
+        },
+        {
+          "parameters": {
+            "window": 10
+          },
+          "strategy_id": "INTRADAY_RANGE"
+        },
+        {
+          "parameters": {
+            "window": 20
+          },
+          "strategy_id": "INTRADAY_RANGE"
+        },
+        {
+          "parameters": {
+            "window": 50
+          },
+          "strategy_id": "INTRADAY_RANGE"
+        },
+        {
+          "parameters": {
+            "sma_window": 10,
+            "volume_window": 20
+          },
+          "strategy_id": "SMA_VOLUME_CONFIRMATION"
+        },
+        {
+          "parameters": {
+            "sma_window": 20,
+            "volume_window": 50
+          },
+          "strategy_id": "SMA_VOLUME_CONFIRMATION"
+        }
+      ],
+      "declared_at": "2026-10-02T04:12:43.974067Z",
+      "declared_by": "equity-discovery-runner",
+      "discovery_window": {
+        "end_exclusive_utc": "2023-01-01T00:00:00Z",
+        "start_utc": "2022-01-01T00:00:00Z"
+      },
+      "holdout_window": {
+        "end_exclusive_utc": "2023-12-28T00:00:00Z",
+        "start_utc": "2023-01-02T00:00:00Z"
+      },
+      "justification": "US equities, the one axis with genuinely different data that has never received a search with its multiplicity sealed: all seven existing equity Hypotheses were invented by hand, one per validation cycle, and one validated on 2024 then was refuted out of sample. Four families needing only OHLCV -- SMA_CROSSOVER, VOLUME_SURGE, INTRADAY_RANGE and SMA_VOLUME_CONFIRMATION -- over the classic trend lengths rather than a tuned grid. MOMENTUM_CROSSOVER is excluded ENTIRELY, not merely its lookback of 10: its behaviour on both the discovery window and the holdout is already on record, and searching a family whose sign on the holdout is already known is contamination a sealed space cannot detect. Discovery reads 2022; the holdout is 2023 and is not loaded. 2024 is excluded from both, having been examined by five hand-made Hypotheses. The holdout is 360 days because a search of fourteen needs nine folds to be passable and nine must divide the period; a calendar year admits only five. N=14, declared complete.",
+      "minimum_minority_state_frequency": "0.20",
+      "minimum_support": 30,
+      "schema_version": "1",
+      "space_id": "DISCOVERY_SPACE|1487da6c0a1b0137be3dce8810450066b3aa549ce873ecd6bff88512dfb186f9"
     }
   ]
 }

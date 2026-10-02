@@ -120,6 +120,34 @@
         "HOLDOUT_UNREAD|2021-07-01T00:00:00Z|2024-01-07T00:00:00Z",
         "ROWS_SHA256|ALL|1c1559a96c9ecfb3203d4dfdf6aaae40a49bf032f2d1c2d581ae8a9b80620421"
       ]
+    },
+    {
+      "created_at": "2026-10-02T04:12:44.025057Z",
+      "created_by": "equity-discovery-runner",
+      "exploration_context": "Bounded Discovery scan DISCOVERY_SCAN|74492f5767d3457a8c98b64f02d0ade5eba978abfe57270d171e5887a8bf34b8 over Discovery Space DISCOVERY_SPACE|1487da6c0a1b0137be3dce8810450066b3aa549ce873ecd6bff88512dfb186f9, discovery window 2022-01-01T00:00:00Z to 2023-01-01T00:00:00Z. Holdout reserved and unread: 2023-01-02T00:00:00Z to 2023-12-28T00:00:00Z.",
+      "finding_id": "FINDING|db7e68d3-a3b2-4beb-8edc-71cfa6fa6f5e",
+      "history": [
+        {
+          "at": "2026-10-02T04:12:44.025057Z",
+          "note": "constituted",
+          "status": "OPEN"
+        }
+      ],
+      "observation": "On the discovery window alone, INTRADAY_RANGE{'window': 50} shows a difference of mean CLOSE_RETURN between its two groups of 0.000436628220. This is an observation selected out of 14 candidates, not evidence. The same scan's worst candidate scored -0.003366666983 and its median -0.002185480527, with 1 positive and 10 negative.",
+      "schema_version": "1",
+      "status": "OPEN",
+      "supporting_evidence": [
+        "DISCOVERY_SCAN|74492f5767d3457a8c98b64f02d0ade5eba978abfe57270d171e5887a8bf34b8",
+        "DISCOVERY_SPACE|1487da6c0a1b0137be3dce8810450066b3aa549ce873ecd6bff88512dfb186f9",
+        "CANDIDATES_EXAMINED|14",
+        "SELECTED_RANK|0",
+        "EFFECT_ON_DISCOVERY_WINDOW|0.000436628220",
+        "SCAN_EFFECT_SPREAD|worst=-0.003366666983|median=-0.002185480527|positive=1|negative=10",
+        "MINORITY_STATE_FREQUENCY|0.370000000000",
+        "SUPPORT|UPPER=74|LOWER=126",
+        "HOLDOUT_UNREAD|2023-01-02T00:00:00Z|2023-12-28T00:00:00Z",
+        "ROWS_SHA256|ALL|85f5bcba0410ed7b8819acba80c556263e818f1e99cfe793d77adfb37e65d3a5"
+      ]
     }
   ],
   "schema_version": "1"
