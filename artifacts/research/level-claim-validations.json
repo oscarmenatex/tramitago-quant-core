@@ -1014,6 +1014,215 @@
       "schema_version": "1",
       "status": "ISSUED",
       "validation_id": "LEVEL_CLAIM_VALIDATION|a68ddb4f7b895a8b69c9998d3d3c3428c6a0b83a0bcd5af339ec968c36c328a0"
+    },
+    {
+      "adverse_period_frequency": "0.001371742112",
+      "claim": {
+        "adverse_period_threshold": "-0.01",
+        "bootstrap_block_periods": 5,
+        "bootstrap_resamples": 2000,
+        "bootstrap_seed": 0,
+        "claim_id": "LEVEL_CLAIM|805f8b0730019a04f649ce8e167653d1fc43ec742332300df640e346e5c2dabe",
+        "confidence_level": "0.95",
+        "consistency_threshold": "0.7",
+        "cost_contract_id": "COST_CONTRACT|38e175670e5d2182b7ad672eb1546fefda7b59310e871e2cb701f9398c0d5fd0",
+        "maximum_drawdown": "0.15",
+        "minimum_adverse_episodes": 1,
+        "minimum_folds_required": 5,
+        "position_description": "PORTFOLIO: long BTC spot / short BitMEX XBTUSD carry at 0.25 of capital, remainder in cash at zero",
+        "schema_version": "2",
+        "source": "identical terms to the position-level runs; only the weight differs"
+      },
+      "consistency_ratio": "0.666666666667",
+      "folds": [
+        {
+          "adverse_episodes": 0,
+          "adverse_mean_bound": "-0.000156651128",
+          "adverse_period_frequency": "0.000000000000",
+          "costs": {
+            "contract_id": "COST_CONTRACT|38e175670e5d2182b7ad672eb1546fefda7b59310e871e2cb701f9398c0d5fd0",
+            "cost_total": "0.000650000000",
+            "gross_total": "-0.012082438497",
+            "net_total": "-0.012732438497",
+            "transitions": 1
+          },
+          "fold_index": 0,
+          "max_drawdown": "0.012656805484",
+          "mean_net_return": "-0.000105226764",
+          "period": {
+            "end_exclusive_utc": "2019-05-02T00:00:00Z",
+            "start_utc": "2019-01-02T00:00:00Z"
+          },
+          "periods": 121,
+          "periods_held": 121,
+          "result": "NOT_MET",
+          "sharpe_ratio": "-7.391422550234"
+        },
+        {
+          "adverse_episodes": 0,
+          "adverse_mean_bound": "0.000072802402",
+          "adverse_period_frequency": "0.000000000000",
+          "costs": {
+            "contract_id": "COST_CONTRACT|38e175670e5d2182b7ad672eb1546fefda7b59310e871e2cb701f9398c0d5fd0",
+            "cost_total": "0.000650000000",
+            "gross_total": "0.022134942674",
+            "net_total": "0.021484942674",
+            "transitions": 1
+          },
+          "fold_index": 1,
+          "max_drawdown": "0.003239151441",
+          "mean_net_return": "0.000177561510",
+          "period": {
+            "end_exclusive_utc": "2019-08-31T00:00:00Z",
+            "start_utc": "2019-05-03T00:00:00Z"
+          },
+          "periods": 121,
+          "periods_held": 121,
+          "result": "MET",
+          "sharpe_ratio": "7.030937791613"
+        },
+        {
+          "adverse_episodes": 0,
+          "adverse_mean_bound": "0.000025985982",
+          "adverse_period_frequency": "0.000000000000",
+          "costs": {
+            "contract_id": "COST_CONTRACT|38e175670e5d2182b7ad672eb1546fefda7b59310e871e2cb701f9398c0d5fd0",
+            "cost_total": "0.000650000000",
+            "gross_total": "0.006665122573",
+            "net_total": "0.006015122573",
+            "transitions": 1
+          },
+          "fold_index": 2,
+          "max_drawdown": "0.000610941056",
+          "mean_net_return": "0.000049711757",
+          "period": {
+            "end_exclusive_utc": "2019-12-30T00:00:00Z",
+            "start_utc": "2019-09-01T00:00:00Z"
+          },
+          "periods": 121,
+          "periods_held": 121,
+          "result": "MET",
+          "sharpe_ratio": "4.972450219877"
+        },
+        {
+          "adverse_episodes": 1,
+          "adverse_mean_bound": "-0.000355041843",
+          "adverse_period_frequency": "0.008264462810",
+          "costs": {
+            "contract_id": "COST_CONTRACT|38e175670e5d2182b7ad672eb1546fefda7b59310e871e2cb701f9398c0d5fd0",
+            "cost_total": "0.000650000000",
+            "gross_total": "-0.003868737381",
+            "net_total": "-0.004518737381",
+            "transitions": 1
+          },
+          "fold_index": 3,
+          "max_drawdown": "0.040864039340",
+          "mean_net_return": "-0.000037344937",
+          "period": {
+            "end_exclusive_utc": "2020-04-29T00:00:00Z",
+            "start_utc": "2019-12-31T00:00:00Z"
+          },
+          "periods": 121,
+          "periods_held": 121,
+          "result": "NOT_MET",
+          "sharpe_ratio": "-0.209490482507"
+        },
+        {
+          "adverse_episodes": 0,
+          "adverse_mean_bound": "0.000054550423",
+          "adverse_period_frequency": "0.000000000000",
+          "costs": {
+            "contract_id": "COST_CONTRACT|38e175670e5d2182b7ad672eb1546fefda7b59310e871e2cb701f9398c0d5fd0",
+            "cost_total": "0.000650000000",
+            "gross_total": "0.010760255122",
+            "net_total": "0.010110255122",
+            "transitions": 1
+          },
+          "fold_index": 4,
+          "max_drawdown": "0.000994310958",
+          "mean_net_return": "0.000083555827",
+          "period": {
+            "end_exclusive_utc": "2020-08-28T00:00:00Z",
+            "start_utc": "2020-04-30T00:00:00Z"
+          },
+          "periods": 121,
+          "periods_held": 121,
+          "result": "MET",
+          "sharpe_ratio": "6.043615530693"
+        },
+        {
+          "adverse_episodes": 0,
+          "adverse_mean_bound": "0.000046028119",
+          "adverse_period_frequency": "0.000000000000",
+          "costs": {
+            "contract_id": "COST_CONTRACT|38e175670e5d2182b7ad672eb1546fefda7b59310e871e2cb701f9398c0d5fd0",
+            "cost_total": "0.000650000000",
+            "gross_total": "0.010665847837",
+            "net_total": "0.010015847837",
+            "transitions": 1
+          },
+          "fold_index": 5,
+          "max_drawdown": "0.001137579551",
+          "mean_net_return": "0.000080772966",
+          "period": {
+            "end_exclusive_utc": "2020-12-30T00:00:00Z",
+            "start_utc": "2020-08-29T00:00:00Z"
+          },
+          "periods": 124,
+          "periods_held": 124,
+          "result": "MET",
+          "sharpe_ratio": "5.936772152097"
+        }
+      ],
+      "gate_report": [
+        {
+          "decided_the_verdict": false,
+          "detail": "6 usable against 5",
+          "gate": "minimum_folds_required",
+          "order": 1,
+          "reached": true,
+          "refusal_reason": "USABLE_FOLDS_BELOW_MINIMUM",
+          "would_refuse": false
+        },
+        {
+          "decided_the_verdict": false,
+          "detail": "1 episode(s) against 1",
+          "gate": "tail coverage",
+          "order": 2,
+          "reached": true,
+          "refusal_reason": "ADVERSE_EPISODES_BELOW_MINIMUM",
+          "would_refuse": false
+        },
+        {
+          "decided_the_verdict": true,
+          "detail": "0.666666666667 against 0.7",
+          "gate": "consistency_threshold",
+          "order": 3,
+          "reached": true,
+          "refusal_reason": "CONSISTENCY_BELOW_THRESHOLD",
+          "would_refuse": true
+        },
+        {
+          "decided_the_verdict": false,
+          "detail": "worst fold 0.040864039340 against 0.15",
+          "gate": "maximum_drawdown",
+          "order": 4,
+          "reached": false,
+          "refusal_reason": "DRAWDOWN_LIMIT_EXCEEDED",
+          "would_refuse": false
+        }
+      ],
+      "materialization": {
+        "pipeline_sha256": "2b6d2976a293f7251f004a2d5a356d49a109fb76d3d58d881e2379d9b5d3c398",
+        "validated_at": "2026-10-02T04:45:40.365084Z",
+        "validation_code_revision": "d05d5e529ea321c61ee1a84e08516dbfe3a9d20b"
+      },
+      "outcome": "NOT_VALIDATED",
+      "outcome_reason": "CONSISTENCY_BELOW_THRESHOLD",
+      "record_id": "LEVEL_CLAIM_VALIDATION_RECORD|bb60a0d40c15997b0d9a418a2ecb83d1b5d70f5072acdcd989fd0d403de8d911",
+      "schema_version": "1",
+      "status": "ISSUED",
+      "validation_id": "LEVEL_CLAIM_VALIDATION|fde95afdbf526484be0a2919a3c5a4e8fa6b5c3d560f25776323be981a260a92"
     }
   ]
 }
