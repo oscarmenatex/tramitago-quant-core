@@ -284,6 +284,97 @@
       "minimum_support": 30,
       "schema_version": "1",
       "space_id": "DISCOVERY_SPACE|664c59fa8283ff60a956d442979f68c74ed810a8abc9172591a84b2a8a4e2d45"
+    },
+    {
+      "candidates": [
+        {
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 24,
+            "perpetual_variable": "perp_close",
+            "threshold": "0"
+          },
+          "strategy_id": "CARRY_FUNDING_THRESHOLD"
+        },
+        {
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 24,
+            "perpetual_variable": "perp_close",
+            "window": 3
+          },
+          "strategy_id": "CARRY_FUNDING_SURGE"
+        },
+        {
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 24,
+            "perpetual_variable": "perp_close",
+            "window": 5
+          },
+          "strategy_id": "CARRY_FUNDING_SURGE"
+        },
+        {
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 24,
+            "perpetual_variable": "perp_close",
+            "window": 7
+          },
+          "strategy_id": "CARRY_FUNDING_SURGE"
+        },
+        {
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 24,
+            "perpetual_variable": "perp_close",
+            "window": 10
+          },
+          "strategy_id": "CARRY_FUNDING_SURGE"
+        },
+        {
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 24,
+            "perpetual_variable": "perp_close",
+            "window": 14
+          },
+          "strategy_id": "CARRY_FUNDING_SURGE"
+        },
+        {
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 24,
+            "perpetual_variable": "perp_close",
+            "window": 20
+          },
+          "strategy_id": "CARRY_FUNDING_SURGE"
+        },
+        {
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 24,
+            "perpetual_variable": "perp_close",
+            "window": 30
+          },
+          "strategy_id": "CARRY_FUNDING_SURGE"
+        }
+      ],
+      "declared_at": "2026-10-02T02:35:59.765509Z",
+      "declared_by": "carry-exit-discovery-runner",
+      "discovery_window": {
+        "end_exclusive_utc": "2025-01-01T00:00:00Z",
+        "start_utc": "2024-01-01T00:00:00Z"
+      },
+      "holdout_window": {
+        "end_exclusive_utc": "2026-01-01T00:00:00Z",
+        "start_utc": "2025-01-01T00:00:00Z"
+      },
+      "justification": "Carry EXIT RULES, asked as the question that actually blocks them: does any rule's exit state occur often enough to be comparable. CARRY_FUNDING_THRESHOLD is #37's own absolute threshold at zero, included so the representativeness filter is seen refusing the design already on record as degenerate rather than being told about it. CARRY_FUNDING_SURGE over seven trailing windows is the relative-threshold fix funding_rate_surge_strategy already proved for the funding SIGNAL and that was never carried across to the exit rule. Windows 3 to 30 span a few days to a month, declared complete: no window outside this set may be added to THIS space, and a wider search is a new space with its own justification. Discovery reads 2024 only; 2025 is the holdout and is not loaded at all.",
+      "minimum_minority_state_frequency": "0.20",
+      "minimum_support": 30,
+      "schema_version": "1",
+      "space_id": "DISCOVERY_SPACE|d48ff1b6b3758330ce5fa2724d314834c0588c2562b13f5caaaa25c4dfc26173"
     }
   ]
 }

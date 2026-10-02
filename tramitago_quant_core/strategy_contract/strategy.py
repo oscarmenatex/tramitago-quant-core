@@ -576,3 +576,81 @@ def carry_funding_threshold_strategy(funding_variable="funding_rate",
                                         payments_per_period),
         "compute": compute,
     }
+
+
+def carry_funding_surge_strategy(window, funding_variable="funding_rate",
+                                 perpetual_variable="perp_close", payments_per_period=1):
+    """The carry exit rule with a RELATIVE threshold -- the fix this project
+    already discovered once and never applied here.
+
+    WHAT WENT WRONG WITH THE ABSOLUTE VERSION. carry_funding_threshold_strategy
+    classifies by whether funding is at or above ZERO, chosen because zero is the
+    only parameter-free boundary. Measured: the "premium inverted" group holds 11
+    of 366 days in 2024 and 18 of 365 in 2025, and one walk-forward fold in each
+    year contains NONE of them, so no difference of means exists to compute and
+    the validation can only answer INSUFFICIENT_EVIDENCE. More data would not fix
+    it -- the split stays degenerate at any length, because BTC funding is
+    positive on the large majority of days as a structural fact, not a sampling
+    accident.
+
+    funding_rate_surge_strategy already documented exactly this failure for the
+    funding SIGNAL and fixed it the same way volume_surge_strategy fixes it for
+    volume, which is likewise always positive: compare the series against its OWN
+    recent history. That took the split from 3/93 to 165/200. The fix was never
+    carried across to the exit rule, which kept the sign design already on record
+    as broken.
+
+    THE PARAMETER IS THE HONEST COST, and it is worth naming rather than hiding.
+    Zero needed no window; a trailing average does. That is a real concession:
+    the whole reason zero was chosen is that any other number would have to come
+    from looking at the data first. What makes a window different from a tuned
+    number is that comparing a series to its own history is a STRUCTURAL choice,
+    and the window is enumerated over a declared space with its multiplicity
+    sealed -- not picked because it worked.
+
+    The Outcome is the carry return, not a price change, so this asks what the
+    absolute version asked: does the rule discriminate the return of the position
+    actually held. Only the classification changes.
+
+    NO LOOKAHEAD, same convention as both parents: the row at t is classified by
+    funding at t-1 against the `window` days BEFORE t-1, and the Outcome reads
+    t+1. Signal and outcome are two periods apart and cannot overlap.
+    """
+    if not isinstance(window, int) or isinstance(window, bool) or window < 2:
+        raise ValueError("Carry funding surge window must be an integer >= 2")
+    if (not isinstance(payments_per_period, int) or isinstance(payments_per_period, bool)
+            or payments_per_period < 1):
+        raise ValueError("Payments per period must be a positive integer")
+    indicator_name = f"CARRYSURGE{window}"
+    column_name = f"carry_funding_avg_{window}"
+
+    def compute(window_rows):
+        if len(window_rows) != window + 2:
+            raise ValueError("Strategy compute window has the wrong length")
+        prior = window_rows[:-2]          # the `window` days before yesterday
+        indicator_value = math.fsum(row[funding_variable] for row in prior) / window
+        yesterday = window_rows[-2][funding_variable]
+        if not math.isfinite(indicator_value) or not math.isfinite(yesterday):
+            raise ValueError("Non-finite indicator")
+        group = "UPPER" if yesterday > indicator_value else "LOWER_OR_EQUAL"
+        return {"indicator_value": indicator_value, "group": group}
+
+    return {
+        "schema_version": STRATEGY_SCHEMA_VERSION,
+        "strategy_id": "CARRY_FUNDING_SURGE",
+        "parameters": {"window": window, "funding_variable": funding_variable,
+                       "perpetual_variable": perpetual_variable,
+                       **({} if payments_per_period == 1
+                          else {"payments_per_period": payments_per_period})},
+        "indicator_name": indicator_name,
+        "column_name": column_name,
+        "required_inputs": {"variables": [funding_variable, perpetual_variable],
+                            "warmup_periods": window + 1},
+        "upper_group_description": (
+            f"{funding_variable}_t-1 > {indicator_name}_t (the premium is richer than usual)"),
+        "lower_or_equal_group_description": (
+            f"{funding_variable}_t-1 <= {indicator_name}_t (the premium is thinner than usual)"),
+        "outcome": carry_return_outcome(funding_variable, perpetual_variable,
+                                        payments_per_period),
+        "compute": compute,
+    }

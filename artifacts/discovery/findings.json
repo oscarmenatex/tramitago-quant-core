@@ -54,6 +54,34 @@
         "SERIES|ETH-USD/SOL-USD",
         "HOLDOUT_UNREAD|2025-01-01T00:00:00Z|2026-01-01T00:00:00Z"
       ]
+    },
+    {
+      "created_at": "2026-10-02T02:35:59.831532Z",
+      "created_by": "carry-exit-discovery-runner",
+      "exploration_context": "Bounded Discovery scan DISCOVERY_SCAN|c3fefc4d698d7ea9026d5837997f44e1009b26888960fb1909691b02f4c5a517 over Discovery Space DISCOVERY_SPACE|d48ff1b6b3758330ce5fa2724d314834c0588c2562b13f5caaaa25c4dfc26173, discovery window 2024-01-01T00:00:00Z to 2025-01-01T00:00:00Z. Holdout reserved and unread: 2025-01-01T00:00:00Z to 2026-01-01T00:00:00Z.",
+      "finding_id": "FINDING|ad7ea4e9-be8a-4787-86ba-3b7c0befe0f1",
+      "history": [
+        {
+          "at": "2026-10-02T02:35:59.831532Z",
+          "note": "constituted",
+          "status": "OPEN"
+        }
+      ],
+      "observation": "On the discovery window alone, CARRY_FUNDING_SURGE{'window': 30, 'funding_variable': 'funding_rate', 'perpetual_variable': 'perp_close', 'payments_per_period': 24} shows a difference of mean CARRY_RETURN between its two groups of 0.000498551526. This is an observation selected out of 8 candidates, not evidence. The same scan's worst candidate scored 0.000143467943 and its median 0.000404482210, with 7 positive and 0 negative.",
+      "schema_version": "1",
+      "status": "OPEN",
+      "supporting_evidence": [
+        "DISCOVERY_SCAN|c3fefc4d698d7ea9026d5837997f44e1009b26888960fb1909691b02f4c5a517",
+        "DISCOVERY_SPACE|d48ff1b6b3758330ce5fa2724d314834c0588c2562b13f5caaaa25c4dfc26173",
+        "CANDIDATES_EXAMINED|8",
+        "SELECTED_RANK|0",
+        "EFFECT_ON_DISCOVERY_WINDOW|0.000498551526",
+        "SCAN_EFFECT_SPREAD|worst=0.000143467943|median=0.000404482210|positive=7|negative=0",
+        "MINORITY_STATE_FREQUENCY|0.404191616766",
+        "SUPPORT|UPPER=135|LOWER=199",
+        "HOLDOUT_UNREAD|2025-01-01T00:00:00Z|2026-01-01T00:00:00Z",
+        "ROWS_SHA256|ALL|ca28c0c592d37c889b171be01d62ca34fe3c8925e0f07da18f779aaba7b5ee61"
+      ]
     }
   ],
   "schema_version": "1"
