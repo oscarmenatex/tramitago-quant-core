@@ -38,6 +38,7 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
 import pipeline as p
+from tramitago_quant_core.governance.evidence_host import require_evidence_host
 from tramitago_quant_core.data.acquisition import (
     normalize, validate, _coinbase_public_request,
 )
@@ -124,6 +125,7 @@ def _fetch_discovery_rows():
 
 
 def main():
+    require_evidence_host(REPO)
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     spaces = ARTIFACTS / "discovery-spaces.json"
     scans = ARTIFACTS / "discovery-scans.json"

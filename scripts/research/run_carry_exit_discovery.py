@@ -32,6 +32,7 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
 import pipeline as p
+from tramitago_quant_core.governance.evidence_host import require_evidence_host
 from tramitago_quant_core.research.discovery import (
     constitute_discovery_space, scan_discovery_space, rank_observations,
     constitute_discovery_scan, finding_from_scan, discovery_rows_digest,
@@ -98,6 +99,7 @@ def _name(observation):
 
 
 def main():
+    require_evidence_host(REPO)
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     candidates = [
         {"strategy_id": "CARRY_FUNDING_THRESHOLD",

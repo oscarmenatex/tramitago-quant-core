@@ -43,6 +43,7 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
 import pipeline as p
+from tramitago_quant_core.governance.evidence_host import require_evidence_host
 from tramitago_quant_core.data.acquisition import normalize, _coinbase_public_request
 from tramitago_quant_core.data.bitmex_perpetual_price import (
     capture_bitmex_perpetual_price, verified_bitmex_perpetual_price_capture,
@@ -148,6 +149,7 @@ def _judge(label, description, contract, folds_data, revision):
 
 
 def main():
+    require_evidence_host(REPO)
     contract = p.cost_contract(
         regime=p.COST_REGIME_HOLDING, commission_rate=COST_COMMISSION,
         half_spread_rate=COST_HALF_SPREAD, slippage_rate=COST_SLIPPAGE,

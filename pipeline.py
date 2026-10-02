@@ -93,6 +93,9 @@ from tramitago_quant_core.data.bitmex_funding_rate import (
     BITMEX_FUNDING_PAYMENTS_PER_DAY,
     capture_bitmex_funding_rate, verified_bitmex_funding_rate_capture,
 )
+from tramitago_quant_core.governance.evidence_host import (
+    EVIDENCE_HOST_MARKER, evidence_host_marker_path, is_evidence_host, require_evidence_host,
+)
 from tramitago_quant_core.research.level_claim import (
     LEVEL_CLAIM_SCHEMA_VERSION, LEVEL_CLAIM_VALIDATION_SCHEMA_VERSION,
     LEVEL_CLAIM_VALIDATION_REGISTRY_SCHEMA_VERSION, LEVEL_CLAIM_VALIDATION_STATUS,

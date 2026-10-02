@@ -52,6 +52,7 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
 import pipeline as p
+from tramitago_quant_core.governance.evidence_host import require_evidence_host
 from tramitago_quant_core.data.hyperliquid_funding_rate import (
     capture_hyperliquid_funding_rate, verified_hyperliquid_funding_rate_capture,
 )
@@ -345,6 +346,7 @@ def run_period(period, revision):
 
 
 def main():
+    require_evidence_host(REPO)
     global STRATEGY, SLUG_SUFFIX
     parser = argparse.ArgumentParser()
     parser.add_argument("--payments-per-day", type=int, default=1,

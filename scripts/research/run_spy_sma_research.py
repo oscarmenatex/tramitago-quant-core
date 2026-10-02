@@ -26,6 +26,7 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
 import pipeline as p
+from tramitago_quant_core.governance.evidence_host import require_evidence_host
 from tramitago_quant_core.data.alpaca_equity_series import (
     capture_alpaca_equity_bars,
 )
@@ -140,6 +141,7 @@ def _alpaca_credential_injector():
 
 
 def main():
+    require_evidence_host(REPO)
     print("=" * 70)
     print(f"SPY SMA({WINDOW}) Research Pipeline -- Nivel 5 (US equities, Alpaca)")
     print("=" * 70)

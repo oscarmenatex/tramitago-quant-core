@@ -32,6 +32,7 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
 import pipeline as p
+from tramitago_quant_core.governance.evidence_host import require_evidence_host
 from tramitago_quant_core.strategy_contract.outcome import carry_return_outcome
 from tramitago_quant_core.research.level_claim import (
     level_claim, evaluate_fold, constitute_level_claim_validation,
@@ -141,6 +142,7 @@ def _breakeven_cost_per_side(series, periods_per_fold):
 
 
 def main():
+    require_evidence_host(REPO)
     contract = p.cost_contract(
         regime=p.COST_REGIME_HOLDING, commission_rate=COST_COMMISSION,
         half_spread_rate=COST_HALF_SPREAD, slippage_rate=COST_SLIPPAGE,
