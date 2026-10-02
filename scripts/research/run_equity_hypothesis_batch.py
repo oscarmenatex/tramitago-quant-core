@@ -42,6 +42,7 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
 import pipeline as p
+from tramitago_quant_core.governance.evidence_host import require_evidence_host
 from tramitago_quant_core.data.alpaca_equity_series import capture_alpaca_equity_bars
 from tramitago_quant_core.research.hypothesis import constitute_hypothesis
 from tramitago_quant_core.research.historical_dataset import create_hypothesis_dataset
@@ -371,6 +372,7 @@ def run_one(spec, code_revision, injector):
 
 
 def main():
+    require_evidence_host(REPO)
     print("=" * 74)
     print("FOUR US-EQUITY HYPOTHESES -- all declared before any execution")
     print("=" * 74)

@@ -30,6 +30,7 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
 import pipeline as p
+from tramitago_quant_core.governance.evidence_host import require_evidence_host
 
 SOURCES = "artifacts/research/statistical-validations*.json"
 OUTPUT = REPO / "artifacts" / "research" / "multiplicity-audit"
@@ -70,6 +71,7 @@ def _passing(folds):
 
 
 def main():
+    require_evidence_host(REPO)
     loaded = _load()
     folds = [fold for _, validation in loaded for fold in validation["fold_summaries"]]
     usable_folds = [fold for fold in folds if fold["criterion_result"] != "INCONCLUSIVE"]

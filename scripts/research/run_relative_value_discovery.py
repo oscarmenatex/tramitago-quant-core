@@ -42,6 +42,7 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
 import pipeline as p
+from tramitago_quant_core.governance.evidence_host import require_evidence_host
 from tramitago_quant_core.data.acquisition import normalize, _coinbase_public_request
 from tramitago_quant_core.research.discovery import (
     constitute_discovery_space, scan_discovery_space, rank_observations,
@@ -132,6 +133,7 @@ def _pair_rows(primary_closes, second_closes):
 
 
 def main():
+    require_evidence_host(REPO)
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     candidates = [
         {"strategy_id": "PAIR_RATIO_REVERSION",

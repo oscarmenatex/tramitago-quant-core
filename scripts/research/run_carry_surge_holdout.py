@@ -36,6 +36,7 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
 import pipeline as p
+from tramitago_quant_core.governance.evidence_host import require_evidence_host
 from tramitago_quant_core.data.hyperliquid_funding_rate import (
     capture_hyperliquid_funding_rate, verified_hyperliquid_funding_rate_capture,
 )
@@ -110,6 +111,7 @@ def _code_revision():
 
 
 def main():
+    require_evidence_host(REPO)
     revision = _code_revision()
     finding = load_finding(FINDINGS, FINDING_ID)
     if finding["status"] != "OPEN":
