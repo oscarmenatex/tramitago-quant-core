@@ -1,0 +1,112 @@
+{
+  "code_revision": "bfe03afa8b77495f36b77729a78793afbb4809ee",
+  "confidence": "0.95",
+  "exhausted": [
+    "US equities, daily, directional",
+    "crypto, daily, directional"
+  ],
+  "kind": "stopping-rule-execution",
+  "measured_at": "2026-10-02T05:22:29.911638Z",
+  "measurement_id": "STOPPING_RULE|7c65a5829295a01d100ddcd4c63e18dad7065d657fc468ffa1670fddfd131954",
+  "minimum_hypotheses": 5,
+  "populations": [
+    {
+      "bound_is_applicable": true,
+      "exhausted": true,
+      "hypotheses": 7,
+      "minimum_hypotheses": 5,
+      "passing_folds": 16,
+      "population": "US equities, daily, directional",
+      "rate": "0.410256",
+      "reason": "EXHAUSTED_BY_MEASUREMENT",
+      "threshold": "0.70",
+      "upper_bound_95": "0.554309",
+      "usable_folds": 39
+    },
+    {
+      "bound_is_applicable": true,
+      "exhausted": false,
+      "hypotheses": 6,
+      "minimum_hypotheses": 5,
+      "passing_folds": 29,
+      "population": "crypto, daily, carry premium",
+      "rate": "0.935484",
+      "reason": "UPPER_BOUND_STILL_REACHES_THE_THRESHOLD",
+      "threshold": "0.70",
+      "upper_bound_95": "0.988415",
+      "usable_folds": 31
+    },
+    {
+      "bound_is_applicable": true,
+      "exhausted": true,
+      "hypotheses": 26,
+      "minimum_hypotheses": 5,
+      "passing_folds": 51,
+      "population": "crypto, daily, directional",
+      "rate": "0.389313",
+      "reason": "EXHAUSTED_BY_MEASUREMENT",
+      "threshold": "0.70",
+      "upper_bound_95": "0.464572",
+      "usable_folds": 131
+    },
+    {
+      "bound_is_applicable": false,
+      "exhausted": false,
+      "hypotheses": 2,
+      "minimum_hypotheses": 5,
+      "passing_folds": 5,
+      "population": "crypto, daily, relative value",
+      "rate": "0.500000",
+      "reason": "FEWER_HYPOTHESES_THAN_THE_MINIMUM",
+      "threshold": "0.70",
+      "upper_bound_95": "0.777559",
+      "usable_folds": 10
+    }
+  ],
+  "schema_version": "1",
+  "slugs_by_population": {
+    "US equities, daily, directional": [
+      "spy-mom10-2024",
+      "spy-mom10-oos-2022",
+      "spy-mom10-oos-2023",
+      "spy-range20-2024",
+      "spy-sma50-2024",
+      "spy-smavol-10-20-2024",
+      "spy-volsurge20-2024"
+    ],
+    "crypto, daily, carry premium": [
+      "carry-exit-bitmex-holdout",
+      "carry-exit-btc-2024",
+      "carry-exit-btc-2024-24x",
+      "carry-exit-btc-2025",
+      "carry-exit-btc-2025-24x",
+      "carry-surge-30-btc-2025-holdout"
+    ],
+    "crypto, daily, directional": [
+      "2023-period",
+      "atom",
+      "etapa27",
+      "eth",
+      "funding-oos-2024",
+      "funding-rate",
+      "funding-surge",
+      "horizon5",
+      "intraday-range",
+      "n4-sweep",
+      "reversal",
+      "reversal-atom",
+      "signal-portfolio",
+      "sma-volume-confirmation",
+      "volume-surge"
+    ],
+    "crypto, daily, relative value": [
+      "pair-eth-atom",
+      "pair-eth-btc"
+    ]
+  },
+  "still_open": [
+    "crypto, daily, carry premium",
+    "crypto, daily, relative value"
+  ],
+  "threshold": "0.70"
+}
