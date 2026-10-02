@@ -57,7 +57,8 @@ COST_SLIPPAGE = "0.0001"
 COST_SOURCE = ("ASSUMED per-leg taker fee and execution cost for a spot/perpetual carry; "
                "NOT measured fills. Replace with observed fills before any capital decision.")
 
-MINIMUM_ADVERSE_PERIOD_FREQUENCY = "0.10"
+# TAIL COVERAGE, not frequency: one episode is what a measurement can answer.
+MINIMUM_ADVERSE_EPISODES = 1
 # WHAT COUNTS AS A BAD DAY, declared rather than left at "any loss".
 #
 # At "any loss" this window registers 27.8% adverse periods out of ordinary daily
@@ -161,7 +162,7 @@ def main():
                               "continuously; funding at 24 payments a day"),
         cost_contract=contract, minimum_folds_required=MINIMUM_FOLDS,
         consistency_threshold=CONSISTENCY_THRESHOLD,
-        minimum_adverse_period_frequency=MINIMUM_ADVERSE_PERIOD_FREQUENCY,
+        minimum_adverse_episodes=MINIMUM_ADVERSE_EPISODES,
         adverse_period_threshold=ADVERSE_PERIOD_THRESHOLD,
         maximum_drawdown=MAXIMUM_DRAWDOWN, confidence_level="0.95",
         bootstrap_resamples=2000, bootstrap_block_periods=5, bootstrap_seed=0,
@@ -192,8 +193,9 @@ def main():
     print(f"OUTCOME      {record['outcome']}"
           + (f"  ({record['outcome_reason']})" if record["outcome_reason"] else ""))
     print(f"consistency  {record['consistency_ratio']}")
-    print(f"adverse      {record['adverse_period_frequency']} of held periods lost more "
-          f"than {ADVERSE_PERIOD_THRESHOLD}")
+    episodes = sum(fold["adverse_episodes"] for fold in folds)
+    print(f"adverse      {episodes} episode(s) below {ADVERSE_PERIOD_THRESHOLD}; "
+          f"{record['adverse_period_frequency']} of held periods lost more than that")
     print(f"costs        {json.dumps(folds[0]['costs'], sort_keys=True)}")
     print(f"breakeven    {_breakeven_cost_per_side(series, len(series) // FOLD_COUNT):.6f} "
           f"per side per leg, against {float(COST_COMMISSION) + float(COST_HALF_SPREAD) + float(COST_SLIPPAGE):.6f} declared")

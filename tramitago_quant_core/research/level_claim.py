@@ -32,15 +32,35 @@ THREE THINGS IT REFUSES TO DO, and each is the point rather than a precaution:
   and the block length are sealed into the claim, so the number is reproducible
   and cannot be re-rolled until it looks better.
 
-  AND IT REFUSES TO CERTIFY A PREMIUM WHOSE LOSSES IT NEVER SAW. This is the
-  decisive one. A carry loses when the basis moves against it, which is rare; a
-  fold containing no such episode shows a beautiful positive mean, and a verdict
-  built on consistency across such folds would be measuring THAT NOTHING WENT
-  WRONG, not that the premium is real. Hypothesis #37 died of exactly this, and
-  the representativeness rule adopted 2026-09-30 exists because of it. So the
-  frequency of loss-making periods must clear a declared floor or the outcome is
+  AND IT REFUSES TO CERTIFY A PREMIUM WHOSE TAIL IT NEVER SAW. This is the
+  decisive one. A carry loses when the basis moves against it or the funding
+  inverts, which is rare; a fold containing no such episode shows a beautiful
+  positive mean, and a verdict built on consistency across such folds would be
+  measuring THAT NOTHING WENT WRONG, not that the premium is real. Hypothesis #37
+  died of exactly this, and the representativeness rule adopted 2026-09-30 exists
+  because of it. So a window must CONTAIN the episode or the outcome is
   INSUFFICIENT_EVIDENCE -- never VALIDATED, and never NOT_VALIDATED either, since
   "we did not observe the thing that kills this" is not a refutation.
+
+TAIL COVERAGE AND MONITORABILITY ARE TWO DIFFERENT THINGS, and schema version 1
+of this module conflated them. It asked for a FREQUENCY of adverse periods, which
+is the monitorability question -- can a monitor observe the state often enough to
+act in time. Applied to the measurement question it is unanswerable: a tail is
+rare BY DEFINITION, so no window can ever show 10% of days in it. The consequence
+was measured rather than argued. Judged over 2019-2021, which contains the March
+2020 collapse, the carry loses 10.48% in a single day and one unlevered fold
+breaches the 15% drawdown limit -- and the gate returned INSUFFICIENT_EVIDENCE
+for the SAME REASON as the placid 2024-2025 window: 2 adverse days in 730 is
+0.27%. A window holding the tail and a window missing it came back
+indistinguishable.
+
+Version 2 asks for COVERAGE instead: how many distinct adverse episodes the
+window contains, which is what a measurement can actually answer and what makes
+those two windows different. The frequency question is not abandoned, it moves to
+where it belongs -- the monitoring contract, as a condition of OPERATING a
+premium rather than of measuring one. Version 1 claims keep being judged by the
+version 1 rule, so every verdict already issued stays reproducible as what it
+was.
 
 The verdict vocabulary is deliberately the same VALIDATED / NOT_VALIDATED /
 INSUFFICIENT_EVIDENCE the comparative apparatus issues, so governance needs no
@@ -64,7 +84,8 @@ from tramitago_quant_core.research.walk_forward import (
     STATISTICAL_VALIDATION_OUTCOMES,
 )
 
-LEVEL_CLAIM_SCHEMA_VERSION = "1"
+LEVEL_CLAIM_SCHEMA_VERSION = "2"
+LEVEL_CLAIM_SCHEMA_VERSIONS = ("1", "2")
 LEVEL_CLAIM_VALIDATION_SCHEMA_VERSION = "1"
 LEVEL_CLAIM_VALIDATION_REGISTRY_SCHEMA_VERSION = "1"
 LEVEL_CLAIM_VALIDATION_STATUS = "ISSUED"
@@ -81,7 +102,8 @@ OUTCOME_INSUFFICIENT = "INSUFFICIENT_EVIDENCE"
 # distinction between the last two is the one that matters: a premium nobody
 # watched lose is UNJUDGED, not refuted.
 REASON_FOLDS_BELOW_MINIMUM = "USABLE_FOLDS_BELOW_MINIMUM"
-REASON_ADVERSE_PERIODS_TOO_RARE = "ADVERSE_PERIODS_BELOW_MINIMUM_FREQUENCY"
+REASON_ADVERSE_PERIODS_TOO_RARE = "ADVERSE_PERIODS_BELOW_MINIMUM_FREQUENCY"   # schema 1 only
+REASON_TAIL_NOT_COVERED = "ADVERSE_EPISODES_BELOW_MINIMUM"
 REASON_CONSISTENCY_BELOW = "CONSISTENCY_BELOW_THRESHOLD"
 REASON_DRAWDOWN_EXCEEDED = "DRAWDOWN_LIMIT_EXCEEDED"
 
@@ -111,7 +133,7 @@ def _positive_int(value, name):
 
 
 def level_claim(*, position_description, cost_contract, minimum_folds_required,
-                consistency_threshold, minimum_adverse_period_frequency,
+                consistency_threshold, minimum_adverse_episodes,
                 adverse_period_threshold, maximum_drawdown,
                 confidence_level="0.95", bootstrap_resamples=2000, bootstrap_block_periods=5,
                 bootstrap_seed=0, source):
@@ -126,6 +148,12 @@ def level_claim(*, position_description, cost_contract, minimum_folds_required,
 
     `cost_contract` is required and has no default. A level claim evaluated gross
     would be the thirty-fourth measurement of a quantity nobody could trade.
+
+    `minimum_adverse_episodes` is the TAIL COVERAGE requirement: how many distinct
+    adverse episodes the window must contain for the measurement to have seen what
+    ends this position. One is already a strong requirement for a premium, and
+    zero is not accepted -- a window with no episode cannot judge a premium at
+    all, which is the whole reason this field replaced a frequency floor.
 
     `adverse_period_threshold` is required and has no default either, and the
     reason is a hole found by using this module on the real carry. Counting any
@@ -151,7 +179,7 @@ def level_claim(*, position_description, cost_contract, minimum_folds_required,
         raise ValueError("Bootstrap seed must be a non-negative integer")
 
     consistency = _decimal(consistency_threshold, "Consistency threshold")
-    adverse = _decimal(minimum_adverse_period_frequency, "Minimum adverse period frequency")
+    _positive_int(minimum_adverse_episodes, "Minimum adverse episodes")
     adverse_threshold = _decimal(adverse_period_threshold, "Adverse period threshold")
     if adverse_threshold > 0:
         raise ValueError("Adverse period threshold must be zero or a loss")
@@ -159,10 +187,6 @@ def level_claim(*, position_description, cost_contract, minimum_folds_required,
     confidence = _decimal(confidence_level, "Confidence level")
     if not 0 < consistency <= 1:
         raise ValueError("Consistency threshold must be in (0, 1]")
-    if not 0 < adverse < 1:
-        raise ValueError(
-            "Minimum adverse period frequency must be in (0, 1): zero would certify a "
-            "premium whose losses were never observed, which is the failure this exists to stop")
     if not 0 < drawdown < 1:
         raise ValueError("Maximum drawdown must be a fraction in (0, 1)")
     if not Decimal("0.5") < confidence < 1:
@@ -174,7 +198,7 @@ def level_claim(*, position_description, cost_contract, minimum_folds_required,
         "cost_contract_id": cost_contract["contract_id"],
         "minimum_folds_required": minimum_folds_required,
         "consistency_threshold": consistency_threshold,
-        "minimum_adverse_period_frequency": minimum_adverse_period_frequency,
+        "minimum_adverse_episodes": minimum_adverse_episodes,
         "adverse_period_threshold": adverse_period_threshold,
         "maximum_drawdown": maximum_drawdown,
         "confidence_level": confidence_level,
@@ -214,6 +238,33 @@ def adverse_period_frequency(returns, threshold=0.0):
         return None
     limit = float(threshold)
     return sum(1 for value in returns if value < limit) / len(returns)
+
+
+def adverse_episodes(returns, threshold=0.0):
+    """How many distinct adverse EPISODES the series contains.
+
+    Consecutive periods below the threshold are ONE episode, not several: the
+    March 2020 collapse cost 10.48% on the 12th and 2.21% on the 13th, and
+    counting that as two independent observations of the tail would be the same
+    overstatement in miniature that counting daily noise as "adverse" was.
+
+    Counted per fold and summed, so an episode straddling a fold boundary counts
+    twice. That errs toward saying the tail WAS covered, which is the generous
+    direction, and with folds of several months against episodes of days it is a
+    rare case rather than a systematic bias.
+    """
+    if not returns:
+        return 0
+    limit = float(threshold)
+    episodes, inside = 0, False
+    for value in returns:
+        if value < limit:
+            if not inside:
+                episodes += 1
+            inside = True
+        else:
+            inside = False
+    return episodes
 
 
 def adverse_mean_bound(returns, *, confidence_level, resamples, block_periods, seed):
@@ -266,7 +317,9 @@ def evaluate_fold(claim, cost_contract, *, fold_index, period, positions, gross_
         held, confidence_level=claim["confidence_level"],
         resamples=claim["bootstrap_resamples"],
         block_periods=claim["bootstrap_block_periods"], seed=claim["bootstrap_seed"])
-    adverse = adverse_period_frequency(held, float(claim["adverse_period_threshold"]))
+    threshold = float(claim["adverse_period_threshold"])
+    adverse = adverse_period_frequency(held, threshold)
+    episodes = adverse_episodes(held, threshold)
     mean_net = math.fsum(held) / len(held) if held else None
     drawdown = _risk_analytics_max_drawdown(net)
 
@@ -286,6 +339,7 @@ def evaluate_fold(claim, cost_contract, *, fold_index, period, positions, gross_
         "mean_net_return": _fixed(mean_net),
         "adverse_mean_bound": _fixed(bound),
         "adverse_period_frequency": _fixed(adverse),
+        "adverse_episodes": episodes,
         "max_drawdown": _fixed(drawdown),
         "sharpe_ratio": _fixed(_risk_analytics_sharpe_ratio(held) if held else None),
         "costs": _fold_cost_summary(cost_contract, positions, gross_returns),
@@ -329,12 +383,16 @@ def _aggregate_adverse_frequency(folds):
 def level_claim_outcome(claim, folds):
     """The verdict, and the order of the checks is the argument.
 
-    REPRESENTATIVENESS IS CHECKED BEFORE CONSISTENCY, and that ordering is the
-    whole module. Consistency across folds is a measure of how often the premium
-    paid; if the losses were never observed, a high consistency means the sample
-    contained no information about failure, and reporting NOT_VALIDATED or
-    VALIDATED would both be claims the evidence cannot support. Checking
-    consistency first would let such a sample pass.
+    TAIL COVERAGE IS CHECKED BEFORE CONSISTENCY, and that ordering is the whole
+    module. Consistency across folds measures how often the premium paid; if the
+    tail was never observed, a high consistency means the sample contained no
+    information about failure, and reporting NOT_VALIDATED or VALIDATED would both
+    be claims the evidence cannot support. Checking consistency first would let
+    such a sample pass.
+
+    Schema 1 claims are judged by the frequency rule they were sealed under;
+    schema 2 by coverage. A verdict is never re-adjudicated under a rule that did
+    not exist when it was issued.
     """
     verified_level_claim(claim)
     usable = [item for item in folds if item["result"] != FOLD_INCONCLUSIVE]
@@ -342,9 +400,17 @@ def level_claim_outcome(claim, folds):
         return OUTCOME_INSUFFICIENT, REASON_FOLDS_BELOW_MINIMUM, None, None
 
     adverse = _aggregate_adverse_frequency(usable)
-    floor = float(claim["minimum_adverse_period_frequency"])
-    if adverse is None or adverse < floor:
-        return OUTCOME_INSUFFICIENT, REASON_ADVERSE_PERIODS_TOO_RARE, None, _fixed(adverse)
+    if claim.get("schema_version") == "1":
+        # The rule those claims were sealed under. Kept so every verdict already
+        # issued reproduces as what it was, never re-adjudicated under a rule that
+        # did not exist when it was issued.
+        floor = float(claim["minimum_adverse_period_frequency"])
+        if adverse is None or adverse < floor:
+            return OUTCOME_INSUFFICIENT, REASON_ADVERSE_PERIODS_TOO_RARE, None, _fixed(adverse)
+    else:
+        episodes = sum(item.get("adverse_episodes", 0) for item in usable)
+        if episodes < claim["minimum_adverse_episodes"]:
+            return OUTCOME_INSUFFICIENT, REASON_TAIL_NOT_COVERED, None, _fixed(adverse)
 
     passing = sum(1 for item in usable if item["result"] == FOLD_MET)
     consistency = passing / len(usable)
@@ -405,6 +471,7 @@ def _validation_record_is_valid(record):
     claim, folds = record.get("claim"), record.get("folds")
     if (not _validation_id_is_valid(record.get("validation_id"))
             or record.get("schema_version") != LEVEL_CLAIM_VALIDATION_SCHEMA_VERSION
+            or claim.get("schema_version") not in LEVEL_CLAIM_SCHEMA_VERSIONS
             or not isinstance(claim, dict) or "claim_id" not in claim
             or not isinstance(folds, list) or not folds
             or record["validation_id"] != _validation_id(claim["claim_id"], folds)

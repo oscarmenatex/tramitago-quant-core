@@ -99,6 +99,7 @@ from tramitago_quant_core.research.level_claim import (
     FOLD_MET, FOLD_NOT_MET, FOLD_INCONCLUSIVE,
     OUTCOME_VALIDATED, OUTCOME_NOT_VALIDATED, OUTCOME_INSUFFICIENT,
     REASON_FOLDS_BELOW_MINIMUM, REASON_ADVERSE_PERIODS_TOO_RARE,
+    REASON_TAIL_NOT_COVERED, LEVEL_CLAIM_SCHEMA_VERSIONS, adverse_episodes,
     REASON_CONSISTENCY_BELOW, REASON_DRAWDOWN_EXCEEDED,
     level_claim, verified_level_claim, adverse_period_frequency, adverse_mean_bound,
     evaluate_fold, level_claim_outcome, constitute_level_claim_validation,
