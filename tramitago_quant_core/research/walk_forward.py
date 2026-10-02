@@ -727,6 +727,32 @@ def _statistical_validation_bonferroni_correction(
     return float(base_significance_level) / batch_size
 
 
+def minimum_folds_for_batch(batch_size,
+                            base_significance_level=STATISTICAL_VALIDATION_BASE_SIGNIFICANCE_LEVEL):
+    """Fewest folds at which a test corrected for `batch_size` can be passed AT ALL.
+
+    The binomial p-value of k folds all passing is (1/2)^k, so that is the
+    smallest value the statistic can ever take. Bonferroni puts the bar at
+    alpha/N. When (1/2)^k exceeds alpha/N, NO OUTCOME WHATSOEVER clears it --
+    every fold passing, out of sample, still fails -- and the verdict says
+    nothing about the hypothesis, only about the arithmetic.
+
+    Found the expensive way: CARRY_FUNDING_SURGE(30) was sealed over 5 folds
+    corrected for 8 candidates, passed 5 of 5 on a holdout, and came back
+    NOT_VALIDATED at p=0.03125 against a bar of 0.00625. The defect was knowable
+    before the run and nothing checked it.
+    """
+    if not isinstance(batch_size, int) or isinstance(batch_size, bool) or batch_size < 1:
+        raise ValueError("Batch size must be a positive integer")
+    corrected = float(base_significance_level) / batch_size
+    folds = 1
+    while 0.5 ** folds > corrected:
+        folds += 1
+        if folds > 64:
+            raise ValueError("Batch size is too large for any practical number of folds")
+    return folds
+
+
 def _statistical_validation_outcome(fold_summaries, minimum_folds_required, consistency_threshold,
                                     batch_size=None):
     """Never leaves a validation unclassified (DOC-004 REQ-004-005): usable
@@ -978,6 +1004,11 @@ def constitute_statistical_validation(registry_path, *, partition_registry_path,
     single-sample Disposition already issued for this Hypothesis (M2.4-T1),
     any PAPER state, or T9.
 
+    REFUSES AN UNPASSABLE TEST. When `batch_size` is declared, the smallest
+    binomial p-value `minimum_folds_required` folds can produce must still clear
+    the corrected bar, or no outcome could ever pass and sealing a verdict would
+    record the arithmetic as though it were evidence. See minimum_folds_for_batch.
+
     Etapa 2.7, M2.7-T2 (R-2.7-002): `batch_size` declares how many
     hypotheses were tested in the same batch as this one, so the
     Bonferroni-corrected significance level in _statistical_validation_outcome
@@ -1013,6 +1044,15 @@ def constitute_statistical_validation(registry_path, *, partition_registry_path,
     if batch_size is not None and (
             not isinstance(batch_size, int) or isinstance(batch_size, bool) or batch_size < 1):
         raise ValueError("Batch size must be a positive integer")
+    if batch_size is not None:
+        needed = minimum_folds_for_batch(batch_size)
+        if minimum_folds_required < needed:
+            raise ValueError(
+                f"A test corrected for {batch_size} candidates cannot be passed with "
+                f"{minimum_folds_required} folds: the smallest attainable p-value is "
+                f"{0.5 ** minimum_folds_required:.5f} against a corrected bar of "
+                f"{float(STATISTICAL_VALIDATION_BASE_SIGNIFICANCE_LEVEL) / batch_size:.5f}. "
+                f"Declare at least {needed} folds, or a smaller search.")
 
     reference = _statistical_validation_reference(partition, fold_results)
     validation_id = _statistical_validation_id(

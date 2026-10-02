@@ -51,7 +51,10 @@ class M27T3BatchRegistryTests(unittest.TestCase):
     def _build_member(self, strategy, column_name, sequence):
         constraints = {
             "variables": ["close", column_name, "forward_return_1d"],
-            "period": {"start_utc": "2025-01-01T00:00:00Z", "end_exclusive_utc": "2026-01-01T00:00:00Z"},
+            # 366 days = 6 folds x 61. Six is the fewest a search of TWO can be corrected
+            # for: with five, the smallest attainable p-value is 0.03125 against a
+            # bar of 0.025, so no outcome could pass.
+            "period": {"start_utc": "2025-01-01T00:00:00Z", "end_exclusive_utc": "2026-01-02T00:00:00Z"},
             "universe": [p.HYPOTHESIS_GENERATION_INSTRUMENT],
         }
         acceptance_criterion = {
@@ -85,11 +88,11 @@ class M27T3BatchRegistryTests(unittest.TestCase):
 
         partition = p.constitute_walk_forward_partition(
             self.partition_registry, dataset_directory=output,
-            hypothesis_registry_path=self.hyp_registry, fold_count=5,
+            hypothesis_registry_path=self.hyp_registry, fold_count=6,
             partitioned_at="2026-09-28T09:00:00Z", partition_code_revision="a" * 40,
             strategy=strategy)
 
-        for index in range(5):
+        for index in range(6):
             p.constitute_walk_forward_fold_result(
                 self.fold_registry, partition_registry_path=self.partition_registry,
                 partition_id=partition["partition_id"], partition_record_id=partition["record_id"],
@@ -106,7 +109,7 @@ class M27T3BatchRegistryTests(unittest.TestCase):
             fold_result_registry_path=self.fold_registry,
             experiment_registry_path=self.exp_registry,
             hypothesis_registry_path=self.hyp_registry, dataset_directory=output,
-            minimum_folds_required=5, consistency_threshold="0.7",
+            minimum_folds_required=6, consistency_threshold="0.7",
             validated_at="2026-09-28T09:20:00Z", validation_code_revision="c" * 40,
             batch_size=2, strategy=strategy)
 
