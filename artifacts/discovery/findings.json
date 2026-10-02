@@ -131,11 +131,16 @@
           "at": "2026-10-02T04:12:44.025057Z",
           "note": "constituted",
           "status": "OPEN"
+        },
+        {
+          "at": "2026-10-02T04:16:03.755997Z",
+          "note": "discarded: best of 14 in a distribution with 10 of 11 examinable candidates NEGATIVE and a median of -0.002185; the winner at +0.000437 is the least-bad of a set centred well below zero, not an observation that survived anything. Promoting it would spend a sealed validation cycle on the top of noise, which is the decision this layer exists to make cheaply. The 2023 holdout stays unread and the space stays sealed, so a materially different idea can still use either.",
+          "status": "DISCARDED"
         }
       ],
       "observation": "On the discovery window alone, INTRADAY_RANGE{'window': 50} shows a difference of mean CLOSE_RETURN between its two groups of 0.000436628220. This is an observation selected out of 14 candidates, not evidence. The same scan's worst candidate scored -0.003366666983 and its median -0.002185480527, with 1 positive and 10 negative.",
       "schema_version": "1",
-      "status": "OPEN",
+      "status": "DISCARDED",
       "supporting_evidence": [
         "DISCOVERY_SCAN|74492f5767d3457a8c98b64f02d0ade5eba978abfe57270d171e5887a8bf34b8",
         "DISCOVERY_SPACE|1487da6c0a1b0137be3dce8810450066b3aa549ce873ecd6bff88512dfb186f9",
