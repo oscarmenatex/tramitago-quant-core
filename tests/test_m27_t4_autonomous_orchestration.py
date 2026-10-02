@@ -37,7 +37,11 @@ class M27T4AutonomousOrchestrationTests(unittest.TestCase):
         return transport
 
     def _run(self):
+        # 368 days = 8 folds x 46. Eight is the fewest a search of eight can be
+        # corrected for, and a 365-day year cannot be split into eight equal folds.
         return p.run_hypothesis_generation_batch(
+            period={"start_utc": "2025-01-01T00:00:00Z",
+                    "end_exclusive_utc": "2026-01-04T00:00:00Z"},
             hypothesis_registry_path=self.root / "hypotheses.json",
             dataset_root=self.root / "datasets",
             experiment_registry_path=self.root / "experiments.json",

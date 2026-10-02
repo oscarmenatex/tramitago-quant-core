@@ -87,6 +87,34 @@
         "HOLDOUT_UNREAD|2025-01-01T00:00:00Z|2026-01-01T00:00:00Z",
         "ROWS_SHA256|ALL|ca28c0c592d37c889b171be01d62ca34fe3c8925e0f07da18f779aaba7b5ee61"
       ]
+    },
+    {
+      "created_at": "2026-10-02T03:00:09.397886Z",
+      "created_by": "carry-exit-discovery-bitmex-runner",
+      "exploration_context": "Bounded Discovery scan DISCOVERY_SCAN|6d298f423a308ebca9ea8da0013b63a31668501bc98c77891d4524688baabd10 over Discovery Space DISCOVERY_SPACE|e17055eb37188fb7743c88196d5e6e3c1d03c5ca17084fe84de597f38c42e716, discovery window 2017-01-01T00:00:00Z to 2019-01-01T00:00:00Z. Holdout reserved and unread: 2021-07-01T00:00:00Z to 2024-01-07T00:00:00Z.",
+      "finding_id": "FINDING|578569ab-a2c4-41dc-bc9e-5dabcd1a27c8",
+      "history": [
+        {
+          "at": "2026-10-02T03:00:09.397886Z",
+          "note": "constituted",
+          "status": "OPEN"
+        }
+      ],
+      "observation": "On the discovery window alone, CARRY_FUNDING_THRESHOLD{'funding_variable': 'funding_rate', 'perpetual_variable': 'perp_close', 'threshold': '0', 'payments_per_period': 3} shows a difference of mean CARRY_RETURN between its two groups of 0.002522895675. This is an observation selected out of 8 candidates, not evidence. The same scan's worst candidate scored 0.000828175706 and its median 0.001525737859, with 8 positive and 0 negative.",
+      "schema_version": "1",
+      "status": "OPEN",
+      "supporting_evidence": [
+        "DISCOVERY_SCAN|6d298f423a308ebca9ea8da0013b63a31668501bc98c77891d4524688baabd10",
+        "DISCOVERY_SPACE|e17055eb37188fb7743c88196d5e6e3c1d03c5ca17084fe84de597f38c42e716",
+        "CANDIDATES_EXAMINED|8",
+        "SELECTED_RANK|0",
+        "EFFECT_ON_DISCOVERY_WINDOW|0.002522895675",
+        "SCAN_EFFECT_SPREAD|worst=0.000828175706|median=0.001525737859|positive=8|negative=0",
+        "MINORITY_STATE_FREQUENCY|0.465659340659",
+        "SUPPORT|UPPER=389|LOWER=339",
+        "HOLDOUT_UNREAD|2021-07-01T00:00:00Z|2024-01-07T00:00:00Z",
+        "ROWS_SHA256|ALL|1c1559a96c9ecfb3203d4dfdf6aaae40a49bf032f2d1c2d581ae8a9b80620421"
+      ]
     }
   ],
   "schema_version": "1"

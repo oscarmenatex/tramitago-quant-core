@@ -375,6 +375,97 @@
       "minimum_support": 30,
       "schema_version": "1",
       "space_id": "DISCOVERY_SPACE|d48ff1b6b3758330ce5fa2724d314834c0588c2562b13f5caaaa25c4dfc26173"
+    },
+    {
+      "candidates": [
+        {
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 3,
+            "perpetual_variable": "perp_close",
+            "threshold": "0"
+          },
+          "strategy_id": "CARRY_FUNDING_THRESHOLD"
+        },
+        {
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 3,
+            "perpetual_variable": "perp_close",
+            "window": 3
+          },
+          "strategy_id": "CARRY_FUNDING_SURGE"
+        },
+        {
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 3,
+            "perpetual_variable": "perp_close",
+            "window": 5
+          },
+          "strategy_id": "CARRY_FUNDING_SURGE"
+        },
+        {
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 3,
+            "perpetual_variable": "perp_close",
+            "window": 7
+          },
+          "strategy_id": "CARRY_FUNDING_SURGE"
+        },
+        {
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 3,
+            "perpetual_variable": "perp_close",
+            "window": 10
+          },
+          "strategy_id": "CARRY_FUNDING_SURGE"
+        },
+        {
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 3,
+            "perpetual_variable": "perp_close",
+            "window": 14
+          },
+          "strategy_id": "CARRY_FUNDING_SURGE"
+        },
+        {
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 3,
+            "perpetual_variable": "perp_close",
+            "window": 20
+          },
+          "strategy_id": "CARRY_FUNDING_SURGE"
+        },
+        {
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 3,
+            "perpetual_variable": "perp_close",
+            "window": 30
+          },
+          "strategy_id": "CARRY_FUNDING_SURGE"
+        }
+      ],
+      "declared_at": "2026-10-02T03:00:03.347150Z",
+      "declared_by": "carry-exit-discovery-bitmex-runner",
+      "discovery_window": {
+        "end_exclusive_utc": "2019-01-01T00:00:00Z",
+        "start_utc": "2017-01-01T00:00:00Z"
+      },
+      "holdout_window": {
+        "end_exclusive_utc": "2024-01-07T00:00:00Z",
+        "start_utc": "2021-07-01T00:00:00Z"
+      },
+      "justification": "Carry exit rules on BitMEX XBTUSD, re-declared after the Hyperliquid test proved unpassable by construction: five folds corrected for eight candidates can never produce a p-value below the 0.00625 bar. Same eight candidates as that search, for comparability -- CARRY_FUNDING_THRESHOLD at zero, which is #37's design and is expected to be refused on representativeness, plus CARRY_FUNDING_SURGE over seven trailing windows. Discovery reads 2017-2019, which nothing has read. The holdout is 2021-07 to 2024-01, also untouched, and 920 days long so that eight equal folds divide it -- eight being the fewest a search of eight can be corrected for. 2019 to 2021-07 is excluded from BOTH because the level-claim verdict on the continuously held carry already measured it. Declared complete: no window, venue or period may be added to THIS space afterwards.",
+      "minimum_minority_state_frequency": "0.20",
+      "minimum_support": 30,
+      "schema_version": "1",
+      "space_id": "DISCOVERY_SPACE|e17055eb37188fb7743c88196d5e6e3c1d03c5ca17084fe84de597f38c42e716"
     }
   ]
 }

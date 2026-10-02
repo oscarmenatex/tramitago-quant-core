@@ -744,6 +744,168 @@
         "positive_effects": 7,
         "worst_effect": "0.000143467943"
       }
+    },
+    {
+      "materialization": {
+        "pipeline_sha256": "416496be148463a0a45f8a3ea8e2ed0e1f140911ffce56be2bd8d4341b677b0b",
+        "scan_code_revision": "49fbaf1020a6a26417743595bf98b2e1de0f30e3",
+        "scanned_at": "2026-10-02T03:00:09.364889Z"
+      },
+      "observations": [
+        {
+          "declared_order": 0,
+          "effect": "0.002522895675",
+          "examinable": true,
+          "lower_count": 339,
+          "minority_state_frequency": "0.465659340659",
+          "outcome_id": "CARRY_RETURN",
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 3,
+            "perpetual_variable": "perp_close",
+            "threshold": "0"
+          },
+          "reason": "examinable",
+          "strategy_id": "CARRY_FUNDING_THRESHOLD",
+          "upper_count": 389
+        },
+        {
+          "declared_order": 1,
+          "effect": "0.000996583118",
+          "examinable": true,
+          "lower_count": 365,
+          "minority_state_frequency": "0.496551724138",
+          "outcome_id": "CARRY_RETURN",
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 3,
+            "perpetual_variable": "perp_close",
+            "window": 3
+          },
+          "reason": "examinable",
+          "strategy_id": "CARRY_FUNDING_SURGE",
+          "upper_count": 360
+        },
+        {
+          "declared_order": 2,
+          "effect": "0.000828175706",
+          "examinable": true,
+          "lower_count": 338,
+          "minority_state_frequency": "0.467496542185",
+          "outcome_id": "CARRY_RETURN",
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 3,
+            "perpetual_variable": "perp_close",
+            "window": 5
+          },
+          "reason": "examinable",
+          "strategy_id": "CARRY_FUNDING_SURGE",
+          "upper_count": 385
+        },
+        {
+          "declared_order": 3,
+          "effect": "0.001241011180",
+          "examinable": true,
+          "lower_count": 333,
+          "minority_state_frequency": "0.461858529820",
+          "outcome_id": "CARRY_RETURN",
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 3,
+            "perpetual_variable": "perp_close",
+            "window": 7
+          },
+          "reason": "examinable",
+          "strategy_id": "CARRY_FUNDING_SURGE",
+          "upper_count": 388
+        },
+        {
+          "declared_order": 4,
+          "effect": "0.001592028880",
+          "examinable": true,
+          "lower_count": 318,
+          "minority_state_frequency": "0.442896935933",
+          "outcome_id": "CARRY_RETURN",
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 3,
+            "perpetual_variable": "perp_close",
+            "window": 10
+          },
+          "reason": "examinable",
+          "strategy_id": "CARRY_FUNDING_SURGE",
+          "upper_count": 400
+        },
+        {
+          "declared_order": 5,
+          "effect": "0.001459446838",
+          "examinable": true,
+          "lower_count": 321,
+          "minority_state_frequency": "0.449579831933",
+          "outcome_id": "CARRY_RETURN",
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 3,
+            "perpetual_variable": "perp_close",
+            "window": 14
+          },
+          "reason": "examinable",
+          "strategy_id": "CARRY_FUNDING_SURGE",
+          "upper_count": 393
+        },
+        {
+          "declared_order": 6,
+          "effect": "0.001877092252",
+          "examinable": true,
+          "lower_count": 324,
+          "minority_state_frequency": "0.457627118644",
+          "outcome_id": "CARRY_RETURN",
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 3,
+            "perpetual_variable": "perp_close",
+            "window": 20
+          },
+          "reason": "examinable",
+          "strategy_id": "CARRY_FUNDING_SURGE",
+          "upper_count": 384
+        },
+        {
+          "declared_order": 7,
+          "effect": "0.002294365751",
+          "examinable": true,
+          "lower_count": 329,
+          "minority_state_frequency": "0.471346704871",
+          "outcome_id": "CARRY_RETURN",
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 3,
+            "perpetual_variable": "perp_close",
+            "window": 30
+          },
+          "reason": "examinable",
+          "strategy_id": "CARRY_FUNDING_SURGE",
+          "upper_count": 369
+        }
+      ],
+      "record_id": "DISCOVERY_SCAN_RECORD|70d08b17554a1604d3af7f043550f31686f0158282361de3013658685203317c",
+      "rows_digest": {
+        "": "1c1559a96c9ecfb3203d4dfdf6aaae40a49bf032f2d1c2d581ae8a9b80620421"
+      },
+      "scan_id": "DISCOVERY_SCAN|6d298f423a308ebca9ea8da0013b63a31668501bc98c77891d4524688baabd10",
+      "schema_version": "1",
+      "space_id": "DISCOVERY_SPACE|e17055eb37188fb7743c88196d5e6e3c1d03c5ca17084fe84de597f38c42e716",
+      "summary": {
+        "best_effect": "0.002522895675",
+        "candidates_examinable": 8,
+        "candidates_examined": 8,
+        "candidates_refused": 0,
+        "median_effect": "0.001525737859",
+        "negative_effects": 0,
+        "positive_effects": 8,
+        "worst_effect": "0.000828175706"
+      }
     }
   ],
   "schema_version": "1"

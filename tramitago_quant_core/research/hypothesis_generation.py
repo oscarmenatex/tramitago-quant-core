@@ -21,7 +21,7 @@ import re
 from pathlib import Path
 
 from tramitago_quant_core.shared.util import (
-    digest, encoded, _atomic_write, _explicit_utc, _hypothesis_text_is_valid,
+    digest, encoded, epoch, _atomic_write, _explicit_utc, _hypothesis_text_is_valid,
     _hypothesis_code_revision_is_valid, _pipeline_source_bytes,
 )
 from tramitago_quant_core.research.hypothesis import _hypothesis_id_is_valid, constitute_hypothesis
@@ -30,7 +30,8 @@ from tramitago_quant_core.research.experiment import (
     constitute_experiment_conditions, execute_experiment_result,
 )
 from tramitago_quant_core.research.walk_forward import (
-    STATISTICAL_VALIDATION_OUTCOMES, _statistical_validation_id_is_valid,
+    STATISTICAL_VALIDATION_OUTCOMES, minimum_folds_for_batch,
+    _statistical_validation_id_is_valid,
     verified_statistical_validation, constitute_walk_forward_partition,
     constitute_walk_forward_fold_result, constitute_statistical_validation,
 )
@@ -379,7 +380,7 @@ def run_hypothesis_generation_batch(*, hypothesis_registry_path, dataset_root,
                                     partition_registry_path, fold_result_registry_path,
                                     validation_registry_path, batch_registry_path, created_at,
                                     code_revision, created_by="autonomous-hypothesis-generation",
-                                    fold_count=5, minimum_folds_required=5,
+                                    fold_count=None, minimum_folds_required=None, period=None,
                                     consistency_threshold="0.7", transport=None,
                                     acquired_at=None):
     """M2.7-T4: the autonomous orchestration this Etapa exists to build.
@@ -404,6 +405,26 @@ def run_hypothesis_generation_batch(*, hypothesis_registry_path, dataset_root,
     """
     strategies = hypothesis_generation_search_space()
     batch_size = len(strategies)
+    # DERIVED FROM THE BATCH, not defaulted. A batch of N is corrected for N, and
+    # below minimum_folds_for_batch(N) no member could pass whatever it measured:
+    # the original default of 5 made this very batch of 8 unpassable, which is
+    # how the defect was found. A caller may still declare more folds, never
+    # fewer.
+    required = minimum_folds_for_batch(batch_size)
+    fold_count = required if fold_count is None else fold_count
+    minimum_folds_required = required if minimum_folds_required is None else minimum_folds_required
+    period = dict(HYPOTHESIS_GENERATION_PERIOD if period is None else period)
+    # The walk-forward also demands the fold count divide the period exactly, and
+    # the two rules together are sharper than either alone: 365 days admits only
+    # 5 folds (365 = 5 x 73), and 5 folds support a corrected search of size ONE.
+    # A batch of 8 over a calendar year is unvalidatable whatever it measures,
+    # which is why the period is a parameter rather than a constant.
+    span = (epoch(period["end_exclusive_utc"]) - epoch(period["start_utc"])) // 86400
+    if span % fold_count:
+        raise ValueError(
+            f"A {span}-day period cannot be split into {fold_count} equal folds, and "
+            f"{fold_count} is the fewest a search of {batch_size} can be corrected for. "
+            f"Declare a period divisible by {fold_count}.")
     dataset_root = Path(dataset_root)
     members = []
     for strategy in strategies:
@@ -412,7 +433,7 @@ def run_hypothesis_generation_batch(*, hypothesis_registry_path, dataset_root,
         target_metric = _hypothesis_generation_target_metric(strategy)
         constraints = {
             "variables": ["close", strategy["column_name"], "forward_return_1d"],
-            "period": dict(HYPOTHESIS_GENERATION_PERIOD),
+            "period": dict(period),
             "universe": [HYPOTHESIS_GENERATION_INSTRUMENT],
         }
         acceptance_criterion = {
