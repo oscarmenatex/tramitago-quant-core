@@ -1,0 +1,355 @@
+{
+  "experiments": [
+    {
+      "conditions": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_carry_return_1d(funding_t-1 > CARRYSURGE30) - mean_forward_carry_return_1d(funding_t-1 <= CARRYSURGE30)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "funding_rate_t-1 <= CARRYSURGE30_t (the premium is thinner than usual)",
+          "upper_group": "funding_rate_t-1 > CARRYSURGE30_t (the premium is richer than usual)"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "carry_funding_avg_30",
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 24,
+            "perpetual_variable": "perp_close",
+            "window": 30
+          },
+          "strategy_id": "CARRY_FUNDING_SURGE"
+        },
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | funding_rate_t-1 > CARRYSURGE30_t (the premium is richer than usual)) - mean(return_t+1 | funding_rate_t-1 <= CARRYSURGE30_t (the premium is thinner than usual))",
+          "name": "mean_forward_carry_return_1d(funding_t-1 > CARRYSURGE30) - mean_forward_carry_return_1d(funding_t-1 <= CARRYSURGE30)"
+        },
+        "outcome": {
+          "formula": "24 * funding_rate_t+1 - (basis_t+1 - basis_t), basis = (perp_close - close) / close",
+          "name": "carry_return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_CARRYSURGE30_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-01T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-02T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-03T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-04T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-05T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-06T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-07T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-08T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-09T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-10T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-11T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-12T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-16T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-17T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-18T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-19T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-25T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "c3fefc4d698d7ea9026d5837997f44e1009b26888960fb1909691b02f4c5a517"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "created_at": "2026-10-02T02:46:12.501161Z",
+      "experiment_id": "EXPERIMENT|45acd00d-6971-45e3-825c-09926c673797",
+      "record_id": "EXPERIMENT_VERSION|EXPERIMENT|45acd00d-6971-45e3-825c-09926c673797|1|a72a7bf814842b8e2d29c6bfd8a6381005bdf8f1713f40240ec20e7d3f37ba2a",
+      "references": {
+        "dataset": {
+          "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|a16f2dc3f3eb2529a8ab02f0bcbec0227192cea9010e96110914d710faf7df7e",
+          "dataset_sha256": "de21c70b3350ffa7c84449793fa11b6cbe954afa8784ab5d62cabe76bb581697",
+          "evaluable_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "hypothesis_id": "HYPOTHESIS|ae28ba69-913a-4990-aa7d-97c8c3a21254",
+          "hypothesis_version": 1,
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-01T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-02T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-03T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-04T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-05T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-06T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-07T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-08T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-09T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-10T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-11T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-12T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-16T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-17T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-18T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-19T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-25T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "hypothesis": {
+          "code_revision": "cd721106ec1e17db1e2b5a773df48991503a8d42",
+          "hypothesis_id": "HYPOTHESIS|ae28ba69-913a-4990-aa7d-97c8c3a21254",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|ae28ba69-913a-4990-aa7d-97c8c3a21254|1|16dbba7cd62bfd5eebadce1fbad67bee72ae0d35e22d236d76b6a730e7da1fd3",
+          "system_version": "0.1.0",
+          "version": 1
+        }
+      },
+      "revision_reason": "Carry exit rule, relative threshold, HOLDOUT 2025",
+      "status": "CONDITIONS_FIXED",
+      "version": 1
+    }
+  ],
+  "schema_version": "1"
+}

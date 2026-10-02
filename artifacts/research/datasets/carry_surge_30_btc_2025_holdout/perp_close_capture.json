@@ -1,0 +1,27 @@
+{
+  "acquired_at": "2026-10-02T02:46:12.501161Z",
+  "capture_id": "HYPERLIQUID_PERPETUAL_PRICE_CAPTURE|07d642bac2026284e52536075df27632d232ff40406eeab2f1c42e2877782040",
+  "capture_period": {
+    "end_exclusive_utc": "2026-01-02T00:00:00Z",
+    "start_utc": "2024-12-01T00:00:00Z"
+  },
+  "coin": "BTC",
+  "interval": "1d",
+  "kind": "hyperliquid-perpetual-price",
+  "responses": [
+    {
+      "end_ms": 1767312000000,
+      "request_body_sha256": "7bbb60cd9b431ff57eec3b1f31226e3b712a7ac15ed3684b818a9f328f8e8bc7",
+      "response_headers": {
+        "Content-Type": "application/json",
+        "Date": "Fri, 02 Oct 2026 02:46:20 GMT"
+      },
+      "response_sha256": "2b60679774b57f47ec1a4964d9c345aea70df8390c0ca73ce5aea015d472655c",
+      "sequence": 1,
+      "start_ms": 1733011200000,
+      "url": "https://api.hyperliquid.xyz/info"
+    }
+  ],
+  "schema_version": "1",
+  "source": "Hyperliquid public perpetual daily candles (traded price, not mark)"
+}
