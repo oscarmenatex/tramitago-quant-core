@@ -1,0 +1,77 @@
+{
+  "acquired_at": "2026-10-02T03:04:47.134148Z",
+  "capture_id": "BITMEX_FUNDING_RATE_CAPTURE|ed1dee1dae85cb7e95eecb364c479f045a67d4095e91b9def3b9c24b98d76fc7",
+  "capture_period": {
+    "end_exclusive_utc": "2024-01-08T00:00:00Z",
+    "start_utc": "2021-06-30T00:00:00Z"
+  },
+  "kind": "bitmex-funding-rate-capture",
+  "responses": [
+    {
+      "response_headers": {
+        "Content-Type": "application/json;charset=utf-8",
+        "Date": "Fri, 02 Oct 2026 03:04:49 GMT"
+      },
+      "response_sha256": "e7e34a13569bd8d4768871bf5ff13f9c7f7ccb12bf41c9ebbd709b28cd215b57",
+      "sequence": 1,
+      "url": "https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&startTime=2021-06-30T00%3A00%3A00Z&endTime=2024-01-08T00%3A00%3A00Z&count=500&reverse=false"
+    },
+    {
+      "response_headers": {
+        "Content-Type": "application/json;charset=utf-8",
+        "Date": "Fri, 02 Oct 2026 03:04:50 GMT"
+      },
+      "response_sha256": "4fe3f4df2d796dfb7830812200600ba14fe4ac8f263b849b5efd71fbb4ba75c8",
+      "sequence": 2,
+      "url": "https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&startTime=2021-12-13T12%3A00%3A01Z&endTime=2024-01-08T00%3A00%3A00Z&count=500&reverse=false"
+    },
+    {
+      "response_headers": {
+        "Content-Type": "application/json;charset=utf-8",
+        "Date": "Fri, 02 Oct 2026 03:04:51 GMT"
+      },
+      "response_sha256": "947fbeaadfb917794c1b4dc82d6fb5ab4ab82e21a5f7e1c9470adce52ca55bcd",
+      "sequence": 3,
+      "url": "https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&startTime=2022-05-29T04%3A00%3A01Z&endTime=2024-01-08T00%3A00%3A00Z&count=500&reverse=false"
+    },
+    {
+      "response_headers": {
+        "Content-Type": "application/json;charset=utf-8",
+        "Date": "Fri, 02 Oct 2026 03:04:51 GMT"
+      },
+      "response_sha256": "a1ce4313a77554c3dfb20cb984eeb0488cb0eebcc79200fdfdedc4b92525a918",
+      "sequence": 4,
+      "url": "https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&startTime=2022-11-11T20%3A00%3A01Z&endTime=2024-01-08T00%3A00%3A00Z&count=500&reverse=false"
+    },
+    {
+      "response_headers": {
+        "Content-Type": "application/json;charset=utf-8",
+        "Date": "Fri, 02 Oct 2026 03:04:52 GMT"
+      },
+      "response_sha256": "3833e4b338ed1f6ebe3d5529947d9736c62bd1a54ea4d9259e8389e50ce69ff7",
+      "sequence": 5,
+      "url": "https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&startTime=2023-04-27T12%3A00%3A01Z&endTime=2024-01-08T00%3A00%3A00Z&count=500&reverse=false"
+    },
+    {
+      "response_headers": {
+        "Content-Type": "application/json;charset=utf-8",
+        "Date": "Fri, 02 Oct 2026 03:04:52 GMT"
+      },
+      "response_sha256": "ba2ddc20b9a18ef38bd703fac4edc0242a0e8a67b02e29255f21f139a6c80fc2",
+      "sequence": 6,
+      "url": "https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&startTime=2023-10-11T04%3A00%3A01Z&endTime=2024-01-08T00%3A00%3A00Z&count=500&reverse=false"
+    },
+    {
+      "response_headers": {
+        "Content-Type": "application/json;charset=utf-8",
+        "Date": "Fri, 02 Oct 2026 03:04:53 GMT"
+      },
+      "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "sequence": 7,
+      "url": "https://www.bitmex.com/api/v1/funding?symbol=XBTUSD&startTime=2024-01-07T20%3A00%3A01Z&endTime=2024-01-08T00%3A00%3A00Z&count=500&reverse=false"
+    }
+  ],
+  "schema_version": "1",
+  "source": "BitMEX public perpetual funding history",
+  "symbol": "XBTUSD"
+}

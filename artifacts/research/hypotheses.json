@@ -1796,6 +1796,50 @@
       "system_version": "0.1.0",
       "target_metric": "mean_forward_carry_return_1d(funding_t-1 > CARRYSURGE30) - mean_forward_carry_return_1d(funding_t-1 <= CARRYSURGE30)",
       "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "GT",
+        "expected_direction": "INCREASE",
+        "metric": "mean_forward_carry_return_1d(CARRYFUNDING_t >= 0 (the premium is being paid)) - mean_forward_carry_return_1d(CARRYFUNDING_t < 0 (the premium has inverted))",
+        "threshold": "0"
+      },
+      "code_revision": "d056cbeac54d44328dbab8567c1afa1615bbc18e",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2024-01-07T00:00:00Z",
+          "start_utc": "2021-07-01T00:00:00Z"
+        },
+        "universe": [
+          "BTC-USD"
+        ],
+        "variables": [
+          "close",
+          "forward_carry_return_1d",
+          "funding_rate",
+          "funding_rate_lag_1",
+          "perp_close"
+        ]
+      },
+      "creation_context": {
+        "created_by": "Oscar Carmenate Rodriguez",
+        "provenance": [
+          "FINDING|578569ab-a2c4-41dc-bc9e-5dabcd1a27c8",
+          "DISCOVERY_SCAN|6d298f423a308ebca9ea8da0013b63a31668501bc98c77891d4524688baabd10",
+          "DISCOVERY_SPACE|e17055eb37188fb7743c88196d5e6e3c1d03c5ca17084fe84de597f38c42e716",
+          "CANDIDATES_EXAMINED|8",
+          "ANALYSIS|carry-exit-bitmex-predeclared-holdout"
+        ]
+      },
+      "creation_timestamp": "2026-10-02T03:04:47.134148Z",
+      "description": "For a MARKET-NEUTRAL CARRY in BTC -- long BTC-USD spot, short BitMEX XBTUSD at equal notional -- the mean forward carry return in the group 'CARRYFUNDING_t >= 0 (the premium is being paid)' is HIGHER than in 'CARRYFUNDING_t < 0 (the premium has inverted)'. Direction INCREASE pre-declared.\n\nPROVENANCE AND CORRECTION: selected as rank 0 of 8 candidates in sealed Discovery scan DISCOVERY_SCAN|6d298f423a308ebca9ea8da0013b63a31668501bc98c77891d4524688baabd10, which read 2017-01-01 to 2019-01-01 and nothing else. This period is that space's declared holdout. Bonferroni over 8, and 8 folds so the corrected test is passable at all -- the previous attempt used five against a search of eight, where the smallest attainable p-value (0.03125) exceeded the bar (0.00625) and no outcome could have passed.\n\nFUNDING AT 3 PAYMENTS A DAY, which is BitMEX's eight-hour settlement. The outcome is the funding received MINUS the change in basis: a cash flow plus a spread mark, not a price change.\n\nNO LOOKAHEAD: the row at t is classified by funding at t-1 and the outcome reads t+1, two periods apart. The 1-day warmup precedes the period and feeds the indicator, never the measured outcome.",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|9e3fb960-9354-49b6-82a8-2bac077950e5",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|9e3fb960-9354-49b6-82a8-2bac077950e5|1|999ebfb82f60fffbafe457ff1a7c0e557f7dc6e95f72bd4359e1c641fe8e9194",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_carry_return_1d(CARRYFUNDING_t >= 0 (the premium is being paid)) - mean_forward_carry_return_1d(CARRYFUNDING_t < 0 (the premium has inverted))",
+      "version": 1
     }
   ],
   "schema_version": "2"

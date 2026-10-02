@@ -1,0 +1,26 @@
+{
+  "acquired_at": "2026-10-02T03:04:47.134148Z",
+  "bin_size": "1d",
+  "capture_id": "BITMEX_PERPETUAL_PRICE_CAPTURE|08c508f73e075e8e9476b646adfa10cc67d6bda6f6b8d090e6c866d1b0349aa8",
+  "capture_period": {
+    "end_exclusive_utc": "2024-01-08T00:00:00Z",
+    "start_utc": "2021-06-30T00:00:00Z"
+  },
+  "kind": "bitmex-perpetual-price",
+  "margin_kind": "INVERSE",
+  "responses": [
+    {
+      "response_headers": {
+        "Content-Type": "application/json;charset=utf-8",
+        "Date": "Fri, 02 Oct 2026 03:04:48 GMT"
+      },
+      "response_sha256": "38c82bcd86009ee6340bb135fdb93c8b3928dc428f99ed3f7c78fd77208122f8",
+      "sequence": 1,
+      "url": "https://www.bitmex.com/api/v1/trade/bucketed?binSize=1d&symbol=XBTUSD&partial=false&count=1000&startTime=2021-07-01T00%3A00%3A00Z&endTime=2024-01-09T00%3A00%3A00Z"
+    }
+  ],
+  "schema_version": "1",
+  "source": "BitMEX public bucketed trades (traded price, not mark)",
+  "symbol": "XBTUSD",
+  "timestamp_convention": "bucket close, realigned to open on parse"
+}

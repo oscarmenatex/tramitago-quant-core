@@ -1,0 +1,108 @@
+{
+  "audit_sha256": "9b0b8f994773b6907fa7e87301ec08003265212bf82218c07534dcdc37f901ed",
+  "capture_sha256": "e852271f821d3383c059f397bc5bfc06f6aa54fbca6d257cbb49ff29e1db6cc7",
+  "code_sha256": "416496be148463a0a45f8a3ea8e2ed0e1f140911ffce56be2bd8d4341b677b0b",
+  "columns": [
+    "instrument",
+    "timestamp",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "funding_rate",
+    "perp_close",
+    "funding_rate_lag_1",
+    "row_role",
+    "forward_carry_return_1d"
+  ],
+  "config": {
+    "capture_period": {
+      "end_exclusive_utc": "2024-01-08T00:00:00Z",
+      "start_utc": "2021-06-30T00:00:00Z"
+    },
+    "duplicate_policy": "reject entire dataset",
+    "evaluable_period": {
+      "end_exclusive_utc": "2024-01-07T00:00:00Z",
+      "start_utc": "2021-07-01T00:00:00Z"
+    },
+    "frequency_seconds": 86400,
+    "instrument": "BTC-USD",
+    "missing_policy": "reject entire dataset; no imputation",
+    "schema_version": "1",
+    "source": "Coinbase Exchange public candles",
+    "support_policy": "exactly one CARRYFUNDING warm-up rows before and one forward-return row after the evaluable period",
+    "temporal_policy": "reject rows outside the declared capture period",
+    "timezone": "UTC"
+  },
+  "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|17a8e13490cc1a555b93c191f541514eeceff02fb43f72ccc37891fd7bbba84e",
+  "dataset_sha256": "8a7793cf47a10edccc7df23c5765532ab8fdf7c28d57b73481ed8b305bdc83d4",
+  "funding_rate_capture_sha256": "fbf00308236e3d9edd930a57b5a59f6a8f221abaca56d4e53a1588cf974fe0c1",
+  "funding_rate_raw_sha256": "d76db0afb121f77a198a6f02aeaee896602a76fcef08d59bb741046361e32a15",
+  "identity": {
+    "code_revision": "d056cbeac54d44328dbab8567c1afa1615bbc18e",
+    "config": {
+      "capture_period": {
+        "end_exclusive_utc": "2024-01-08T00:00:00Z",
+        "start_utc": "2021-06-30T00:00:00Z"
+      },
+      "duplicate_policy": "reject entire dataset",
+      "evaluable_period": {
+        "end_exclusive_utc": "2024-01-07T00:00:00Z",
+        "start_utc": "2021-07-01T00:00:00Z"
+      },
+      "frequency_seconds": 86400,
+      "instrument": "BTC-USD",
+      "missing_policy": "reject entire dataset; no imputation",
+      "schema_version": "1",
+      "source": "Coinbase Exchange public candles",
+      "support_policy": "exactly one CARRYFUNDING warm-up rows before and one forward-return row after the evaluable period",
+      "temporal_policy": "reject rows outside the declared capture period",
+      "timezone": "UTC"
+    },
+    "hashes": {
+      "capture_sha256": "e852271f821d3383c059f397bc5bfc06f6aa54fbca6d257cbb49ff29e1db6cc7",
+      "code_sha256": "416496be148463a0a45f8a3ea8e2ed0e1f140911ffce56be2bd8d4341b677b0b",
+      "dataset_sha256": "8a7793cf47a10edccc7df23c5765532ab8fdf7c28d57b73481ed8b305bdc83d4",
+      "funding_rate_capture_sha256": "fbf00308236e3d9edd930a57b5a59f6a8f221abaca56d4e53a1588cf974fe0c1",
+      "funding_rate_raw_sha256": "d76db0afb121f77a198a6f02aeaee896602a76fcef08d59bb741046361e32a15",
+      "perp_close_capture_sha256": "b140f4891b60ba0176a3daed70b3c4a26792aed15a2172f787d5935db52d2201",
+      "perp_close_raw_sha256": "fec359951e9008c533b55941318b371a4305020d3570377f57b124c0a71b0a90",
+      "raw_sha256": "455e903936082f1c2b1b77c5cf6883a89d2c4305030442168d9b9a2e5e598fb2",
+      "selection_sha256": "11756f4da16900db089e3707e461390bae85947cc905139ed7609fc8eedcd042",
+      "validation_sha256": "24ef50ab194ec3c8623711d8fd80c44999dd5a832a9a39ae2abd2ebcd165bce9"
+    },
+    "hypothesis_id": "HYPOTHESIS|9e3fb960-9354-49b6-82a8-2bac077950e5",
+    "hypothesis_version": 1,
+    "schema_version": "1",
+    "system_version": "0.1.0"
+  },
+  "input_kind": "historical-hypothesis-dataset",
+  "perp_close_capture_sha256": "b140f4891b60ba0176a3daed70b3c4a26792aed15a2172f787d5935db52d2201",
+  "perp_close_raw_sha256": "fec359951e9008c533b55941318b371a4305020d3570377f57b124c0a71b0a90",
+  "range": [
+    "2021-06-30T00:00:00Z",
+    "2024-01-07T00:00:00Z"
+  ],
+  "raw_sha256": "455e903936082f1c2b1b77c5cf6883a89d2c4305030442168d9b9a2e5e598fb2",
+  "replay": "create_hypothesis_dataset(<registry>, <hypothesis_id>, <version>, <output>)",
+  "rows": 922,
+  "runtime": "3.14.3",
+  "schema": {
+    "close": "finite float64",
+    "forward_carry_return_1d": "nullable finite float64; defined only for EVALUATION rows",
+    "funding_rate": "nullable finite float64",
+    "funding_rate_lag_1": "nullable finite float64",
+    "high": "finite float64",
+    "instrument": "string",
+    "low": "finite float64",
+    "open": "finite float64",
+    "perp_close": "nullable finite float64",
+    "row_role": "SUPPORT_CARRYFUNDING_WARMUP | EVALUATION | SUPPORT_FORWARD_RETURN",
+    "timestamp": "UTC ISO8601 bucket start",
+    "volume": "finite float64"
+  },
+  "selection_sha256": "11756f4da16900db089e3707e461390bae85947cc905139ed7609fc8eedcd042",
+  "status": "PASS",
+  "validation_sha256": "24ef50ab194ec3c8623711d8fd80c44999dd5a832a9a39ae2abd2ebcd165bce9"
+}
