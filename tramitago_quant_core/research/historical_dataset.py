@@ -14,6 +14,7 @@ import base64
 import csv
 import io
 import json
+import time
 import math
 import platform
 from datetime import datetime, timezone
@@ -27,6 +28,7 @@ from tramitago_quant_core.shared.util import (
 from tramitago_quant_core.data.acquisition import (
     COLUMNS, SCHEMA, normalize, validate, _coinbase_public_request_headers,
 )
+from tramitago_quant_core.research.forward_test import require_forward_test_ready
 from tramitago_quant_core.research.hypothesis import load_hypothesis
 from tramitago_quant_core.strategy_contract.strategy import (
     sma_crossover_strategy, _strategy_classify_rows,
@@ -515,6 +517,13 @@ def create_hypothesis_dataset(registry_path, hypothesis_id, version, output, *,
     """
     strategy = strategy or _hypothesis_dataset_default_strategy()
     hypothesis = load_hypothesis(registry_path, hypothesis_id, version)
+    # A FORWARD-DATED Hypothesis cannot have its dataset built before its period
+    # has fully elapsed. Enforced here rather than offered as advice because the
+    # moment it matters is the moment somebody is curious how it is going, and a
+    # partial period evaluated under a pre-declaration's name is a different test
+    # wearing its authority. This is a no-op for every retrospective Hypothesis,
+    # whose period began long before it was written.
+    require_forward_test_ready(hypothesis, acquired_at or iso(int(time.time())))
     config = _hypothesis_dataset_config(hypothesis, strategy, horizon)
     auxiliary_variables = _hypothesis_dataset_auxiliary_variables(strategy)
     if auxiliary_variables and (
