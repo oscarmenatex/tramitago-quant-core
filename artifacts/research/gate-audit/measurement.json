@@ -1,0 +1,133 @@
+{
+  "code_revision": "1e424c9896337ecd532cb2deee49d51f0e032553",
+  "gates": [
+    {
+      "checked_in_order": 0,
+      "evaluated": 217,
+      "gate": "fold criterion: beats_baseline",
+      "note": "MET and beats_baseline are the same set of folds in every one. The second half has excluded nothing, ever -- not wrong, simply never binding.",
+      "refused": 0,
+      "shadowed_by": null,
+      "verdict": "NEVER TRIGGERED",
+      "where": "walk_forward fold",
+      "would_have_refused": null
+    },
+    {
+      "checked_in_order": 1,
+      "evaluated": 41,
+      "gate": "minimum_folds_required",
+      "note": "",
+      "refused": 6,
+      "shadowed_by": null,
+      "verdict": "REFUSES",
+      "where": "statistical validation",
+      "would_have_refused": null
+    },
+    {
+      "checked_in_order": 2,
+      "evaluated": 35,
+      "gate": "consistency_threshold",
+      "note": "",
+      "refused": 31,
+      "shadowed_by": null,
+      "verdict": "REFUSES",
+      "where": "statistical validation",
+      "would_have_refused": null
+    },
+    {
+      "checked_in_order": 3,
+      "evaluated": 2,
+      "gate": "bonferroni correction",
+      "note": "Only 16 of 41 validations carry a correction at all.",
+      "refused": 1,
+      "shadowed_by": "consistency_threshold",
+      "verdict": "REFUSES",
+      "where": "statistical validation",
+      "would_have_refused": 15
+    },
+    {
+      "checked_in_order": 1,
+      "evaluated": 6,
+      "gate": "minimum_folds_required",
+      "note": "",
+      "refused": 0,
+      "shadowed_by": null,
+      "verdict": "NEVER TRIGGERED",
+      "where": "level claim",
+      "would_have_refused": null
+    },
+    {
+      "checked_in_order": 2,
+      "evaluated": 6,
+      "gate": "tail coverage",
+      "note": "Schema 1 asked for a FREQUENCY and schema 2 for distinct EPISODES; both are counted here as the same question.",
+      "refused": 3,
+      "shadowed_by": null,
+      "verdict": "REFUSES",
+      "where": "level claim",
+      "would_have_refused": null
+    },
+    {
+      "checked_in_order": 3,
+      "evaluated": 3,
+      "gate": "consistency_threshold",
+      "note": "",
+      "refused": 3,
+      "shadowed_by": null,
+      "verdict": "REFUSES",
+      "where": "level claim",
+      "would_have_refused": null
+    },
+    {
+      "checked_in_order": 4,
+      "evaluated": 0,
+      "gate": "maximum_drawdown",
+      "note": "The 15% limit is the number the destination rests on, and it is checked last.",
+      "refused": 0,
+      "shadowed_by": "consistency_threshold and tail coverage",
+      "verdict": "SHADOWED -- would have refused 3",
+      "where": "level claim",
+      "would_have_refused": 3
+    },
+    {
+      "checked_in_order": 1,
+      "evaluated": 65,
+      "gate": "one group empty",
+      "note": "",
+      "refused": 0,
+      "shadowed_by": null,
+      "verdict": "NEVER TRIGGERED",
+      "where": "discovery candidate",
+      "would_have_refused": null
+    },
+    {
+      "checked_in_order": 2,
+      "evaluated": 65,
+      "gate": "minimum_support",
+      "note": "",
+      "refused": 4,
+      "shadowed_by": null,
+      "verdict": "REFUSES",
+      "where": "discovery candidate",
+      "would_have_refused": null
+    },
+    {
+      "checked_in_order": 3,
+      "evaluated": 61,
+      "gate": "minimum_minority_state_frequency",
+      "note": "A rare minority group is also a small one, so the support floor tends to fire first. The representativeness rule adopted 2026-09-30 lives here.",
+      "refused": 0,
+      "shadowed_by": "minimum_support",
+      "verdict": "SHADOWED -- would have refused 4",
+      "where": "discovery candidate",
+      "would_have_refused": 4
+    }
+  ],
+  "gates_shadowed_but_would_have_refused": 2,
+  "gates_that_have_never_refused": 5,
+  "gates_total": 11,
+  "kind": "gate-audit",
+  "measured_at": "2026-10-02T04:25:17.524624Z",
+  "measurement_id": "GATE_AUDIT|1c5792e878f6efadf1e35c4660cdaea6fcf62e2bb19a9af2c28b59cb282f0347",
+  "schema_version": "1"
+}
