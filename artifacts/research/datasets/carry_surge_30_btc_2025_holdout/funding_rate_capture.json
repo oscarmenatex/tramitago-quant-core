@@ -1,0 +1,245 @@
+{
+  "acquired_at": "2026-10-02T02:46:12.501161Z",
+  "capture_id": "HYPERLIQUID_FUNDING_RATE_CAPTURE|3342ce194ac40d4dc0c135e4b379001045b2d9290b7fe0223dd44f5c0912b95e",
+  "capture_period": {
+    "end_exclusive_utc": "2026-01-02T00:00:00Z",
+    "start_utc": "2024-12-01T00:00:00Z"
+  },
+  "coin": "BTC",
+  "kind": "hyperliquid-funding-rate-capture",
+  "responses": [
+    {
+      "end_time_ms": 1767312000000,
+      "request_sha256": "5469f41948a023d84ead47f300acfa7ab1b0ea580c5bfd406989fcccc4f57ed1",
+      "response_headers": {
+        "Content-Type": "application/json",
+        "Date": "Fri, 02 Oct 2026 02:46:12 GMT"
+      },
+      "response_sha256": "22ec6af45172a2841d3af0085fedc73c06a82271fdc4e33391ccdc07a1b1c6b2",
+      "sequence": 1,
+      "start_time_ms": 1733011200000
+    },
+    {
+      "end_time_ms": 1767312000000,
+      "request_sha256": "093e4fb66f3c58747b73e24bb9af827a17cf528f42d583c737c8a8ef8486f72a",
+      "response_headers": {
+        "Content-Type": "application/json",
+        "Date": "Fri, 02 Oct 2026 02:46:13 GMT"
+      },
+      "response_sha256": "ad77369a1e44895c07ca099ee75404b1f02953f990baa7eb4a64f2ec95651d60",
+      "sequence": 2,
+      "start_time_ms": 1734807600137
+    },
+    {
+      "end_time_ms": 1767312000000,
+      "request_sha256": "77e18462ab4b6ffdba8ad806d88b245230fe9b97beea7e9fb4c052cf728f97a5",
+      "response_headers": {
+        "Content-Type": "application/json",
+        "Date": "Fri, 02 Oct 2026 02:46:13 GMT"
+      },
+      "response_sha256": "84425afcf4f2519527cd3fcb024b2d23b3b5121fbabbd04cff6434debd736cdf",
+      "sequence": 3,
+      "start_time_ms": 1736607600180
+    },
+    {
+      "end_time_ms": 1767312000000,
+      "request_sha256": "4efc118c7fd966ad6daed69c3ebd5d5535a606ee50190c4dde6528068b6d216a",
+      "response_headers": {
+        "Content-Type": "application/json",
+        "Date": "Fri, 02 Oct 2026 02:46:14 GMT"
+      },
+      "response_sha256": "b153a9861ac3f4ca10e86d6b42f770cbd170e50e04b9529565925fb57604dab2",
+      "sequence": 4,
+      "start_time_ms": 1738407600044
+    },
+    {
+      "end_time_ms": 1767312000000,
+      "request_sha256": "38c22328cdb6b06b088df787af6bda87ebb67460f57a46336b35e445afce2941",
+      "response_headers": {
+        "Content-Type": "application/json",
+        "Date": "Fri, 02 Oct 2026 02:46:14 GMT"
+      },
+      "response_sha256": "f05414d55150de06afc72b9cf2a148b26ed8ebdb626ed6928b0c6e6317040a19",
+      "sequence": 5,
+      "start_time_ms": 1740207600124
+    },
+    {
+      "end_time_ms": 1767312000000,
+      "request_sha256": "a039bb0cfcf19937c3f602a788116e438c2d5468393dabb0c8407aec3ba6c94f",
+      "response_headers": {
+        "Content-Type": "application/json",
+        "Date": "Fri, 02 Oct 2026 02:46:15 GMT"
+      },
+      "response_sha256": "2b529f4db79e58ce08da698a26ea600a47dc90c8e7d6fbd1932c6248a0cc75ae",
+      "sequence": 6,
+      "start_time_ms": 1742007600077
+    },
+    {
+      "end_time_ms": 1767312000000,
+      "request_sha256": "eb89c89561ab9fde1a9e597a22200aa9577e07b4406fc77d7a00d5e1fc33fb8b",
+      "response_headers": {
+        "Content-Type": "application/json",
+        "Date": "Fri, 02 Oct 2026 02:46:15 GMT"
+      },
+      "response_sha256": "d8ccec25b683c49d15c55c6d6aad375973f766945b6c661bac9db0bb1a9e89a8",
+      "sequence": 7,
+      "start_time_ms": 1743807600005
+    },
+    {
+      "end_time_ms": 1767312000000,
+      "request_sha256": "294d26e7450fe4f4d5141757e5a5cd81a3c5429994f31cc9416a67117aa6eb6f",
+      "response_headers": {
+        "Content-Type": "application/json",
+        "Date": "Fri, 02 Oct 2026 02:46:15 GMT"
+      },
+      "response_sha256": "7fc66824839260ab68b01b1d9191375faed5cf2089c0e671484d5f80d5d5828b",
+      "sequence": 8,
+      "start_time_ms": 1745607600051
+    },
+    {
+      "end_time_ms": 1767312000000,
+      "request_sha256": "dae060a670642f42fb2064df133cd610019456c82a03dcfa7d3a701a2f9c290a",
+      "response_headers": {
+        "Content-Type": "application/json",
+        "Date": "Fri, 02 Oct 2026 02:46:15 GMT"
+      },
+      "response_sha256": "97a52b6f5ebcac79afd72877ad19ce5471f05071150ee6722017977741ae965f",
+      "sequence": 9,
+      "start_time_ms": 1747407600039
+    },
+    {
+      "end_time_ms": 1767312000000,
+      "request_sha256": "43e4b10b94f5bd7bb98d09b8d451ef4f4739ed71aeea100b5c95cf76afc4a9bd",
+      "response_headers": {
+        "Content-Type": "application/json",
+        "Date": "Fri, 02 Oct 2026 02:46:16 GMT"
+      },
+      "response_sha256": "45c0cc3b48521a9dbeca742f83f8aae50113241e7eee6787114071dc4af84d2e",
+      "sequence": 10,
+      "start_time_ms": 1749207600021
+    },
+    {
+      "end_time_ms": 1767312000000,
+      "request_sha256": "a971479f6995e49a2fc09c3ac3686e7ae2d0fac37859bbee565b2dbf4710be01",
+      "response_headers": {
+        "Content-Type": "application/json",
+        "Date": "Fri, 02 Oct 2026 02:46:16 GMT"
+      },
+      "response_sha256": "d628dfaec9381df1f4261810a6d8696e1eb967b571cd8c94cd2a8e3f30a61431",
+      "sequence": 11,
+      "start_time_ms": 1751007600040
+    },
+    {
+      "end_time_ms": 1767312000000,
+      "request_sha256": "6829edc6fd13f20a347b6d35cdcd3b24237c26473bd0c940e85dd59c612c9205",
+      "response_headers": {
+        "Content-Type": "application/json",
+        "Date": "Fri, 02 Oct 2026 02:46:16 GMT"
+      },
+      "response_sha256": "458a34465b9bd7a1d27f42b8e499ea52585188099106aa023c19c359f9da75ba",
+      "sequence": 12,
+      "start_time_ms": 1752807600082
+    },
+    {
+      "end_time_ms": 1767312000000,
+      "request_sha256": "16ea0e2350bccccc2ff88e21f92d4bd70477b1e16f29cc235991924867119331",
+      "response_headers": {
+        "Content-Type": "application/json",
+        "Date": "Fri, 02 Oct 2026 02:46:17 GMT"
+      },
+      "response_sha256": "3f08bd7a76be862b89e641eace8e86224a351c963d96662dd34b4c0f6ab583c6",
+      "sequence": 13,
+      "start_time_ms": 1754607600094
+    },
+    {
+      "end_time_ms": 1767312000000,
+      "request_sha256": "e61dfee5973fe86617ba3ff8f25af143387b9ce2076a3174104a2c5ac93c3ac4",
+      "response_headers": {
+        "Content-Type": "application/json",
+        "Date": "Fri, 02 Oct 2026 02:46:17 GMT"
+      },
+      "response_sha256": "df543809c0a6da8118d7b4a17a5f7aa038bb04836dcb0ded0a105e4124c73fab",
+      "sequence": 14,
+      "start_time_ms": 1756407600020
+    },
+    {
+      "end_time_ms": 1767312000000,
+      "request_sha256": "3482dd8043f4f5f7ca9620487d11dba9e70f38b38e48bfe5a06dc9ecf21192ee",
+      "response_headers": {
+        "Content-Type": "application/json",
+        "Date": "Fri, 02 Oct 2026 02:46:18 GMT"
+      },
+      "response_sha256": "3c4e011a9b073f7ddf1d3abf142417c8f1f43846ee61435ae99ca4f084dc0637",
+      "sequence": 15,
+      "start_time_ms": 1758207600186
+    },
+    {
+      "end_time_ms": 1767312000000,
+      "request_sha256": "5e314ceb294d16e715a9982ce09bf408675ece38f1e0221ffff1880c23ff14e3",
+      "response_headers": {
+        "Content-Type": "application/json",
+        "Date": "Fri, 02 Oct 2026 02:46:18 GMT"
+      },
+      "response_sha256": "e64dc0f34c7bd3dfbb48b7d4822bfea46ba2be39dda3cb82efeb4f1a4555f401",
+      "sequence": 16,
+      "start_time_ms": 1760007600053
+    },
+    {
+      "end_time_ms": 1767312000000,
+      "request_sha256": "d3e68812a3179e65055972614467ce21b0161ba4a2a4586238a74b0ff0b676e6",
+      "response_headers": {
+        "Content-Type": "application/json",
+        "Date": "Fri, 02 Oct 2026 02:46:18 GMT"
+      },
+      "response_sha256": "e99d24550c986f6bda9625c274609acbdf3100863cda88564d8fa7453325bdd2",
+      "sequence": 17,
+      "start_time_ms": 1761807600063
+    },
+    {
+      "end_time_ms": 1767312000000,
+      "request_sha256": "2559332ee3fdbbe7f1cf0b62130b7a1387648d1d43c4f915b41e3ee99aa34679",
+      "response_headers": {
+        "Content-Type": "application/json",
+        "Date": "Fri, 02 Oct 2026 02:46:19 GMT"
+      },
+      "response_sha256": "d3b5e1def905a48c147d9419fe2f19ca79033e2f033f90cbf3635cc00883812e",
+      "sequence": 18,
+      "start_time_ms": 1763607600051
+    },
+    {
+      "end_time_ms": 1767312000000,
+      "request_sha256": "2e61b2465210f1b9822513f19baa0ef4b67d737caa1bd2964e06cb58642d497d",
+      "response_headers": {
+        "Content-Type": "application/json",
+        "Date": "Fri, 02 Oct 2026 02:46:19 GMT"
+      },
+      "response_sha256": "bdc6280626b7ec489cd3843182d43adf813e1e52f292d98376274ee6611cf83a",
+      "sequence": 19,
+      "start_time_ms": 1765407600001
+    },
+    {
+      "end_time_ms": 1767312000000,
+      "request_sha256": "5829f934ca8a916b1d0912f841178e9565742035e579059eecf8c4fdd7a59b57",
+      "response_headers": {
+        "Content-Type": "application/json",
+        "Date": "Fri, 02 Oct 2026 02:46:19 GMT"
+      },
+      "response_sha256": "262b5798810524a8e526925bc81da9d2539230207cd86f915d1a3e4bc6daa481",
+      "sequence": 20,
+      "start_time_ms": 1767207600054
+    },
+    {
+      "end_time_ms": 1767312000000,
+      "request_sha256": "0e257cf6e27798c1b7accb53f098f30804de19b62e750f103d643c7277810776",
+      "response_headers": {
+        "Content-Type": "application/json",
+        "Date": "Fri, 02 Oct 2026 02:46:20 GMT"
+      },
+      "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "sequence": 21,
+      "start_time_ms": 1767308400024
+    }
+  ],
+  "schema_version": "1",
+  "source": "Hyperliquid public perpetual funding rate"
+}

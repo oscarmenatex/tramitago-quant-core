@@ -1664,6 +1664,138 @@
       "system_version": "0.1.0",
       "target_metric": "mean_forward_carry_return_1d(funding_t-1 >= 0) - mean_forward_carry_return_1d(funding_t-1 < 0)",
       "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "GT",
+        "expected_direction": "INCREASE",
+        "metric": "mean_forward_carry_return_1d(funding_t-1 > CARRYSURGE30) - mean_forward_carry_return_1d(funding_t-1 <= CARRYSURGE30)",
+        "threshold": "0"
+      },
+      "code_revision": "cd721106ec1e17db1e2b5a773df48991503a8d42",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2026-01-01T00:00:00Z",
+          "start_utc": "2025-01-01T00:00:00Z"
+        },
+        "universe": [
+          "BTC-USD"
+        ],
+        "variables": [
+          "carry_funding_avg_30",
+          "close",
+          "forward_carry_return_1d",
+          "funding_rate",
+          "perp_close"
+        ]
+      },
+      "creation_context": {
+        "created_by": "Oscar Carmenate Rodriguez",
+        "provenance": [
+          "FINDING|ad7ea4e9-be8a-4787-86ba-3b7c0befe0f1",
+          "DISCOVERY_SCAN|c3fefc4d698d7ea9026d5837997f44e1009b26888960fb1909691b02f4c5a517",
+          "DISCOVERY_SPACE|d48ff1b6b3758330ce5fa2724d314834c0588c2562b13f5caaaa25c4dfc26173",
+          "CANDIDATES_EXAMINED|8",
+          "ANALYSIS|carry-exit-relative-threshold-holdout-2025"
+        ]
+      },
+      "creation_timestamp": "2026-10-02T02:43:20.976419Z",
+      "description": "For a MARKET-NEUTRAL CARRY in BTC -- long BTC-USD spot, short the Hyperliquid perpetual at equal notional -- the mean forward carry return on days when funding stood ABOVE its own 30-day trailing average is HIGHER than on days when it stood at or below. Direction INCREASE pre-declared.\n\nWHY A RELATIVE THRESHOLD AND NOT ZERO. The absolute version (Hypothesis #37) classifies by sign, and the inverted group holds 11 of 366 days in 2024 and 18 of 365 in 2025, with one walk-forward fold each year containing NONE -- so the validation can only answer INSUFFICIENT_EVIDENCE, and more data never fixes it because the split is degenerate at any length. funding_rate_surge_strategy documented that exact failure for the funding signal in September and fixed it by comparing the series to its own history; this carries the fix across to the exit rule. Measured split at this window: roughly 135/199 instead of 353/11.\n\nTHE WINDOW IS A REAL CONCESSION. Zero needed no parameter; a trailing average does. What makes it defensible is that comparing a series to its own history is a STRUCTURAL choice, and that this window was not picked because it worked: it was selected as the best of EIGHT candidates in sealed Discovery scan DISCOVERY_SCAN|c3fefc4d698d7ea9026d5837997f44e1009b26888960fb1909691b02f4c5a517, whose multiplicity is carried here and corrected for.\n\nTHE PERIOD IS THE HOLDOUT. The scan read 2024 and only 2024; 2025 was declared its holdout before the scan ran and was never loaded. This evaluation is out of sample by construction, not by promise. The one leak, stated: the 31-day warmup comes from December 2024 and feeds the INDICATOR, never the measured outcome.\n\nThe outcome is NOT a price change: it is the funding received over the period MINUS the change in basis, at 24 payments a day, which is what Hyperliquid actually pays. An earlier run of this family read that series as a daily rate when it is an hourly one, understating the funding leg 24-fold.\n\nNO LOOKAHEAD: the row at t is classified by funding at t-1 against the 30 days before it, and the outcome reads t+1.",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|e8e12510-5ca5-415b-b803-da62b08d004a",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|e8e12510-5ca5-415b-b803-da62b08d004a|1|8053f91929dc3e1a0f4f230535ac9882a2669bb445cb79e97d7a606e73794cd4",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_carry_return_1d(funding_t-1 > CARRYSURGE30) - mean_forward_carry_return_1d(funding_t-1 <= CARRYSURGE30)",
+      "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "GT",
+        "expected_direction": "INCREASE",
+        "metric": "mean_forward_carry_return_1d(funding_t-1 > CARRYSURGE30) - mean_forward_carry_return_1d(funding_t-1 <= CARRYSURGE30)",
+        "threshold": "0"
+      },
+      "code_revision": "cd721106ec1e17db1e2b5a773df48991503a8d42",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2026-01-01T00:00:00Z",
+          "start_utc": "2025-01-01T00:00:00Z"
+        },
+        "universe": [
+          "BTC-USD"
+        ],
+        "variables": [
+          "carry_funding_avg_30",
+          "close",
+          "forward_carry_return_1d",
+          "funding_rate",
+          "perp_close"
+        ]
+      },
+      "creation_context": {
+        "created_by": "Oscar Carmenate Rodriguez",
+        "provenance": [
+          "FINDING|ad7ea4e9-be8a-4787-86ba-3b7c0befe0f1",
+          "DISCOVERY_SCAN|c3fefc4d698d7ea9026d5837997f44e1009b26888960fb1909691b02f4c5a517",
+          "DISCOVERY_SPACE|d48ff1b6b3758330ce5fa2724d314834c0588c2562b13f5caaaa25c4dfc26173",
+          "CANDIDATES_EXAMINED|8",
+          "ANALYSIS|carry-exit-relative-threshold-holdout-2025"
+        ]
+      },
+      "creation_timestamp": "2026-10-02T02:45:18.495841Z",
+      "description": "For a MARKET-NEUTRAL CARRY in BTC -- long BTC-USD spot, short the Hyperliquid perpetual at equal notional -- the mean forward carry return on days when funding stood ABOVE its own 30-day trailing average is HIGHER than on days when it stood at or below. Direction INCREASE pre-declared.\n\nWHY A RELATIVE THRESHOLD AND NOT ZERO. The absolute version (Hypothesis #37) classifies by sign, and the inverted group holds 11 of 366 days in 2024 and 18 of 365 in 2025, with one walk-forward fold each year containing NONE -- so the validation can only answer INSUFFICIENT_EVIDENCE, and more data never fixes it because the split is degenerate at any length. funding_rate_surge_strategy documented that exact failure for the funding signal in September and fixed it by comparing the series to its own history; this carries the fix across to the exit rule. Measured split at this window: roughly 135/199 instead of 353/11.\n\nTHE WINDOW IS A REAL CONCESSION. Zero needed no parameter; a trailing average does. What makes it defensible is that comparing a series to its own history is a STRUCTURAL choice, and that this window was not picked because it worked: it was selected as the best of EIGHT candidates in sealed Discovery scan DISCOVERY_SCAN|c3fefc4d698d7ea9026d5837997f44e1009b26888960fb1909691b02f4c5a517, whose multiplicity is carried here and corrected for.\n\nTHE PERIOD IS THE HOLDOUT. The scan read 2024 and only 2024; 2025 was declared its holdout before the scan ran and was never loaded. This evaluation is out of sample by construction, not by promise. The one leak, stated: the 31-day warmup comes from December 2024 and feeds the INDICATOR, never the measured outcome.\n\nThe outcome is NOT a price change: it is the funding received over the period MINUS the change in basis, at 24 payments a day, which is what Hyperliquid actually pays. An earlier run of this family read that series as a daily rate when it is an hourly one, understating the funding leg 24-fold.\n\nNO LOOKAHEAD: the row at t is classified by funding at t-1 against the 30 days before it, and the outcome reads t+1.",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|08169b1c-9e65-42af-8527-ac0c236bb50b",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|08169b1c-9e65-42af-8527-ac0c236bb50b|1|087524420e999c7c3e429c62fa78a3189df569855a81b672a9482d17bbbcd82a",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_carry_return_1d(funding_t-1 > CARRYSURGE30) - mean_forward_carry_return_1d(funding_t-1 <= CARRYSURGE30)",
+      "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "GT",
+        "expected_direction": "INCREASE",
+        "metric": "mean_forward_carry_return_1d(funding_t-1 > CARRYSURGE30) - mean_forward_carry_return_1d(funding_t-1 <= CARRYSURGE30)",
+        "threshold": "0"
+      },
+      "code_revision": "cd721106ec1e17db1e2b5a773df48991503a8d42",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2026-01-01T00:00:00Z",
+          "start_utc": "2025-01-01T00:00:00Z"
+        },
+        "universe": [
+          "BTC-USD"
+        ],
+        "variables": [
+          "carry_funding_avg_30",
+          "close",
+          "forward_carry_return_1d",
+          "funding_rate",
+          "perp_close"
+        ]
+      },
+      "creation_context": {
+        "created_by": "Oscar Carmenate Rodriguez",
+        "provenance": [
+          "FINDING|ad7ea4e9-be8a-4787-86ba-3b7c0befe0f1",
+          "DISCOVERY_SCAN|c3fefc4d698d7ea9026d5837997f44e1009b26888960fb1909691b02f4c5a517",
+          "DISCOVERY_SPACE|d48ff1b6b3758330ce5fa2724d314834c0588c2562b13f5caaaa25c4dfc26173",
+          "CANDIDATES_EXAMINED|8",
+          "ANALYSIS|carry-exit-relative-threshold-holdout-2025"
+        ]
+      },
+      "creation_timestamp": "2026-10-02T02:46:12.501161Z",
+      "description": "For a MARKET-NEUTRAL CARRY in BTC -- long BTC-USD spot, short the Hyperliquid perpetual at equal notional -- the mean forward carry return on days when funding stood ABOVE its own 30-day trailing average is HIGHER than on days when it stood at or below. Direction INCREASE pre-declared.\n\nWHY A RELATIVE THRESHOLD AND NOT ZERO. The absolute version (Hypothesis #37) classifies by sign, and the inverted group holds 11 of 366 days in 2024 and 18 of 365 in 2025, with one walk-forward fold each year containing NONE -- so the validation can only answer INSUFFICIENT_EVIDENCE, and more data never fixes it because the split is degenerate at any length. funding_rate_surge_strategy documented that exact failure for the funding signal in September and fixed it by comparing the series to its own history; this carries the fix across to the exit rule. Measured split at this window: roughly 135/199 instead of 353/11.\n\nTHE WINDOW IS A REAL CONCESSION. Zero needed no parameter; a trailing average does. What makes it defensible is that comparing a series to its own history is a STRUCTURAL choice, and that this window was not picked because it worked: it was selected as the best of EIGHT candidates in sealed Discovery scan DISCOVERY_SCAN|c3fefc4d698d7ea9026d5837997f44e1009b26888960fb1909691b02f4c5a517, whose multiplicity is carried here and corrected for.\n\nTHE PERIOD IS THE HOLDOUT. The scan read 2024 and only 2024; 2025 was declared its holdout before the scan ran and was never loaded. This evaluation is out of sample by construction, not by promise. The one leak, stated: the 31-day warmup comes from December 2024 and feeds the INDICATOR, never the measured outcome.\n\nThe outcome is NOT a price change: it is the funding received over the period MINUS the change in basis, at 24 payments a day, which is what Hyperliquid actually pays. An earlier run of this family read that series as a daily rate when it is an hourly one, understating the funding leg 24-fold.\n\nNO LOOKAHEAD: the row at t is classified by funding at t-1 against the 30 days before it, and the outcome reads t+1.",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|ae28ba69-913a-4990-aa7d-97c8c3a21254",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|ae28ba69-913a-4990-aa7d-97c8c3a21254|1|16dbba7cd62bfd5eebadce1fbad67bee72ae0d35e22d236d76b6a730e7da1fd3",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_carry_return_1d(funding_t-1 > CARRYSURGE30) - mean_forward_carry_return_1d(funding_t-1 <= CARRYSURGE30)",
+      "version": 1
     }
   ],
   "schema_version": "2"

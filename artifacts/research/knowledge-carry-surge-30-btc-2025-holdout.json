@@ -1,0 +1,286 @@
+{
+  "records": [
+    {
+      "hypothesis": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_carry_return_1d(funding_t-1 > CARRYSURGE30) - mean_forward_carry_return_1d(funding_t-1 <= CARRYSURGE30)",
+          "threshold": "0"
+        },
+        "description": "For a MARKET-NEUTRAL CARRY in BTC -- long BTC-USD spot, short the Hyperliquid perpetual at equal notional -- the mean forward carry return on days when funding stood ABOVE its own 30-day trailing average is HIGHER than on days when it stood at or below. Direction INCREASE pre-declared.\n\nWHY A RELATIVE THRESHOLD AND NOT ZERO. The absolute version (Hypothesis #37) classifies by sign, and the inverted group holds 11 of 366 days in 2024 and 18 of 365 in 2025, with one walk-forward fold each year containing NONE -- so the validation can only answer INSUFFICIENT_EVIDENCE, and more data never fixes it because the split is degenerate at any length. funding_rate_surge_strategy documented that exact failure for the funding signal in September and fixed it by comparing the series to its own history; this carries the fix across to the exit rule. Measured split at this window: roughly 135/199 instead of 353/11.\n\nTHE WINDOW IS A REAL CONCESSION. Zero needed no parameter; a trailing average does. What makes it defensible is that comparing a series to its own history is a STRUCTURAL choice, and that this window was not picked because it worked: it was selected as the best of EIGHT candidates in sealed Discovery scan DISCOVERY_SCAN|c3fefc4d698d7ea9026d5837997f44e1009b26888960fb1909691b02f4c5a517, whose multiplicity is carried here and corrected for.\n\nTHE PERIOD IS THE HOLDOUT. The scan read 2024 and only 2024; 2025 was declared its holdout before the scan ran and was never loaded. This evaluation is out of sample by construction, not by promise. The one leak, stated: the 31-day warmup comes from December 2024 and feeds the INDICATOR, never the measured outcome.\n\nThe outcome is NOT a price change: it is the funding received over the period MINUS the change in basis, at 24 payments a day, which is what Hyperliquid actually pays. An earlier run of this family read that series as a daily rate when it is an hourly one, understating the funding leg 24-fold.\n\nNO LOOKAHEAD: the row at t is classified by funding at t-1 against the 30 days before it, and the outcome reads t+1.",
+        "expected_direction": "INCREASE",
+        "hypothesis_id": "HYPOTHESIS|ae28ba69-913a-4990-aa7d-97c8c3a21254",
+        "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|ae28ba69-913a-4990-aa7d-97c8c3a21254|1|16dbba7cd62bfd5eebadce1fbad67bee72ae0d35e22d236d76b6a730e7da1fd3",
+        "target_metric": "mean_forward_carry_return_1d(funding_t-1 > CARRYSURGE30) - mean_forward_carry_return_1d(funding_t-1 <= CARRYSURGE30)",
+        "version": 1
+      },
+      "interpretation": "Regla de salida del carry BTC con UMBRAL RELATIVO, ventana 30, evaluada sobre el HOLDOUT 2025. Posicion neutral: largo spot, corto perpetuo de Hyperliquid, funding a 24 pagos diarios.\n\nPROCEDENCIA: seleccionada como la mejor de 8 candidatas en un scan sellado de Discovery sobre 2024, y corregida por esa multiplicidad aqui. 2025 se declaro holdout antes del scan y el scan nunca lo leyo.\n\nResultado: metric=0.000195, grupos 152/213, criterio GT 0 -> ACCEPTED. Walk-forward 5/5 MET, consistencia 1.0, p binomial 0.03125 contra alfa corregida None -> NOT_VALIDATED.\n\nLIMITES: valida la REGLA DE SALIDA, no si la prima compensa el riesgo -- esa es una afirmacion de nivel y vive en level_claim, donde el carry mantenido de forma continua ya quedo NOT_VALIDATED por romper el limite de drawdown en 2019-2021. Bruto de costes. Un venue, un instrumento, un ano. El warmup de 31 dias procede de diciembre de 2024, dentro de la ventana de descubrimiento, y alimenta el indicador, nunca el outcome medido.",
+      "knowledge_id": "KNOWLEDGE|461a4b82a07f5bb8a11fb2d6f9b0be94318c457cbbfaa1b0413c19a531aa69b6",
+      "limitations": [
+        "THE TEST WAS UNPASSABLE BY CONSTRUCTION, and that is a property of the design, not of the result. With 5 folds the smallest attainable binomial p-value is (1/2)^5 = 0.03125, while Bonferroni over 8 candidates sets the bar at 0.05/8 = 0.00625. Every fold passing still misses it. A test corrected for N needs at least log2(20N) folds -- 8 for N=8 -- or no outcome can clear it. This was knowable before running and was not checked.",
+        "Validates the EXIT RULE, not whether the premium compensates the risk. That is a level claim, and level_claim already returned NOT_VALIDATED for the continuously held carry over 2019-2021 on a drawdown breach.",
+        "Gross of transaction costs.",
+        "Single venue, single instrument, single year, single horizon.",
+        "The 31-day warmup comes from December 2024, inside the discovery window. It feeds the INDICATOR and never the measured outcome, but it is a leak of the signal's starting value and is stated rather than buried.",
+        "The window was selected as the best of eight on 2024. The correction for that is applied here; it does not make the selection disappear."
+      ],
+      "materialization": {
+        "knowledge_code_revision": "cd721106ec1e17db1e2b5a773df48991503a8d42",
+        "pipeline_sha256": "8d1ca9b38efce4ed213f79f1f062fb8e581e7ef8e56033f9b48ddd63700f0ea3",
+        "preserved_at": "2026-10-02T02:46:12.501161Z"
+      },
+      "methodology": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_carry_return_1d(funding_t-1 > CARRYSURGE30) - mean_forward_carry_return_1d(funding_t-1 <= CARRYSURGE30)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "funding_rate_t-1 <= CARRYSURGE30_t (the premium is thinner than usual)",
+          "upper_group": "funding_rate_t-1 > CARRYSURGE30_t (the premium is richer than usual)"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "carry_funding_avg_30",
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 24,
+            "perpetual_variable": "perp_close",
+            "window": 30
+          },
+          "strategy_id": "CARRY_FUNDING_SURGE"
+        },
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | funding_rate_t-1 > CARRYSURGE30_t (the premium is richer than usual)) - mean(return_t+1 | funding_rate_t-1 <= CARRYSURGE30_t (the premium is thinner than usual))",
+          "name": "mean_forward_carry_return_1d(funding_t-1 > CARRYSURGE30) - mean_forward_carry_return_1d(funding_t-1 <= CARRYSURGE30)"
+        },
+        "outcome": {
+          "formula": "24 * funding_rate_t+1 - (basis_t+1 - basis_t), basis = (perp_close - close) / close",
+          "name": "carry_return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_CARRYSURGE30_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-01T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-02T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-03T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-04T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-05T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-06T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-07T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-08T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-09T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-10T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-11T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-12T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-13T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-14T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-15T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-16T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-17T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-18T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-19T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-20T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-21T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-22T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-23T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-24T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-25T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-26T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-27T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-28T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-29T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-30T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_CARRYSURGE30_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "c3fefc4d698d7ea9026d5837997f44e1009b26888960fb1909691b02f4c5a517"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "record_id": "KNOWLEDGE_RECORD|KNOWLEDGE|461a4b82a07f5bb8a11fb2d6f9b0be94318c457cbbfaa1b0413c19a531aa69b6|6b7062e1219a3330e46f33e5d388c1d500e207d8de16070966e72b1825c6db1a",
+      "references": {
+        "disposition": {
+          "disposition_id": "DISPOSITION|db5f2821c4511a4cf3e643ed77735610a8714d0025955455ebe75a7cc1ba204c",
+          "record_id": "DISPOSITION_RECORD|DISPOSITION|db5f2821c4511a4cf3e643ed77735610a8714d0025955455ebe75a7cc1ba204c|e77a9eb5a54d84ae961113a04eacd81be98fb90f8de43735decf32f4dc266419"
+        },
+        "experiment": {
+          "experiment_id": "EXPERIMENT|45acd00d-6971-45e3-825c-09926c673797",
+          "record_id": "EXPERIMENT_VERSION|EXPERIMENT|45acd00d-6971-45e3-825c-09926c673797|1|a72a7bf814842b8e2d29c6bfd8a6381005bdf8f1713f40240ec20e7d3f37ba2a",
+          "version": 1
+        },
+        "hypothesis": {
+          "code_revision": "cd721106ec1e17db1e2b5a773df48991503a8d42",
+          "hypothesis_id": "HYPOTHESIS|ae28ba69-913a-4990-aa7d-97c8c3a21254",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|ae28ba69-913a-4990-aa7d-97c8c3a21254|1|16dbba7cd62bfd5eebadce1fbad67bee72ae0d35e22d236d76b6a730e7da1fd3",
+          "system_version": "0.1.0",
+          "version": 1
+        },
+        "research_result": {
+          "record_id": "RESEARCH_RESULT_RECORD|RESEARCH_RESULT|12054fb5b4cae738be6d6e8baca599083503d18266a4947af9faf18872450d7c|0abbed9e29e942e706cf3209193ddebb484ac3669275cd0f4c6b6caff67b03c1",
+          "research_result_id": "RESEARCH_RESULT|12054fb5b4cae738be6d6e8baca599083503d18266a4947af9faf18872450d7c"
+        }
+      },
+      "results": {
+        "outcome": "ACCEPTED",
+        "outcome_reason": null,
+        "scientific_result": {
+          "criterion": {
+            "comparison": "GT",
+            "expected_direction": "INCREASE",
+            "metric": "mean_forward_carry_return_1d(funding_t-1 > CARRYSURGE30) - mean_forward_carry_return_1d(funding_t-1 <= CARRYSURGE30)",
+            "threshold": "0"
+          },
+          "criterion_result": "MET",
+          "groups": {
+            "lower_or_equal": {
+              "count": 213,
+              "mean_return_t_plus_1": 0.00021350509107569368,
+              "rule": "funding_rate_t-1 <= CARRYSURGE30_t (the premium is thinner than usual)"
+            },
+            "upper": {
+              "count": 152,
+              "mean_return_t_plus_1": 0.00040855054705667154,
+              "rule": "funding_rate_t-1 > CARRYSURGE30_t (the premium is richer than usual)"
+            }
+          },
+          "inconclusive_reason": null,
+          "metric": 0.00019504545598097786,
+          "observation_count": 365,
+          "period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          }
+        }
+      },
+      "schema_version": "1",
+      "status": "PRESERVED"
+    }
+  ],
+  "schema_version": "1"
+}

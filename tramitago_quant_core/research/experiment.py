@@ -166,7 +166,29 @@ def _experiment_criterion_result(metric, criterion):
 
 
 def _discovery_snapshot(hypothesis):
+    """The sealed state of the exploration a Hypothesis came out of.
+
+    TWO ACCEPTED FORMS, and the second was added because the first made the
+    Discovery layer unusable. Every Hypothesis sealed before 2026-10-01 names the
+    manual exploration artifact by PATH -- the literal "DISCOVERY|artifacts/
+    live-run-1" -- plus a SNAPSHOT_SHA256 of it. That pair is still accepted
+    unchanged, so all thirty-nine reproduce.
+
+    But a Hypothesis promoted from a Bounded Discovery Finding has no such path:
+    its exploration is a sealed scan, and demanding the 2026-09 literal would
+    have meant the one mechanism built to produce Hypotheses honestly could not
+    produce one at all. A DISCOVERY_SCAN identity is therefore accepted on its
+    own, and its digest IS the snapshot -- which is strictly stronger evidence
+    than the legacy form, since a scan re-derives from its own sealed record and
+    a path string does not.
+    """
     values = hypothesis["creation_context"]["provenance"]
+    scans = [value.removeprefix("DISCOVERY_SCAN|") for value in values
+             if value.startswith("DISCOVERY_SCAN|")]
+    if len(scans) == 1 and re.fullmatch(r"[0-9a-f]{64}", scans[0]):
+        return scans[0]
+    if scans:
+        raise ValueError("Hypothesis names more than one Discovery scan, or an invalid one")
     snapshots = [value.removeprefix("SNAPSHOT_SHA256|") for value in values
                  if value.startswith("SNAPSHOT_SHA256|")]
     if len(snapshots) != 1 or not re.fullmatch(r"[0-9a-f]{64}", snapshots[0]):
