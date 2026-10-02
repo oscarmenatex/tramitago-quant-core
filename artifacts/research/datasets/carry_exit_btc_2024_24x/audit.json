@@ -1,0 +1,25 @@
+{
+  "backtest_executed": false,
+  "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|cc07538e4625538590a53c6b5c727b1eec1ece523882f5d2ae276a80f86c5e87",
+  "evaluable_period": {
+    "end_exclusive_utc": "2025-01-01T00:00:00Z",
+    "start_utc": "2024-01-01T00:00:00Z"
+  },
+  "hypothesis_id": "HYPOTHESIS|83ccaff4-e6ff-4c23-878e-8391ed3b1354",
+  "hypothesis_version": 1,
+  "integrity": "VERIFIED",
+  "metric_evaluated": false,
+  "milestone": "M2.2-T1",
+  "status": "VERIFIED",
+  "support_rows": [
+    {
+      "row_role": "SUPPORT_CARRYFUNDING_WARMUP",
+      "timestamp": "2023-12-31T00:00:00Z"
+    },
+    {
+      "row_role": "SUPPORT_FORWARD_RETURN",
+      "timestamp": "2025-01-01T00:00:00Z"
+    }
+  ],
+  "validation": "PASS"
+}

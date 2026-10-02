@@ -1,0 +1,115 @@
+{
+  "experiments": [
+    {
+      "conditions": {
+        "acceptance_criterion": {
+          "comparison": "GT",
+          "expected_direction": "INCREASE",
+          "metric": "mean_forward_carry_return_1d(funding_t-1 >= 0) - mean_forward_carry_return_1d(funding_t-1 < 0)",
+          "threshold": "0"
+        },
+        "analytical_rule": {
+          "lower_or_equal_group": "CARRYFUNDING_t < 0 (the premium has inverted)",
+          "upper_group": "CARRYFUNDING_t >= 0 (the premium is being paid)"
+        },
+        "costs": {
+          "declaration": "NOT_APPLICABLE: associative comparison has no orders, positions, fills, P&L, or execution"
+        },
+        "execution_scope": {
+          "backtest_executed": false,
+          "experiment_executed": false,
+          "metric_calculated": false
+        },
+        "frequency_seconds": 86400,
+        "indicator": {
+          "column_name": "funding_rate_lag_1",
+          "parameters": {
+            "funding_variable": "funding_rate",
+            "payments_per_period": 24,
+            "perpetual_variable": "perp_close",
+            "threshold": "0"
+          },
+          "strategy_id": "CARRY_FUNDING_THRESHOLD"
+        },
+        "instrument": "BTC-USD",
+        "metric": {
+          "formula": "mean(return_t+1 | CARRYFUNDING_t >= 0 (the premium is being paid)) - mean(return_t+1 | CARRYFUNDING_t < 0 (the premium has inverted))",
+          "name": "mean_forward_carry_return_1d(funding_t-1 >= 0) - mean_forward_carry_return_1d(funding_t-1 < 0)"
+        },
+        "outcome": {
+          "formula": "24 * funding_rate_t+1 - (basis_t+1 - basis_t), basis = (perp_close - close) / close",
+          "name": "carry_return_t+1"
+        },
+        "population": {
+          "excluded_row_roles": [
+            "SUPPORT_CARRYFUNDING_WARMUP",
+            "SUPPORT_FORWARD_RETURN"
+          ],
+          "included_row_role": "EVALUATION",
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_CARRYFUNDING_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "schema_version": "1",
+        "temporal_split": {
+          "discovery_evidence": {
+            "path": "artifacts/live-run-1",
+            "period": "2024",
+            "role": "DISCOVERY_ONLY",
+            "snapshot_sha256": "a1b6a0bbe47c247c7e5d4adc5ab9c8d578dd0c347d39c4bdb6f6dc2c089ec00f"
+          },
+          "independent_evaluation_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "oos_proportion": "NOT_APPLICABLE",
+          "optimization": "NOT_USED",
+          "training": "NOT_USED"
+        }
+      },
+      "created_at": "2026-10-02T00:04:34.519137Z",
+      "experiment_id": "EXPERIMENT|2973dee5-12b6-47c6-8e57-0d7f2b3101cf",
+      "record_id": "EXPERIMENT_VERSION|EXPERIMENT|2973dee5-12b6-47c6-8e57-0d7f2b3101cf|1|980f036cee7bc471023c8cb1fa250d05d4d93ed38ea6992e55634982444b3fc7",
+      "references": {
+        "dataset": {
+          "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|78010f9562e1ab82e236a66095789e75d3a980831dd490b8c6694713a7564068",
+          "dataset_sha256": "9a6a1e61638dd3e68ec49b3581ea2a291ba5fe146e83dd14af587aa16d2d2483",
+          "evaluable_period": {
+            "end_exclusive_utc": "2026-01-01T00:00:00Z",
+            "start_utc": "2025-01-01T00:00:00Z"
+          },
+          "hypothesis_id": "HYPOTHESIS|e4113f41-14d9-461d-a78f-606ba05f07d5",
+          "hypothesis_version": 1,
+          "support_rows": [
+            {
+              "row_role": "SUPPORT_CARRYFUNDING_WARMUP",
+              "timestamp": "2024-12-31T00:00:00Z"
+            },
+            {
+              "row_role": "SUPPORT_FORWARD_RETURN",
+              "timestamp": "2026-01-01T00:00:00Z"
+            }
+          ]
+        },
+        "hypothesis": {
+          "code_revision": "8f59dddce2aba438670276174a7b6fbd77dba87f",
+          "hypothesis_id": "HYPOTHESIS|e4113f41-14d9-461d-a78f-606ba05f07d5",
+          "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|e4113f41-14d9-461d-a78f-606ba05f07d5|1|300e53491fa3d498fa21900e81300adfb2453f3315488031d8a23811956f95ad",
+          "system_version": "0.1.0",
+          "version": 1
+        }
+      },
+      "revision_reason": "Carry exit rule, OUT OF SAMPLE (2025)",
+      "status": "CONDITIONS_FIXED",
+      "version": 1
+    }
+  ],
+  "schema_version": "1"
+}

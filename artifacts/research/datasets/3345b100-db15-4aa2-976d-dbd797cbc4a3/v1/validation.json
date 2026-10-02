@@ -1,0 +1,20 @@
+{
+  "accepted": 0,
+  "errors": [
+    {
+      "reason": "Temporally incompatible response contains rows outside the capture period",
+      "row": null
+    },
+    {
+      "reason": "Duplicate timestamp",
+      "row": 370
+    }
+  ],
+  "excluded_outside_range": 1,
+  "received": 370,
+  "rejected": 1,
+  "status": "FAIL",
+  "valid_rows_before_batch_gate": 368,
+  "warnings": [],
+  "withheld_by_batch_gate": 368
+}

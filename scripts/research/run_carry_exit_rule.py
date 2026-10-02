@@ -28,11 +28,20 @@ could trade. That constraint fixes the period: Hyperliquid serves no funding
 before 2024 and its 2023 candles are oracle backfill with zero trades, so
 2024-2025 is the whole of what exists where both series are real.
 
+THE FUNDING CADENCE IS NOW DECLARED, and the first run of this Hypothesis got it
+wrong. Hyperliquid's daily series is the MEAN OF THAT DAY'S HOURLY RATES, and the
+Outcome subtracted a full day of basis movement from ONE HOUR of funding -- so
+the mark dominated a quantity it should not have, by a factor of 24. The sealed
+#37 record stands as what it was, and `--payments-per-day 24` re-runs the same
+Hypothesis over the same periods against the quantity actually paid. The SIGNAL
+is untouched either way: it reads the sign of funding, which no rescaling moves.
+
 Requires Python 3.11+. No credentials: Hyperliquid and Coinbase are both public.
 
-    python -B scripts/research/run_carry_exit_rule.py
+    python -B scripts/research/run_carry_exit_rule.py --payments-per-day 24
 """
 
+import argparse
 import subprocess
 import sys
 import traceback
@@ -67,8 +76,13 @@ from tramitago_quant_core.knowledge.knowledge_record import constitute_knowledge
 ARTIFACTS = REPO / "artifacts" / "research"
 HYPOTHESES = ARTIFACTS / "hypotheses.json"
 COIN, INSTRUMENT, HORIZON = "BTC", "BTC-USD", 1
-STRATEGY = p.carry_funding_threshold_strategy()
 NOW = datetime.now(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")
+
+# Set from the command line in main(). Default 1 reproduces the original sealed
+# run exactly, slug and all; any other cadence writes its own chain so the two
+# verdicts sit side by side instead of one overwriting the other.
+STRATEGY = p.carry_funding_threshold_strategy()
+SLUG_SUFFIX = ""
 
 AUXILIARY_VERIFIERS = {
     "funding_rate": verified_hyperliquid_funding_rate_capture,
@@ -123,7 +137,7 @@ def _code_revision():
 
 def run_period(period, revision):
     label, folds = period["label"], period["folds"]
-    slug = f"carry-exit-btc-{label}"
+    slug = f"carry-exit-btc-{label}{SLUG_SUFFIX}"
     column = STRATEGY["column_name"]
     forward = STRATEGY["outcome"]["column"](HORIZON)
     warmup = STRATEGY["required_inputs"]["warmup_periods"]
@@ -331,9 +345,24 @@ def run_period(period, revision):
 
 
 def main():
+    global STRATEGY, SLUG_SUFFIX
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--payments-per-day", type=int, default=1,
+                        help="Funding settlements per day at the venue. Hyperliquid pays "
+                             "hourly, so 24 is the quantity actually paid; 1 reproduces "
+                             "the original sealed run.")
+    arguments = parser.parse_args()
+    if arguments.payments_per_day != 1:
+        STRATEGY = p.carry_funding_threshold_strategy(
+            payments_per_period=arguments.payments_per_day)
+        SLUG_SUFFIX = f"-{arguments.payments_per_day}x"
+
     print("=" * 76)
     print("CARRY EXIT RULE -- in sample and out of sample, both declared first")
     print("=" * 76)
+    print(f"funding cadence: {arguments.payments_per_day} payment(s) per day"
+          + ("  [ORIGINAL SEALED RUN]" if arguments.payments_per_day == 1
+             else "  [CORRECTED: the quantity actually paid]"))
     revision = _code_revision()
     print(f"code_revision: {revision}")
     print(f"strategy: {STRATEGY['strategy_id']}  outcome: {STRATEGY['outcome']['outcome_id']}")
