@@ -130,6 +130,11 @@ from tramitago_quant_core.research.level_claim import (
     constitute_level_claim_validation,
     load_level_claim_validation, verified_level_claim_validation,
 )
+from tramitago_quant_core.research.forward_test import (
+    FORWARD_TEST_PENDING, FORWARD_TEST_READY, FORWARD_TEST_NOT_FORWARD,
+    is_forward_hypothesis, forward_test_status, require_forward_test_ready,
+    pending_forward_tests,
+)
 from tramitago_quant_core.research.discovery import (
     DISCOVERY_SPACE_REGISTRY_SCHEMA_VERSION, DISCOVERY_SPACE_SCHEMA_VERSION,
     DISCOVERY_SCAN_REGISTRY_SCHEMA_VERSION, DISCOVERY_SCAN_SCHEMA_VERSION,

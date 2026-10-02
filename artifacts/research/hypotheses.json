@@ -1840,6 +1840,50 @@
       "system_version": "0.1.0",
       "target_metric": "mean_forward_carry_return_1d(CARRYFUNDING_t >= 0 (the premium is being paid)) - mean_forward_carry_return_1d(CARRYFUNDING_t < 0 (the premium has inverted))",
       "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "GT",
+        "expected_direction": "INCREASE",
+        "metric": "mean_forward_carry_return_1d(CARRYFUNDING_t >= 0 (the premium is being paid)) - mean_forward_carry_return_1d(CARRYFUNDING_t < 0 (the premium has inverted))",
+        "threshold": "0"
+      },
+      "code_revision": "d75af9e36b6c291402d84de61c1f28f624d3869e",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2027-10-06T00:00:00Z",
+          "start_utc": "2026-10-03T00:00:00Z"
+        },
+        "universe": [
+          "BTC-USD"
+        ],
+        "variables": [
+          "close",
+          "forward_carry_return_1d",
+          "funding_rate",
+          "funding_rate_lag_1",
+          "perp_close"
+        ]
+      },
+      "creation_context": {
+        "created_by": "Oscar Carmenate Rodriguez",
+        "provenance": [
+          "DISCOVERY_SCAN|6d298f423a308ebca9ea8da0013b63a31668501bc98c77891d4524688baabd10",
+          "DISCOVERY_SPACE|e17055eb37188fb7743c88196d5e6e3c1d03c5ca17084fe84de597f38c42e716",
+          "STATISTICAL_VALIDATION|96545cd1aee924fd4c64ea1aeaf68",
+          "CANDIDATES_EXAMINED|8",
+          "ANALYSIS|first-forward-dated-hypothesis"
+        ]
+      },
+      "creation_timestamp": "2026-10-02T05:47:27.899119Z",
+      "description": "FORWARD-DATED. Declared 2026-10-02 for a period that has not happened yet: 2026-10-03 to 2027-10-06.\n\nFor a MARKET-NEUTRAL CARRY in BTC -- long BTC-USD spot, short BitMEX XBTUSD at equal notional -- the mean forward carry return on days when funding stood AT OR ABOVE zero is HIGHER than on days when it stood below. Direction INCREASE pre-declared. Funding at 3 payments a day, BitMEX's eight-hour settlement.\n\nWHY THIS ONE. It is the only Hypothesis this project has validated while carrying a correction for its own search: 8 of 8 folds on a holdout declared before the scan that selected it (DISCOVERY_SCAN|6d298f423a308ebca9ea8da0013b63a31668501bc98c77891d4524688baabd10), Bonferroni over the eight candidates it was chosen from, sealed as STATISTICAL_VALIDATION|96545cd1aee924fd4c64ea1aeaf68. The strongest next evidence about it is not another slice of history.\n\nTHE CORRECTION TRAVELS FORWARD. The candidate was the best of 8 and that selection does not un-happen because time passed, so this carries Bonferroni over 8 too: alpha 0.00625, needing 8 folds to be passable at all. 8 x 46 = 368 days.\n\nNOTHING MAY BE LOOKED AT UNTIL THE PERIOD IS OVER. Its dataset cannot be built before 2027-10-06 -- not mostly elapsed, fully -- because a partial period evaluated under this declaration's name would carry an authority it does not have.\n\nWHAT WOULD REFUTE IT: a metric at or below zero over the declared period, or a walk-forward that fails its corrected test. What would NOT establish is that the carry is worth holding: the POSITION is already NOT_VALIDATED on a drawdown breach with and without this rule, and v\u00eda 7.D is closed. This tests the RULE, which discriminates, not the position, which does not pay for its tail.",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|fcc6f1e0-ca08-4c9c-a629-38e08edec9ba",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|fcc6f1e0-ca08-4c9c-a629-38e08edec9ba|1|8ead178f020224f30e93980ccca94c6e27a527ec8fd36dc5e29cf8d2576184a4",
+      "status": "CONSTITUTED",
+      "system_version": "0.1.0",
+      "target_metric": "mean_forward_carry_return_1d(CARRYFUNDING_t >= 0 (the premium is being paid)) - mean_forward_carry_return_1d(CARRYFUNDING_t < 0 (the premium has inverted))",
+      "version": 1
     }
   ],
   "schema_version": "2"
