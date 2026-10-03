@@ -33,6 +33,44 @@
         "adverse_episode": "March 2020, when VIX reached 82 and the term structure inverted on 53 days of that year, plus the 2025 spike with 29 inverted days",
         "years": "8.57"
       }
+    },
+    {
+      "claim_class": "PREMIUM",
+      "hypothesis_id": "HYPOTHESIS|27314537-88d0-4f0e-8d39-29047bf7d6cb",
+      "materialization": {
+        "code_revision": "e49cfc1cfafc4880f4cc7103795119aa70453b84",
+        "declared_at": "2026-10-03T15:13:48.480026Z"
+      },
+      "monitor": {
+        "published_by": "CBOE publishes VIX daily and FRED distributes it as VIXCLS, while realised volatility is computed from index prices",
+        "variable": "VIX minus the 21-day realised volatility of the S&P 500"
+      },
+      "net_level": {
+        "claimed": "the net return of holding XYLD continuously over the window, after execution costs and with its expense ratio already inside its price, rather than a difference between two groups of days"
+      },
+      "payer": {
+        "who": "buyers of S&P 500 call options, who pay for upside exposure that the fund sells them inside the wrapper",
+        "why_they_keep_paying": "they want convex upside at limited cost, and structured product issuers hedge by buying calls, so demand for upside is not sensitive to price; the premium is what the sellers earn for taking the other side of that demand and for bearing the crash risk it implies"
+      },
+      "pre_declaration_id": "PRE_DECLARATION|171cd37c09dca4bfeafd9622eb775b9ddb5be425855cf975ae184cd259a20fc2",
+      "required_effect": {
+        "plausibility_source": "published studies of the buy-write index find a Sharpe roughly equal to or modestly above the underlying over long samples; the range is recalled, wide, and sits below the S&P 500 own at the low end for the fund fee and the capped upside, and the conservative end is below the bar",
+        "plausible_high": "0.80",
+        "plausible_low": "0.35",
+        "position_against_bar": "STRADDLES",
+        "required_point_sharpe": "0.500"
+      },
+      "schema_version": "2",
+      "source": "answered in writing before any bar of XYLD was captured; the monitor trigger frequency was measured first, which is a fact about the monitor and never about the fund's returns",
+      "turnover": {
+        "crossings_per_year": "0.19"
+      },
+      "window": {
+        "adverse_episode": "February 2018, when VIX more than doubled in a day, March 2020, and the 2022 drawdown",
+        "available_years": "10.72",
+        "why_shorter_than_available": "the dataset contract needs two warmup rows and one forward row, so three of the 2702 bars the feed serves cannot be evaluated",
+        "years": "10.71"
+      }
     }
   ],
   "schema_version": "1"

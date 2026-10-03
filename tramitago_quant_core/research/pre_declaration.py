@@ -57,6 +57,14 @@ from tramitago_quant_core.shared.util import (
 )
 
 PRE_DECLARATION_SCHEMA_VERSION = "1"
+# Schema 2, 2026-10-03: PRE_DECLARATION_ALIGNMENT|0a659627. The recalled effect is
+# declared as a RANGE and the declaration is refused only when even the optimistic
+# end falls below the bar, matching the candidate register. A record declaring a
+# single value stays schema 1 and reproduces byte for byte.
+PRE_DECLARATION_SCHEMA_VERSION_RANGE = "2"
+PRE_DECLARATION_SCHEMA_VERSIONS = ("1", "2")
+POSITION_CLEARS = "CLEARS"
+POSITION_STRADDLES = "STRADDLES"
 PRE_DECLARATION_REGISTRY_SCHEMA_VERSION = "1"
 
 # Hypotheses created from this instant must carry one. Derived from the
@@ -135,8 +143,10 @@ def _prose(value, name, minimum_words=8):
 
 def pre_declaration(*, hypothesis_id, payer, why_they_keep_paying, crossings_per_year,
                     net_level_claimed, monitor_variable, monitor_publisher,
-                    plausible_point_sharpe, plausibility_source,
-                    claim_class, window_years, adverse_episode_in_window, source,
+                    plausibility_source, plausible_point_sharpe=None,
+                    plausible_low=None, plausible_high=None,
+                    claim_class=None, window_years=None, adverse_episode_in_window=None,
+                    source=None,
                     available_window_years=None, why_shorter_than_available=None,
                     required_point_sharpe=None):
     """Seal seven answers. Refuses rather than records an answer that defeats itself.
@@ -173,7 +183,23 @@ def pre_declaration(*, hypothesis_id, payer, why_they_keep_paying, crossings_per
                 f"not the {stated} declared: the point-to-bound gap measured 0.547 at 8.57 "
                 f"years on SVXY and 0.543 at 8.72 on SPY, and scales as one over the root "
                 f"of the sample")
-    plausible = _decimal(plausible_point_sharpe, "Plausible point Sharpe")
+    # EXACTLY ONE FORM. A single value is the old contract and a range is the
+    # aligned one; passing both would let a caller choose whichever the gate
+    # liked, which is the choosing this module exists to remove.
+    ranged = plausible_low is not None or plausible_high is not None
+    if ranged == (plausible_point_sharpe is not None):
+        raise ValueError("Declare the plausible effect EITHER as one point Sharpe OR as "
+                         "plausible_low and plausible_high, never both and never neither")
+    if ranged:
+        if plausible_low is None or plausible_high is None:
+            raise ValueError("A range needs both ends")
+        low = _decimal(plausible_low, "Plausible low")
+        high = _decimal(plausible_high, "Plausible high")
+        if low > high:
+            raise ValueError("The conservative end of the range cannot exceed the "
+                             "optimistic one")
+    else:
+        low = high = _decimal(plausible_point_sharpe, "Plausible point Sharpe")
 
     # THE WINDOW MUST BE THE ONE THE SOURCE SERVES, or the shortfall explained.
     # Claude declared SPY over 8.72 years when the SIP feed served from 2016 and
@@ -191,17 +217,44 @@ def pre_declaration(*, hypothesis_id, payer, why_they_keep_paying, crossings_per
                 f"SVXY's did -- but it must be explained, because {required} is the bar it "
                 f"buys and {required_point_sharpe_for(available_window_years)} is the bar "
                 f"the full window would have")
-    if plausible < required:
+    if high < required:
         # Not a warning. A Hypothesis whose own declared plausible effect is
         # below what its gate needs has been refuted by its author before any
         # data was read, and capturing it would be spending to confirm that.
+        #
+        # Refused on the OPTIMISTIC end, since 2026-10-03, matching the candidate
+        # register: the conservative end alone would have refused the S&P 500,
+        # recalled at 0.40 to 0.80 and measured at 0.81, while the optimistic end
+        # alone would have admitted the credit premium, recalled at 0.20 to 0.50
+        # and measured at 0.19. A single declared value is both ends at once, so
+        # the old form refuses exactly what it always did.
         raise ValueError(
-            f"Declared plausible effect {plausible} is below the {required} this "
-            f"Hypothesis needs. It cannot clear its own gate and must not be captured; "
-            f"say so and stop, rather than measuring to find out")
+            f"Declared plausible effect {low}-{high} is below the {required} this "
+            f"Hypothesis needs, even at its optimistic end. It cannot clear its own "
+            f"gate and must not be captured; say so and stop, rather than measuring "
+            f"to find out")
+    position = POSITION_CLEARS if low >= required else POSITION_STRADDLES
+    if ranged:
+        effect = {
+            "required_point_sharpe": str(required),
+            "plausible_low": plausible_low, "plausible_high": plausible_high,
+            # DERIVED and recorded, so the position against the bar travels with
+            # the declaration and is never inferred afterwards. A STRADDLING
+            # declaration is accepted and says so: the premium might not clear
+            # its own gate, and the record states it before any data exists.
+            "position_against_bar": position,
+            "plausibility_source": _prose(plausibility_source, "Plausibility source"),
+        }
+    else:
+        effect = {
+            "required_point_sharpe": str(required),
+            "plausible_point_sharpe": plausible_point_sharpe,
+            "plausibility_source": _prose(plausibility_source, "Plausibility source"),
+        }
 
     content = {
-        "schema_version": PRE_DECLARATION_SCHEMA_VERSION,
+        "schema_version": (PRE_DECLARATION_SCHEMA_VERSION_RANGE if ranged
+                           else PRE_DECLARATION_SCHEMA_VERSION),
         "hypothesis_id": hypothesis_id,
         "payer": {
             "who": _prose(payer, "Who pays"),
@@ -213,11 +266,7 @@ def pre_declaration(*, hypothesis_id, payer, why_they_keep_paying, crossings_per
             "variable": _prose(monitor_variable, "The monitored variable", 3),
             "published_by": _prose(monitor_publisher, "Who publishes it", 3),
         },
-        "required_effect": {
-            "required_point_sharpe": str(required),
-            "plausible_point_sharpe": plausible_point_sharpe,
-            "plausibility_source": _prose(plausibility_source, "Plausibility source"),
-        },
+        "required_effect": effect,
         "claim_class": claim_class,
         "window": {
             "years": window_years,
@@ -241,6 +290,8 @@ def verified_pre_declaration(record):
     content = {key: record[key] for key in record if key != "pre_declaration_id"}
     if record["pre_declaration_id"] != "PRE_DECLARATION|" + digest(encoded(content)):
         raise ValueError("Pre-declaration identity does not match its answers")
+    if content.get("schema_version") not in PRE_DECLARATION_SCHEMA_VERSIONS:
+        raise ValueError("Pre-declaration has an unknown schema version")
     if set(content) != {"schema_version", "hypothesis_id", "source", *QUESTIONS}:
         raise ValueError("Pre-declaration does not answer exactly the seven questions")
     return record
