@@ -1,0 +1,61 @@
+{
+  "revisions": [
+    {
+      "authorised_by": "Oscar Carmenate Rodriguez, Director del Proyecto",
+      "code_revision": "d04e4e6daaa8c3413e9e4a9551ad19653d08b9e8",
+      "grounds": [
+        {
+          "name": "R2 ALREADY ADMITS TWO FORMS OF EVIDENCE FOR THIS EXACT PROBLEM; R3 ADMITS ONE",
+          "provenance": "WEAK, AND RECORDED AS SUCH. Claude articulated this asymmetry in the same exchange in which it computed which Hypotheses a revision would admit. The ground and the consequence are not separated in time, which is exactly the order \u00a711.5 warns against, and the only thing standing in its favour is that the consequence came back ZERO -- see the second ground's integrity check.",
+          "statement": "R2, survival, accepts EITHER P1 -- at least two out-of-sample periods with the sign holding in all of them -- OR P2, a mechanism declared in writing. P2 exists precisely because the empirical form cannot be supplied when the observations do not exist. R3, monitorability, admits only the empirical form: \u00a711.1 requires the inferential link to have reached VALIDATED and says INSUFFICIENT_EVIDENCE is not a pass. The same document therefore answers the same difficulty -- insufficient observations of a rare state -- in two different ways depending on which gate is asking.",
+          "why_it_is_independent": "The asymmetry is in the text of the gates themselves. A reader can check it against \u00a78 and \u00a79 without knowing any Hypothesis, any instrument, any outcome, or that #37 ever existed."
+        },
+        {
+          "measurement": {
+            "bands": [
+              "floor 0.50% (below Baa expected credit loss, so the premium no longer compensates -- the operational meaning of death): 0 trigger days, 0 of 7 folds. The link cannot be validated.",
+              "floor 1.36% (the tightest reading ever observed): 1 day, 0 of 7 folds.",
+              "floor 1.50%: 151 days, 6.9%, 2 of 7 folds. Still not validatable.",
+              "floor 2.00%: 1340 days, 61.4%, 7 of 7 folds. Validatable -- and firing in calm markets, where it is not a stop.",
+              "floor 2.50%: 2012 days, 92.1%. Above the median."
+            ],
+            "conclusion": "The validatable band begins around 2.00% and the meaningful band ends around 0.50%. They are separated by the ENTIRE OBSERVED RANGE of the variable. No threshold satisfies both requirements, so for this monitor \u00a711.1 is not strict -- it is unsatisfiable.",
+            "folds": 7,
+            "series": "BAA10Y, Moody's Baa yield relative to the 10-year Treasury",
+            "window": "2018-01-02 to 2026-10-01, 2184 observations, range 1.36% to 4.31%"
+          },
+          "name": "THE TWO REQUIREMENTS OF \u00a711.1 ARE SATISFIED BY DISJOINT PARAMETER RANGES",
+          "provenance": "STRONGER. The band measurement was computed and reported BEFORE the table of which Hypotheses a revision would admit, in a separate exchange, in answer to the question of whether \u00a711 was practically satisfiable at all.",
+          "statement": "\u00a711.1 requires one threshold to do two incompatible things. To VALIDATE the inferential link the trigger state must occur often enough to be measured across folds. For the trigger to MEAN the mechanism has ended it must occur rarely, because a condition that fires in ordinary markets is a trading signal and not a stop. The same number is pulled in both directions.",
+          "why_it_is_independent": "It is arithmetic on a published third-party series, computed without reference to any Hypothesis's returns. The same computation on any variable whose death state is an extreme will have the same shape, which is why \u00a711.3 itself says the exclusion is SYSTEMATIC. What is new is the magnitude: when \u00a711 was adopted on 2026-10-01 nobody had computed that satisfying it requires a trigger firing on 61% of days."
+        }
+      ],
+      "integrity_check": {
+        "does_it_rescue_what_was_observed": "NO -- measured against every sealed denial, and this is the strongest fact in the record. ZERO of the four denied Hypotheses would be admitted by it. carry-exit-bitmex-holdout PASSED R3 already and falls on net Sharpe, R1, R4 and R5. eth and spy-mom10-2024 each fail five or six gates including net Sharpe and R1. equity-risk-premium-spy is the only one denied on R3 ALONE, and a revision does not touch it either: its R3 is NOT_EVALUABLE because no monitor exists at all -- an unconditional premium has no non-P&L variable -- and changing which evidence establishes a link cannot create a variable to observe. The revision affects exactly one thing: the credit premium, which has never been measured and whose net Sharpe Claude has deliberately not computed.",
+        "harder_or_easier": "EASIER, and that is the opposite direction from \u00a711, which hardened. A revision that loosens must therefore carry a heavier burden, which is why both grounds are stated, why M2 is narrower than the P2 it is modelled on, and why the consequence was measured rather than argued.",
+        "question": "\u00a711.0's own test: does this make passing harder or easier, and does it rescue what was observed?"
+      },
+      "kind": "monitor-form-revision",
+      "required_by": "\u00a711.5: 'Si alguna vez se toca, el fundamento debera enunciarse con independencia de #37.'",
+      "revises": "\u00a711.1 of 'Propuesta - Funcion Objetivo y Criterios de Admision (2026-09-30)', as amended by the governance act of 2026-10-01",
+      "revision": {
+        "after": "A monitor is admissible if its inferential link is established in EITHER of two forms, mirroring R2's existing structure:\n  M1 EMPIRICAL -- the link reached VALIDATED. Unchanged, including that INSUFFICIENT_EVIDENCE is not a pass.\n  M2 IDENTITY -- the implication follows by ARITHMETIC from an accounting relation together with an externally sourced, sealed parameter, such that it cannot fail to hold for any value of that parameter within its declared range.",
+        "before": "A monitor is admissible only if the inferential link it rests on -- that the observed condition implies degradation -- reached VALIDATED. INSUFFICIENT_EVIDENCE is not a pass.",
+        "clause": "\u00a711.1, the form of evidence admissible for a monitor's inferential link",
+        "the_cost_this_accepts": "An M2 monitor is a REASONED stop, not a DEMONSTRATED one. Its failure mode is real: a position held in the belief it can be stopped, where the trigger does not fire or does not mean what was declared. The identity requirement is what prices that risk down, and it is why M2 must be recorded on the admission so an M2 monitor is never later mistaken for a demonstrated one.",
+        "what_is_untouched": [
+          "A P&L-only monitor never qualifies, whatever its latency.",
+          "Monitoring never converts into size: failing R3 is inadmissible outright.",
+          "INSUFFICIENT_EVIDENCE remains not a pass for M1.",
+          "The latency arithmetic, R3's other half, is unchanged.",
+          "Every other gate, and every threshold in the closed set of \u00a78.8."
+        ],
+        "why_M2_is_stricter_than_R2s_P2": "R2's P2 accepts a NARRATIVE mechanism: who is on the other side, why they accept losing, what would end it. M2 accepts no narrative. R3 guards a STOP, and a story that turns out to be wrong means the position cannot be stopped when it matters, which is the one failure \u00a711 exists to prevent. An identity cannot turn out to be wrong. This is deliberately NOT a copy of P2 into R3."
+      },
+      "revision_id": "MONITOR_FORM_REVISION|5bc199a41119ff5c445bd605b83e1fe6213b757716d3c2e2d6db899c2ffc11f9",
+      "schema_version": "1",
+      "sealed_at": "2026-10-03T04:39:54.941426Z"
+    }
+  ],
+  "schema_version": "1"
+}

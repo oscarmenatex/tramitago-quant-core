@@ -1,0 +1,102 @@
+{
+  "audit_sha256": "44e02184626d5bfc9d6e16c1d92f594c0773722aaaf7117ad694588e6ff3ac37",
+  "capture_sha256": "a359109da8ff04f66668fe277c1817f90de25707fcaed067138f991a381dfd7b",
+  "code_sha256": "add34d15bcf67ed91720680290df70b96a25c7d3d890d5b14e2e87e15c5d612c",
+  "columns": [
+    "instrument",
+    "timestamp",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "pair_close",
+    "pair_ratio_avg_3",
+    "row_role",
+    "forward_spread_return_1d"
+  ],
+  "config": {
+    "capture_period": {
+      "end_exclusive_utc": "2026-10-02T00:00:00Z",
+      "start_utc": "2017-12-27T00:00:00Z"
+    },
+    "duplicate_policy": "reject entire dataset",
+    "evaluable_period": {
+      "end_exclusive_utc": "2026-10-01T00:00:00Z",
+      "start_utc": "2018-01-02T00:00:00Z"
+    },
+    "frequency_seconds": 86400,
+    "instrument": "LQD",
+    "missing_policy": "reject entire dataset; no imputation",
+    "schema_version": "1",
+    "source": "Alpaca Data API v2 (daily equity bars, split-adjusted)",
+    "support_policy": "exactly three PAIRRATIO3 warm-up rows before and one forward-return row after the evaluable period",
+    "temporal_policy": "reject rows outside the declared capture period",
+    "timezone": "UTC"
+  },
+  "dataset_id": "HISTORICAL_HYPOTHESIS_DATASET|6c58c500f3754e5e08550e860b99d6bd2b53d6b3066e7e6cc46117800d0a98a6",
+  "dataset_sha256": "f2a45c51fb862596275347828c440ca67a336626c32d08946921bd2a08002901",
+  "identity": {
+    "code_revision": "fcc669a54e5a67b90e0e2cb40c1d7f9e19ace12d",
+    "config": {
+      "capture_period": {
+        "end_exclusive_utc": "2026-10-02T00:00:00Z",
+        "start_utc": "2017-12-27T00:00:00Z"
+      },
+      "duplicate_policy": "reject entire dataset",
+      "evaluable_period": {
+        "end_exclusive_utc": "2026-10-01T00:00:00Z",
+        "start_utc": "2018-01-02T00:00:00Z"
+      },
+      "frequency_seconds": 86400,
+      "instrument": "LQD",
+      "missing_policy": "reject entire dataset; no imputation",
+      "schema_version": "1",
+      "source": "Alpaca Data API v2 (daily equity bars, split-adjusted)",
+      "support_policy": "exactly three PAIRRATIO3 warm-up rows before and one forward-return row after the evaluable period",
+      "temporal_policy": "reject rows outside the declared capture period",
+      "timezone": "UTC"
+    },
+    "hashes": {
+      "capture_sha256": "a359109da8ff04f66668fe277c1817f90de25707fcaed067138f991a381dfd7b",
+      "code_sha256": "add34d15bcf67ed91720680290df70b96a25c7d3d890d5b14e2e87e15c5d612c",
+      "dataset_sha256": "f2a45c51fb862596275347828c440ca67a336626c32d08946921bd2a08002901",
+      "pair_close_capture_sha256": "d8b14016e964576cf988a1580e9f4672e0bbc42d140d9f03097c51a7e05d4a68",
+      "pair_close_raw_sha256": "52c9051ab314b90ac6066aaaf80f661ee425599b5c563a2fda2db22482233deb",
+      "raw_sha256": "802dff156cb3b6c131645a46265d8ad649d9cc3b32e3540be6994dd5da7c3dd7",
+      "selection_sha256": "8896a4d5c9718a0c49feb80ce4454f3b41542281bb253850ace7e90869f58ea2",
+      "validation_sha256": "5ad5e6ed89b1b99d87238b0d71aafa9008500fbe328b5bc07d3d6b15cb5260e9"
+    },
+    "hypothesis_id": "HYPOTHESIS|cf55e397-75ab-49d9-8f69-1e155e312a2c",
+    "hypothesis_version": 3,
+    "schema_version": "1",
+    "system_version": "0.1.0"
+  },
+  "input_kind": "alpaca-equity-bars",
+  "pair_close_capture_sha256": "d8b14016e964576cf988a1580e9f4672e0bbc42d140d9f03097c51a7e05d4a68",
+  "pair_close_raw_sha256": "52c9051ab314b90ac6066aaaf80f661ee425599b5c563a2fda2db22482233deb",
+  "range": [
+    "2017-12-27T00:00:00Z",
+    "2026-10-01T00:00:00Z"
+  ],
+  "raw_sha256": "802dff156cb3b6c131645a46265d8ad649d9cc3b32e3540be6994dd5da7c3dd7",
+  "replay": "create_hypothesis_dataset(<registry>, <hypothesis_id>, <version>, <output>)",
+  "rows": 2202,
+  "runtime": "3.11.9",
+  "schema": {
+    "close": "finite float64",
+    "forward_spread_return_1d": "nullable finite float64; defined only for EVALUATION rows",
+    "high": "finite float64",
+    "instrument": "string",
+    "low": "finite float64",
+    "open": "finite float64",
+    "pair_close": "nullable finite float64",
+    "pair_ratio_avg_3": "nullable finite float64",
+    "row_role": "SUPPORT_PAIRRATIO3_WARMUP | EVALUATION | SUPPORT_FORWARD_RETURN",
+    "timestamp": "UTC ISO8601 bucket start",
+    "volume": "finite float64"
+  },
+  "selection_sha256": "8896a4d5c9718a0c49feb80ce4454f3b41542281bb253850ace7e90869f58ea2",
+  "status": "PASS",
+  "validation_sha256": "5ad5e6ed89b1b99d87238b0d71aafa9008500fbe328b5bc07d3d6b15cb5260e9"
+}
