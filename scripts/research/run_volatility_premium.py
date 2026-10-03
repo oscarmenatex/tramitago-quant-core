@@ -47,7 +47,8 @@ from tramitago_quant_core.data.fred_series import (
     capture_fred_series, verified_fred_series_capture, ENDPOINT_API)
 from tramitago_quant_core.governance.evidence_host import require_evidence_host
 from tramitago_quant_core.governance.admission import (
-    adverse_bound, constitute_admission, SURVIVAL_P2, MONITOR_LINK_M1, MONITOR_LINK_M2)
+    adverse_bound, constitute_admission, SURVIVAL_P2, MONITOR_LINK_M1, MONITOR_LINK_M2,
+    LINK_UNREACHABLE, LINK_REACHABLE_MET, LINK_REACHABLE_FAILED)
 from tramitago_quant_core.research.historical_dataset import create_hypothesis_dataset
 from tramitago_quant_core.research.level_claim import (
     level_claim, evaluate_fold, level_claim_outcome, level_claim_gate_report,
@@ -288,8 +289,13 @@ def main():
               f"many is not evidence, and §11.1 says INSUFFICIENT_EVIDENCE IS NOT A PASS")
     form = MONITOR_LINK_M1 if clears else MONITOR_LINK_M2
     print(f"      -> declaring {form}"
-          + ("" if clears else ", the identity: an inverted curve rolls against the "
-                               "position by subtraction"))
+          + ("" if clears else
+             ", the identity: an inverted curve rolls against the position by subtraction"))
+    if not clears and enough:
+        print("      and M2 CANNOT answer here: the empirical form was reachable "
+              "and failed, so R3 FAILS.")
+        print("      M2_AVAILABILITY|04a35abd was sealed after this very run "
+              "certified a monitor the evidence had just refuted.")
 
     loss_if_dead = max(mean_net, 0.0)
     monitor_contract = p.monitoring_contract(
@@ -369,6 +375,13 @@ def main():
         "is_pnl_only": False,
         "observes_adverse_state_representatively": clears,
         "link_form": form,
+        # What the empirical form RETURNED, which since M2_AVAILABILITY|04a35abd
+        # decides whether the identity form may be used at all. M2 answers for
+        # evidence that cannot be gathered, never for evidence gathered that
+        # points the other way.
+        "link_empirical_outcome": (
+            LINK_UNREACHABLE if not enough
+            else LINK_REACHABLE_MET if clears else LINK_REACHABLE_FAILED),
     }
     if form == MONITOR_LINK_M1:
         monitor_evidence["link_consistency"] = {

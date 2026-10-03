@@ -58,8 +58,13 @@ from tramitago_quant_core.shared.util import (
 # which §11.5 required to be grounded independently of #37 before it could be
 # touched at all. R3 now admits two forms of evidence for a monitor's
 # inferential link, mirroring the structure R2 has always had.
-ADMISSION_SCHEMA_VERSION = "3"
-ADMISSION_SCHEMA_VERSIONS = ("1", "2", "3")
+# Schema 4, 2026-10-03: M2_AVAILABILITY|04a35abd. M2 is available only where M1
+# is NOT. The first Hypothesis to exercise both forms had a reachable empirical
+# link that FAILED -- 2 of 5 folds against a 0.70 threshold -- and M2 certified
+# the monitor anyway. Only a net Sharpe bound missing by 0.045 stopped that
+# being admitted.
+ADMISSION_SCHEMA_VERSION = "4"
+ADMISSION_SCHEMA_VERSIONS = ("1", "2", "3", "4")
 GATE_SHARPE_V1 = "maximando: net Sharpe, lower 95% bound >= 0.50"
 
 # M1 is §11.1 unchanged. M2 is new and is DELIBERATELY NARROWER than R2's P2:
@@ -69,7 +74,16 @@ GATE_SHARPE_V1 = "maximando: net Sharpe, lower 95% bound >= 0.50"
 MONITOR_LINK_M1 = "M1_EMPIRICAL"
 MONITOR_LINK_M2 = "M2_IDENTITY"
 MONITOR_LINK_FORMS = (MONITOR_LINK_M1, MONITOR_LINK_M2)
+# Every schema from 3 on knows the two forms; 1 and 2 never heard of them.
+SCHEMAS_WITH_LINK_FORMS = ("3", "4")
 MONITOR_M2_FIELDS = ("identity", "parameter", "parameter_source", "holds_for_range")
+
+# What the empirical form returned, which decides whether M2 may be used at all.
+# Absent means the question was never asked, and schemas before 4 never asked it.
+LINK_UNREACHABLE = "UNREACHABLE"            # too few usable folds; M2's warrant
+LINK_REACHABLE_MET = "REACHABLE_AND_MET"    # M1 stands on its own
+LINK_REACHABLE_FAILED = "REACHABLE_AND_FAILED"   # M2 is closed
+LINK_EMPIRICAL_OUTCOMES = (LINK_UNREACHABLE, LINK_REACHABLE_MET, LINK_REACHABLE_FAILED)
 GATE_SHARPE_V1 = "maximando: net Sharpe, lower 95% bound >= 0.50"
 ADMISSION_REGISTRY_SCHEMA_VERSION = "1"
 ADMISSION_STATUS = "ISSUED"
@@ -272,11 +286,31 @@ def _monitorability_gate(evidence, schema_version=ADMISSION_SCHEMA_VERSION):
     # WHICH FORM ESTABLISHES THE LINK. Schemas 1 and 2 knew only the empirical
     # one and are judged by it; absent a declared form, so is schema 3, so no
     # evidence written before the revision changes meaning because of it.
+    # A SET, not a comparison against one version. Written as `== "3"` this
+    # silently reverted schema 4 to judging every monitor as M1, because the
+    # conditional binds looser than the `or` and every later schema fell through
+    # to the default. Caught by the first test of the schema that followed it.
     form = (monitor.get("link_form") or MONITOR_LINK_M1
-            if schema_version == "3" else MONITOR_LINK_M1)
+            if schema_version in SCHEMAS_WITH_LINK_FORMS else MONITOR_LINK_M1)
     if form not in MONITOR_LINK_FORMS:
         return _gate(GATE_MONITORABILITY, GATE_NOT_EVALUABLE,
                      f"link form must be one of {', '.join(MONITOR_LINK_FORMS)}")
+    outcome = monitor.get("link_empirical_outcome")
+    if schema_version == "4" and outcome is not None:
+        if outcome not in LINK_EMPIRICAL_OUTCOMES:
+            return _gate(GATE_MONITORABILITY, GATE_NOT_EVALUABLE,
+                         f"the empirical link's outcome must be one of "
+                         f"{', '.join(LINK_EMPIRICAL_OUTCOMES)}")
+        if form == MONITOR_LINK_M2 and outcome == LINK_REACHABLE_FAILED:
+            # M2's sealed warrant is ABSENT evidence, never ADVERSE evidence.
+            # FAILED rather than NOT_EVALUABLE: the measurement was taken and it
+            # came back against, which is a verdict about the monitor and not
+            # the absence of one -- the same distinction §11.1 already draws
+            # when it refuses to read INSUFFICIENT_EVIDENCE as a pass.
+            return _gate(GATE_MONITORABILITY, GATE_FAILED,
+                         "the empirical link was reachable and FAILED, so the identity form "
+                         "is unavailable: M2 answers for evidence that cannot be gathered, "
+                         "never for evidence that was gathered and points the other way")
     if form == MONITOR_LINK_M2:
         # NOTHING HERE CAN CHECK THAT A STATED IDENTITY IS ONE. The gate records
         # the claim, requires it to be complete, and marks the verdict as resting

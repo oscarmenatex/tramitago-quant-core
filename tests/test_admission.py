@@ -21,7 +21,8 @@ from tramitago_quant_core.governance.admission import (
 
     _sharpe_gate, _admission_record_is_valid, GATE_SHARPE_V1,
     _monitorability_gate, MONITOR_LINK_M1, MONITOR_LINK_M2,
-    MONITOR_LINK_FORMS, MONITOR_M2_FIELDS,)
+    MONITOR_LINK_FORMS, MONITOR_M2_FIELDS,
+    LINK_UNREACHABLE, LINK_REACHABLE_MET, LINK_REACHABLE_FAILED,)
 
 REVISION = "a" * 40
 AT = "2026-10-02T00:00:00Z"
@@ -452,3 +453,61 @@ class MonitorFormTests(unittest.TestCase):
             observes_adverse_state_representatively=True))["state"], GATE_PASSED)
         self.assertEqual(self._state(self._monitor(
             observes_adverse_state_representatively=False))["state"], GATE_FAILED)
+
+
+class M2AvailabilityTests(unittest.TestCase):
+    """M2_AVAILABILITY|04a35abd: M2 answers for evidence that cannot be gathered,
+    never for evidence that was gathered and points the other way.
+
+    Found by the first Hypothesis to exercise both forms. The volatility
+    premium's empirical link was REACHABLE -- 5 usable folds, meeting the
+    declared minimum -- and FAILED at 2 of 5 = 0.40 against 0.70. M2 certified
+    the monitor anyway, and only a net Sharpe bound missing by 0.045 stopped
+    that being admitted.
+    """
+
+    def _m2(self, outcome=None, schema="4"):
+        monitor = {"variable": "VXVCLS-VIXCLS", "frequency_seconds": 86400,
+                   "degradation_threshold": "0", "action": "SUSPEND",
+                   "detection_latency_days": "3",
+                   "expected_daily_loss_if_dead": "0.0001", "is_pnl_only": False,
+                   "link_form": MONITOR_LINK_M2, "identity": "the roll is the slope",
+                   "parameter": "0", "parameter_source": "the sign change",
+                   "holds_for_range": "any curve shape"}
+        if outcome is not None:
+            monitor["link_empirical_outcome"] = outcome
+        return _monitorability_gate({"monitor": monitor}, schema)
+
+    def test_a_reachable_link_that_failed_closes_the_identity_form(self):
+        gate = self._m2(LINK_REACHABLE_FAILED)
+        self.assertEqual(gate["state"], GATE_FAILED)
+        self.assertIn("points the other way", gate["detail"])
+
+    def test_it_fails_rather_than_being_unevaluable(self):
+        # The evidence exists and came back against: that is a verdict about
+        # the monitor, not an absence of one.
+        self.assertNotEqual(self._m2(LINK_REACHABLE_FAILED)["state"], GATE_NOT_EVALUABLE)
+
+    def test_M2_still_answers_where_the_empirical_form_is_unreachable(self):
+        # The case the revision was sealed for, and the credit premium's actual
+        # situation at zero trigger days.
+        self.assertEqual(self._m2(LINK_UNREACHABLE)["state"], GATE_PASSED)
+
+    def test_a_link_that_was_reachable_and_met_does_not_close_anything(self):
+        self.assertEqual(self._m2(LINK_REACHABLE_MET)["state"], GATE_PASSED)
+
+    def test_an_unrecognised_outcome_is_not_evaluable(self):
+        self.assertEqual(self._m2("PROBABLY_FINE")["state"], GATE_NOT_EVALUABLE)
+
+    def test_schema_3_never_asks_the_question(self):
+        # Nothing sealed before this correction changes meaning because of it.
+        self.assertEqual(self._m2(LINK_REACHABLE_FAILED, "3")["state"], GATE_PASSED)
+
+    def test_evidence_that_does_not_say_is_judged_as_it_was(self):
+        self.assertEqual(self._m2(None)["state"], GATE_PASSED)
+
+    def test_the_correction_only_ever_removes_a_path(self):
+        # §11.0's test: harder, never easier. Every outcome that passed before
+        # still passes except the one the ground names.
+        for outcome in (None, LINK_UNREACHABLE, LINK_REACHABLE_MET):
+            self.assertEqual(self._m2(outcome)["state"], GATE_PASSED)
