@@ -14,12 +14,24 @@ from pathlib import Path
 
 from tramitago_quant_core.research.candidate_register import (
     candidate, candidate_verdict, rank_candidates, constitute_candidate_register,
+    monitor_status, candidate_blockers, admissible_in_principle, what_would_unlock,
+    EXECUTOR_CAN_OPEN_SHORTS, MONITOR_NONE_POSSIBLE, MONITOR_LINK_MET,
+    MONITOR_LINK_REFUTED, MONITOR_IDENTITY_ONLY, MONITOR_UNEXAMINED,
+    CERTAINTY_MEASURED, CERTAINTY_INFERRED, BLOCKER_REQUIRES_SHORT,
+    BLOCKER_MONITOR_REFUTED, BLOCKER_NO_MONITOR,
     VERDICT_FEASIBLE, VERDICT_UNCERTAIN, VERDICT_BELOW_BAR, VERDICT_UNREACHABLE_DATA,
+    VERDICT_UNOPERABLE,
     STATUS_UNTRIED, STATUS_MEASURED_DEAD,
 )
 from tramitago_quant_core.research.pre_declaration import CLAIM_PREMIUM
 
+UNEXAMINED = monitor_status(
+    variable="a published variable nobody has examined yet",
+    status=MONITOR_UNEXAMINED,
+    evidence="nobody has measured whether this variable degrades the return")
+
 FIELDS = dict(
+    requires_short=False, monitor=UNEXAMINED,
     claim_class=CLAIM_PREMIUM,
     payer="investors shedding a risk they are mandated or unwilling to bear",
     effect_source="a range recalled from published estimates, never measured here",
@@ -133,3 +145,39 @@ class SealingTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class LotSizeTests(unittest.TestCase):
+    """R4 checks the capacity CEILING and never the LOT, so a Hypothesis can
+    pass it and be unoperable anyway.
+
+    MEASURED 2026-10-03: at a $1,000 tranche and the 10.9% weight the drawdown
+    limit derived for the same premium, the position is $109 of notional, while
+    one mini VIX future at VIX 18 is $1,800 and one full contract is $18,000.
+    No premium is large enough to fix an indivisible wrapper.
+    """
+
+    def test_a_lot_larger_than_the_tranche_is_refused_whatever_the_effect(self):
+        entry = candidate(name="VX futures", effect_low="0.90", effect_high="1.50",
+                          available_years="13.75", minimum_position_usd="1800", **FIELDS)
+        verdict = candidate_verdict(entry)
+        self.assertEqual(verdict["verdict"], VERDICT_UNOPERABLE)
+        self.assertIn("whatever the premium measures", verdict["detail"])
+
+    def test_an_expressible_lot_is_judged_on_its_effect_as_usual(self):
+        entry = candidate(name="an ETF", effect_low="0.60", effect_high="1.00",
+                          available_years="10.75", minimum_position_usd="20", **FIELDS)
+        self.assertEqual(candidate_verdict(entry)["verdict"], VERDICT_FEASIBLE)
+
+    def test_a_candidate_with_no_lot_worth_stating_is_unaffected(self):
+        # An ETF share is not a lot size; a futures contract is.
+        entry = _entry("an ETF", "0.60", "1.00", "10.75")
+        self.assertNotIn("minimum_position_usd", entry)
+        self.assertEqual(candidate_verdict(entry)["verdict"], VERDICT_FEASIBLE)
+
+    def test_unoperable_sorts_below_every_open_question(self):
+        register = {"candidates": [
+            candidate(name="indivisible", effect_low="0.90", effect_high="1.50",
+                      available_years="13.75", minimum_position_usd="1800", **FIELDS),
+            _entry("modest but holdable", "0.30", "0.60", "10.75")]}
+        self.assertEqual(rank_candidates(register)[0]["name"], "modest but holdable")

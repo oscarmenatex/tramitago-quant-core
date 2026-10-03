@@ -22,7 +22,8 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
 from tramitago_quant_core.data.alpaca_equity_series import (
-    _alpaca_bars_url, _alpaca_bars_parse, _alpaca_get, ALPACA_FEED_SIP)
+    _alpaca_bars_url, _alpaca_bars_parse, _alpaca_get, ALPACA_FEED_SIP,
+    ALPACA_CALENDAR_HOST)
 
 PROBE_FROM, PROBE_TO = "2010-01-01", "2026-10-01"
 
@@ -36,6 +37,24 @@ def _injector():
             "variables before running this script. Never put credentials in a file.")
     return lambda headers: {**headers, "APCA-API-KEY-ID": key_id,
                             "APCA-API-SECRET-KEY": secret}
+
+
+def _tradability(symbol, injector):
+    """Whether the account may SHORT it, and in what size.
+
+    A position the drawdown limit sizes at $109 cannot be held in a futures
+    contract worth $1,800, and it cannot be held at all in something the broker
+    will not lend. Both are facts about the WRAPPER rather than the premium, and
+    both decide whether a Hypothesis can ever be operated at Fase 1 capital --
+    which R4 does not ask, because it checks the ceiling and never the lot.
+    """
+    import json as _json
+    raw, _ = _alpaca_get(f"https://{ALPACA_CALENDAR_HOST}/v2/assets/{symbol}",
+                         injector, None)
+    asset = _json.loads(raw)
+    return {key: asset.get(key) for key in
+            ("status", "tradable", "shortable", "easy_to_borrow", "fractionable",
+             "marginable")}
 
 
 def main():
@@ -64,6 +83,13 @@ def main():
         print(f"  {symbol:6} {len(days):>5} bars  {min(days)} -> {max(days)}  "
               f"({pages} page(s))")
         print(f"  {'':6} {after:>5} of them on or after 2018-03-01, the date SVXY became -0.5x")
+        try:
+            flags = _tradability(symbol, injector)
+            print(f"  {'':6} {'':>5} " + "  ".join(
+                f"{key}={value}" for key, value in flags.items()))
+        except Exception as error:
+            print(f"  {'':6} {'':>5} tradability unavailable: "
+                  f"{type(error).__name__}: {str(error)[:70]}")
     return 0
 
 
