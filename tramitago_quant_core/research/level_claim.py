@@ -84,8 +84,8 @@ from tramitago_quant_core.research.walk_forward import (
     STATISTICAL_VALIDATION_OUTCOMES,
 )
 
-LEVEL_CLAIM_SCHEMA_VERSION = "2"
-LEVEL_CLAIM_SCHEMA_VERSIONS = ("1", "2")
+LEVEL_CLAIM_SCHEMA_VERSION = "3"
+LEVEL_CLAIM_SCHEMA_VERSIONS = ("1", "2", "3")
 LEVEL_CLAIM_VALIDATION_SCHEMA_VERSION = "1"
 LEVEL_CLAIM_VALIDATION_REGISTRY_SCHEMA_VERSION = "1"
 LEVEL_CLAIM_VALIDATION_STATUS = "ISSUED"
@@ -323,9 +323,32 @@ def evaluate_fold(claim, cost_contract, *, fold_index, period, positions, gross_
     mean_net = math.fsum(held) / len(held) if held else None
     drawdown = _risk_analytics_max_drawdown(net)
 
+    # WHICH QUESTION A FOLD ANSWERS, and schema 3 exists because schemas 1 and 2
+    # asked the wrong one. They marked a fold MET only when its own 95% bound was
+    # above zero -- that is, when the position was STATISTICALLY SIGNIFICANT
+    # inside that fold alone. The consistency threshold those claims are judged
+    # against was calibrated for SIGN consistency: how often the thing paid. The
+    # two are not the same test, and the gap is sample size, not quality.
+    #
+    # MEASURED on SPY over 2018-2026, seven folds of about fifteen months: 6 of 7
+    # folds have a positive MEAN (0.857, clearing the 0.70 threshold) and 3 of 7
+    # have a positive BOUND (0.4286, failing it). The full sample's bound IS
+    # positive. The aggregate is significant; no fifteen-month slice of it can
+    # be, and demanding that of every slice refuses everything rather than
+    # discriminating between things.
+    #
+    # So schema 3 splits the two questions that one number was conflating. The
+    # fold answers "did it pay in this period" by its SIGN, and significance is
+    # established once, on all the data, where a bound has the power to mean
+    # something -- which the admission Sharpe gate already does. Nothing new is
+    # invented and no new threshold is introduced; 0.70 simply goes back to
+    # measuring what it was set for.
+    #
+    # The bound is still computed and still recorded on every fold. It stopped
+    # deciding the fold; it did not stop being evidence.
     if not held or bound is None:
         result = FOLD_INCONCLUSIVE
-    elif bound > 0:
+    elif (mean_net > 0 if claim.get("schema_version") == "3" else bound > 0):
         result = FOLD_MET
     else:
         result = FOLD_NOT_MET
@@ -391,8 +414,10 @@ def level_claim_outcome(claim, folds):
     such a sample pass.
 
     Schema 1 claims are judged by the frequency rule they were sealed under;
-    schema 2 by coverage. A verdict is never re-adjudicated under a rule that did
-    not exist when it was issued.
+    schema 2 and 3 by tail coverage. Schema 3 additionally marks a fold MET on
+    the SIGN of its mean rather than on its own bound -- see evaluate_fold. A
+    verdict is never re-adjudicated under a rule that did not exist when it was
+    issued, which is why all three rules remain here rather than one.
     """
     verified_level_claim(claim)
     usable = [item for item in folds if item["result"] != FOLD_INCONCLUSIVE]

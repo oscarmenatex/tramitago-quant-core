@@ -26,7 +26,7 @@ AT = "2026-10-02T00:00:00Z"
 
 def _passing_evidence(**overrides):
     evidence = {
-        "net_sharpe": adverse_bound("0.61", is_adverse_bound=True,
+        "net_sharpe": adverse_bound("0.61", is_adverse_bound=True, point_estimate="1.20",
                                     source="walk-forward bootstrap"),
         "worst_fold_drawdown": adverse_bound("0.11", is_adverse_bound=True,
                                              source="walk-forward folds"),
@@ -78,7 +78,8 @@ class LifecycleTests(unittest.TestCase):
 
     def test_a_single_failure_denies(self):
         evidence = _passing_evidence(
-            net_sharpe=adverse_bound("0.20", is_adverse_bound=True, source="x"))
+            net_sharpe=adverse_bound("0.20", is_adverse_bound=True, point_estimate="0.30",
+                                     source="x"))
         self.assertEqual(admission_outcome(evaluate_admission_gates(evidence))[0],
                          ADMISSION_DENIED)
 
@@ -93,7 +94,8 @@ class EveryGateIsEvaluatedTests(unittest.TestCase):
 
     def test_two_failures_are_both_reported(self):
         evidence = _passing_evidence(
-            net_sharpe=adverse_bound("0.10", is_adverse_bound=True, source="x"),
+            net_sharpe=adverse_bound("0.10", is_adverse_bound=True, point_estimate="0.20",
+                                     source="x"),
             worst_fold_drawdown=adverse_bound("0.40", is_adverse_bound=True, source="x"))
         _, failed, _ = admission_outcome(evaluate_admission_gates(evidence))
         self.assertEqual(sorted(failed), sorted([GATE_SHARPE, GATE_DRAWDOWN]))
@@ -102,7 +104,8 @@ class EveryGateIsEvaluatedTests(unittest.TestCase):
         # "We measured this and it falls short" and "nobody has measured this"
         # are different facts about a project.
         evidence = _passing_evidence(
-            net_sharpe=adverse_bound("0.10", is_adverse_bound=True, source="x"))
+            net_sharpe=adverse_bound("0.10", is_adverse_bound=True, point_estimate="0.20",
+                                     source="x"))
         del evidence["capacity"]
         _, failed, unevaluable = admission_outcome(evaluate_admission_gates(evidence))
         self.assertEqual(failed, [GATE_SHARPE])
@@ -127,7 +130,8 @@ class AdverseBoundTests(unittest.TestCase):
 
     def test_the_thresholds_are_the_declared_ones(self):
         self.assertEqual(_states(_passing_evidence(
-            net_sharpe=adverse_bound("0.50", is_adverse_bound=True, source="x")))[GATE_SHARPE],
+            net_sharpe=adverse_bound("0.01", is_adverse_bound=True, point_estimate="0.50",
+                                     source="x")))[GATE_SHARPE],
             GATE_PASSED)
         self.assertEqual(_states(_passing_evidence(
             worst_fold_drawdown=adverse_bound("0.15", is_adverse_bound=True,
@@ -243,7 +247,8 @@ class SealingTests(unittest.TestCase):
     def test_an_edited_outcome_no_longer_reproduces(self):
         with tempfile.TemporaryDirectory() as tmp:
             evidence = _passing_evidence(
-                net_sharpe=adverse_bound("0.10", is_adverse_bound=True, source="x"))
+                net_sharpe=adverse_bound("0.10", is_adverse_bound=True, point_estimate="0.20",
+                                     source="x"))
             record = self._seal(tmp, evidence)
             path = Path(tmp) / "admissions.json"
             path.write_text(path.read_text("utf-8").replace(
@@ -255,7 +260,8 @@ class SealingTests(unittest.TestCase):
     def test_denials_can_be_queried_which_is_the_point_of_recording_them(self):
         with tempfile.TemporaryDirectory() as tmp:
             self._seal(tmp, _passing_evidence(
-                net_sharpe=adverse_bound("0.10", is_adverse_bound=True, source="x")))
+                net_sharpe=adverse_bound("0.10", is_adverse_bound=True, point_estimate="0.20",
+                                     source="x")))
             path = Path(tmp) / "admissions.json"
             self.assertEqual(len(query_admissions(path, ADMISSION_DENIED)), 1)
             self.assertEqual(query_admissions(path, ADMITTED), [])
@@ -267,3 +273,64 @@ class SealingTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class CorrectedSharpeGateTests(unittest.TestCase):
+    """Section 8.2 as corrected 2026-10-02, on arithmetic sealed beforehand.
+
+    The threshold 0.50 was set for a Sharpe ratio and applied to its lower 95%
+    bound. MEASURED on SPY over 8.72 years: point +0.8125, bound +0.2695 -- a
+    gap of 0.543, so "bound >= 0.50" behaved like "Sharpe >= 1.04 over a
+    decade", and the best documented risk premium in finance failed a gate
+    reading "net Sharpe >= 0.50". The gap is a function of sample size, so no
+    replacement constant fixes it; the two questions had to be separated.
+    """
+
+    def _gate(self, **kwargs):
+        return _states(_passing_evidence(
+            net_sharpe=adverse_bound(source="x", **kwargs)))[GATE_SHARPE]
+
+    def test_the_real_measurement_that_forced_this_now_passes(self):
+        # SPY's actual figures. It still fails the drawdown gate unsized, which
+        # is a different gate and is left alone.
+        self.assertEqual(
+            self._gate(value="0.2695", is_adverse_bound=True, point_estimate="0.8125"),
+            GATE_PASSED)
+
+    def test_a_large_effect_that_is_not_established_is_still_refused(self):
+        # spy-mom10-2024: point 1.5198 on 252 days, bound -0.1798, and its sign
+        # broke in BOTH out-of-sample periods. Dropping the bound entirely would
+        # readmit it, which is why the bound was recalibrated and not removed.
+        self.assertEqual(
+            self._gate(value="-0.1798", is_adverse_bound=True, point_estimate="1.5198"),
+            GATE_FAILED)
+
+    def test_an_established_effect_that_is_too_small_is_refused(self):
+        self.assertEqual(
+            self._gate(value="0.10", is_adverse_bound=True, point_estimate="0.49"),
+            GATE_FAILED)
+
+    def test_a_bound_of_exactly_zero_is_not_established(self):
+        # "> 0", not ">= 0": a bound touching zero has not excluded no effect.
+        self.assertEqual(
+            self._gate(value="0", is_adverse_bound=True, point_estimate="2.0"), GATE_FAILED)
+
+    def test_a_bound_without_its_point_estimate_is_not_evaluable_not_failed(self):
+        # Nobody measuring a bound before 2026-10-02 was asked for the point
+        # estimate. "We cannot tell" and "it falls short" are different facts.
+        self.assertEqual(
+            self._gate(value="0.61", is_adverse_bound=True), GATE_NOT_EVALUABLE)
+
+    def test_a_point_estimate_alone_is_still_refused_outright(self):
+        self.assertEqual(
+            self._gate(value="9.99", is_adverse_bound=False), GATE_FAILED)
+
+    def test_the_point_estimate_is_absent_rather_than_null_when_not_given(self):
+        # Additive field presence, so every figure already sealed without one
+        # reproduces byte for byte.
+        self.assertNotIn("point_estimate",
+                         adverse_bound("0.61", is_adverse_bound=True, source="x"))
+
+    def test_an_unparseable_point_estimate_is_refused_at_construction(self):
+        with self.assertRaises(ValueError):
+            adverse_bound("0.61", is_adverse_bound=True, source="x", point_estimate="big")
