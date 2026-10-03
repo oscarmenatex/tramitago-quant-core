@@ -103,6 +103,11 @@ def _print(result):
               f"  {declared.get('position_against_bar', '')}")
     if result["void"]:
         print(f"\n  MEASUREMENT VOID: {result['void']}")
+        check = result.get("distribution_check")
+        if check and check.get("implied_annual_yield") is not None:
+            print(f"  distributions  implied annual yield {check['implied_annual_yield']} "
+                  f"(declared {check['expected_annual_yield']}); ratio fell on "
+                  f"{check['decreases']} of {check['days']} days beyond quote rounding")
         print("  Nothing was judged and no level claim or admission was sealed. The")
         print("  captured data stays, because it is what was observed.\n" + "=" * 78)
         return

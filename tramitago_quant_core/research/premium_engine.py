@@ -157,6 +157,16 @@ def validate_spec(spec):
     return spec
 
 
+# US equity quotes are published to the cent, so a stored close is within half a cent of
+# the price it rounds. A property of the quote, derived from nothing a candidate did.
+QUOTE_HALF_TICK = 0.005
+
+
+def _rounding_bound(adjusted_close, raw_close):
+    """The most the ratio adjusted/raw can be off from rounding both quotes to the cent."""
+    return QUOTE_HALF_TICK / adjusted_close + QUOTE_HALF_TICK / raw_close
+
+
 def distribution_check(dates, adjusted, raw, expected_annual_yield):
     """Whether the adjusted bars treat distributions as a real total return.
 
@@ -169,6 +179,13 @@ def distribution_check(dates, adjusted, raw, expected_annual_yield):
     distribution factor, and compounding that over the years gives an implied annual
     yield to compare against what the fund is declared to pay.
 
+    THE RATIO IS NOISY BY CONSTRUCTION. Both closes are rounded to the cent, so the
+    ratio of two rounded numbers moves by up to the rounding of each, on each of the
+    two days compared: about 1e-4 at a price near 40 and 4e-4 near 17. A fall is
+    therefore only evidence of a defect when it EXCEEDS that bound. The first
+    version demanded no fall beyond 1e-6 and voided XYLD on 1235 of 2699 days, every
+    one of them inside the rounding: it tested idealised floats and so never met it.
+
     VOID, not merely flagged: a measurement whose adjustment cannot be trusted is not
     a weaker measurement, it is not a measurement of this Hypothesis.
     """
@@ -178,7 +195,9 @@ def distribution_check(dates, adjusted, raw, expected_annual_yield):
         return {"status": "VOID", "reason": f"only {len(ratios)} days carry both an "
                                            f"adjusted and a raw close"}
     values = [ratio for _, ratio in ratios]
-    decreases = sum(1 for i in range(1, len(values)) if values[i] < values[i - 1] * (1 - 1e-6))
+    bounds = [_rounding_bound(float(adjusted[day]), float(raw[day])) for day, _ in ratios]
+    decreases = sum(1 for i in range(1, len(values))
+                    if values[i] / values[i - 1] - 1 < -(bounds[i] + bounds[i - 1]))
     years = len(values) / TRADING_DAYS
     factor = values[-1] / values[0]
     implied = factor ** (1 / years) - 1
@@ -189,8 +208,9 @@ def distribution_check(dates, adjusted, raw, expected_annual_yield):
         reasons.append(f"the implied annual distribution yield {implied:.4f} is outside the "
                        f"declared range {low:.2f} to {high:.2f}")
     if decreases:
-        reasons.append(f"the adjusted-to-raw ratio FELL on {decreases} days, which a "
-                       f"distribution adjustment cannot do")
+        reasons.append(f"the adjusted-to-raw ratio FELL by more than the rounding of "
+                       f"the quotes on {decreases} days, which a distribution adjustment "
+                       f"cannot do")
     return {"status": "VOID" if reasons else "OK", "implied_annual_yield": f"{implied:.6f}",
             "expected_annual_yield": [str(low), str(high)], "days": len(values),
             "decreases": decreases, "reason": "; ".join(reasons) or None}

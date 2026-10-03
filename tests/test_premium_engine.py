@@ -145,6 +145,40 @@ class DistributionCheckTests(unittest.TestCase):
         self.assertEqual(check["status"], "VOID")
         self.assertGreater(check["decreases"], 0)
 
+    def _rounded_monthly_series(self, annual_yield=0.09):
+        """Distributions as monthly STEPS, as a fund pays them: the ratio is flat between
+        ex-dates, so the only thing moving it day to day is rounding to the cent."""
+        import random
+        rng, n = random.Random(1), len(self.DAYS)
+        price, raw = 40.0, {}
+        for day in self.DAYS:
+            price *= 1 + rng.uniform(-0.01, 0.01)
+            raw[day] = price
+        monthly = (1 + annual_yield) ** (1 / 12)
+        adjusted = {day: raw[day] / monthly ** ((n - 1 - i) // 21 + 1)
+                    for i, day in enumerate(self.DAYS)}
+        return ({d: round(v, 2) for d, v in adjusted.items()},
+                {d: round(v, 2) for d, v in raw.items()})
+
+    def test_quotes_rounded_to_the_cent_are_not_mistaken_for_a_falling_ratio(self):
+        # XYLD's real shape. The first check tolerated 1e-6 and voided it on 1235 of
+        # 2699 days, every one of them inside the rounding of the quotes.
+        adjusted, raw = self._rounded_monthly_series()
+        values = [adjusted[d] / raw[d] for d in self.DAYS]
+        falls = sum(1 for i in range(1, len(values)) if values[i] < values[i - 1] * (1 - 1e-6))
+        self.assertGreater(falls, 500)                     # the noise is really there
+        check = distribution_check(self.DAYS, adjusted, raw, ["0.04", "0.16"])
+        self.assertEqual(check["status"], "OK", check["reason"])
+        self.assertEqual(check["decreases"], 0)
+
+    def test_a_real_fall_is_still_caught_on_rounded_quotes(self):
+        # The tolerance is the rounding and nothing more: a 1% reversal still voids.
+        adjusted, raw = self._rounded_monthly_series()
+        adjusted[self.DAYS[1000]] = round(adjusted[self.DAYS[1000]] * 0.99, 2)
+        check = distribution_check(self.DAYS, adjusted, raw, ["0.04", "0.16"])
+        self.assertEqual(check["status"], "VOID")
+        self.assertGreater(check["decreases"], 0)
+
     def test_too_few_overlapping_days_cannot_be_checked_at_all(self):
         adjusted, raw = self._series(0.09)
         check = distribution_check(self.DAYS[:100], adjusted, raw, ["0.04", "0.16"])
