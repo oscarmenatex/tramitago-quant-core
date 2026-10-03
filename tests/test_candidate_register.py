@@ -14,13 +14,24 @@ from pathlib import Path
 
 from tramitago_quant_core.research.candidate_register import (
     candidate, candidate_verdict, rank_candidates, constitute_candidate_register,
+    monitor_status, candidate_blockers, admissible_in_principle, what_would_unlock,
+    EXECUTOR_CAN_OPEN_SHORTS, MONITOR_NONE_POSSIBLE, MONITOR_LINK_MET,
+    MONITOR_LINK_REFUTED, MONITOR_IDENTITY_ONLY, MONITOR_UNEXAMINED,
+    CERTAINTY_MEASURED, CERTAINTY_INFERRED, BLOCKER_REQUIRES_SHORT,
+    BLOCKER_MONITOR_REFUTED, BLOCKER_NO_MONITOR,
     VERDICT_FEASIBLE, VERDICT_UNCERTAIN, VERDICT_BELOW_BAR, VERDICT_UNREACHABLE_DATA,
     VERDICT_UNOPERABLE,
     STATUS_UNTRIED, STATUS_MEASURED_DEAD,
 )
 from tramitago_quant_core.research.pre_declaration import CLAIM_PREMIUM
 
+UNEXAMINED = monitor_status(
+    variable="a published variable nobody has examined yet",
+    status=MONITOR_UNEXAMINED,
+    evidence="nobody has measured whether this variable degrades the return")
+
 FIELDS = dict(
+    requires_short=False, monitor=UNEXAMINED,
     claim_class=CLAIM_PREMIUM,
     payer="investors shedding a risk they are mandated or unwilling to bear",
     effect_source="a range recalled from published estimates, never measured here",

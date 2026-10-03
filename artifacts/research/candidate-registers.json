@@ -101,6 +101,141 @@
           "status": "UNTRIED"
         },
         {
+          "available_years": "21.00",
+          "claim_class": "PREMIUM",
+          "data_source": "CBOE; NO SOURCE THIS PROJECT REACHES SERVES IT, which is the only thing stopping it",
+          "effect": {
+            "high": "1.00",
+            "low": "0.50",
+            "source": "the same literature as the SVXY entry; what differs is the window, because CBOE's VIX futures date from 2004 and the ETP does not"
+          },
+          "name": "variance risk premium, via VIX futures directly",
+          "payer": "the same buyers of protection, without an ETP wrapper between the premium and the position",
+          "reachable_today": false,
+          "status": "UNTRIED"
+        },
+        {
+          "available_years": "10.00",
+          "claim_class": "MISPRICING",
+          "data_source": "Coinbase public history",
+          "effect": {
+            "high": "0.50",
+            "low": "0.00",
+            "source": "no basis for a range; two Hypotheses measured 5 of 10 folds and the stopping rule cannot judge the population below five"
+          },
+          "name": "crypto relative value, via pair ratio reversion",
+          "payer": "nobody -- a convergence bet has no counterparty paying to shed a risk, which is why it sits outside the declared destination",
+          "reachable_today": true,
+          "status": "UNTRIED"
+        }
+      ],
+      "declared_at": "2026-10-03T06:22:51.866131Z",
+      "declared_by": "Oscar Carmenate Rodriguez, at dec4bd09bc5a",
+      "justification": "The set of harvestable premia this project can express with the data sources it actually reaches, declared BEFORE the next one is picked. It exists because the previous six were sourced from recollection and ranked by monitorability -- the failure mode that killed one of six, while size or returns killed four. What is passed over is now visible, and the bar each candidate must clear is derived from the history available for it rather than assumed to be the same for all.",
+      "register_id": "CANDIDATE_REGISTER|e1954e67b35585f61f20e274248348bcbf8f1863253c4f890aa2e96df9c5c201",
+      "schema_version": "1"
+    },
+    {
+      "candidates": [
+        {
+          "available_years": "8.57",
+          "claim_class": "PREMIUM",
+          "data_source": "Alpaca SIP; SVXY's -0.5x structure from 2018-02-28",
+          "effect": {
+            "high": "1.00",
+            "low": "0.50",
+            "source": "published estimates of the roll-yield harvest on short VIX futures run roughly 0.5 to 1.0 before catastrophic tail events"
+          },
+          "name": "variance risk premium, via SVXY",
+          "payer": "buyers of VIX futures and index options, purchasing protection against equity drawdowns they are mandated or unwilling to bear",
+          "reachable_today": true,
+          "status": "DECLARED"
+        },
+        {
+          "available_years": "10.75",
+          "claim_class": "PREMIUM",
+          "data_source": "Alpaca SIP from 2016-01-04",
+          "effect": {
+            "high": "0.80",
+            "low": "0.40",
+            "source": "long-run equity Sharpe is conventionally quoted near 0.4, and measured 0.81 over this project's own 2018-2026 window"
+          },
+          "name": "US equity risk premium, via SPY",
+          "payer": "every investor reducing equity exposure for reasons unrelated to expected return: mandates, liability matching, liquidity needs and horizon",
+          "reachable_today": true,
+          "status": "MEASURED_DEAD"
+        },
+        {
+          "available_years": "10.75",
+          "claim_class": "PREMIUM",
+          "data_source": "Alpaca SIP from 2016-01-04",
+          "effect": {
+            "high": "0.50",
+            "low": "0.20",
+            "source": "published excess-return Sharpes for investment-grade credit run roughly 0.2 to 0.5; measured 0.19 here"
+          },
+          "name": "investment-grade credit premium, via LQD against IEF",
+          "payer": "investors constrained to Treasuries or the highest grades by mandate, capital treatment or collateral eligibility",
+          "reachable_today": true,
+          "status": "MEASURED_DEAD"
+        },
+        {
+          "available_years": "10.00",
+          "claim_class": "PREMIUM",
+          "data_source": "BitMEX and Hyperliquid public history",
+          "effect": {
+            "high": "0.80",
+            "low": "0.30",
+            "source": "no published long-run estimate; the range is a guess from the gross figures this project sealed, and should be read as weaker than the others"
+          },
+          "name": "crypto perpetual funding carry",
+          "payer": "levered long holders of the perpetual, paying funding to maintain exposure",
+          "reachable_today": true,
+          "status": "MEASURED_DEAD"
+        },
+        {
+          "available_years": "10.75",
+          "claim_class": "PREMIUM",
+          "data_source": "Alpaca SIP from 2016-01-04",
+          "effect": {
+            "high": "0.40",
+            "low": "0.20",
+            "source": "published term-premium Sharpes run roughly 0.2 to 0.4 over long samples, and 2022 was catastrophic for duration inside this window"
+          },
+          "name": "term premium, via TLT against SHY",
+          "payer": "investors who need duration for liability matching regardless of its expected return, and regulators who require it",
+          "reachable_today": true,
+          "status": "UNTRIED"
+        },
+        {
+          "available_years": "10.75",
+          "claim_class": "PREMIUM",
+          "data_source": "Alpaca SIP; single-currency ETFs express the differential poorly",
+          "effect": {
+            "high": "0.50",
+            "low": "0.30",
+            "source": "published FX carry Sharpes run roughly 0.3 to 0.5 on diversified baskets, with pronounced negative skew"
+          },
+          "name": "currency carry, via developed-market FX ETFs",
+          "payer": "borrowers in low-rate currencies and hedgers paying forward points",
+          "reachable_today": true,
+          "status": "UNTRIED"
+        },
+        {
+          "available_years": "10.75",
+          "claim_class": "PREMIUM",
+          "data_source": "Alpaca SIP from 2016-01-04",
+          "effect": {
+            "high": "0.40",
+            "low": "0.10",
+            "source": "published backwardation-harvest Sharpes are low and unstable, and the sign has flipped for long stretches since 2008"
+          },
+          "name": "commodity roll premium, via broad commodity ETFs",
+          "payer": "producers and consumers hedging price risk, who pay to transfer it",
+          "reachable_today": true,
+          "status": "UNTRIED"
+        },
+        {
           "available_years": "13.75",
           "claim_class": "PREMIUM",
           "data_source": "CBOE settlement archive, free, from 2013-01-02",
@@ -163,6 +298,242 @@
       "justification": "The set of harvestable premia this project can express with the data sources it actually reaches, declared BEFORE the next one is picked. It exists because the previous six were sourced from recollection and ranked by monitorability -- the failure mode that killed one of six, while size or returns killed four. What is passed over is now visible, and the bar each candidate must clear is derived from the history available for it rather than assumed to be the same for all.",
       "register_id": "CANDIDATE_REGISTER|5688a4b7344eebb70d7f758f0d3093c363b6892169c20b74461ce7d8aa9f136f",
       "schema_version": "1"
+    },
+    {
+      "candidates": [
+        {
+          "available_years": "10.75",
+          "claim_class": "PREMIUM",
+          "data_source": "Alpaca SIP from 2016-01-04; MEASURED shortable, easy to borrow and fractionable, so a $109 position is exactly expressible",
+          "effect": {
+            "high": "1.00",
+            "low": "0.50",
+            "source": "the same literature as the SVXY entry; this is the same premium without the inverse ETP's daily rebalancing drag and without its structure change, so the window is the feed's rather than the wrapper's"
+          },
+          "monitor": {
+            "certainty": "INFERRED",
+            "evidence": "inverted days degraded the return in 2 of 5 usable folds, 0.40 against a 0.70 threshold, with five usable folds meeting the declared minimum",
+            "measured_on": "SVXY, the inverse of the same VIX futures index at half leverage",
+            "status": "EMPIRICAL_LINK_REFUTED",
+            "variable": "VIX3M minus VIX, the term structure slope, published daily by CBOE"
+          },
+          "name": "variance risk premium, via VIXY held SHORT",
+          "payer": "buyers of VIX futures and index options purchasing protection against equity drawdowns they are mandated or unwilling to bear",
+          "reachable_today": true,
+          "requires_short": true,
+          "status": "UNTRIED"
+        },
+        {
+          "available_years": "8.57",
+          "claim_class": "PREMIUM",
+          "data_source": "Alpaca SIP; SVXY's -0.5x structure from 2018-02-28",
+          "effect": {
+            "high": "1.00",
+            "low": "0.50",
+            "source": "published estimates of the roll-yield harvest on short VIX futures run roughly 0.5 to 1.0 before catastrophic tail events; MEASURED at a point of 0.5021 with a lower bound of -0.0445"
+          },
+          "monitor": {
+            "certainty": "MEASURED",
+            "evidence": "inverted days degraded the return in 2 of 5 usable folds, 0.40 against a 0.70 threshold, with five usable folds meeting the declared minimum",
+            "status": "EMPIRICAL_LINK_REFUTED",
+            "variable": "VIX3M minus VIX, the term structure slope, published daily by CBOE"
+          },
+          "name": "variance risk premium, via SVXY",
+          "payer": "buyers of VIX futures and index options, purchasing protection against equity drawdowns they are mandated or unwilling to bear",
+          "reachable_today": true,
+          "requires_short": false,
+          "status": "MEASURED_DEAD"
+        },
+        {
+          "available_years": "10.75",
+          "claim_class": "PREMIUM",
+          "data_source": "Alpaca SIP from 2016-01-04",
+          "effect": {
+            "high": "0.80",
+            "low": "0.40",
+            "source": "long-run equity Sharpe is conventionally quoted near 0.4, and measured 0.81 over this project's own 2018-2026 window"
+          },
+          "monitor": {
+            "evidence": "an unconditional premium's only observable is the premium not paying, which is P&L, and R3 returned NOT_EVALUABLE because no monitor could be declared at all",
+            "status": "NO_NON_PNL_VARIABLE_EXISTS",
+            "variable": "none exists that is not the position's own return"
+          },
+          "name": "US equity risk premium, via SPY",
+          "payer": "every investor reducing equity exposure for reasons unrelated to expected return: mandates, liability matching, liquidity needs and horizon",
+          "reachable_today": true,
+          "requires_short": false,
+          "status": "MEASURED_DEAD"
+        },
+        {
+          "available_years": "10.00",
+          "claim_class": "PREMIUM",
+          "data_source": "BitMEX and Hyperliquid public history",
+          "effect": {
+            "high": "0.80",
+            "low": "0.30",
+            "source": "no published long-run estimate; the range is a guess from the gross figures this project sealed, and should be read as weaker than the others"
+          },
+          "monitor": {
+            "certainty": "MEASURED",
+            "evidence": "the exit rule validated at 8 of 8 folds on a pre-declared holdout and R3 passed in its admission record",
+            "status": "EMPIRICAL_LINK_MET",
+            "variable": "the funding rate, published every eight hours"
+          },
+          "name": "crypto perpetual funding carry",
+          "payer": "levered long holders of the perpetual, paying funding to maintain exposure",
+          "reachable_today": true,
+          "requires_short": true,
+          "status": "MEASURED_DEAD"
+        },
+        {
+          "available_years": "10.75",
+          "claim_class": "PREMIUM",
+          "data_source": "Alpaca SIP from 2016-01-04",
+          "effect": {
+            "high": "0.50",
+            "low": "0.20",
+            "source": "published excess-return Sharpes for investment-grade credit run roughly 0.2 to 0.5; measured 0.19 here"
+          },
+          "monitor": {
+            "evidence": "the trigger state occurred on 0 of 2184 days so no walk-forward could establish the link, and R3 passed only through the identity form",
+            "status": "IDENTITY_ONLY",
+            "variable": "BAA10Y, Moody's Baa yield relative to the 10-year Treasury"
+          },
+          "name": "investment-grade credit premium, via LQD against IEF",
+          "payer": "investors constrained to Treasuries or the highest grades by mandate, capital treatment or collateral eligibility",
+          "reachable_today": true,
+          "requires_short": true,
+          "status": "MEASURED_DEAD"
+        },
+        {
+          "available_years": "10.75",
+          "claim_class": "PREMIUM",
+          "data_source": "Alpaca SIP from 2016-01-04; MEASURED shortable, easy to borrow and fractionable",
+          "effect": {
+            "high": "0.70",
+            "low": "0.30",
+            "source": "mid-term VIX futures carry a flatter curve, so the roll harvest is smaller than the short-term one by roughly a third in published comparisons; the range is recalled and wide because the comparison is less studied than the front"
+          },
+          "monitor": {
+            "evidence": "the only measurement is on a front-month product and was refuted, but VIXM tracks months four to seven and the slope compares months one and three, so that result is not carried over and nobody has examined this one",
+            "status": "UNEXAMINED",
+            "variable": "VIX3M minus VIX, the term structure slope, published daily by CBOE"
+          },
+          "name": "variance risk premium, via VIXM held SHORT",
+          "payer": "the same buyers of protection, further out the curve where they hedge horizon rather than event risk",
+          "reachable_today": true,
+          "requires_short": true,
+          "status": "UNTRIED"
+        },
+        {
+          "available_years": "10.75",
+          "claim_class": "PREMIUM",
+          "data_source": "Alpaca SIP; single-currency ETFs express the differential poorly",
+          "effect": {
+            "high": "0.50",
+            "low": "0.30",
+            "source": "published FX carry Sharpes run roughly 0.3 to 0.5 on diversified baskets, with pronounced negative skew"
+          },
+          "monitor": {
+            "evidence": "policy and money-market rates are quoted daily, but nobody has measured whether the differential collapsing degrades the return",
+            "status": "UNEXAMINED",
+            "variable": "the interest rate differential between the two currencies"
+          },
+          "name": "currency carry, via developed-market FX ETFs",
+          "payer": "borrowers in low-rate currencies and hedgers paying forward points",
+          "reachable_today": true,
+          "requires_short": true,
+          "status": "UNTRIED"
+        },
+        {
+          "available_years": "10.00",
+          "claim_class": "MISPRICING",
+          "data_source": "Coinbase public history",
+          "effect": {
+            "high": "0.50",
+            "low": "0.00",
+            "source": "no basis for a range; two Hypotheses measured 5 of 10 folds and the stopping rule cannot judge the population below five"
+          },
+          "monitor": {
+            "evidence": "the ratio against its own average IS the signal and the spread return IS the P&L, so no variable is independent of either",
+            "status": "NO_NON_PNL_VARIABLE_EXISTS",
+            "variable": "none exists that is independent of the signal or the return"
+          },
+          "name": "crypto relative value, via pair ratio reversion",
+          "payer": "nobody -- a convergence bet has no counterparty paying to shed a risk, which is why it sits outside the declared destination",
+          "reachable_today": true,
+          "requires_short": true,
+          "status": "UNTRIED"
+        },
+        {
+          "available_years": "10.75",
+          "claim_class": "PREMIUM",
+          "data_source": "Alpaca SIP from 2016-01-04",
+          "effect": {
+            "high": "0.40",
+            "low": "0.20",
+            "source": "published term-premium Sharpes run roughly 0.2 to 0.4 over long samples, and 2022 was catastrophic for duration inside this window"
+          },
+          "monitor": {
+            "evidence": "the curve is quoted daily, but nobody has examined whether its flattening degrades the return",
+            "status": "UNEXAMINED",
+            "variable": "the 10-year minus 2-year Treasury slope, quoted daily"
+          },
+          "name": "term premium, via TLT against SHY",
+          "payer": "investors who need duration for liability matching regardless of its expected return, and regulators who require it",
+          "reachable_today": true,
+          "requires_short": true,
+          "status": "UNTRIED"
+        },
+        {
+          "available_years": "10.75",
+          "claim_class": "PREMIUM",
+          "data_source": "Alpaca SIP from 2016-01-04",
+          "effect": {
+            "high": "0.40",
+            "low": "0.10",
+            "source": "published backwardation-harvest Sharpes are low and unstable, and the sign has flipped for long stretches since 2008"
+          },
+          "monitor": {
+            "evidence": "the curve is observable, but nobody has examined whether a flip in its shape degrades the return",
+            "status": "UNEXAMINED",
+            "variable": "the commodity futures curve shape, backwardation against contango"
+          },
+          "name": "commodity roll premium, via broad commodity ETFs",
+          "payer": "producers and consumers hedging price risk, who pay to transfer it",
+          "reachable_today": true,
+          "requires_short": false,
+          "status": "UNTRIED"
+        },
+        {
+          "available_years": "13.75",
+          "claim_class": "PREMIUM",
+          "data_source": "CBOE settlement archive, free, from 2013-01-02",
+          "effect": {
+            "high": "1.00",
+            "low": "0.50",
+            "source": "the same literature as the ETP entries; what differs is the window"
+          },
+          "minimum_position_usd": "1800",
+          "monitor": {
+            "certainty": "INFERRED",
+            "evidence": "inverted days degraded the return in 2 of 5 usable folds, 0.40 against a 0.70 threshold, with five usable folds meeting the declared minimum",
+            "measured_on": "SVXY, whose return is the inverse of the same VIX futures index",
+            "status": "EMPIRICAL_LINK_REFUTED",
+            "variable": "VIX3M minus VIX, the term structure slope, published daily by CBOE"
+          },
+          "name": "variance risk premium, via CBOE VIX futures directly",
+          "payer": "the same buyers of protection, without an ETP wrapper between the premium and the position",
+          "reachable_today": true,
+          "requires_short": true,
+          "status": "UNTRIED"
+        }
+      ],
+      "declared_at": "2026-10-03T07:06:06.813784Z",
+      "declared_by": "Oscar Carmenate Rodriguez, at a16f5f814cb7",
+      "justification": "The set of harvestable premia this project can express with the data sources it actually reaches, declared BEFORE the next one is picked, now carrying for every candidate whether it requires a short and what is known about its monitor. The first two registers carried neither, which let VIXY held short be recommended on its effect size alone by a platform whose executor cannot open a short and whose monitor link had already failed a measurement on the mirror instrument.",
+      "register_id": "CANDIDATE_REGISTER|9a85d923274762a6792c54200d2e2ff943dad226c10f3a873af1533c1e0a912d",
+      "schema_version": "2"
     }
   ],
   "schema_version": "1"
