@@ -130,11 +130,12 @@ def run_spec(spec, *, io, paths, now, code_revision, seal=True):
     # ENFORCED WHERE THE CONTRACT ENFORCES IT: at capture. A dataset that is ALREADY
     # SEALED was captured under whatever rules stood when it was, and demanding a
     # pre-declaration of it now would be stricter than the contract itself. This
-    # mattered the first time an old Hypothesis was migrated: the credit premium was
-    # declared and captured between 03:33 and 04:16 UTC on 2026-10-03, before the
-    # contract existed (05:32 UTC), but the contract's in-force instant was set to
-    # MIDNIGHT of that day and so reaches back over it. The guard on a fresh capture
-    # is unchanged and has its own test.
+    # surfaced the first time an old Hypothesis was migrated: the contract first came
+    # into force at MIDNIGHT UTC of the day it was written although it was committed at
+    # 05:32 UTC, and so reached back over SPY and the credit premium, both declared
+    # before it existed. The instant was corrected (PRE_DECLARATION_IN_FORCE|c147dade);
+    # the capture-time guard stays because it is where the contract lives, and the guard
+    # on a fresh capture is unchanged and has its own test.
     if sealed:
         answers = load_pre_declaration(paths["pre_declarations"], spec["hypothesis_id"])
     else:

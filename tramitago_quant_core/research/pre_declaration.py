@@ -48,6 +48,7 @@ it are unaffected by construction.
 
 import json
 import re
+from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
@@ -70,7 +71,14 @@ PRE_DECLARATION_REGISTRY_SCHEMA_VERSION = "1"
 # Hypotheses created from this instant must carry one. Derived from the
 # Hypothesis's own creation_timestamp rather than announced by a flag, for the
 # same reason forward-dating is: a flag can be omitted, a timestamp cannot.
-PRE_DECLARATION_IN_FORCE_SINCE = "2026-10-03T00:00:00Z"
+#
+# THE INSTANT THE INTRODUCING COMMIT WAS MADE, 05:32:10 UTC on 2026-10-03, per
+# PRE_DECLARATION_IN_FORCE|c147dade. It was first set to MIDNIGHT of that day as a
+# round number, which reached back five and a half hours over six versions of two
+# Hypotheses -- SPY and the credit premium -- that were declared before the rule
+# existed and could not have answered a question nobody had yet asked. A rule cannot
+# bind what predates it.
+PRE_DECLARATION_IN_FORCE_SINCE = "2026-10-03T05:32:10Z"
 
 CLAIM_PREMIUM = "PREMIUM"
 CLAIM_MISPRICING = "MISPRICING"
@@ -331,16 +339,25 @@ def load_pre_declaration(registry_path, hypothesis_id):
     return None
 
 
+def _instant(value):
+    """A UTC instant, PARSED. Strings are never compared: a constant at second
+    precision against timestamps carrying microseconds misorders within the same
+    second, because the character that separates the fraction sorts before the one
+    that ends the string, so 05:32:10.5Z would read as BEFORE 05:32:10Z."""
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
 def require_pre_declaration(hypothesis, registry_path):
     """Refuse to build a dataset for a Hypothesis that should have answered first.
 
-    Derived from the Hypothesis's own creation timestamp, so the 47 sealed
-    before this contract existed are unaffected and no exemption list is kept.
+    Derived from the Hypothesis's own creation timestamp, so every one sealed
+    before this contract existed is unaffected and no exemption list is kept.
     Enforced where the money is spent -- at capture -- rather than offered as
     advice, because the moment it matters is the moment somebody is impatient.
     """
     created = hypothesis.get("creation_timestamp")
-    if not _explicit_utc(created) or created < PRE_DECLARATION_IN_FORCE_SINCE:
+    if (not _explicit_utc(created)
+            or _instant(created) < _instant(PRE_DECLARATION_IN_FORCE_SINCE)):
         return None
     found = load_pre_declaration(registry_path, hypothesis["hypothesis_id"])
     if found is None:
