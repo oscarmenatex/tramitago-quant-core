@@ -146,7 +146,8 @@ def _discovery_space_id_is_valid(value):
 
 
 def _discovery_space_content(*, justification, candidates, discovery_window, holdout_window,
-                             minimum_support, minimum_minority_state_frequency, declared_by):
+                             minimum_support, minimum_minority_state_frequency, declared_by,
+                             maximum_crossings_per_1000_rows=None):
     return {
         "schema_version": DISCOVERY_SPACE_SCHEMA_VERSION,
         "justification": justification,
@@ -155,6 +156,10 @@ def _discovery_space_content(*, justification, candidates, discovery_window, hol
         "holdout_window": holdout_window,
         "minimum_support": minimum_support,
         "minimum_minority_state_frequency": minimum_minority_state_frequency,
+        # Present only when declared, so every space sealed before turnover was
+        # screened hashes to exactly the identity it always did.
+        **({"maximum_crossings_per_1000_rows": maximum_crossings_per_1000_rows}
+           if maximum_crossings_per_1000_rows is not None else {}),
         "declared_by": declared_by,
     }
 
@@ -163,8 +168,18 @@ def _discovery_space_record_is_valid(record):
     fields = {"space_id", "schema_version", "justification", "candidates", "discovery_window",
               "holdout_window", "minimum_support", "minimum_minority_state_frequency",
               "declared_by", "declared_at"}
-    if not isinstance(record, dict) or set(record) != fields:
+    # Optional and additive: a space either declares a turnover ceiling or it
+    # does not, and the 2026-10-03 spaces that do must not invalidate the ones
+    # sealed before it existed.
+    optional = {"maximum_crossings_per_1000_rows"}
+    if (not isinstance(record, dict) or not fields <= set(record)
+            or set(record) - fields - optional):
         return False
+    if "maximum_crossings_per_1000_rows" in record:
+        try:
+            _decimal(record["maximum_crossings_per_1000_rows"], "Maximum crossings")
+        except ValueError:
+            return False
     candidates = record.get("candidates")
     if (not _discovery_space_id_is_valid(record.get("space_id"))
             or record.get("schema_version") != DISCOVERY_SPACE_SCHEMA_VERSION
@@ -191,6 +206,10 @@ def _discovery_space_record_is_valid(record):
         discovery_window=record["discovery_window"], holdout_window=record["holdout_window"],
         minimum_support=record["minimum_support"],
         minimum_minority_state_frequency=record["minimum_minority_state_frequency"],
+        # Re-derived WITH the ceiling when the record carries one. Omitting it
+        # here while sealing it above is how a correctly declared space fails
+        # to verify against itself -- caught by the first space that used it.
+        maximum_crossings_per_1000_rows=record.get("maximum_crossings_per_1000_rows"),
         declared_by=record["declared_by"])
     return record["space_id"] == _discovery_space_id(content)
 
@@ -218,7 +237,8 @@ def _load_discovery_space_registry(registry_path):
 
 def constitute_discovery_space(registry_path, *, justification, candidates, discovery_window,
                                holdout_window, minimum_support,
-                               minimum_minority_state_frequency, declared_by, declared_at):
+                               minimum_minority_state_frequency, declared_by, declared_at,
+                               maximum_crossings_per_1000_rows=None):
     """Seal the complete, bounded space BEFORE anything is scanned.
 
     The holdout is mandatory and must be disjoint from the discovery window.
@@ -233,10 +253,13 @@ def constitute_discovery_space(registry_path, *, justification, candidates, disc
     if not _explicit_utc(declared_at):
         raise ValueError("Discovery Space declaration time must be canonical UTC")
     _decimal(minimum_minority_state_frequency, "Minimum minority state frequency")
+    if maximum_crossings_per_1000_rows is not None:
+        _decimal(maximum_crossings_per_1000_rows, "Maximum crossings per 1000 rows")
     content = _discovery_space_content(
         justification=justification, candidates=candidates, discovery_window=discovery_window,
         holdout_window=holdout_window, minimum_support=minimum_support,
         minimum_minority_state_frequency=minimum_minority_state_frequency,
+        maximum_crossings_per_1000_rows=maximum_crossings_per_1000_rows,
         declared_by=declared_by)
     record = {**content, "space_id": _discovery_space_id(content), "declared_at": declared_at}
     if not _discovery_space_record_is_valid(record):
@@ -287,7 +310,29 @@ def minority_state_frequency(upper_count, lower_count):
     return min(upper_count, lower_count) / total
 
 
-def _candidate_observation(strategy, rows, horizon=1, series=None):
+def _crossings_per_1000_rows(classified):
+    """How often the candidate's implied position would cross the market.
+
+    MEASURED PER 1000 ROWS rather than per year, so it means the same thing on a
+    365-day crypto window and a 252-session equity one without this module
+    having to know which calendar it is looking at. It is also the quantity cost
+    is proportional to.
+
+    Reference points from this project's own dead Hypotheses, which is where the
+    numbers to declare a ceiling come from:
+      carry-exit-bitmex   253 crossings / 920 rows  = 275  -- cost ate 257% of gross
+      eth-sma3            139 / 365                 = 381  -- cost ate 138% of gross
+      spy-mom10-2024       34 / 252                 = 135  -- kept 98% of gross
+      held continuously     2 / 2198                =   1  -- cost 0.009% of gross
+    """
+    groups = [row["group"] for row in classified if row["group"] is not None]
+    if not groups:
+        return None
+    crossings = sum(1 for index in range(1, len(groups)) if groups[index] != groups[index - 1])
+    return crossings * 1000 / len(groups)
+
+
+def _candidate_observation(strategy, rows, horizon=1, series=None, count_crossings=False):
     """Measure one candidate on the discovery rows. Returns counts, the minority
     state frequency, and the difference of group means of the Strategy's own
     declared Outcome -- never a verdict, and never a p-value: a number that has
@@ -316,6 +361,11 @@ def _candidate_observation(strategy, rows, horizon=1, series=None):
         "upper_count": len(upper),
         "lower_count": len(lower),
         "minority_state_frequency": None if minority is None else _fixed(minority),
+        # Present only when the space declared a ceiling to screen against, so a
+        # scan sealed before turnover was measured hashes to exactly the
+        # identity it always did -- the same rule `series` follows above.
+        **({"crossings_per_1000_rows": _fixed(_crossings_per_1000_rows(classified) or 0)}
+           if count_crossings else {}),
         "effect": None if effect is None else _fixed(effect),
     }
 
@@ -341,6 +391,24 @@ def candidate_is_examinable(observation, space):
         return False, (f"minority state frequency {observation['minority_state_frequency']} "
                        f"below the declared minimum {space['minimum_minority_state_frequency']}: "
                        "no monitor could observe this state often enough to act on it")
+
+    # A THIRD REFUSAL, added 2026-10-03, and the cheapest of the three. Turnover
+    # is the discriminator the validation criterion never looks at: MEASURED
+    # across this project's finished Hypotheses, 253 crossings cost 257% of
+    # gross and 139 cost 138%, while 34 kept 98% and 2 cost 0.009%. Two
+    # Hypotheses died on it AFTER a full capture and validation cycle, and the
+    # number was computable in the scan that produced them.
+    #
+    # Declared by the space, like the other two floors, and screened only when
+    # declared -- so every space sealed before this is unaffected and no
+    # exemption list is kept.
+    ceiling = space.get("maximum_crossings_per_1000_rows")
+    measured = observation.get("crossings_per_1000_rows")
+    if ceiling is not None and measured is not None:
+        if _decimal(measured, "Crossings") > _decimal(ceiling, "Maximum crossings"):
+            return False, (f"crossings {measured} per 1000 rows above the declared maximum "
+                           f"{ceiling}: the cost of rotating would consume the gross before "
+                           f"any validation could be run on it")
     return True, "examinable"
 
 
@@ -430,7 +498,8 @@ def scan_discovery_space(space, rows, *, horizon=1):
     for index, candidate in enumerate(space["candidates"]):
         series, candidate_rows = _candidate_rows(candidate, rows)
         observation = _candidate_observation(
-            candidate_strategy(candidate), candidate_rows, horizon, series)
+            candidate_strategy(candidate), candidate_rows, horizon, series,
+            count_crossings="maximum_crossings_per_1000_rows" in space)
         examinable, reason = candidate_is_examinable(observation, space)
         observations.append({**observation, "declared_order": index,
                              "examinable": examinable, "reason": reason})

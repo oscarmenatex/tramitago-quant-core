@@ -18,7 +18,8 @@ from tramitago_quant_core.research.discovery import (
     minority_state_frequency, scan_discovery_space, rank_observations,
     candidate_is_examinable, constitute_discovery_scan, load_discovery_scan, discovery_rows_digest,
     finding_from_scan, _candidate_observation,
-)
+
+    _discovery_space_record_is_valid,)
 from tramitago_quant_core.research.finding import load_finding, FINDING_STATUS_OPEN
 
 DAY = 86400
@@ -649,3 +650,73 @@ class RowsAnchorTests(unittest.TestCase):
                                         created_by="test", created_at="2025-07-01T00:00:00Z")
             self.assertTrue(any(item.startswith("ROWS_SHA256|")
                                 for item in finding["supporting_evidence"]))
+
+
+class TurnoverScreenTests(unittest.TestCase):
+    """The third refusal, added 2026-10-03, and the cheapest of the three.
+
+    Turnover is the discriminator the validation criterion never looks at.
+    MEASURED on this project's finished Hypotheses: 253 crossings cost 257% of
+    gross and 139 cost 138%, while 34 kept 98% and 2 cost 0.009%. Two died on it
+    AFTER a full capture and validation cycle, and the number was computable in
+    the scan that produced them.
+    """
+
+    def _rows(self, days=366):
+        import random
+        from datetime import datetime, timedelta, timezone
+        rng = random.Random(3)
+        rows, price = [], 100.0
+        day = datetime(2024, 1, 1, tzinfo=timezone.utc)
+        for _ in range(days):
+            price *= (1 + rng.gauss(0.0005, 0.02))
+            rows.append({"instrument": "X",
+                         "timestamp": day.isoformat().replace("+00:00", "Z"),
+                         "open": price, "high": price * 1.01, "low": price * 0.99,
+                         "close": price, "volume": 1e6})
+            day += timedelta(days=1)
+        return rows
+
+    def _space(self, registry, ceiling=None):
+        extra = {} if ceiling is None else {"maximum_crossings_per_1000_rows": ceiling}
+        return constitute_discovery_space(
+            registry,
+            justification="a space declared to exercise the turnover screen before scanning",
+            candidates=[{"strategy_id": "SMA_CROSSOVER", "parameters": {"window": 2}},
+                        {"strategy_id": "SMA_CROSSOVER", "parameters": {"window": 60}}],
+            discovery_window={"start_utc": "2024-01-01T00:00:00Z",
+                              "end_exclusive_utc": "2025-01-01T00:00:00Z"},
+            holdout_window={"start_utc": "2025-01-01T00:00:00Z",
+                            "end_exclusive_utc": "2026-01-01T00:00:00Z"},
+            minimum_support=20, minimum_minority_state_frequency="0.10",
+            declared_by="test", declared_at="2026-10-03T12:00:00.123456Z", **extra)
+
+    def test_a_candidate_that_rotates_constantly_is_refused(self):
+        registry = Path(tempfile.mkdtemp()) / "spaces.json"
+        scanned = scan_discovery_space(self._space(registry, "150"), self._rows())
+        fast = [o for o in scanned if o["parameters"]["window"] == 2][0]
+        slow = [o for o in scanned if o["parameters"]["window"] == 60][0]
+        self.assertFalse(fast["examinable"])
+        self.assertIn("cost of rotating", fast["reason"])
+        self.assertTrue(slow["examinable"])
+
+    def test_a_space_that_declares_no_ceiling_measures_no_crossings(self):
+        # Additive field presence: every space sealed before this existed
+        # hashes to exactly the identity it always did.
+        registry = Path(tempfile.mkdtemp()) / "spaces.json"
+        space = self._space(registry)
+        self.assertNotIn("maximum_crossings_per_1000_rows", space)
+        for observation in scan_discovery_space(space, self._rows()):
+            self.assertNotIn("crossings_per_1000_rows", observation)
+
+    def test_a_space_declaring_a_ceiling_verifies_against_itself(self):
+        # The first space that used it did not: the identity was re-derived
+        # WITHOUT the ceiling while being sealed WITH it.
+        registry = Path(tempfile.mkdtemp()) / "spaces.json"
+        space = self._space(registry, "150")
+        self.assertTrue(_discovery_space_record_is_valid(space))
+
+    def test_the_ceiling_must_be_a_number(self):
+        registry = Path(tempfile.mkdtemp()) / "spaces.json"
+        with self.assertRaises(ValueError):
+            self._space(registry, "low")

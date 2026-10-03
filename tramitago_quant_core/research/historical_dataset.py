@@ -29,6 +29,7 @@ from tramitago_quant_core.data.acquisition import (
     COLUMNS, SCHEMA, normalize, validate, _coinbase_public_request_headers,
 )
 from tramitago_quant_core.research.forward_test import require_forward_test_ready
+from tramitago_quant_core.research.pre_declaration import require_pre_declaration
 from tramitago_quant_core.research.hypothesis import load_hypothesis
 from tramitago_quant_core.strategy_contract.strategy import (
     sma_crossover_strategy, _strategy_classify_rows,
@@ -524,6 +525,12 @@ def create_hypothesis_dataset(registry_path, hypothesis_id, version, output, *,
     # wearing its authority. This is a no-op for every retrospective Hypothesis,
     # whose period began long before it was written.
     require_forward_test_ready(hypothesis, acquired_at or iso(int(time.time())))
+    # And the seven questions, enforced in the same place and for the same
+    # reason: the moment a declaration's gaps matter is the moment somebody is
+    # about to spend on it. Derived from the Hypothesis's own creation
+    # timestamp, so the 47 sealed before this contract existed pass untouched
+    # and no exemption list is kept. The registry sits beside the Hypotheses.
+    require_pre_declaration(hypothesis, Path(registry_path).parent / "pre-declarations.json")
     config = _hypothesis_dataset_config(hypothesis, strategy, horizon)
     auxiliary_variables = _hypothesis_dataset_auxiliary_variables(strategy)
     if auxiliary_variables and (
