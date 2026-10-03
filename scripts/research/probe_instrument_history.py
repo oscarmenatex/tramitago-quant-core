@@ -79,10 +79,13 @@ def main():
         if not days:
             print(f"  {symbol:6} no bars served")
             continue
-        after = sum(1 for day in days if day >= "2018-03-01")
+        # Years of history as the register reads them: the span the FEED serves
+        # for this instrument, which is the window a Hypothesis could actually
+        # be measured over. Measured from the bars, never from a launch date
+        # recalled from memory -- the register records what was probed.
+        years = (len(days) / 252.0)
         print(f"  {symbol:6} {len(days):>5} bars  {min(days)} -> {max(days)}  "
-              f"({pages} page(s))")
-        print(f"  {'':6} {after:>5} of them on or after 2018-03-01, the date SVXY became -0.5x")
+              f"= {years:5.2f} yr  ({pages} page(s))")
         try:
             flags = _tradability(symbol, injector)
             print(f"  {'':6} {'':>5} " + "  ".join(
