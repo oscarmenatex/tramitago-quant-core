@@ -132,7 +132,7 @@ gratis.
 
 ## 8. Orden de construcción propuesto
 
-1. `lifecycle_status()`: informe **de solo lectura** que deriva el estado de cada
+1. **CONSTRUIDO.** `lifecycle_status()`: informe **de solo lectura** que deriva el estado de cada
    miembro de los registros existentes. Sin almacén nuevo, sin cambiar nada sellado.
    Es útil hoy, aunque todos estén denegados.
 2. Disparadores como funciones puras con sus tests, sin canal todavía.
@@ -140,3 +140,41 @@ gratis.
 4. Filtro de universo y cuota de pruebas.
 
 Lo que no conviene construir antes de la decisión 4: más miembros de esta familia.
+
+---
+
+## 9. Decisiones del Director, 2026-10-03
+
+**1. Canal de notificación.** Correo primero, pensando en que pueda ser una app después.
+El notificador se define como una interfaz con una notificación tipada (miembro, qué
+cambió, opciones, severidad). El correo es una implementación; una notificación push a
+una app sería otra, sin tocar los disparadores. Pendiente de construir; no se ha
+escrito código ni se ha pedido ninguna credencial.
+
+**2. Cadencia de re-medición.** Editable, no fija en el código. Vive en
+`config/lifecycle.json` (`remeasure_every_months`, 12 por defecto) y la lee
+`lifecycle_status()`. Un valor inválido se rechaza, no se sustituye por el de defecto.
+**Hecho.**
+
+**3. Quién crea una familia nueva.** Opciones:
+
+| | Qué hace la plataforma | Qué hace el Director | Riesgo |
+|---|---|---|---|
+| A. Solo el Director | nada, hasta que se lo pidan | escribe y sella cada familia | no escala: es el uno a uno actual |
+| B. Propone y el Director aprueba | redacta una propuesta sellada (mecanismo, monitor, miembros, regla) desde el registro | aprueba o rechaza | bajo: la aprobación va antes de medir; cuesta una decisión por familia |
+| C. Autónoma dentro de una cuota | crea y mide familias hasta agotar la cuota del periodo, y avisa después | revisa a posteriori | el monitor de una familia es una decisión de gobernanza que se tomaría sin nadie; multiplicidad más difícil de controlar |
+
+Recomendación: **B**. Es la que mantiene el criterio de que el monitor se fija antes de
+medir y, a la vez, quita el trabajo de redactar.
+
+**4. Filtro de universo.** Dos cosas distintas que conviene no mezclar:
+
+- **Filtros de operabilidad**, ciegos a los retornos: liquidez (volumen en dólares),
+  precio mínimo, historia mínima, spread, que el activo sea largo-operable. Son legítimos
+  como filtro de universo y es lo que suelen usar las plataformas cuantitativas.
+- **Selección por lo que subió o bajó** el último año: eso es una hipótesis de momentum
+  o de reversión, no un filtro. Se declara como hipótesis, con su propio mecanismo y su
+  propio coste de multiplicidad. Usarlo para elegir el universo y luego probar
+  hipótesis sobre ese universo contaría los retornos dos veces.
+
+Pendiente: revisar cómo lo hacen otras plataformas cuantitativas, y con qué filtros.
