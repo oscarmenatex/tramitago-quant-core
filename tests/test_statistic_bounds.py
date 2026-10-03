@@ -139,3 +139,39 @@ class RefusalTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class DrawdownSizingTests(unittest.TestCase):
+    """Sizing must resolve against the quantity the GATE reads, not a cousin of it.
+
+    CAP-006 resolves against the REALISED drawdown; §8.1 gates on the 95% upper
+    bound. On SPY: realised 33.79%, bound 45.79%. CAP-006 returns 40.9%, at which
+    the realised drawdown is exactly 15.00% and the bound is 21.31% -- sized,
+    reading as compliant, still refused.
+    """
+
+    def _series(self):
+        return _series([0.004] * 16 + [-0.02] * 4, 400)
+
+    def test_the_weight_it_returns_actually_satisfies_the_bound(self):
+        returns = self._series()
+        weight = p.weight_within_drawdown_bound(returns, drawdown_limit="0.15")
+        self.assertLessEqual(
+            drawdown_upper_bound([v * weight for v in returns]), 0.15)
+
+    def test_it_is_stricter_than_sizing_against_the_realised_drawdown(self):
+        # The whole point: the bound exceeds the realised figure, so the weight
+        # that satisfies the bound is SMALLER than the one CAP-006 returns.
+        returns = self._series()
+        self.assertLess(p.weight_within_drawdown_bound(returns, drawdown_limit="0.15"),
+                        p.maximum_admissible_weight(returns, drawdown_limit="0.15"))
+
+    def test_a_position_already_inside_the_limit_is_not_shrunk(self):
+        calm = _series([0.001, 0.0005], 300)
+        self.assertEqual(p.weight_within_drawdown_bound(calm, drawdown_limit="0.15"), 1.0)
+
+    def test_invalid_limits_are_refused(self):
+        for kwargs in ({"drawdown_limit": "0"}, {"drawdown_limit": "1"},
+                       {"drawdown_limit": "0.15", "tolerance": "0"}):
+            with self.assertRaises(ValueError):
+                p.weight_within_drawdown_bound(self._series(), **kwargs)

@@ -127,3 +127,47 @@ def drawdown_upper_bound(net_returns, **kwargs):
     maximum. Blocks matter most here -- a drawdown is made of consecutive losses
     and shuffling days would dissolve them."""
     return bootstrap_bound(net_returns, max_drawdown, side=BOUND_UPPER, **kwargs)
+
+
+def weight_within_drawdown_bound(net_returns, *, drawdown_limit, tolerance=0.001, **kwargs):
+    """The largest weight at which the drawdown's 95% UPPER BOUND stays inside a
+    limit -- which is what the gate actually reads.
+
+    WHY THIS EXISTS, and it is the third instance of one defect found in a single
+    day. CAP-006's `maximum_admissible_weight` resolves size against the REALISED
+    drawdown, and §8.1 gates on the adverse 95% bound. Measured on SPY: realised
+    33.79% and bound 45.79%, so CAP-006 returns 40.9% -- at which the realised
+    drawdown is exactly 15.00% and the BOUND is 21.31%. The position is sized,
+    reads as compliant, and the gate still refuses it. A tool computing a point
+    quantity to satisfy a gate that wants a bound answers a question nobody asked.
+
+    DOC-011 is explicit that the drawdown limit "es aquello contra lo que se
+    resuelve el tamaño", so resolving against it is the declared mechanism rather
+    than an evasion of it. What makes that safe from fitting is that every other
+    gate is SCALE-INVARIANT -- the Sharpe bound is identical to four decimals at
+    every weight -- so size can move this gate and no other.
+
+    Bisection, not division: a drawdown compounds, so halving the weight does not
+    halve it, and the bound is a bootstrap of a path statistic rather than an
+    algebraic function of the series.
+    """
+    limit = float(Decimal(drawdown_limit))
+    if not 0 < limit < 1:
+        raise ValueError("Drawdown limit must be a fraction in (0, 1)")
+    step = float(Decimal(tolerance))
+    if not 0 < step < 1:
+        raise ValueError("Tolerance must be a fraction in (0, 1)")
+
+    def bound_at(weight):
+        return drawdown_upper_bound([value * weight for value in net_returns], **kwargs)
+
+    if bound_at(1.0) <= limit:
+        return 1.0
+    low, high = 0.0, 1.0
+    while high - low > step:
+        middle = (low + high) / 2
+        if bound_at(middle) <= limit:
+            low = middle
+        else:
+            high = middle
+    return low

@@ -48,7 +48,15 @@ from tramitago_quant_core.shared.util import (
     _hypothesis_code_revision_is_valid, _pipeline_source_bytes,
 )
 
-ADMISSION_SCHEMA_VERSION = "1"
+# Schema 2, 2026-10-02: §8.2 corrected. A record is judged by the rule it was
+# SEALED under, exactly as level claims are, because _admission_record_is_valid
+# RE-DERIVES the verdict from the stored evidence rather than trusting it. That
+# re-derivation is a real integrity property -- a sealed record cannot be
+# tampered with -- and its price is that a rule change would invalidate every
+# record ever issued unless the old rule stays reachable. So it stays.
+ADMISSION_SCHEMA_VERSION = "2"
+ADMISSION_SCHEMA_VERSIONS = ("1", "2")
+GATE_SHARPE_V1 = "maximando: net Sharpe, lower 95% bound >= 0.50"
 ADMISSION_REGISTRY_SCHEMA_VERSION = "1"
 ADMISSION_STATUS = "ISSUED"
 
@@ -137,7 +145,7 @@ def _requires_adverse_bound(name, figure, comparison, threshold):
                  f"(source: {figure['source']})")
 
 
-def _sharpe_gate(figure):
+def _sharpe_gate(figure, schema_version=ADMISSION_SCHEMA_VERSION):
     """Section 8.2, CORRECTED 2026-10-02 on arithmetic grounds sealed beforehand.
 
     THE DEFECT. The threshold 0.50 was set for a Sharpe RATIO and was being
@@ -162,6 +170,10 @@ def _sharpe_gate(figure):
     -0.1798, so this rule still refuses it. What changed is the calibration of
     the threshold, not the existence of the evidentiary test.
     """
+    if schema_version == "1":
+        # The rule those records were issued under. Kept so each reproduces as
+        # what it was, never re-adjudicated under a rule that post-dates it.
+        return _requires_adverse_bound(GATE_SHARPE_V1, figure, "GE", MINIMUM_NET_SHARPE)
     if figure is None:
         return _gate(GATE_SHARPE, GATE_NOT_EVALUABLE, "no figure has been measured")
     if not figure.get("is_adverse_bound"):
@@ -311,7 +323,7 @@ def _decision_cost_gate(evidence):
                  f"{fraction:.4f} of the expected annual net return, against {bar}")
 
 
-def evaluate_admission_gates(evidence):
+def evaluate_admission_gates(evidence, schema_version=ADMISSION_SCHEMA_VERSION):
     """Every gate of §8.8's closed set, all of them, never short-circuited.
 
     A denial exists to record reasons, so it records all of them. Stopping at the
@@ -321,7 +333,7 @@ def evaluate_admission_gates(evidence):
     if not isinstance(evidence, dict):
         raise ValueError("Admission evidence must be a mapping")
     return [
-        _sharpe_gate(evidence.get("net_sharpe")),
+        _sharpe_gate(evidence.get("net_sharpe"), schema_version),
         _requires_adverse_bound(GATE_DRAWDOWN, evidence.get("worst_fold_drawdown"), "LE",
                                 MAXIMUM_DRAWDOWN),
         _survival_gate(evidence),
@@ -350,12 +362,17 @@ def _materialization(decided_at, code_revision):
 
 
 def _admission_record(hypothesis_id, validation_id, evidence, gates, outcome,
-                      failed, unevaluable, materialization):
+                      failed, unevaluable, materialization,
+                      schema_version=ADMISSION_SCHEMA_VERSION):
+    # The version is an ARGUMENT because this function both mints new records and
+    # re-derives old ones for verification. Stamping the current version while
+    # re-deriving a schema 1 record would make it compare unequal to itself, and
+    # the whole archive would read as tampered with the first time a rule moved.
     content = {
         "admission_id": "ADMISSION|" + digest(encoded(
-            {"schema_version": ADMISSION_SCHEMA_VERSION, "hypothesis_id": hypothesis_id,
+            {"schema_version": schema_version, "hypothesis_id": hypothesis_id,
              "validation_id": validation_id, "evidence": evidence})),
-        "schema_version": ADMISSION_SCHEMA_VERSION,
+        "schema_version": schema_version,
         "hypothesis_id": hypothesis_id,
         "validation_id": validation_id,
         "evidence": evidence,
@@ -376,16 +393,16 @@ def _admission_record_is_valid(record):
     if not isinstance(record, dict) or set(record) != fields:
         return False
     if (not re.fullmatch(r"ADMISSION\|[0-9a-f]{64}", record.get("admission_id", ""))
-            or record.get("schema_version") != ADMISSION_SCHEMA_VERSION
+            or record.get("schema_version") not in ADMISSION_SCHEMA_VERSIONS
             or record.get("outcome") not in (ADMITTED, ADMISSION_DENIED)
             or record.get("status") != ADMISSION_STATUS):
         return False
     # Re-derive the verdict from the evidence rather than trusting what is stored.
-    gates = evaluate_admission_gates(record["evidence"])
+    gates = evaluate_admission_gates(record["evidence"], record["schema_version"])
     outcome, failed, unevaluable = admission_outcome(gates)
     expected = _admission_record(
         record["hypothesis_id"], record["validation_id"], record["evidence"], gates,
-        outcome, failed, unevaluable, record["materialization"])
+        outcome, failed, unevaluable, record["materialization"], record["schema_version"])
     return record == expected
 
 

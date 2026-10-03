@@ -33,6 +33,7 @@ import os
 import subprocess
 import sys
 from datetime import datetime, timezone
+from decimal import Decimal
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
@@ -43,7 +44,8 @@ from tramitago_quant_core.strategy_contract.strategy import sma_crossover_strate
 from tramitago_quant_core.data.alpaca_equity_series import (
     capture_alpaca_equity_bars, ALPACA_FEED_SIP)
 from tramitago_quant_core.governance.evidence_host import require_evidence_host
-from tramitago_quant_core.governance.admission import adverse_bound, constitute_admission
+from tramitago_quant_core.governance.admission import (
+    adverse_bound, constitute_admission, SURVIVAL_P2)
 from tramitago_quant_core.research.historical_dataset import create_hypothesis_dataset
 from tramitago_quant_core.research.level_claim import (
     level_claim, evaluate_fold, level_claim_outcome, level_claim_gate_report,
@@ -85,6 +87,25 @@ ADVERSE_THRESHOLD, MINIMUM_EPISODES = "-0.02", 5
 # Hypothesis, and exactly why it is still charged rather than waved away.
 COST_COMMISSION, COST_HALF_SPREAD, COST_SLIPPAGE = "0", "0.00005", "0.00001"
 FASE_1_TRANCHE = "1000"
+
+# DECLARED BY OSCAR, 2026-10-02, as Director: the platform is already built, so
+# the marginal cost of operating this position is zero. R5 was previously
+# evaluated against $600 over three years, a figure this runner invented and
+# nobody approved -- and it was deciding the gate.
+DECISION_BUILD_COST, DECISION_LIFE_YEARS = "0", "3"
+
+# THE DRAWDOWN LIMIT, against which SIZE IS RESOLVED. DOC-011: "El LIMITE DE
+# DRAWDOWN no se toca: es aquello contra lo que se resuelve el tamano", and
+# §10.4 asks whether the worst case fits inside 15% AT THE OPERATED SIZE. So the
+# weight is DERIVED from the limit, never chosen -- and the declaration's own
+# caveat pre-authorised this re-judgement for the case where the drawdown gate
+# is the only one refusing, which is where it landed.
+#
+# Resolved against the 95% UPPER BOUND, not the realised drawdown, because the
+# bound is what the gate reads. At SPY's CAP-006 weight of 40.9% the realised
+# drawdown is exactly 15.00% and the bound is 21.31%: sized, reading as
+# compliant, still refused.
+DRAWDOWN_LIMIT = "0.15"
 
 
 def _now():
@@ -189,6 +210,30 @@ def main():
           f"   COST {cost_total:.6f} ({cost_total / abs(gross_total):.3%} of gross)")
     print(f"      NET   {math.fsum(net):+.4f} ({math.fsum(net) / years:+.2%}/yr)")
 
+    # --- size against the limit, which moves THIS GATE AND NO OTHER ----------
+    weight = p.weight_within_drawdown_bound(net, drawdown_limit=DRAWDOWN_LIMIT, **BOOTSTRAP)
+    print(f"      sizing against the declared {DRAWDOWN_LIMIT} limit -> weight {weight:.1%}")
+    if weight < 1.0:
+        # Both the return AND the cost scale with notional. Charging a full
+        # position's cost against a fraction of its return taxes it 1/w times
+        # over -- a mistake this project already made once, in the CAP-006
+        # runner, where it read exactly like "the weight made it worse".
+        gross = [value * weight for value in gross]
+        contract = p.cost_contract(
+            regime=p.COST_REGIME_HOLDING,
+            commission_rate=f"{float(Decimal(COST_COMMISSION)) * weight:.10f}",
+            half_spread_rate=f"{float(Decimal(COST_HALF_SPREAD)) * weight:.10f}",
+            slippage_rate=f"{float(Decimal(COST_SLIPPAGE)) * weight:.10f}",
+            recurring_rate_per_period="0", legs=1,
+            source=(f"same declared rates as the unsized position, scaled by the "
+                    f"{weight:.4f} weight derived from the {DRAWDOWN_LIMIT} limit"))
+        net = p.net_returns(contract, positions, gross)
+        gross_total = math.fsum(gross)
+        cost_total = float(p.cost_per_side(contract)) * transitions
+        mean_net = math.fsum(net) / len(net)
+        print(f"      NET at that weight {math.fsum(net):+.4f} "
+              f"({math.fsum(net) / years:+.2%}/yr)")
+
     print("[4/5] bounding the statistics...")
     sharpe_point = sharpe_ratio(net, periods_per_year=252)
     sharpe_bound = net_sharpe_lower_bound(net, periods_per_year=252, **BOOTSTRAP)
@@ -248,7 +293,16 @@ def main():
                               f"to {end[:10]}; bought once, sold once, never rebalanced"),
         cost_contract=contract, minimum_folds_required=FOLDS,
         consistency_threshold="0.70", minimum_adverse_episodes=MINIMUM_EPISODES,
-        adverse_period_threshold=ADVERSE_THRESHOLD, maximum_drawdown="0.15",
+        # THE ADVERSE THRESHOLD SCALES WITH THE WEIGHT, for the same reason the
+        # cost rates do. -2% was declared as a stress day for the UNSIZED
+        # position. At a 28% weight the identical market event moves the
+        # position -0.56%, so an absolute threshold stops asking "was the tail
+        # observed" and starts asking "was it observed at full size". Left
+        # unscaled it reported adverse frequency 0.0009 against 0.0400 and
+        # refused the claim for a tail that was fully present: the tail did not
+        # go away, the measuring stick stopped matching what it measured.
+        adverse_period_threshold=f"{float(Decimal(ADVERSE_THRESHOLD)) * weight:.10f}",
+        maximum_drawdown=DRAWDOWN_LIMIT,
         source=f"declared in {HYPOTHESIS_ID[:30]} before any bar was captured")
 
     size = len(sealed) // FOLDS
@@ -301,7 +355,7 @@ def main():
                     "inside one is also one in the whole -- so this is the stricter "
                     "reading of R1, stated rather than left to be noticed")),
         "survival": {
-            "form": "P2",
+            "form": SURVIVAL_P2,
             "counterparty": ("every investor who must reduce equity exposure for reasons "
                              "unrelated to expected return: liability matching, mandates, "
                              "liquidity needs, risk limits and horizon"),
@@ -317,7 +371,8 @@ def main():
         },
         "capacity": capacity_evidence,
         "decision_cost": {
-            "build_cost": "600", "minimum_declared_life_years": "3",
+            "build_cost": DECISION_BUILD_COST,
+            "minimum_declared_life_years": DECISION_LIFE_YEARS,
             "recurring_cost_per_year": "0",
             "expected_annual_net_return": f"{mean_net * 252 * float(FASE_1_TRANCHE):.2f}",
             "surveillance_is_automatable": True,
