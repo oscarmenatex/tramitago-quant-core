@@ -54,8 +54,22 @@ from tramitago_quant_core.shared.util import (
 # re-derivation is a real integrity property -- a sealed record cannot be
 # tampered with -- and its price is that a rule change would invalidate every
 # record ever issued unless the old rule stays reachable. So it stays.
-ADMISSION_SCHEMA_VERSION = "2"
-ADMISSION_SCHEMA_VERSIONS = ("1", "2")
+# Schema 3, 2026-10-03: §11.1 revised under MONITOR_FORM_REVISION|5bc199a4,
+# which §11.5 required to be grounded independently of #37 before it could be
+# touched at all. R3 now admits two forms of evidence for a monitor's
+# inferential link, mirroring the structure R2 has always had.
+ADMISSION_SCHEMA_VERSION = "3"
+ADMISSION_SCHEMA_VERSIONS = ("1", "2", "3")
+GATE_SHARPE_V1 = "maximando: net Sharpe, lower 95% bound >= 0.50"
+
+# M1 is §11.1 unchanged. M2 is new and is DELIBERATELY NARROWER than R2's P2:
+# P2 accepts a narrative mechanism, M2 accepts only an arithmetic identity,
+# because R3 guards a STOP and a story that turns out wrong means the position
+# cannot be stopped when it matters -- the one failure §11 exists to prevent.
+MONITOR_LINK_M1 = "M1_EMPIRICAL"
+MONITOR_LINK_M2 = "M2_IDENTITY"
+MONITOR_LINK_FORMS = (MONITOR_LINK_M1, MONITOR_LINK_M2)
+MONITOR_M2_FIELDS = ("identity", "parameter", "parameter_source", "holds_for_range")
 GATE_SHARPE_V1 = "maximando: net Sharpe, lower 95% bound >= 0.50"
 ADMISSION_REGISTRY_SCHEMA_VERSION = "1"
 ADMISSION_STATUS = "ISSUED"
@@ -234,7 +248,7 @@ def _survival_gate(evidence):
                  f"survival form must be {SURVIVAL_P1} or {SURVIVAL_P2}")
 
 
-def _monitorability_gate(evidence):
+def _monitorability_gate(evidence, schema_version=ADMISSION_SCHEMA_VERSION):
     """R3, which ties monitoring to R1 rather than leaving it a good intention:
     if the death is not detected before it costs the drawdown limit, nobody is
     watching, they are looking. Surveillance by P&L alone NEVER qualifies, in any
@@ -254,7 +268,28 @@ def _monitorability_gate(evidence):
         return _gate(GATE_MONITORABILITY, GATE_FAILED,
                      "surveillance by P&L alone never qualifies, whatever its latency: a "
                      "P&L move cannot distinguish variance from the mechanism ending")
-    if monitor.get("observes_adverse_state_representatively") is not True:
+
+    # WHICH FORM ESTABLISHES THE LINK. Schemas 1 and 2 knew only the empirical
+    # one and are judged by it; absent a declared form, so is schema 3, so no
+    # evidence written before the revision changes meaning because of it.
+    form = (monitor.get("link_form") or MONITOR_LINK_M1
+            if schema_version == "3" else MONITOR_LINK_M1)
+    if form not in MONITOR_LINK_FORMS:
+        return _gate(GATE_MONITORABILITY, GATE_NOT_EVALUABLE,
+                     f"link form must be one of {', '.join(MONITOR_LINK_FORMS)}")
+    if form == MONITOR_LINK_M2:
+        # NOTHING HERE CAN CHECK THAT A STATED IDENTITY IS ONE. The gate records
+        # the claim, requires it to be complete, and marks the verdict as resting
+        # on a REASONED stop rather than a demonstrated one -- so an M2 monitor
+        # is never later read as an M1. The burden stays on the declaration and
+        # on whoever reviews it, and saying so is better than implying a check
+        # that does not exist.
+        absent = [key for key in MONITOR_M2_FIELDS if not monitor.get(key)]
+        if absent:
+            return _gate(GATE_MONITORABILITY, GATE_NOT_EVALUABLE,
+                         f"M2 requires the implication to follow by arithmetic from a "
+                         f"sourced parameter; missing: {', '.join(absent)}")
+    elif monitor.get("observes_adverse_state_representatively") is not True:
         return _gate(GATE_MONITORABILITY, GATE_FAILED,
                      "DOC-011 §12: a monitor must observe the state it is meant to detect "
                      "often enough to act on it")
@@ -267,8 +302,16 @@ def _monitorability_gate(evidence):
     budget = _decimal(MAXIMUM_DRAWDOWN, "Drawdown limit") / loss
     passes = latency < budget
     return _gate(GATE_MONITORABILITY, GATE_PASSED if passes else GATE_FAILED,
-                 f"latency {latency} days against a budget of {budget:.2f} days "
-                 f"({MAXIMUM_DRAWDOWN} / {monitor['expected_daily_loss_if_dead']})")
+                 # The form is named only from schema 3 on. The detail is part
+                 # of the record's content and therefore of its digest, so
+                 # adding a prefix to schemas 1 and 2 would stop every record
+                 # ever sealed from reproducing -- which is exactly what it did
+                 # the first time this was written.
+                 (f"[{form}] " if schema_version == "3" else "")
+                 + f"latency {latency} days against a budget of {budget:.2f} days "
+                 f"({MAXIMUM_DRAWDOWN} / {monitor['expected_daily_loss_if_dead']})"
+                 + (" -- a REASONED stop, not a demonstrated one"
+                    if form == MONITOR_LINK_M2 else ""))
 
 
 def _capacity_gate(evidence):
@@ -337,7 +380,7 @@ def evaluate_admission_gates(evidence, schema_version=ADMISSION_SCHEMA_VERSION):
         _requires_adverse_bound(GATE_DRAWDOWN, evidence.get("worst_fold_drawdown"), "LE",
                                 MAXIMUM_DRAWDOWN),
         _survival_gate(evidence),
-        _monitorability_gate(evidence),
+        _monitorability_gate(evidence, schema_version),
         _capacity_gate(evidence),
         _decision_cost_gate(evidence),
     ]

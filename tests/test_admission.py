@@ -19,7 +19,9 @@ from tramitago_quant_core.governance.admission import (
     GATE_SHARPE, GATE_DRAWDOWN, GATE_SURVIVAL, GATE_MONITORABILITY,
     GATE_CAPACITY, GATE_DECISION_COST,
 
-    _sharpe_gate, _admission_record_is_valid, GATE_SHARPE_V1,)
+    _sharpe_gate, _admission_record_is_valid, GATE_SHARPE_V1,
+    _monitorability_gate, MONITOR_LINK_M1, MONITOR_LINK_M2,
+    MONITOR_LINK_FORMS, MONITOR_M2_FIELDS,)
 
 REVISION = "a" * 40
 AT = "2026-10-02T00:00:00Z"
@@ -370,3 +372,83 @@ class SchemaCompatibilityTests(unittest.TestCase):
         for record in registry["admissions"]:
             self.assertTrue(_admission_record_is_valid(record),
                             f"{record['admission_id'][:30]} no longer verifies")
+
+
+class MonitorFormTests(unittest.TestCase):
+    """§11.1 revised 2026-10-03 under MONITOR_FORM_REVISION|5bc199a4.
+
+    §11.5 refused to act on the specification finding until the ground could be
+    stated independently of #37. Two were: R2 has always admitted P1 OR P2 for
+    exactly this difficulty while R3 admitted only the empirical form; and the
+    two requirements §11.1 places on one threshold are satisfied by DISJOINT
+    ranges -- measured on BAA10Y, the validatable band begins near 2.00% where
+    the trigger fires on 61% of days, and the meaningful band ends near 0.50%
+    where it fires on none.
+    """
+
+    def _monitor(self, **overrides):
+        return {"variable": "BAA10Y", "frequency_seconds": 86400,
+                "degradation_threshold": "0.50", "action": "SUSPEND",
+                "detection_latency_days": "3", "expected_daily_loss_if_dead": "0.0001",
+                "is_pnl_only": False, **overrides}
+
+    def _state(self, monitor, schema="3"):
+        return _monitorability_gate({"monitor": monitor}, schema)
+
+    def test_a_rare_trigger_still_fails_the_empirical_form(self):
+        # M1 is §11.1 unchanged. The revision adds a form; it does not relax one.
+        self.assertEqual(self._state(self._monitor(
+            link_form=MONITOR_LINK_M1,
+            observes_adverse_state_representatively=False))["state"], GATE_FAILED)
+
+    def test_an_identity_establishes_the_link_where_observation_cannot(self):
+        gate = self._state(self._monitor(
+            link_form=MONITOR_LINK_M2,
+            identity="spread below expected credit loss implies carry below losses borne",
+            parameter="0.30", parameter_source="Moody's Baa long-run annual credit loss",
+            holds_for_range="any expected loss in [0.15, 0.60]"))
+        self.assertEqual(gate["state"], GATE_PASSED)
+
+    def test_the_verdict_says_the_stop_is_reasoned_and_not_demonstrated(self):
+        # So an M2 monitor is never later read as an M1.
+        gate = self._state(self._monitor(
+            link_form=MONITOR_LINK_M2, identity="x", parameter="1",
+            parameter_source="y", holds_for_range="z"))
+        self.assertIn("REASONED", gate["detail"])
+        self.assertIn(MONITOR_LINK_M2, gate["detail"])
+
+    def test_an_incomplete_identity_is_not_evaluable_rather_than_passed(self):
+        for absent in MONITOR_M2_FIELDS:
+            fields = {key: "stated" for key in MONITOR_M2_FIELDS if key != absent}
+            self.assertEqual(
+                self._state(self._monitor(link_form=MONITOR_LINK_M2, **fields))["state"],
+                GATE_NOT_EVALUABLE)
+
+    def test_pnl_only_is_refused_whatever_the_form(self):
+        # Untouched by the revision, and the clause R3 exists for.
+        for form in MONITOR_LINK_FORMS:
+            self.assertEqual(self._state(self._monitor(
+                link_form=form, is_pnl_only=True, identity="x", parameter="1",
+                parameter_source="y", holds_for_range="z"))["state"], GATE_FAILED)
+
+    def test_the_latency_arithmetic_is_untouched(self):
+        self.assertEqual(self._state(self._monitor(
+            link_form=MONITOR_LINK_M2, detection_latency_days="99999",
+            identity="x", parameter="1", parameter_source="y",
+            holds_for_range="z"))["state"], GATE_FAILED)
+
+    def test_older_schemas_never_see_the_new_form(self):
+        # A schema 2 record declaring M2 is still judged by the empirical rule,
+        # so nothing sealed before the revision changes meaning because of it.
+        monitor = self._monitor(link_form=MONITOR_LINK_M2, identity="x", parameter="1",
+                                parameter_source="y", holds_for_range="z",
+                                observes_adverse_state_representatively=False)
+        self.assertEqual(self._state(monitor, "2")["state"], GATE_FAILED)
+        self.assertEqual(self._state(monitor, "3")["state"], GATE_PASSED)
+
+    def test_evidence_without_a_form_is_judged_empirically(self):
+        # Everything written before the revision keeps its meaning.
+        self.assertEqual(self._state(self._monitor(
+            observes_adverse_state_representatively=True))["state"], GATE_PASSED)
+        self.assertEqual(self._state(self._monitor(
+            observes_adverse_state_representatively=False))["state"], GATE_FAILED)
