@@ -856,6 +856,100 @@
       "schema_version": "4",
       "status": "ISSUED",
       "validation_id": "LEVEL_CLAIM_VALIDATION|b9f10375490a383a7430c932cb806246296837dce2b1762364932b9aee8eb6f7"
+    },
+    {
+      "admission_id": "ADMISSION|b242caee8ecedb7ebab5aa14b8eb0fade6e056c7651110fbb237f04d2a1679da",
+      "evidence": {
+        "capacity": {
+          "ceiling": "2000000.00",
+          "current_tranche": "1E+3",
+          "is_lower_bound_not_the_ceiling": true,
+          "source": "NONE_FOUND: nothing binds below $2,000,000, so this is a FLOOR on the ceiling and never an estimate of it"
+        },
+        "decision_cost": {
+          "build_cost": "0",
+          "expected_annual_net_return": "33.37",
+          "minimum_declared_life_years": "3",
+          "recurring_cost_per_year": "0",
+          "surveillance_is_automatable": true
+        },
+        "monitor": {
+          "action": "SUSPEND",
+          "degradation_threshold": "0",
+          "detection_latency_days": "3.000000",
+          "expected_daily_loss_if_dead": "0.00013240",
+          "frequency_seconds": 86400,
+          "is_pnl_only": false,
+          "link_empirical_outcome": "REACHABLE_AND_FAILED",
+          "link_form": "M1_EMPIRICAL",
+          "observes_adverse_state_representatively": false,
+          "variable": "VXN minus the 21-day realised volatility of the Nasdaq-100"
+        },
+        "net_sharpe": {
+          "is_adverse_bound": true,
+          "point_estimate": "0.677173",
+          "source": "moving-block bootstrap, {\"block_periods\": 5, \"confidence\": \"0.95\", \"resamples\": 2000, \"seed\": 0}, on 2699 net days of variance-premium-qyld at a 0.3203 weight",
+          "value": "0.221948"
+        },
+        "survival": {
+          "counterparty": "buyers of Nasdaq-100 call options, who pay for upside exposure that the fund sells them inside the wrapper",
+          "form": "P2_DECLARED_MECHANISM",
+          "what_would_end_it": "realised volatility persistently exceeding implied, so that selling upside stops being paid, or enough capital selling calls to compress implied volatility below what is realised -- which is what the declared monitor watches for",
+          "why_they_accept_losing": "they want convex upside at limited cost, and structured product issuers hedge by buying calls, so demand for upside is not sensitive to price; the premium is what the sellers earn for taking the other side of that demand and for bearing the crash risk it implies"
+        },
+        "worst_fold_drawdown": {
+          "is_adverse_bound": true,
+          "source": "moving-block bootstrap, same parameters, on the WHOLE net series, which dominates any fold and is therefore the stricter reading of R1",
+          "value": "0.149977"
+        }
+      },
+      "gates": [
+        {
+          "detail": "point 0.677173 >= 0.50 is true, and bound 0.221948 > 0 is true (source: moving-block bootstrap, {\"block_periods\": 5, \"confidence\": \"0.95\", \"resamples\": 2000, \"seed\": 0}, on 2699 net days of variance-premium-qyld at a 0.3203 weight)",
+          "gate": "maximando: net Sharpe >= 0.50 AND its lower 95% bound > 0",
+          "state": "PASSED"
+        },
+        {
+          "detail": "0.149977 <= 0.15 is true (source: moving-block bootstrap, same parameters, on the WHOLE net series, which dominates any fold and is therefore the stricter reading of R1)",
+          "gate": "R1 drawdown: worst fold, upper 95% bound <= 0.15",
+          "state": "PASSED"
+        },
+        {
+          "detail": "P2: mechanism declared in writing",
+          "gate": "R2 survival: P1 (>=2 out-of-sample periods) or P2 (declared mechanism)",
+          "state": "PASSED"
+        },
+        {
+          "detail": "DOC-011 \u00a712: a monitor must observe the state it is meant to detect often enough to act on it",
+          "gate": "R3 monitorability: latency < drawdown / daily loss if dead",
+          "state": "FAILED"
+        },
+        {
+          "detail": "ceiling 2000000.00 against a tranche of 1E+3",
+          "gate": "R4 capacity: declared ceiling C >= the current tranche",
+          "state": "PASSED"
+        },
+        {
+          "detail": "0.0000 of the expected annual net return, against 0.25",
+          "gate": "R5 decision cost: < 25% of expected annual net return",
+          "state": "PASSED"
+        }
+      ],
+      "gates_failed": [
+        "R3 monitorability: latency < drawdown / daily loss if dead"
+      ],
+      "gates_not_evaluable": [],
+      "hypothesis_id": "HYPOTHESIS|1a96622a-4bcd-497d-b308-62707795c4f1",
+      "materialization": {
+        "code_revision": "328a0beb156c055304fdc6ff63ff2a01c5c241bb",
+        "decided_at": "2026-10-03T18:50:42.805607Z",
+        "pipeline_sha256": "add34d15bcf67ed91720680290df70b96a25c7d3d890d5b14e2e87e15c5d612c"
+      },
+      "outcome": "ADMISION_DENEGADA",
+      "record_id": "ADMISSION_RECORD|667d1659f5655814f106d8339661e36a4089e6be285080f344b413ce20cf25ca",
+      "schema_version": "4",
+      "status": "ISSUED",
+      "validation_id": "LEVEL_CLAIM_VALIDATION|13251d412ab83d91009e706730895877cf30d1da7faa6f5f3331daa53f744ee3"
     }
   ],
   "schema_version": "1"

@@ -1,0 +1,41 @@
+{
+  "schema_version": "1",
+  "verdicts": [
+    {
+      "code_revision": "328a0beb156c055304fdc6ff63ff2a01c5c241bb",
+      "decided_at": "2026-10-03T18:50:42.805607Z",
+      "family_id": "MECHANISM_FAMILY|8c8b1c76ebc94c791864859a276f3ae8320a79b384684421ecb8d2a7fb06283a",
+      "kind": "family-verdict",
+      "members": [
+        {
+          "control": {
+            "met": 3,
+            "ratio": 0.5,
+            "usable": 6
+          },
+          "link_outcome": "REACHABLE_AND_FAILED",
+          "met": 4,
+          "ratio": 0.6666666666666666,
+          "symbol": "XYLD",
+          "usable": 6
+        },
+        {
+          "control": {
+            "met": 4,
+            "ratio": 0.5714285714285714,
+            "usable": 7
+          },
+          "link_outcome": "REACHABLE_AND_FAILED",
+          "met": 3,
+          "ratio": 0.42857142857142855,
+          "symbol": "QYLD",
+          "usable": 7
+        }
+      ],
+      "reason": "the empirical link was reachable and failed in XYLD, QYLD; a monitor refuted in one market is refuted, whatever the others show",
+      "schema_version": "1",
+      "verdict": "DOES_NOT_GENERALIZE",
+      "verdict_id": "FAMILY_VERDICT|84d929a2c456b75de9a0b846088d6269e298e744f21184c8facf7aa21a529436"
+    }
+  ]
+}
