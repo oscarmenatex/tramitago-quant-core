@@ -1,102 +1,96 @@
-# Cortos en el ejecutor: qué está construido y qué decisión falta
+# Cortos en el ejecutor: estado actual
 
-Orden explícita del Director, 2026-10-03 (DOC-011 §7 exige una orden por etapa).
+Orden explícita del Director, 2026-10-03 (DOC-011 §7 exige una orden por etapa). Primero se
+construyó el contrato de órdenes (PR #137); después se cableó la cadena **solo PAPER**, con un
+contrato de instrumento (esta actualización).
 
 ---
 
-## 1. Lo que encontré antes de construir
+## 1. Qué cambió en la cadena
 
-Pedir «cortos en el ejecutor» suponía que bastaba añadir un lado a una orden. No es así:
+La cadena de `pipeline.py` estaba atada a un instrumento: `BTC-USD` como literal y los términos
+de riesgo también (capital exactamente 200 USD, exposición ≤ 50, presupuesto exactamente 5).
+Ahora los términos se leen **por instrumento** desde `execution/instrument_contract.py`:
 
-- La cadena operativa de `pipeline.py` está atada a **un instrumento**: `BTC-USD` aparece como
-  literal en unos 66 sitios.
-- Sus términos de riesgo también son literales: capital exactamente **200 USD**, exposición
-  como máximo **50**, presupuesto de riesgo exactamente **5**.
-- Solo acepta los pares `(ENTER, BUY)` y `(EXIT, SELL)`.
-- Alpaca **no permite cortos en cripto**.
-
-Es decir: hoy el ejecutor no puede operar **ni un ETF largo**, y mucho menos corto. Ampliar esa
-cadena a acciones relaja restricciones que protegen capital real, y eso es una decisión tuya,
-no un efecto lateral de añadir un lado.
-
-## 2. Lo que sí está construido
-
-`tramitago_quant_core/execution/equity_order.py`: el **contrato de órdenes de renta variable,
-largo y corto**. Puro, solo PAPER, sin red. Es lo que llamaría una cadena cableada.
-
-El lado se deriva de dos hechos, nunca se escribe a mano:
-
-| | LONG | SHORT |
+| | BTC-USD | Resto (acciones y ETF) |
 |---|---|---|
-| ENTER | BUY | SELL |
-| EXIT | SELL | BUY |
+| Términos | constantes en el código, iguales a los literales de siempre | `config/instrument_contracts.json`, validados |
+| Entornos | PAPER y LIVE | **solo PAPER**, y no es un ajuste: ningún campo puede nombrar otro entorno |
+| Cortos | no | solo si el contrato lo declara, con movimiento adverso máximo y pérdida por posición |
+| ¿Se puede sobrescribir por fichero? | No | Sí (es el punto), salvo declarar BTC-USD, que se rechaza |
 
-Lo que el contrato **rechaza**, y por qué:
+El comportamiento de BTC-USD **no ha cambiado**: sus 76 pruebas de la cadena (propuesta,
+aprobación, revalidación, petición, ejecución PAPER y LIVE, binding de evidencia) pasan sin
+modificar.
 
-| Regla | Por qué |
-|---|---|
-| Un corto sin movimiento adverso máximo declarado, o cuya pérdida en ese punto supera el presupuesto por posición | un corto pierde sin límite; un largo pierde como mucho su nocional |
-| Un corto que no lleva su orden de cobertura protectora (OTO con stop) | que la pérdida quede acotada en el broker y no solo en un documento |
-| Activo no *shortable* o no *easy to borrow* | un corto difícil de pedir prestado puede ser reclamado o llevar un coste que nadie midió |
-| Corto con acciones fraccionadas | el broker no ofrece cortos fraccionados |
-| Cubrir más de lo que está corto | dejaría una posición larga que nadie pidió |
-| Abrir mientras hay cualquier posición abierta en el instrumento | una posición por instrumento: ninguna orden puede voltear una posición |
-| Cripto | no se puede cortar en el broker |
-| Órdenes que no son límite | |
+## 2. El flujo PAPER para un corto
 
-Garantías comprobadas por test, no declaradas:
-- **Ninguna secuencia de órdenes aceptadas puede voltear una posición** (4.000 órdenes
-  aleatorias contra un libro que ejecuta todo lo aceptado).
-- Todo corto aceptado cabe en su presupuesto de pérdida en el stop.
-- Las tres protecciones críticas se probaron quitándolas una a una: cada mutación rompe el
-  test que corresponde.
+```
+observe_alpaca_paper_instrument      el broker dice si es negociable, shortable, fácil de prestar,
+                                     fraccionable, y cuánto hay en cartera (observado, no escrito)
+instrument_risk_config               el contrato de riesgo, derivado del contrato de instrumento
+prepare_instrument_order_proposal    juzgada contra lo observado y contra el contrato
+record_manual_approval               (sin cambios) tu aprobación
+revalidate_approved_proposal         (generalizada) falla si el contrato cambió tras aprobar
+prepare_alpaca_request               (generalizada) rechaza LIVE para cualquier instrumento no BTC
+execute_alpaca_paper_order           un corto sale como orden OTO con su stop protector
+observe_alpaca_paper_position        la posición corta se observa con cantidad negativa
+```
 
-Incluye también `borrow_cost_per_day`: Alpaca no cobra por un activo fácil de prestar, así que
-el valor honesto es cero, pero un coste de préstamo es un número **declarado**, no una omisión.
+Una propuesta de instrumento **no lleva comité**, así que `execute_alpaca_live_order` nunca puede
+ejecutarla: exige un comité de capital sellado.
 
-## 3. Lo que NO está hecho, a propósito
+## 3. Lo que sigue cerrado, y está probado
 
-- **No se ha tocado `pipeline.py`.** El test que vigila que el ejecutor no abra cortos sigue en
-  verde y `EXECUTOR_CAN_OPEN_SHORTS` sigue en `False`: la cadena operativa todavía no puede
-  hacerlo, y el registro de candidatos no debe decir lo contrario.
-- **No hay cortos con capital real.** El contrato solo emite peticiones al host PAPER.
-- **No se ha enviado ninguna orden** y no se ha usado ninguna credencial.
-- **El lado de investigación no cambia.** Medir un candidato corto (VIXM, carry de divisas)
-  necesita que el motor de primas soporte un único instrumento corto (hoy solo soporta pares).
-  Es un cambio aparte y menor, y no era lo pedido.
+- **Capital real:** ningún instrumento que no sea BTC-USD puede prepararse, validarse ni
+  ejecutarse en LIVE. Hay tres barreras independientes: el entorno al preparar la petición, la
+  validez de la petición, y el cuerpo de la orden real. Se comprobó quitando cada una.
+- **Un contrato cambiado tras aprobar** invalida la revalidación (la identidad del contrato va en
+  la propuesta). Quitar el instrumento del contrato también.
+- **Un corto sin su stop** no puede convertirse en orden.
+- **Nada voltea una posición:** cubrir más de lo que está corto, o abrir con una posición abierta,
+  se rechaza.
+- **El transporte PAPER** solo permite consultas de posición y activo para símbolos con contrato.
+  El transporte LIVE sigue sin conocer nada que no sea BTC-USD.
+- **Una salida nunca queda bloqueada por un tope de entrada.** Un corto que se ha ido en contra
+  puede necesitar una cobertura mayor que su nocional de apertura. Las salidas tienen su propio
+  tope (`max_exit_exposure_usd`, por defecto el doble del de entrada).
 
-## 4. Decisión del Director: cablear la cadena
+## 4. Números que debes decidir tú
 
-Para que una orden corta salga por la cadena operativa hay que cambiar, en `pipeline.py`:
+`config/instrument_contracts.json` trae tres instrumentos con **cifras que puse yo**, en la misma
+proporción que el piloto de BTC-USD (exposición 25 % del capital, presupuesto 2,5 %). No son
+decisiones tuyas hasta que las confirmes:
 
-| Dónde | Qué es hoy |
-|---|---|
-| ~4543 y ~4682 | `instrument must be BTC-USD` al preparar propuestas (real y paper) |
-| ~4578 y ~4712 | el lado como `{"ENTER": "BUY", "EXIT": "SELL"}` |
-| ~4891–4894 | validación de instrumento y del par acción/lado |
-| ~5064 | la petición Alpaca exige `BTC-USD` |
-| ~5142–5155 | revalidación con capital == 200, exposición ≤ 50, presupuesto == 5 |
-| ~5572 | «Only a BTC-USD limit order is allowed» |
+| | Capital | Exposición | Presupuesto | Corto |
+|---|---|---|---|---|
+| XYLD, QYLD | 1000 | 250 | 25 | no |
+| VIXM | 1000 | 250 | 25 | sí, movimiento adverso 10 %, pérdida máxima 25 |
 
-Opciones:
+Con esos números, un corto de VIXM a 20 USD admite como máximo 12 acciones (240 USD; pérdida en
+el stop 24 USD).
 
-1. **No cablear todavía.** El contrato queda listo; la cadena sigue siendo de BTC-USD.
-2. **Cablear solo PAPER, con un contrato de instrumento declarado** (tabla de instrumentos
-   permitidos con sus topes), dejando intactos los literales de capital real. Es la opción que
-   recomiendo: permite medir cortos en PAPER sin tocar lo que protege dinero real.
-3. **Generalizar también la cadena real.** Es el cambio que hace falta para Fase 1 con acciones,
-   y cambia los topes de capital. Requiere tu decisión expresa y no recomiendo hacerlo antes de
-   que exista una hipótesis admitida que lo necesite.
+## 5. Lo que NO está hecho
 
-Cualquier cableado debe actualizar el registro de candidatos **en el mismo cambio**, y el test
-que lee `pipeline.py` debe seguir diciendo la verdad.
+- **Capital real con acciones.** Es la opción 3 del documento anterior y sigue sin hacerse: cambia
+  los topes de capital y requiere tu decisión expresa, preferiblemente cuando exista una hipótesis
+  admitida que lo necesite.
+- **Un script de operación** que encadene estos pasos (necesitaría tus credenciales de Alpaca PAPER,
+  que yo no toco). Hoy es una API de funciones, probada con un transporte simulado.
+- **Cuenta:** no se consulta si la cuenta tiene los cortos habilitados ni su margen. Si no los
+  tiene, el broker rechazará la orden, y esa respuesta queda registrada como rechazo.
+- **El lado de investigación:** medir un corto simple necesita que el motor de primas soporte un
+  único instrumento corto (hoy solo pares). Es un cambio aparte.
+- **Pruebas de la suite completa:** un paquete `tests` ajeno en site-packages tapa al del
+  repositorio, y por eso seis módulos fallan al importarse con `unittest discover` (también en
+  `main`). Se ejecutaron aparte con el paquete correcto y pasan.
 
-## 5. Riesgos propios del corto, para tenerlos presentes
+## 6. Riesgos propios del corto
 
-- Pérdida sin límite si no hay cobertura protectora; por eso es obligatoria en el contrato.
-- *Short squeeze*: el movimiento adverso se concentra justo cuando más cuesta cubrir. Un stop
-  puede ejecutarse peor que su precio.
+- Pérdida sin límite si no hay cobertura protectora; por eso es obligatoria.
+- *Short squeeze*: el movimiento adverso se concentra justo cuando más cuesta cubrir. Un stop puede
+  ejecutarse peor que su precio.
 - Recall del préstamo: el broker puede obligar a cubrir.
 - Dividendos: quien está corto los paga.
-- Costes de margen y límites de la cuenta, que dependen del tipo de cuenta.
+- Márgenes y límites de la cuenta, que dependen de su tipo.
 - Ninguno de estos está en una serie de retornos histórica.

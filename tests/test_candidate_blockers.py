@@ -16,7 +16,7 @@ from pathlib import Path
 from tramitago_quant_core.research.candidate_register import (
     candidate, candidate_verdict, candidate_blockers, monitor_status, rank_candidates,
     admissible_in_principle, what_would_unlock, constitute_candidate_register,
-    EXECUTOR_CAN_OPEN_SHORTS, MONITOR_NONE_POSSIBLE, MONITOR_LINK_MET,
+    EXECUTOR_CAN_OPEN_SHORTS, EXECUTOR_CAN_OPEN_SHORTS_PAPER, MONITOR_NONE_POSSIBLE, MONITOR_LINK_MET,
     MONITOR_LINK_REFUTED, MONITOR_IDENTITY_ONLY, MONITOR_UNEXAMINED,
     CERTAINTY_MEASURED, CERTAINTY_INFERRED, BLOCKER_REQUIRES_SHORT,
     BLOCKER_MONITOR_REFUTED, BLOCKER_NO_MONITOR, STATUS_UNTRIED, STATUS_MEASURED_DEAD,
@@ -52,27 +52,57 @@ REFUTED_ON_SIBLING = monitor_status(
 
 
 class ExecutorCapabilityTests(unittest.TestCase):
-    """The platform cannot open a short, and that fact is held to a test.
+    """What the executor can do about shorts, held to BEHAVIOUR.
 
-    pipeline.py accepts only (ENTER, BUY) and (EXIT, SELL), at two places.
-    DOC-011 section 6 went stale for a week by being prose. This reads the
-    executor source so the declared capability cannot drift from the code.
+    Two statements, and they differ: a short can be opened in PAPER for a contracted
+    instrument, and cannot be opened with real capital. DOC-011 section 6 went stale for a
+    week by being prose, and the first form of this test, a search of pipeline.py for an
+    ENTER/SELL literal, would have kept passing after the executor learned to short. These
+    drive the chain's own validators.
     """
 
     SOURCE = Path(__file__).resolve().parents[1] / "pipeline.py"
+    CONTRACTS = Path(__file__).resolve().parents[1] / "config" / "instrument_contracts.json"
     SHORT_PAIR = re.compile(r"""\(\s*["']ENTER["']\s*,\s*["']SELL["']\s*\)""")
 
-    def test_the_declared_capability_agrees_with_the_executor_source(self):
-        opens_shorts = bool(self.SHORT_PAIR.search(self.SOURCE.read_text(encoding="utf-8")))
-        self.assertEqual(
-            EXECUTOR_CAN_OPEN_SHORTS, opens_shorts,
-            "pipeline.py now accepts an ENTER/SELL pair, or EXECUTOR_CAN_OPEN_SHORTS was "
-            "changed without it: update the candidate register in the SAME change that "
-            "builds or removes the capability, or every requires_short verdict is wrong")
+    def _shortable(self):
+        from tramitago_quant_core.execution.instrument_contract import load_equity_contracts
+        return [symbol for symbol, terms in load_equity_contracts(self.CONTRACTS).items()
+                if terms["can_short"]]
 
-    def test_the_pairs_the_executor_does_accept_are_still_there(self):
+    def _chain(self):
+        import pipeline
+        from unittest.mock import patch
+        return pipeline, patch.object(pipeline, "INSTRUMENT_CONTRACT_PATH", self.CONTRACTS)
+
+    def test_a_short_can_be_opened_in_paper_exactly_when_the_flag_says_so(self):
+        pipeline, patched = self._chain()
+        with patched:
+            accepted = any(pipeline._proposal_action_side_valid(
+                {"instrument": symbol, "action": "ENTER", "side": "SELL", "direction": "SHORT"})
+                for symbol in self._shortable())
+        self.assertEqual(EXECUTOR_CAN_OPEN_SHORTS_PAPER, accepted)
+
+    def test_a_short_can_never_be_opened_with_real_capital(self):
+        pipeline, patched = self._chain()
+        with patched:
+            live = any(pipeline._request_instrument_allowed(
+                {"instrument": symbol, "target_environment": "LIVE"})
+                for symbol in self._shortable())
+            bitcoin_short = pipeline._proposal_action_side_valid(
+                {"instrument": "BTC-USD", "action": "ENTER", "side": "SELL",
+                 "direction": "SHORT"})
+        self.assertEqual(EXECUTOR_CAN_OPEN_SHORTS, live or bitcoin_short)
+        self.assertFalse(EXECUTOR_CAN_OPEN_SHORTS)
+
+    def test_the_legacy_long_only_pairs_are_still_how_a_proposal_without_direction_is_read(self):
         source = self.SOURCE.read_text(encoding="utf-8")
         self.assertIn('("ENTER", "BUY"), ("EXIT", "SELL")', source)
+
+    def test_the_side_of_a_short_is_derived_and_never_written_as_a_pair_in_the_chain(self):
+        # An ENTER/SELL literal in pipeline.py would be a side typed beside the direction,
+        # which is how a mismatch gets past a validator.
+        self.assertFalse(self.SHORT_PAIR.search(self.SOURCE.read_text(encoding="utf-8")))
 
 
 class RequiredFieldTests(unittest.TestCase):

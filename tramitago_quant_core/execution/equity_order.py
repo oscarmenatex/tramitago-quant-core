@@ -31,7 +31,7 @@ direction of the position (LONG or SHORT).
       ENTER SHORT -> SELL       EXIT SHORT -> BUY
 """
 
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, ROUND_FLOOR
 
 from tramitago_quant_core.shared.util import digest, encoded
 
@@ -41,6 +41,7 @@ BUY, SELL = "BUY", "SELL"
 
 _SIDE = {(ENTER, LONG): BUY, (EXIT, LONG): SELL, (ENTER, SHORT): SELL, (EXIT, SHORT): BUY}
 
+CENT = Decimal("0.01")
 PAPER_HOST = "paper-api.alpaca.markets"
 ORDER_PATH = "/v2/orders"
 
@@ -108,6 +109,9 @@ def prepare_equity_order(*, symbol, action, direction, quantity, limit_price, as
         reasons.append("quantity must be positive")
     if limit_price <= 0:
         reasons.append("a positive limit price is required: only limit orders are allowed")
+    elif limit_price != limit_price.quantize(CENT):
+        reasons.append("the limit price must be a whole number of cents: the broker rejects "
+                       "sub-penny prices")
 
     if action == ENTER:
         if position != 0:
@@ -163,8 +167,15 @@ def prepare_equity_order(*, symbol, action, direction, quantity, limit_price, as
                 if worst_loss > budget:
                     reasons.append(f"the loss at the declared adverse move, {worst_loss}, "
                                    f"exceeds the per-position budget {budget}")
-                protective = {"side": BUY, "type": "STOP", "stop_price": str(limit_price * (1 + move)),
-                              "quantity": str(quantity)}
+                # Rounded DOWN to the cent: a tighter stop only shrinks the loss, a
+                # looser one could breach the budget the check above just enforced.
+                stop = (limit_price * (1 + move)).quantize(CENT, rounding=ROUND_FLOOR)
+                if stop <= limit_price:
+                    reasons.append("the protective stop rounds to the entry price: the "
+                                   "adverse move is too small for this price")
+                else:
+                    protective = {"side": BUY, "type": "STOP", "stop_price": str(stop),
+                                  "quantity": str(quantity)}
 
     if reasons:
         return {"ok": False, "reasons": reasons, "proposal": None}
