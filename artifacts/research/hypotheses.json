@@ -2140,6 +2140,48 @@
       "system_version": "0.1.0",
       "target_metric": "net_sharpe(long LQD, short IEF at equal notional, held continuously, net of execution cost on both legs)",
       "version": 3
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "GE",
+        "expected_direction": "INCREASE",
+        "metric": "net_sharpe(SVXY held continuously, net of execution cost)",
+        "threshold": "0.50"
+      },
+      "code_revision": "cd285020627c85dfcdf081a2367199f4f29e8f47",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2026-10-01T00:00:00Z",
+          "start_utc": "2018-03-01T00:00:00Z"
+        },
+        "universe": [
+          "SVXY"
+        ],
+        "variables": [
+          "close",
+          "forward_return_1d",
+          "sma_close_3"
+        ]
+      },
+      "creation_context": {
+        "created_by": "Oscar Carmenate Rodriguez",
+        "provenance": [
+          "PRE_DECLARATION_CONTRACT|the first Hypothesis to answer seven questions before any data was captured",
+          "ADMISSION|68f53870628d8a6c50572604e077f1be5f41",
+          "MEASURED|the VIX term structure inverted on 173 of 2159 days, 7 of 8 years, 5 of 7 folds -- so the empirical form of R3 is reachable here",
+          "MEASURED|SVXY serves 2159 sessions from 2018-03-01, the date its structure became -0.5x, matching the days on which VIX and VIX3M both exist",
+          "CRITERION|a premium is monitorable when its compensation is QUOTED, separately from the position's own P&L"
+        ]
+      },
+      "creation_timestamp": "2026-10-03T05:40:47.531747Z",
+      "description": "LEVEL CLAIM, one leg, zero turnover by construction.\n\nSVXY (-0.5x daily short VIX futures) held CONTINUOUSLY from 2018-03-01 to\n2026-10-01: one entry, one exit, no signal, no rebalancing and no shorting. The\nnet return of that position, after execution costs, is POSITIVE and its figures\nclear the admission thresholds of DOC-011 section 8.\n\nTHIS IS THE VARIANCE RISK PREMIUM: the compensation received for bearing\nequity-index volatility risk that someone else is paying to shed. It is not a\nsignal, not a prediction and not a convergence trade.\n\nWHY IT IS DECLARED. Two premia have now been refused for reasons that had\nnothing to do with how much they paid. The equity premium has no degradation\nvariable that is not its own P&L. The credit premium had a quoted one whose\ntrigger state occurred on ZERO of 2184 days, so no walk-forward could establish\nthe link and only the declared-identity form was available. This candidate's\ndeath state OCCURS -- 173 days, 8.0%, 7 of 8 years, 5 of 7 folds -- which makes\nthe empirical form of R3 reachable here for the first time.\n\nTHE DECLARED MONITOR. Variable: the VIX term structure, VIX3M minus VIX, both\npublished daily by CBOE and distributed through FRED. Degradation: the slope\nfalling to or below zero, meaning the futures curve has inverted and the roll\nyield that constitutes this premium has reversed. Action: suspend. It is the\nprice of a DIFFERENT instrument, forward-looking rather than realised, and it\nwould keep being published if this position were never opened.\n\nPre-declared caveats:\n- THE MONITOR IS CLOSER TO THE POSITION THAN THE CREDIT ONE WAS, and that is declared rather than discovered. SVXY's return is driven by the roll yield, and the roll yield is the term structure, so the monitored variable and the position are related in a way BAA10Y and an LQD/IEF spread were not. They remain distinct quantities: the slope is the compensation being OFFERED, forward-looking, while the position's return is what was REALISED, and the two come apart -- spot volatility can spike while the curve stays in contango, and the curve can inverted on a day the position is flat. It qualifies, and it is nearer the line than the last one.\n- THE DRAWDOWN GATE IS WHERE THIS IS EXPECTED TO BITE HARDEST. Short volatility is the archetype of a premium paid in small regular amounts and repaid in one catastrophic instalment: SVXY fell roughly 55% peak to trough in February and March 2020, INSIDE this window. Expect a derived weight well below the 28% SPY needed. DECLARED IN ADVANCE as the expected failure, with CAP-006 sizing as the declared response.\n- THE WINDOW EXCLUDES FEBRUARY 2018 AND THAT IS NOT A CHOICE. SVXY was -1x until 2018-02-28 and lost about 90% on 2018-02-05 under that structure. A window reaching back past the change would measure two different instruments under one ticker, which is worse than excluding an episode. What the window does contain is March 2020, a larger volatility shock by VIX level, so the tail is present even though the worst day for the old structure is not.\n- ONE GATE STILL CARRIES THE RISK, as it did for the credit premium: the net Sharpe. The pre-declaration answers it with 0.60 as the CONSERVATIVE end of a sourced range, not its midpoint, and 0.60 clears the 0.54 bar by six hundredths. If the measurement lands near the bottom of that range the Hypothesis dies and the declaration was close to right; that is a narrow margin and it is stated here rather than left to be noticed.\n- A LEVERAGED PRODUCT HAS A DRAG THE PREMIUM DOES NOT. SVXY rebalances to -0.5x daily, and daily rebalancing of a leveraged exposure costs something in a volatile market regardless of direction. Part of whatever is measured is that drag rather than the premium, and no part of this declaration separates them.\n- POPULATION: 'US volatility ETPs, daily, risk premium', in which ZERO Hypotheses have been measured. Named for the same reason as the previous two: it is neither population sealed EXHAUSTED, and declaring into a fresh one is also how any stopping rule gets escaped.\n- IT COUNTS IN THE MULTIPLICITY LEDGER. It is the forty-eighth draw from the same search, and the first to answer seven questions before spending. Answering them does not make it a free shot -- it makes it a cheaper one to refuse.",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|205003fe-7b8d-4fc0-b30c-936a404cd7c0",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|205003fe-7b8d-4fc0-b30c-936a404cd7c0|1|7a6575c876842cca1ca00c7789aa45c1ded0a347e3b2f4449468ef421b47d7e0",
+      "status": "PROPOSED",
+      "system_version": "0.1.0",
+      "target_metric": "net_sharpe(SVXY held continuously, net of execution cost)",
+      "version": 1
     }
   ],
   "schema_version": "2"
