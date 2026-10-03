@@ -568,6 +568,103 @@
       "schema_version": "3",
       "status": "ISSUED",
       "validation_id": "LEVEL_CLAIM_VALIDATION|fdd086232a72b44f438e832be9b9c691af4e21e082df25bbe961e2406ccb258a"
+    },
+    {
+      "admission_id": "ADMISSION|b1fbbaf88a5a687bf63619d95bb1b394c2e35a484cd3bc56150f6ff089c00764",
+      "evidence": {
+        "capacity": {
+          "ceiling": "2000000.00",
+          "current_tranche": "1000",
+          "is_lower_bound_not_the_ceiling": true,
+          "source": "NONE_FOUND: nothing binds below $2,000,000, a FLOOR on the ceiling and never an estimate of it"
+        },
+        "decision_cost": {
+          "build_cost": "0",
+          "expected_annual_net_return": "20.29",
+          "minimum_declared_life_years": "3",
+          "recurring_cost_per_year": "0",
+          "surveillance_is_automatable": true
+        },
+        "monitor": {
+          "action": "SUSPEND",
+          "degradation_threshold": "0",
+          "detection_latency_days": "3.000000",
+          "expected_daily_loss_if_dead": "0.00008051",
+          "frequency_seconds": 86400,
+          "holds_for_range": "any curve shape, because the threshold is the sign of the slope and the implication is the sign of the roll",
+          "identity": "The position's return is the roll down the VIX futures curve. When the curve inverts the roll is UP it, so the compensation reverses by subtraction rather than by estimation.",
+          "is_pnl_only": false,
+          "link_form": "M2_IDENTITY",
+          "observes_adverse_state_representatively": false,
+          "parameter": "0",
+          "parameter_source": "the sign change itself, not a level anyone chose",
+          "variable": "VXVCLS-VIXCLS"
+        },
+        "net_sharpe": {
+          "is_adverse_bound": true,
+          "point_estimate": "0.502073",
+          "source": "moving-block bootstrap, {\"block_periods\": 5, \"confidence\": \"0.95\", \"resamples\": 2000, \"seed\": 0}, on 2158 net days of volatility-premium-svxy at a 0.1094 weight",
+          "value": "-0.044528"
+        },
+        "survival": {
+          "counterparty": "buyers of VIX futures and index options: portfolio managers and dealers purchasing protection against equity drawdowns",
+          "form": "P2_DECLARED_MECHANISM",
+          "what_would_end_it": "equity drawdown risk ceasing to be disliked, or enough capital selling volatility to compress the curve below the losses it compensates -- which is what the declared monitor watches for",
+          "why_they_accept_losing": "they are buying insurance against losses they are mandated or unwilling to bear, and insurance not priced above its expected cost would be written by nobody"
+        },
+        "worst_fold_drawdown": {
+          "is_adverse_bound": true,
+          "source": "moving-block bootstrap, same parameters, on the WHOLE net series, which dominates any fold and is the stricter reading of R1",
+          "value": "0.149716"
+        }
+      },
+      "gates": [
+        {
+          "detail": "point 0.502073 >= 0.50 is true, and bound -0.044528 > 0 is false (source: moving-block bootstrap, {\"block_periods\": 5, \"confidence\": \"0.95\", \"resamples\": 2000, \"seed\": 0}, on 2158 net days of volatility-premium-svxy at a 0.1094 weight)",
+          "gate": "maximando: net Sharpe >= 0.50 AND its lower 95% bound > 0",
+          "state": "FAILED"
+        },
+        {
+          "detail": "0.149716 <= 0.15 is true (source: moving-block bootstrap, same parameters, on the WHOLE net series, which dominates any fold and is the stricter reading of R1)",
+          "gate": "R1 drawdown: worst fold, upper 95% bound <= 0.15",
+          "state": "PASSED"
+        },
+        {
+          "detail": "P2: mechanism declared in writing",
+          "gate": "R2 survival: P1 (>=2 out-of-sample periods) or P2 (declared mechanism)",
+          "state": "PASSED"
+        },
+        {
+          "detail": "[M2_IDENTITY] latency 3.000000 days against a budget of 1863.12 days (0.15 / 0.00008051) -- a REASONED stop, not a demonstrated one",
+          "gate": "R3 monitorability: latency < drawdown / daily loss if dead",
+          "state": "PASSED"
+        },
+        {
+          "detail": "ceiling 2000000.00 against a tranche of 1000",
+          "gate": "R4 capacity: declared ceiling C >= the current tranche",
+          "state": "PASSED"
+        },
+        {
+          "detail": "0.0000 of the expected annual net return, against 0.25",
+          "gate": "R5 decision cost: < 25% of expected annual net return",
+          "state": "PASSED"
+        }
+      ],
+      "gates_failed": [
+        "maximando: net Sharpe >= 0.50 AND its lower 95% bound > 0"
+      ],
+      "gates_not_evaluable": [],
+      "hypothesis_id": "HYPOTHESIS|205003fe-7b8d-4fc0-b30c-936a404cd7c0",
+      "materialization": {
+        "code_revision": "a4640ac7d62bb07cbc45ed769334415809641848",
+        "decided_at": "2026-10-03T05:51:10.552391Z",
+        "pipeline_sha256": "add34d15bcf67ed91720680290df70b96a25c7d3d890d5b14e2e87e15c5d612c"
+      },
+      "outcome": "ADMISION_DENEGADA",
+      "record_id": "ADMISSION_RECORD|52e9e37cf892c2d0446426710450d30a148d56992193440f00d973512bfa4de6",
+      "schema_version": "3",
+      "status": "ISSUED",
+      "validation_id": "LEVEL_CLAIM_VALIDATION|263d18709992f377540e8d50040f4e8e9b6820fde840a789f1414d1736d92695"
     }
   ],
   "schema_version": "1"
