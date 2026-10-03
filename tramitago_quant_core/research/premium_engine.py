@@ -127,6 +127,30 @@ def validate_spec(spec):
     if spec["cost"].get("legs") != expected_legs:
         raise ValueError(f"cost.legs must be {expected_legs} for "
                          f"{'a pair' if second else 'a single instrument'}")
+    # A SIMPLE SHORT: one instrument held short, its daily return the NEGATIVE of the
+    # instrument's. It must declare what holding a short costs and how far the instrument
+    # may rise against it, because both are omissions that read exactly like a free,
+    # bounded position: an undeclared borrow fee looks like zero, and a short has no
+    # natural limit on what it loses.
+    direction = spec["instrument"].get("direction", "LONG")
+    if direction not in ("LONG", "SHORT"):
+        raise ValueError("instrument.direction must be LONG or SHORT")
+    if direction == "SHORT":
+        if second is not None:
+            raise ValueError("a pair already holds a short leg; instrument.direction SHORT "
+                             "is for a single instrument")
+        if spec["cost"].get("borrow_annual") is None:
+            raise ValueError("a short must DECLARE cost.borrow_annual, even if it is 0: an "
+                             "omitted borrow cost reads exactly like a free one")
+        if not 0 <= _decimal(spec["cost"]["borrow_annual"], "cost.borrow_annual") < 1:
+            raise ValueError("cost.borrow_annual must be a fraction in [0, 1)")
+        move = spec["instrument"].get("max_adverse_move")
+        if move is None or not 0 < _decimal(move, "instrument.max_adverse_move") < 1:
+            raise ValueError("a short loses without bound, so instrument.max_adverse_move "
+                             "must declare how far the instrument may rise against it, as a "
+                             "fraction in (0, 1)")
+    elif "borrow_annual" in spec["cost"] or "max_adverse_move" in spec["instrument"]:
+        raise ValueError("borrow_annual and max_adverse_move belong to a SHORT")
     cost = spec["cost"]
     for key in ("commission", "half_spread", "slippage"):
         if _decimal(cost[key], f"cost.{key}") < 0:
@@ -216,7 +240,7 @@ def distribution_check(dates, adjusted, raw, expected_annual_yield):
             "decreases": decreases, "reason": "; ".join(reasons) or None}
 
 
-def _bounded_scale(contract_spec, weight, source):
+def _bounded_scale(contract_spec, weight, source, recurring="0"):
     """The cost rates scaled with the weight. Return and cost both scale with
     notional, and charging a full position's cost against a fraction of its return
     taxes it 1/w times over -- a mistake this project made once and that read
@@ -226,7 +250,11 @@ def _bounded_scale(contract_spec, weight, source):
         commission_rate=f"{float(_decimal(contract_spec['commission'], 'c')) * weight:.10f}",
         half_spread_rate=f"{float(_decimal(contract_spec['half_spread'], 'h')) * weight:.10f}",
         slippage_rate=f"{float(_decimal(contract_spec['slippage'], 's')) * weight:.10f}",
-        recurring_rate_per_period="0", legs=contract_spec["legs"], source=source)
+        # A borrow fee is charged on the notional held, so it scales with the weight like
+        # every other rate. A long keeps the literal "0" so its contract is unchanged.
+        recurring_rate_per_period=("0" if recurring == "0"
+                                   else f"{float(recurring) * weight:.12f}"),
+        legs=contract_spec["legs"], source=source)
 
 
 def _monitor_evidence(spec, monitor, link, net_mean, bounds):
@@ -299,7 +327,12 @@ def judge(spec, rows, *, monitor_inputs=None, raw_closes=None, controls=None,
     if len(rows) < 2 * int(spec["level_claim"]["folds"]):
         raise ValueError(f"{len(rows)} rows cannot support {spec['level_claim']['folds']} folds")
     dates = [row["timestamp"][:10] for row in rows]
-    gross = [float(row[column]) for row in rows]
+    direction = spec["instrument"].get("direction", "LONG")
+    sign = -1.0 if direction == "SHORT" else 1.0
+    underlying = [float(row[column]) for row in rows]
+    # A short is held at a daily-rebalanced notional, so its daily return is the negative of
+    # the instrument's, and anything the instrument pays (a distribution) is a cost to it.
+    gross = [sign * value for value in underlying]
     positions = [1] * len(gross)
     years = len(rows) / TRADING_DAYS
     bootstrap = {**DEFAULT_BOOTSTRAP, **spec.get("bootstrap", {})}
@@ -322,10 +355,15 @@ def judge(spec, rows, *, monitor_inputs=None, raw_closes=None, controls=None,
 
     # --- position, cost, and the weight the drawdown limit derives -----------------
     spec_cost = spec["cost"]
+    recurring = ("0" if direction != "SHORT" else
+                 f"{float(_decimal(spec_cost['borrow_annual'], 'borrow')) / TRADING_DAYS:.12f}")
+    if recurring != "0" and float(recurring) == 0.0:
+        recurring = "0"
     contract = cost_contract(
         regime=COST_REGIME_HOLDING, commission_rate=spec_cost["commission"],
         half_spread_rate=spec_cost["half_spread"], slippage_rate=spec_cost["slippage"],
-        recurring_rate_per_period="0", legs=spec_cost["legs"], source=spec_cost["source"])
+        recurring_rate_per_period=recurring, legs=spec_cost["legs"],
+        source=spec_cost["source"])
     net = net_returns(contract, positions, gross)
     unsized_net_total = math.fsum(net)
     limit = spec["sizing"]["drawdown_limit"]
@@ -335,7 +373,7 @@ def judge(spec, rows, *, monitor_inputs=None, raw_closes=None, controls=None,
         contract = _bounded_scale(
             spec_cost, weight,
             f"the declared rates scaled by the {weight:.4f} weight derived from the "
-            f"{limit} limit")
+            f"{limit} limit", recurring=recurring)
         net = net_returns(contract, positions, gross)
     gross_total = math.fsum(gross)
     cost_total = float(cost_per_side(contract)) * TRANSITIONS
@@ -350,6 +388,18 @@ def judge(spec, rows, *, monitor_inputs=None, raw_closes=None, controls=None,
         "mean_net": mean_net, "sharpe_point": sharpe_point, "sharpe_bound": sharpe_bound,
         "drawdown_point": drawdown_point, "drawdown_bound": drawdown_bound,
     })
+    if direction == "SHORT":
+        # THE PROTECTIVE STOP BOUNDS A SHORT ONLY IF PRICE DOES NOT GAP OVER IT. A day on which
+        # the instrument rose by more than the declared adverse move is a day the stop would
+        # have filled past its price, so the loss the executor contract budgets would have
+        # been exceeded. Reported beside the verdict; the drawdown bound above already
+        # includes whatever squeezes the sample holds.
+        move = float(_decimal(spec["instrument"]["max_adverse_move"], "move"))
+        beyond = sum(1 for value in underlying if value > move)
+        result["short"] = {
+            "borrow_annual": spec_cost["borrow_annual"], "max_adverse_move": str(move),
+            "worst_day_against": max(underlying), "days_beyond_adverse_move": beyond,
+            "frequency_beyond_adverse_move": beyond / len(underlying)}
 
     # --- the monitor: flags, then the link tested fold by fold ---------------------
     bounds = fold_bounds(len(rows), int(spec["level_claim"]["folds"]))
@@ -372,7 +422,8 @@ def judge(spec, rows, *, monitor_inputs=None, raw_closes=None, controls=None,
         # position. Reported beside the primary and never a gate -- if it holds
         # equally on the control, the monitor detects drawdowns and not this premium.
         for name, series in (controls or {}).items():
-            aligned = [series.get(day) for day in dates]
+            aligned = [None if series.get(day) is None else sign * series.get(day)
+                       for day in dates]
             met, usable = link_consistency(bounds, aligned, monitor["flags"])
             result.setdefault("controls", {})[name] = {
                 "met": met, "usable": usable,
@@ -381,8 +432,10 @@ def judge(spec, rows, *, monitor_inputs=None, raw_closes=None, controls=None,
     # --- the level claim ----------------------------------------------------------
     spec_claim = spec["level_claim"]
     claim = level_claim(
-        position_description=(f"{spec['instrument']['symbol']} held continuously over the "
-                              f"window at a {weight:.4f} weight derived from the {limit} limit"),
+        position_description=(
+            f"{spec['instrument']['symbol']} "
+            f"{'held SHORT continuously' if direction == 'SHORT' else 'held continuously'} "
+            f"over the window at a {weight:.4f} weight derived from the {limit} limit"),
         cost_contract=contract, minimum_folds_required=int(spec_claim["folds"]),
         consistency_threshold=spec_claim["consistency_threshold"],
         minimum_adverse_episodes=int(spec_claim["minimum_adverse_episodes"]),

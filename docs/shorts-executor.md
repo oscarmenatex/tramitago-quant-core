@@ -56,11 +56,11 @@ ejecutarla: exige un comité de capital sellado.
   puede necesitar una cobertura mayor que su nocional de apertura. Las salidas tienen su propio
   tope (`max_exit_exposure_usd`, por defecto el doble del de entrada).
 
-## 4. Números que debes decidir tú
+## 4. Números del contrato: CONFIRMADOS por el Director (2026-10-03)
 
-`config/instrument_contracts.json` trae tres instrumentos con **cifras que puse yo**, en la misma
-proporción que el piloto de BTC-USD (exposición 25 % del capital, presupuesto 2,5 %). No son
-decisiones tuyas hasta que las confirmes:
+`config/instrument_contracts.json` trae tres instrumentos con cifras en la misma proporción que el
+piloto de BTC-USD (exposición 25 % del capital, presupuesto 2,5 %). Las propuse yo y el Director
+las **confirmó** el 2026-10-03; cambiarlas es una decisión suya:
 
 | | Capital | Exposición | Presupuesto | Corto |
 |---|---|---|---|---|
@@ -79,8 +79,8 @@ el stop 24 USD).
   que yo no toco). Hoy es una API de funciones, probada con un transporte simulado.
 - **Cuenta:** no se consulta si la cuenta tiene los cortos habilitados ni su margen. Si no los
   tiene, el broker rechazará la orden, y esa respuesta queda registrada como rechazo.
-- **El lado de investigación:** medir un corto simple necesita que el motor de primas soporte un
-  único instrumento corto (hoy solo pares). Es un cambio aparte.
+- **Ninguna hipótesis corta está declarada.** El motor ya puede medirla (sección 7), pero declarar
+  VIXM corto, o el carry de divisas, exige sus siete respuestas y su monitor, antes de capturar nada.
 - **Pruebas de la suite completa:** un paquete `tests` ajeno en site-packages tapa al del
   repositorio, y por eso seis módulos fallan al importarse con `unittest discover` (también en
   `main`). Se ejecutaron aparte con el paquete correcto y pasan.
@@ -94,3 +94,30 @@ el stop 24 USD).
 - Dividendos: quien está corto los paga.
 - Márgenes y límites de la cuenta, que dependen de su tipo.
 - Ninguno de estos está en una serie de retornos histórica.
+
+## 7. Medir un corto simple en el motor de primas
+
+Un spec puede declarar `instrument.direction: "SHORT"`. Reglas:
+
+- El retorno diario de la posición es el **negativo** del retorno del instrumento (nocional
+  reequilibrado cada día). Lo que el instrumento paga, por ejemplo una distribución, es un coste
+  para quien está corto.
+- **Debe declarar `cost.borrow_annual`**, aunque sea `"0"`: un coste de préstamo omitido se lee
+  igual que uno gratis. Se carga cada día en posición, y escala con el peso como el resto de costes.
+- **Debe declarar `instrument.max_adverse_move`**: un corto no tiene límite natural de pérdida.
+  Es el espejo del stop que el contrato de instrumento exige al ejecutarlo.
+- Un par ya contiene una pata corta, así que `SHORT` solo vale para un instrumento único. Declarar
+  estos campos en un largo se rechaza.
+- El **control** del monitor se mantiene en la misma dirección que la posición, y el vínculo del
+  monitor se prueba sobre el retorno **de la posición**, no sobre el del instrumento.
+- El resultado incluye un bloque `short`: peor día en contra y cuántos días el instrumento subió
+  más que el movimiento adverso declarado. En esos días un stop habría ejecutado por encima de su
+  precio y la pérdida presupuestada se habría superado. Es información, no una puerta: la cota de
+  drawdown ya contiene los *squeezes* que haya en la muestra.
+
+Comprobado: un corto de unos retornos es **exactamente** un largo de su negación; el coste de
+préstamo cuesta exactamente su tasa anual por día en posición; y el régimen de los largos no
+cambia (el test de migración reproduce las cifras selladas de SPY, SVXY y crédito).
+
+Límite que conviene recordar: la muestra histórica de un producto que cae casi siempre contiene
+pocos *squeezes*, y un corto pierde donde la historia tiene menos datos.
