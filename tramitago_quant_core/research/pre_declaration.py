@@ -75,7 +75,40 @@ QUESTIONS = ("payer", "turnover", "net_level", "monitor", "required_effect",
 # bound > 0. MEASURED on SPY at 2198 days, the bound sits 0.543 below the point,
 # so clearing both needs a point of roughly 0.54 at a decade of daily data. A
 # shorter window needs more. This is the number a declaration must confront.
-MINIMUM_PLAUSIBLE_POINT_SHARPE = "0.54"
+MINIMUM_PLAUSIBLE_POINT_SHARPE = "0.50"
+
+# MEASURED TWICE, INDEPENDENTLY. The gap between a net Sharpe's point estimate
+# and its lower 95% bound came to 0.543 on SPY over 2198 days and 0.547 on SVXY
+# over 2158 -- the same number on two unrelated instruments -- and it scales as
+# one over the square root of the sample. §8.2 needs point >= 0.50 AND the bound
+# above zero, so the EFFECTIVE bar is whichever of those two binds:
+#
+#     8.6 yr   gap 0.547   bar 0.547   the BOUND binds: a sample-size penalty
+#    17.1 yr   gap 0.393   bar 0.500   the EFFECT binds
+#    34.3 yr   gap 0.275   bar 0.500   the EFFECT binds
+#
+# Past roughly ten years the bound stops binding and the bar is simply 0.50.
+# BELOW IT A HYPOTHESIS PAYS A PENALTY THAT HAS NOTHING TO DO WITH ITS PREMIUM,
+# which is why the window is no longer a round number chosen by habit: it is
+# measured from what the source serves, and the bar is derived from it rather
+# than declared beside it.
+REFERENCE_WINDOW_YEARS, REFERENCE_GAP = Decimal("8.57"), Decimal("0.547")
+REQUIRED_SHARPE_TOLERANCE = Decimal("0.01")
+
+
+def required_point_sharpe_for(window_years):
+    """The point Sharpe a Hypothesis must plausibly reach over THIS window.
+
+    Derived, never declared. A longer window lowers it, down to the 0.50 floor
+    of §8.2 and no further; a shorter one raises it, and the declaration then
+    has to confront a bar it did not choose.
+    """
+    years = _decimal(window_years, "Window years")
+    if years <= 0:
+        raise ValueError("Window years must be positive")
+    gap = REFERENCE_GAP * (REFERENCE_WINDOW_YEARS / years).sqrt()
+    floor = Decimal(MINIMUM_PLAUSIBLE_POINT_SHARPE)
+    return (gap if gap > floor else floor).quantize(Decimal("0.001"))
 
 
 def _decimal(value, name):
@@ -102,8 +135,10 @@ def _prose(value, name, minimum_words=8):
 
 def pre_declaration(*, hypothesis_id, payer, why_they_keep_paying, crossings_per_year,
                     net_level_claimed, monitor_variable, monitor_publisher,
-                    required_point_sharpe, plausible_point_sharpe, plausibility_source,
-                    claim_class, window_years, adverse_episode_in_window, source):
+                    plausible_point_sharpe, plausibility_source,
+                    claim_class, window_years, adverse_episode_in_window, source,
+                    available_window_years=None, why_shorter_than_available=None,
+                    required_point_sharpe=None):
     """Seal seven answers. Refuses rather than records an answer that defeats itself.
 
     THE ONE THAT REFUSES OUTRIGHT is the effect size. A Hypothesis whose
@@ -126,13 +161,36 @@ def pre_declaration(*, hypothesis_id, payer, why_they_keep_paying, crossings_per
     if years <= 0:
         raise ValueError("Window years must be positive")
 
-    required = _decimal(required_point_sharpe, "Required point Sharpe")
+    # DERIVED from the window, not declared beside it. A caller may still state
+    # it, and then it must agree -- so the number is confronted rather than
+    # inherited from a constant somebody set once.
+    required = required_point_sharpe_for(window_years)
+    if required_point_sharpe is not None:
+        stated = _decimal(required_point_sharpe, "Required point Sharpe")
+        if abs(stated - required) > REQUIRED_SHARPE_TOLERANCE:
+            raise ValueError(
+                f"A window of {window_years} years requires a point Sharpe of {required}, "
+                f"not the {stated} declared: the point-to-bound gap measured 0.547 at 8.57 "
+                f"years on SVXY and 0.543 at 8.72 on SPY, and scales as one over the root "
+                f"of the sample")
     plausible = _decimal(plausible_point_sharpe, "Plausible point Sharpe")
-    if required < _decimal(MINIMUM_PLAUSIBLE_POINT_SHARPE, "Floor"):
-        raise ValueError(
-            f"The required point Sharpe cannot be below {MINIMUM_PLAUSIBLE_POINT_SHARPE}: "
-            f"§8.2 needs point >= 0.50 AND a lower 95% bound above zero, and the bound "
-            f"sits about 0.54 below the point at a decade of daily data")
+
+    # THE WINDOW MUST BE THE ONE THE SOURCE SERVES, or the shortfall explained.
+    # Claude declared SPY over 8.72 years when the SIP feed served from 2016 and
+    # 10.75 were available -- two years left on the table for no reason beyond a
+    # round start date, and at the margin two years is the difference between a
+    # bar of 0.547 and one of 0.50.
+    if available_window_years is not None:
+        available = _decimal(available_window_years, "Available window years")
+        if available <= 0:
+            raise ValueError("Available window years must be positive")
+        if years < available and not _hypothesis_text_is_valid(why_shorter_than_available):
+            raise ValueError(
+                f"The source serves {available} years and this declares {window_years}. A "
+                f"shorter window is allowed -- an instrument's structure may change, as "
+                f"SVXY's did -- but it must be explained, because {required} is the bar it "
+                f"buys and {required_point_sharpe_for(available_window_years)} is the bar "
+                f"the full window would have")
     if plausible < required:
         # Not a warning. A Hypothesis whose own declared plausible effect is
         # below what its gate needs has been refuted by its author before any
@@ -156,13 +214,19 @@ def pre_declaration(*, hypothesis_id, payer, why_they_keep_paying, crossings_per
             "published_by": _prose(monitor_publisher, "Who publishes it", 3),
         },
         "required_effect": {
-            "required_point_sharpe": required_point_sharpe,
+            "required_point_sharpe": str(required),
             "plausible_point_sharpe": plausible_point_sharpe,
             "plausibility_source": _prose(plausibility_source, "Plausibility source"),
         },
         "claim_class": claim_class,
         "window": {
             "years": window_years,
+            # Present only when measured, so the records sealed before the window
+            # became a measured quantity reproduce byte for byte.
+            **({"available_years": available_window_years}
+               if available_window_years is not None else {}),
+            **({"why_shorter_than_available": why_shorter_than_available.strip()}
+               if why_shorter_than_available else {}),
             "adverse_episode": _prose(adverse_episode_in_window, "The adverse episode"),
         },
         "source": _prose(source, "Where these answers come from"),

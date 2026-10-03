@@ -20,6 +20,7 @@ from tramitago_quant_core.research.pre_declaration import (
     pre_declaration, verified_pre_declaration, constitute_pre_declaration,
     load_pre_declaration, require_pre_declaration, QUESTIONS, CLAIM_PREMIUM,
     MINIMUM_PLAUSIBLE_POINT_SHARPE, PRE_DECLARATION_IN_FORCE_SINCE,
+    required_point_sharpe_for,
 )
 
 ANSWERS = dict(
@@ -30,7 +31,7 @@ ANSWERS = dict(
     crossings_per_year="2",
     net_level_claimed="the net return of holding the position continuously, after costs on both legs",
     monitor_variable="the VIX term structure", monitor_publisher="CBOE, published daily",
-    required_point_sharpe="0.54", plausible_point_sharpe="0.70",
+    plausible_point_sharpe="0.70",
     plausibility_source="published long-run estimates of the variance risk premium run "
                         "between 0.6 and 0.9 on a decade of daily data",
     claim_class=CLAIM_PREMIUM, window_years="8.7",
@@ -70,8 +71,41 @@ class RefusalTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             pre_declaration(**{**ANSWERS, "required_point_sharpe": "0.20"})
 
-    def test_the_floor_is_the_one_the_corrected_gate_implies(self):
-        self.assertEqual(MINIMUM_PLAUSIBLE_POINT_SHARPE, "0.54")
+    def test_the_bar_is_derived_from_the_window_and_never_declared(self):
+        # MEASURED on two unrelated instruments: the point-to-bound gap came to
+        # 0.543 on SPY over 2198 days and 0.547 on SVXY over 2158, and scales as
+        # one over the root of the sample. Past roughly ten years the bound
+        # stops binding and the bar is simply §8.2's 0.50.
+        self.assertEqual(MINIMUM_PLAUSIBLE_POINT_SHARPE, "0.50")
+        self.assertGreater(required_point_sharpe_for("4"), required_point_sharpe_for("8.57"))
+        self.assertEqual(str(required_point_sharpe_for("8.57")), "0.547")
+        self.assertEqual(str(required_point_sharpe_for("12")), "0.500")
+
+    def test_a_declared_bar_that_disagrees_with_the_window_is_refused(self):
+        with self.assertRaises(ValueError) as caught:
+            pre_declaration(**{**ANSWERS, "required_point_sharpe": "0.20"})
+        self.assertIn("requires a point Sharpe of", str(caught.exception))
+
+    def test_a_window_shorter_than_the_source_serves_must_say_why(self):
+        # Claude declared SPY over 8.72 years when the SIP feed served 10.75 --
+        # two years left on the table for a round start date, which is the
+        # difference between a bar of 0.545 and one of 0.50.
+        with self.assertRaises(ValueError) as caught:
+            pre_declaration(**{**ANSWERS, "available_window_years": "10.75"})
+        self.assertIn("must be explained", str(caught.exception))
+        record = pre_declaration(**{
+            **ANSWERS, "available_window_years": "10.75",
+            "why_shorter_than_available": "the instrument's structure changed on 2018-02-28 "
+                                          "and an earlier start would measure two different "
+                                          "instruments under one ticker"})
+        self.assertEqual(record["window"]["available_years"], "10.75")
+        self.assertIn("structure changed", record["window"]["why_shorter_than_available"])
+
+    def test_using_the_whole_available_window_needs_no_excuse(self):
+        record = pre_declaration(**{**ANSWERS, "window_years": "10.75",
+                                    "available_window_years": "10.75"})
+        self.assertNotIn("why_shorter_than_available", record["window"])
+        self.assertEqual(record["required_effect"]["required_point_sharpe"], "0.500")
 
     def test_a_gesture_is_not_an_answer(self):
         # 45 of 47 Hypotheses answered "who pays" in zero words. Two is not an
