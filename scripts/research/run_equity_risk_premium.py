@@ -288,6 +288,10 @@ def main():
     evidence = {
         "net_sharpe": adverse_bound(
             f"{sharpe_bound:.6f}", is_adverse_bound=True,
+            # BOTH numbers since the 2026-10-02 correction: 0.50 judges the
+            # effect's SIZE on the point estimate, the bound judges whether it
+            # is real at all, against zero.
+            point_estimate=f"{sharpe_point:.6f}",
             source=f"moving-block bootstrap, {json.dumps(BOOTSTRAP, sort_keys=True)}, "
                    f"on {len(net)} net days of {SLUG}"),
         "worst_fold_drawdown": adverse_bound(

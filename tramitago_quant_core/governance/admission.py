@@ -60,7 +60,7 @@ GATE_FAILED = "FAILED"
 GATE_NOT_EVALUABLE = "NOT_EVALUABLE"
 
 # §8.8, declared a CLOSED SET on 2026-09-30: no number is left to declare.
-GATE_SHARPE = "maximando: net Sharpe, lower 95% bound >= 0.50"
+GATE_SHARPE = "maximando: net Sharpe >= 0.50 AND its lower 95% bound > 0"
 GATE_DRAWDOWN = "R1 drawdown: worst fold, upper 95% bound <= 0.15"
 GATE_SURVIVAL = "R2 survival: P1 (>=2 out-of-sample periods) or P2 (declared mechanism)"
 GATE_MONITORABILITY = "R3 monitorability: latency < drawdown / daily loss if dead"
@@ -89,7 +89,7 @@ def _decimal(value, name):
     return amount
 
 
-def adverse_bound(value, *, is_adverse_bound, source):
+def adverse_bound(value, *, is_adverse_bound, source, point_estimate=None):
     """One figure, carrying whether it is an adverse 95% bound and where it came from.
 
     The label is required rather than assumed because §8.1 is the project's most
@@ -102,7 +102,16 @@ def adverse_bound(value, *, is_adverse_bound, source):
         raise ValueError("Whether a figure is an adverse bound must be stated explicitly")
     if not _hypothesis_text_is_valid(source):
         raise ValueError("A figure must say where it came from")
-    return {"value": value, "is_adverse_bound": is_adverse_bound, "source": source.strip()}
+    figure = {"value": value, "is_adverse_bound": is_adverse_bound, "source": source.strip()}
+    # ADDITIVE, and absent when not supplied, so every figure already sealed
+    # without one reproduces byte for byte. §8.2 needs BOTH numbers after the
+    # 2026-10-02 correction -- see _sharpe_gate -- and the gate reports
+    # NOT_EVALUABLE rather than FAILED when the point estimate was never
+    # recorded, because nobody measuring it then was asked for it.
+    if point_estimate is not None:
+        _decimal(point_estimate, "Point estimate")
+        figure["point_estimate"] = point_estimate
+    return figure
 
 
 def _gate(name, state, detail):
@@ -126,6 +135,51 @@ def _requires_adverse_bound(name, figure, comparison, threshold):
     return _gate(name, GATE_PASSED if passes else GATE_FAILED,
                  f"{figure['value']} {sign} {threshold} is {str(passes).lower()} "
                  f"(source: {figure['source']})")
+
+
+def _sharpe_gate(figure):
+    """Section 8.2, CORRECTED 2026-10-02 on arithmetic grounds sealed beforehand.
+
+    THE DEFECT. The threshold 0.50 was set for a Sharpe RATIO and was being
+    applied to its LOWER 95% BOUND, which is a different and much larger demand.
+    MEASURED on SPY over 8.72 years: point +0.8125, bound +0.2695 -- the bound
+    sits 0.543 BELOW the point estimate, so "bound >= 0.50" behaved like
+    "Sharpe >= 1.04 over a decade". The gap is a function of sample size, so no
+    replacement constant can fix it; at 8.72 years it is 0.543 and at three
+    years it is far wider. The equity risk premium, the best documented premium
+    in finance, failed a gate that reads "net Sharpe >= 0.50".
+
+    THE CORRECTION SEPARATES THE TWO QUESTIONS THE ONE NUMBER CONFLATED, and
+    introduces no new constant: 0.50 goes back to measuring EFFECT SIZE on the
+    point estimate, where it was calibrated, and the bound keeps doing what
+    section 8.1 requires of it -- establishing the effect is real at all -- by
+    having to clear ZERO.
+
+    THE BOUND REQUIREMENT IS NOT WEAKENED AWAY, and that matters, because it
+    does real work. Measured across this project's four candidates, dropping it
+    entirely would readmit spy-mom10-2024 on a point Sharpe of 1.52 -- a
+    Hypothesis whose sign broke in BOTH out-of-sample periods. Its bound is
+    -0.1798, so this rule still refuses it. What changed is the calibration of
+    the threshold, not the existence of the evidentiary test.
+    """
+    if figure is None:
+        return _gate(GATE_SHARPE, GATE_NOT_EVALUABLE, "no figure has been measured")
+    if not figure.get("is_adverse_bound"):
+        return _gate(GATE_SHARPE, GATE_FAILED,
+                     f"{figure['value']} is a point estimate, and §8.1 requires the adverse "
+                     f"95% bound alongside it")
+    if figure.get("point_estimate") is None:
+        return _gate(GATE_SHARPE, GATE_NOT_EVALUABLE,
+                     "the bound is recorded but the point estimate is not, and §8.2 now "
+                     "needs both; a bound alone cannot say whether the effect is large")
+    bound = _decimal(figure["value"], GATE_SHARPE)
+    point = _decimal(figure["point_estimate"], GATE_SHARPE)
+    large = point >= _decimal(MINIMUM_NET_SHARPE, GATE_SHARPE)
+    real = bound > 0
+    return _gate(GATE_SHARPE, GATE_PASSED if (large and real) else GATE_FAILED,
+                 f"point {figure['point_estimate']} >= {MINIMUM_NET_SHARPE} is "
+                 f"{str(large).lower()}, and bound {figure['value']} > 0 is "
+                 f"{str(real).lower()} (source: {figure['source']})")
 
 
 def _survival_gate(evidence):
@@ -267,8 +321,7 @@ def evaluate_admission_gates(evidence):
     if not isinstance(evidence, dict):
         raise ValueError("Admission evidence must be a mapping")
     return [
-        _requires_adverse_bound(GATE_SHARPE, evidence.get("net_sharpe"), "GE",
-                                MINIMUM_NET_SHARPE),
+        _sharpe_gate(evidence.get("net_sharpe")),
         _requires_adverse_bound(GATE_DRAWDOWN, evidence.get("worst_fold_drawdown"), "LE",
                                 MAXIMUM_DRAWDOWN),
         _survival_gate(evidence),
