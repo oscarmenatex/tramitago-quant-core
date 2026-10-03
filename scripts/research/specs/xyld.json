@@ -1,0 +1,43 @@
+{
+  "slug": "variance-premium-xyld",
+  "hypothesis_id": "HYPOTHESIS|27314537-88d0-4f0e-8d39-29047bf7d6cb",
+  "notes": "Everything below was declared BEFORE any XYLD bar was captured. The adverse threshold of -1.5% rather than SPY's -2% reflects an equity beta recalled at 0.6 to 0.8, so a day that is a stress day for the S&P 500 moves this fund less; it was chosen on that reasoning and not from any XYLD return.",
+  "instrument": {"provider": "alpaca_equity", "symbol": "XYLD", "feed": "sip"},
+  "cost": {
+    "commission": "0",
+    "half_spread": "0.0002",
+    "slippage": "0.00005",
+    "legs": 1,
+    "source": "commission-free US ETF; half spread and slippage DECLARED, wider than SPY's because a covered-call fund's book is thinner, and not measured"
+  },
+  "sizing": {"drawdown_limit": "0.15"},
+  "level_claim": {
+    "folds": 7,
+    "consistency_threshold": "0.70",
+    "adverse_threshold": "-0.015",
+    "minimum_adverse_episodes": 5
+  },
+  "monitor": {
+    "kind": "implied_minus_realised",
+    "variable": "VIX minus the 21-day realised volatility of the S&P 500",
+    "implied": "VIXCLS",
+    "underlying": "SPY",
+    "window": 21,
+    "floor": "0",
+    "confirmation_periods": 3,
+    "re_entry_threshold": "2.0",
+    "source": "CBOE publishes VIX daily and FRED distributes it; realised volatility is computed from sealed S&P 500 prices"
+  },
+  "controls": [
+    {"kind": "underlying_forward_returns", "name": "SPY"}
+  ],
+  "checks": [
+    {"kind": "distribution_adjustment", "expected_annual_yield": ["0.04", "0.16"]}
+  ],
+  "survival": {
+    "counterparty": "buyers of S&P 500 call options, who pay for upside exposure that the fund sells them inside the wrapper",
+    "why_they_accept_losing": "they want convex upside at limited cost, and structured product issuers hedge by buying calls, so demand for upside is not sensitive to price; the premium is what the sellers earn for taking the other side of that demand and for bearing the crash risk it implies",
+    "what_would_end_it": "realised volatility persistently exceeding implied, so that selling upside stops being paid, or enough capital selling calls to compress implied volatility below what is realised -- which is what the declared monitor watches for"
+  },
+  "decision": {"build_cost": "0", "life_years": "3", "tranche": "1000"}
+}
