@@ -2009,6 +2009,49 @@
       "system_version": "0.1.0",
       "target_metric": "net_sharpe_lower_bound_95(SPY total return held continuously, net of execution cost)",
       "version": 3
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "GE",
+        "expected_direction": "INCREASE",
+        "metric": "net_sharpe(long HYG, short IEF at equal notional, held continuously, net of execution cost on both legs)",
+        "threshold": "0.50"
+      },
+      "code_revision": "40e60a222229544bf3f07adc03c00b8f82f7bf1a",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2026-10-01T00:00:00Z",
+          "start_utc": "2018-01-02T00:00:00Z"
+        },
+        "universe": [
+          "HYG"
+        ],
+        "variables": [
+          "close",
+          "pair_close",
+          "forward_spread_return_1d",
+          "sma_close_3"
+        ]
+      },
+      "creation_context": {
+        "created_by": "Oscar Carmenate Rodriguez",
+        "provenance": [
+          "ADMISSION|6d61c78276ecf615a6ed77b13c559a395768",
+          "ANALYSIS|equity-risk-premium denied on R3 alone, 5 of 6 gates cleared",
+          "CRITERION|a premium is monitorable when its compensation is QUOTED, separately from the position's own P&L",
+          "THRESHOLD_CORRECTION|efdfe375c4b670b9cd5c041005fef5054",
+          "STOPPING_RULE|7c65a5829295a01d100ddcd4c63e18dad7065d657fc468ffa1670fddfd131954"
+        ]
+      },
+      "creation_timestamp": "2026-10-03T03:33:52.851199Z",
+      "description": "LEVEL CLAIM, two legs, zero turnover by construction.\n\nLong HYG (high-yield corporate bonds) and short IEF (7-10 year Treasuries) at\nEQUAL NOTIONAL, both total return, held CONTINUOUSLY from 2018-01-02 to\n2026-10-01: one entry, one exit, no signal, no rebalancing. The net return of\nthat position, after execution costs on both legs, is POSITIVE and its figures\nclear the admission thresholds of DOC-011 section 8.\n\nTHIS IS THE CREDIT RISK PREMIUM: the compensation an investor receives for\nbearing default and illiquidity risk that a Treasury holder does not. It is not\na signal, not a prediction and not a convergence trade.\n\nWHY IT IS DECLARED NOW, AND WHAT IT IS MEANT TO FIX. The equity risk premium\ncleared five of six gates on 2026-10-02 and was denied on R3 alone, because the\nonly observable that reports an unconditional premium dying is it not paying --\nwhich is P&L, which the monitor contract refuses. That is structural and\nunfixable. The credit spread, by contrast, is QUOTED: a third party publishes it\ndaily, independently of whether this position is held at all. The criterion that\nselected this Hypothesis is therefore MONITORABILITY FIRST, returns second,\nwhich is the reverse of how the previous forty-six were chosen.\n\nTHE DECLARED MONITOR. Variable: the ICE BofA US High Yield Index\nOption-Adjusted Spread, published daily. Degradation: the spread falling to or\nbelow a declared floor, meaning the market has stopped paying for default risk\nand the mechanism this position rests on has stopped operating. Action: suspend.\nIt is not the position's P&L, it is not derived from HYG or IEF prices, and it\nwould keep being published if this position were never opened.\n\nPre-declared caveats:\n- IT IS NOT PURE CREDIT, AND THE IMPURITY IS DECLARED RATHER THAN HIDDEN. HYG's effective duration is about 3.5 years and IEF's about 7.5, so the spread is NET SHORT DURATION. In 2022, when rates rose hard, that HELPED, and part of whatever is measured will be a rates position rather than a credit one. A duration-closer second leg exists -- IEI, 3-7 years -- and Oscar chose IEF; the pair is declared as asked and the consequence is written here instead of being substituted away quietly.\n- ONE GATE CARRIES ALL THE RISK: the net Sharpe. If the point estimate lands below 0.50 it is MEASURED AND BAD, which DOC-011 holds to be an ABSOLUTE VETO that no size converts -- unlike a drawdown, which size resolves. Claude did not compute it before this was sealed, although the SIP feed that serves both legs is already paid for and the measurement would have taken a minute. Looking first would have selected the Hypothesis on its own outcome.\n- THE MONITOR NEEDS A DATA SOURCE THIS PLATFORM DOES NOT HAVE. The spread is published by a third party and no provider module captures it yet, so one must be built under the same sealed-capture contract as every other source. IF IT CANNOT BE CAPTURED AND SEALED, R3 RETURNS NOT_EVALUABLE AND THIS HYPOTHESIS LANDS EXACTLY WHERE THE EQUITY ONE DID -- which would mean it failed at the one thing it was chosen for, and that should be reported as such rather than as bad luck.\n- SHORTING IEF IS ASSUMED TO COST ONLY THE DECLARED RATES. Borrow cost and borrow availability are real, vary over time, and are absent from daily bar data. A Treasury ETF is about as easy to borrow as anything gets, which makes the assumption reasonable and still an assumption. If the position were ever operated, this is the figure to measure rather than declare.\n- THE TAIL IS IN THE WINDOW AND IT IS LARGE: HYG fell about 22% peak to trough in March 2020. That is GOOD for the tail-coverage gate, which requires the window to contain what ends the position, and it is what the drawdown gate will have to be sized against. Expect the derived weight to be well below one, as it was for SPY.\n- POPULATION: 'US fixed income ETFs, daily, risk premium', in which ZERO Hypotheses have been measured. It is neither of the two populations sealed EXHAUSTED BY MEASUREMENT on 2026-10-02. That is honest and it is also how any stopping rule gets escaped, so the split is named here exactly as it was for the equity premium, and one Hypothesis cannot resolve a population that needs five.\n- IT COUNTS IN THE MULTIPLICITY LEDGER. This is not a free shot because the previous one was denied on a technicality; it is the next draw from the same search, and the audit of 2026-10-01 measured what this project's whole comparative search was worth against chance. Declaring a second premium after the first was refused is exactly the sequence that ledger exists to count.",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|cf55e397-75ab-49d9-8f69-1e155e312a2c",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|cf55e397-75ab-49d9-8f69-1e155e312a2c|1|49d2e3dd35cc7b8c57c31a650f6d756d8c646a7c04306f2308490f88e4a709a3",
+      "status": "PROPOSED",
+      "system_version": "0.1.0",
+      "target_metric": "net_sharpe(long HYG, short IEF at equal notional, held continuously, net of execution cost on both legs)",
+      "version": 1
     }
   ],
   "schema_version": "2"
