@@ -252,6 +252,20 @@ def capture_alpaca_equity_bars(symbol, evaluable_start_utc, evaluable_end_exclus
       capture : sealed capture dict (provider metadata, sha256s, capture_id)
       raw     : sealed raw bytes (JSON with base64-encoded responses)
     """
+    # A NEGATIVE OR ZERO COUNT USED AS A LIST INDEX SELECTS FROM THE WRONG END. Both
+    # `before_start[-warmup_periods]` and `at_or_after_end[horizon - 1]` below index
+    # from a count, and Python reads -0 as 0 and -1 as the LAST element. So warmup
+    # zero silently started the capture at the FIRST day of a 400-day calendar window
+    # instead of the evaluable start, thirteen months early, and horizon zero ended it
+    # at the last day of the window. No runner had ever asked for warmup zero -- every
+    # one wanted two or three rows -- so this stayed invisible until the spec engine
+    # captured auxiliary series that need none, and XYLD's first real run died on it
+    # with a coverage mismatch starting 2014-12-02.
+    if not isinstance(warmup_periods, int) or isinstance(warmup_periods, bool)             or warmup_periods < 0:
+        raise ValueError("Warmup periods must be a non-negative integer")
+    if not isinstance(horizon, int) or isinstance(horizon, bool) or horizon < 1:
+        raise ValueError("Horizon must be a positive integer: a forward return needs "
+                         "at least one bar after the evaluation row")
     evaluable_start_date = evaluable_start_utc[:10]
     evaluable_end_date = evaluable_end_exclusive_utc[:10]
 
@@ -270,7 +284,11 @@ def capture_alpaca_equity_bars(symbol, evaluable_start_utc, evaluable_end_exclus
         raise ValueError(
             f"Not enough trading days in calendar for warmup "
             f"(need {warmup_periods}, found {len(before_start)})")
-    capture_start_date = before_start[-warmup_periods]
+    # No warmup means the capture BEGINS at the evaluable start. Written as an
+    # explicit branch because the expression below is exactly the one that misreads
+    # zero as the front of the list.
+    capture_start_date = (before_start[-warmup_periods] if warmup_periods
+                          else evaluable_start_date)
 
     at_or_after_end = [d for d in all_trading_dates if d >= evaluable_end_date]
     if len(at_or_after_end) < horizon:
