@@ -1967,6 +1967,48 @@
       "system_version": "0.1.0",
       "target_metric": "net_sharpe_lower_bound_95(SPY total return held continuously, net of execution cost)",
       "version": 2
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "GE",
+        "expected_direction": "INCREASE",
+        "metric": "net_sharpe_lower_bound_95(SPY total return held continuously, net of execution cost)",
+        "threshold": "0.50"
+      },
+      "code_revision": "c7c75423b40ef1d843ea9ba51a08dc7557644e75",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2026-10-01T00:00:00Z",
+          "start_utc": "2018-01-02T00:00:00Z"
+        },
+        "universe": [
+          "SPY"
+        ],
+        "variables": [
+          "close",
+          "forward_return_1d",
+          "sma_close_3"
+        ]
+      },
+      "creation_context": {
+        "created_by": "Oscar Carmenate Rodriguez",
+        "provenance": [
+          "ADMISSION|the first admission review, which denied all three VALIDATED",
+          "ANALYSIS|net-level-of-all-validated-2026-10-02",
+          "MEASURED|turnover is the discriminator: 253 transitions cost 257% of gross, 139 cost 138%, 34 cost 2%",
+          "MEASURED|43 sealed datasets, median 368 rows, zero reaching three years",
+          "STOPPING_RULE|7c65a5829295a01d100ddcd4c63e18dad7065d657fc468ffa1670fddfd131954"
+        ]
+      },
+      "creation_timestamp": "2026-10-03T01:41:31.632703Z",
+      "description": "LEVEL CLAIM, zero turnover by construction.\n\nFor SPY total return (dividends reinvested, split adjusted), held CONTINUOUSLY\nfrom 2018-01-02 to 2026-10-01 -- one entry, one exit, no rebalancing and no\nsignal -- the net daily return after execution costs is POSITIVE, and its\nadverse 95% bound clears the admission thresholds of DOC-011 section 8.\n\nThis is the EQUITY RISK PREMIUM: the compensation an investor receives for\nbearing undiversifiable market risk. It is not a signal, not a prediction and\nnot a mispricing. It is the one risk premium whose existence is not in dispute.\n\nWHY IT IS DECLARED AS A LEVEL AND NOT A COMPARISON. On 2026-10-02 this project\nmeasured the net level of all three Hypotheses it had validated and found that\ntwo of them lose money despite being validated, because a validated difference\nof means constrains neither group's own return. A level claim cannot open that\ngap: what is judged is what would be held.\n\nWHY IT TRADES ONCE. The same measurement found turnover to be the discriminator\nthat the validation criterion never looks at. Two transitions over eight and\nthree-quarter years is the floor, and it makes the execution cost a rounding\nerror against the gross rather than two and a half times it.\n\nWHY THE WINDOW IS THIS LONG. The net Sharpe gate is a LOWER 95% bound, and a\nbound is a statement about sample size as much as about effect. Projected on\nspy-mom10-2024's own distribution, a point Sharpe of 1.83 needs about three\nyears before its lower bound clears +0.50. Every one of this project's 43\nsealed datasets is shorter than that, median one year. This window is 8.75.\n\nPre-declared caveats:\n- THIS IS BETA, NOT ALPHA, AND THAT IS THE POINT. If it is admitted, the platform's first admitted position is the market itself. That is on the declared destination -- risk premia, not mispricing -- but it is NOT evidence that this platform can find anything, and it must never be reported as though it were.\n- THE DRAWDOWN GATE WILL ALMOST CERTAINLY REFUSE IT UNLEVERED. SPY fell about 34% peak to trough in March 2020 and about 25% in 2022, against a declared 15% limit. This is DECLARED IN ADVANCE as the expected failure, and the declared response is CAP-006 sizing: scaling multiplies every period by the weight, so a declared weight below 1.0 can rescue a drawdown and can NEVER rescue a sign or a consistency. If the drawdown gate is the only one that refuses, the position is to be re-judged at a declared weight -- and that re-judgement is a sizing decision, not a new Hypothesis.\n- POPULATION GERRYMANDERING IS THE REAL RISK HERE AND IT IS NAMED, NOT HIDDEN. 'US equities, daily, directional' was sealed EXHAUSTED BY MEASUREMENT on 2026-10-02 (7 Hypotheses, rate 0.410, 95% bound 0.554 against a 0.70 threshold). This is declared into a different population, 'US equities, daily, risk premium', on the ground that all 7 exhausted Hypotheses are signals conditioning next-day direction and none is an unconditional level claim on holding the asset. That distinction is principled, but splitting a population is also exactly how any stopping rule can be escaped, and whoever reads this later should weigh it as such rather than take the split for granted.\n- 2018-2026 IS AN EXCEPTIONAL DECADE FOR US EQUITIES and the measured premium will overstate its long-run value. The window was fixed by what Alpaca's free tier can serve, before any of it was read, but it cannot be called representative of the equity risk premium across history.\n- ONE HYPOTHESIS DOES NOT SATISFY THE STOPPING RULE, which requires at least 5 per population before its bound is applicable. This OPENS a population; it cannot resolve one, and no exhaustion verdict may be drawn from it.\n- THE FEED IS SIP, THE CONSOLIDATED TAPE, AND THE FREE ONE WOULD HAVE QUIETLY CORRUPTED THIS. Version 2's capture refused, and the probe said why: over this window IEX is missing 644 of 2198 NYSE sessions and its earliest bar is 2018-11-01, so its first fully covered window starts 2020-07-24 -- four months AFTER the March 2020 crash. Adopting it would have removed the worst tail of the equity risk premium and kept the entire recovery, inflating the very quantity being measured, and it would have passed the three-year floor while doing so. SIP covers all 2198 sessions from 2016-01-04. The window is UNCHANGED; only the feed moved, and the request URL is sealed into the capture's own identity so which one was used is not a matter of anyone's memory.\n- SURVIVORSHIP IS NOT AT ISSUE for a single index ETF, but the ETF's own expense ratio (0.0945%/yr) is already inside the total return, so the figure measured is net of it. That makes the measurement conservative rather than optimistic, and it is noted so nobody adds the fee twice.",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|426cd26a-10ab-4c5e-ba5d-9e88510a4613",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|426cd26a-10ab-4c5e-ba5d-9e88510a4613|3|cbc06d1c3f03e5d52f48ca4270aa9db07141b4944c635f404998cf99c5d04662",
+      "status": "PROPOSED",
+      "system_version": "0.1.0",
+      "target_metric": "net_sharpe_lower_bound_95(SPY total return held continuously, net of execution cost)",
+      "version": 3
     }
   ],
   "schema_version": "2"
