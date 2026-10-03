@@ -1,0 +1,39 @@
+{
+  "corrections": [
+    {
+      "authorised_by": "Oscar Carmenate Rodriguez, Director del Proyecto",
+      "code_revision": "9030120dae49afa9056f01e036ad2efe8bbc941f",
+      "correction_id": "M2_AVAILABILITY|04a35abd156a51421edf92f3e023f43af64d2615a2890fb3eff0ac0f7b6a3453",
+      "corrects": "MONITOR_FORM_REVISION|5bc199a41119ff5c445bd605b83e1fe6213b",
+      "ground": {
+        "name": "M2'S OWN SEALED WARRANT IS ABSENT EVIDENCE, NOT ADVERSE EVIDENCE",
+        "provenance": "The DEFECT was found by a measurement -- the volatility premium's link came back 2 of 5 folds and M2 passed anyway -- and that is recorded plainly. The GROUND is not that measurement: it is the mismatch between M2's sealed warrant and its behaviour, which was there to be read eight hours earlier and was not.",
+        "second_ground": "\u00a711.1 already holds that INSUFFICIENT_EVIDENCE IS NOT A PASS. A rule refusing to read missing evidence as support, while letting an identity override evidence that exists and points the other way, is inconsistent with itself. The correction makes the gate say the same thing twice instead of two different things.",
+        "statement": "MONITOR_FORM_REVISION|5bc199a4 admitted the identity form on the measured finding that \u00a711.1's two requirements are satisfied by disjoint parameter ranges -- that for a rare-state premium the empirical form is UNSATISFIABLE. Nothing in that record contemplates a link that CAN be tested and is. Using M2 after a reachable M1 has failed extends the form past the only justification ever given for it.",
+        "why_it_is_independent": "Both are internal: a reader checks them against two sealed documents without knowing any Hypothesis, instrument or outcome. No new measurement is needed and none is cited as the reason."
+      },
+      "integrity_check": {
+        "does_it_rescue_what_was_observed": "It cannot rescue anything -- it only refuses. It does not change a single sealed verdict either: the volatility premium was DENIED on the net Sharpe, measured and bad at a point of 0.5021 and a bound of -0.0445, and remains denied. What changes is that its R3 would now FAIL rather than pass, so the record would state that its monitor was refuted rather than certified -- a difference that mattered only because the Sharpe bound happened to miss by 0.045.",
+        "harder_or_easier": "HARDER, unambiguously. It removes a path and adds none, so unlike the revision it corrects it carries the light burden rather than the heavy one.",
+        "question": "\u00a711.0's test: harder or easier, and does it rescue what was observed?",
+        "what_it_would_have_prevented": "An ADMITIDA carrying a monitor whose link to degradation had been measured and rejected. R3 exists to prevent exactly that and, for eight hours, did not."
+      },
+      "kind": "m2-availability-correction",
+      "revision": {
+        "after": "M2 is available only where M1 is NOT. Where the empirical form was reachable -- the trigger state occurred in at least the declared minimum of usable folds -- and the link FAILED to clear its consistency threshold, R3 FAILS. Not NOT_EVALUABLE: the evidence was gathered and it came back against, which is a verdict about the monitor and not an absence of one.",
+        "before": "A monitor is admissible if its link is established in EITHER form, M1 or M2.",
+        "clause": "\u00a711.1 as revised by MONITOR_FORM_REVISION|5bc199a4, the availability of M2",
+        "what_is_untouched": [
+          "M1 itself, including that INSUFFICIENT_EVIDENCE is not a pass for it.",
+          "M2 where the empirical form is genuinely unreachable -- the case the revision was sealed for, and the credit premium's actual situation at zero trigger days.",
+          "A P&L-only monitor never qualifies, whatever its latency.",
+          "Monitoring never converts into size.",
+          "The latency arithmetic, and every other gate and threshold."
+        ]
+      },
+      "schema_version": "1",
+      "sealed_at": "2026-10-03T05:56:33.326472Z"
+    }
+  ],
+  "schema_version": "1"
+}
