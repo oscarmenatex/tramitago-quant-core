@@ -125,30 +125,40 @@ def main():
     start, end = period["start_utc"], period["end_exclusive_utc"]
 
     print(f"{'=' * 78}\n{SLUG}   {start[:10]} -> {end[:10]}\n{'=' * 78}")
-    print(f"[1/5] capturing {SYMBOL} daily bars on the {ALPACA_FEED_SIP.upper()} "
-          f"feed, dividend and split adjusted...")
-    rows, capture, raw = capture_alpaca_equity_bars(
-        symbol=SYMBOL, evaluable_start_utc=start, evaluable_end_exclusive_utc=end,
-        warmup_periods=WARMUP, horizon=HORIZON, acquired_at=now,
-        credential_injector=_credential_injector(), feed=ALPACA_FEED_SIP)
-    print(f"      {len(rows)} bars ({rows[0]['timestamp'][:10]} -> {rows[-1]['timestamp'][:10]})")
+    # RESUMABLE, and not as a convenience. Once the dataset is sealed it IS the
+    # evidence: re-fetching could return different bars for the same window --
+    # a vendor revision, a late correction -- and quietly judge something other
+    # than what was sealed. If the manifest is here, the capture is done.
+    if (DATASET / "manifest.json").exists():
+        manifest = json.loads((DATASET / "manifest.json").read_bytes())
+        print(f"[1/5] dataset already sealed; NOT re-fetching")
+        print(f"[2/5] {manifest['dataset_id'][:46]}")
+    else:
+        print(f"[1/5] capturing {SYMBOL} daily bars on the {ALPACA_FEED_SIP.upper()} "
+              f"feed, dividend and split adjusted...")
+        rows, capture, raw = capture_alpaca_equity_bars(
+            symbol=SYMBOL, evaluable_start_utc=start, evaluable_end_exclusive_utc=end,
+            warmup_periods=WARMUP, horizon=HORIZON, acquired_at=now,
+            credential_injector=_credential_injector(), feed=ALPACA_FEED_SIP)
+        print(f"      {len(rows)} bars ({rows[0]['timestamp'][:10]} -> "
+              f"{rows[-1]['timestamp'][:10]})")
 
-    # The declaration rests on a window long enough for a LOWER bound to mean
-    # something. A short capture is not a smaller version of this Hypothesis; it
-    # is a different one, and silently judging it would be the oldest mistake in
-    # this project's record.
-    if len(rows) < MINIMUM_TRADING_DAYS:
-        raise SystemExit(
-            f"REFUSED: {len(rows)} trading days, and the declaration requires at least "
-            f"{MINIMUM_TRADING_DAYS} (three years). Judging a shorter window would answer "
-            f"a question nobody declared. Nothing has been sealed.")
+        # The declaration rests on a window long enough for a LOWER bound to mean
+        # something. A short capture is not a smaller version of this Hypothesis;
+        # it is a different one, and silently judging it would be the oldest
+        # mistake in this project's record.
+        if len(rows) < MINIMUM_TRADING_DAYS:
+            raise SystemExit(
+                f"REFUSED: {len(rows)} trading days, and the declaration requires at "
+                f"least {MINIMUM_TRADING_DAYS} (three years). Judging a shorter window "
+                f"would answer a question nobody declared. Nothing has been sealed.")
 
-    print("[2/5] sealing dataset...")
-    manifest = create_hypothesis_dataset(
-        HYPOTHESES, HYPOTHESIS_ID, hypothesis["version"], DATASET,
-        strategy=STRATEGY, horizon=HORIZON, acquired_at=now,
-        primary_source={"rows": rows, "capture": capture, "raw": raw})
-    print(f"      {manifest['dataset_id'][:46]}")
+        print("[2/5] sealing dataset...")
+        manifest = create_hypothesis_dataset(
+            HYPOTHESES, HYPOTHESIS_ID, hypothesis["version"], DATASET,
+            strategy=STRATEGY, horizon=HORIZON, acquired_at=now,
+            primary_source={"rows": rows, "capture": capture, "raw": raw})
+        print(f"      {manifest['dataset_id'][:46]}")
 
     sealed = [row for row in csv.DictReader((DATASET / "dataset.csv").open(encoding="utf-8"))
               if row.get("forward_return_1d")]
@@ -190,6 +200,8 @@ def main():
 
     volume = math.fsum(float(r["close"]) * float(r["volume"]) for r in sealed) / len(sealed)
     volatility = (math.fsum((v - mean_net) ** 2 for v in net) / (len(net) - 1)) ** 0.5
+    SEARCH_MULTIPLE = 10_000
+    REFERENCE = 200.0
     try:
         ceiling = p.capacity_ceiling(
             p.capacity_contract(average_daily_volume=f"{volume:.2f}", impact_coefficient="0.1",
@@ -199,10 +211,32 @@ def main():
             gross_per_period=gross_total / len(gross),
             base_cost_per_period=cost_total / len(sealed),
             volatility_per_period=volatility, turnover_per_period=transitions / len(sealed),
-            reference_capital=200.0, periods_per_year=252)
-        capacity_evidence = {"ceiling": f"{ceiling['ceiling']:.2f}",
-                             "current_tranche": FASE_1_TRANCHE}
-        note = f"ceiling ${ceiling['ceiling']:,.0f} ({ceiling['binding_constraint']})"
+            reference_capital=REFERENCE, periods_per_year=252,
+            search_multiple=SEARCH_MULTIPLE)
+        if ceiling["ceiling"] is not None:
+            capacity_evidence = {"ceiling": f"{ceiling['ceiling']:.2f}",
+                                 "current_tranche": FASE_1_TRANCHE}
+            note = f"ceiling ${ceiling['ceiling']:,.0f} ({ceiling['binding_constraint']})"
+        else:
+            # NONE_FOUND: nothing binds anywhere in the searched range, and the
+            # model refuses to invent a number for it -- rightly, because "no
+            # ceiling found" is a finding and not a licence to scale. What IS
+            # known is that the ceiling exceeds the top of the search, so that
+            # top is recorded as a FLOOR on it. R4 asks whether the ceiling is
+            # at least the tranche, and answering a ">=" question with a lower
+            # bound is the adverse direction, not the convenient one.
+            floor = REFERENCE * SEARCH_MULTIPLE
+            capacity_evidence = {
+                "ceiling": f"{floor:.2f}", "current_tranche": FASE_1_TRANCHE,
+                "is_lower_bound_not_the_ceiling": True,
+                "source": (f"capacity_ceiling returned NONE_FOUND: no constraint binds "
+                           f"between ${REFERENCE:,.0f} and ${floor:,.0f}, so the true "
+                           f"ceiling is ABOVE ${floor:,.0f} and this figure is a floor "
+                           f"on it, never an estimate of it. A position crossing the "
+                           f"market twice in {years:.1f} years barely touches a book "
+                           f"whose ADV is ${volume:,.0f}."),
+            }
+            note = f"NONE_FOUND -- nothing binds below ${floor:,.0f}"
     except ValueError as error:
         capacity_evidence = {"current_tranche": FASE_1_TRANCHE, "model_refusal": str(error)}
         note = f"REFUSED: {error}"
