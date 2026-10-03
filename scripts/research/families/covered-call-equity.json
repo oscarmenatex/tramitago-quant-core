@@ -1,0 +1,120 @@
+{
+  "slug": "covered-call-equity-index",
+  "mechanism": {
+    "name": "variance risk premium through covered-call funds on an equity index",
+    "payer": "buyers of {index} call options, who pay for upside exposure that the fund sells them inside the wrapper",
+    "why_they_keep_paying": "they want convex upside at limited cost, and structured product issuers hedge by buying calls, so demand for upside is not sensitive to price; the premium is what the sellers earn for taking the other side of that demand and for bearing the crash risk it implies",
+    "what_would_end_it": "realised volatility persistently exceeding implied, so that selling upside stops being paid, or enough capital selling calls to compress implied volatility below what is realised -- which is what the declared monitor watches for",
+    "claim_class": "PREMIUM",
+    "net_level_template": "the net return of holding {symbol} continuously over the window, after execution costs and with its expense ratio already inside its price, rather than a difference between two groups of days",
+    "monitor": {
+      "kind": "implied_minus_realised",
+      "window": 21,
+      "floor": "0",
+      "confirmation_periods": 3,
+      "re_entry_threshold": "2.0"
+    },
+    "sizing_drawdown_limit": "0.15",
+    "level_claim": {
+      "folds": 7,
+      "consistency_threshold": "0.70",
+      "minimum_adverse_episodes": 5
+    },
+    "decision": {
+      "build_cost": "0",
+      "life_years": "3",
+      "tranche": "1000"
+    },
+    "caveats": [
+      "XYLD WAS MEASURED BEFORE THIS FAMILY EXISTED, AND ITS LINK IS KNOWN. The same monitor met its empirical link in 4 of 6 usable folds on XYLD (ratio 0.667 against 0.70), which is why every member is required and not most of them. The monitor was fixed by XYLD before any other member was declared and is not changed for any member.",
+      "THIS IS ONE IDEA IN SEVERAL WRAPPERS. Members sell calls on equity indices whose returns are highly correlated, so their links are correlated draws and not independent ones. Agreement among members is weaker evidence than the count suggests, and the multiplicity ledger must count them as one search.",
+      "A FAILURE IN ANY MEMBER IS THE VERDICT. DOES_NOT_GENERALIZE admits no member by this route and does not rescue XYLD. INSUFFICIENT_EVIDENCE is not a pass. Adding a member later requires a new sealed definition and can only make the rule harder.",
+      "THE VOLATILITY INDEX AND THE UNDERLYING ARE PROXIES FOR WHAT THE FUND ACTUALLY WRITES. A fund may write options on an index that is not itself tradable, and the realised volatility is computed from the nearest tradable fund. The proxy error is not measured here.",
+      "THE DISTRIBUTION ADJUSTMENT IS THE LARGEST DATA RISK, AND A FUND IN THIS FAMILY CAN CLOSE. A failed distribution check voids the measurement, and a closure forces an exit at a time not chosen by the platform; neither is in any return series."
+    ],
+    "provenance": [
+      "ADMISSION|81bdb90c6f9f34025f6de1e2dabd58dc7e29ddc754a38ae113386f47a6a7fdb6 -- XYLD denied on R3 alone, the link met in 4 of 6 folds",
+      "CANDIDATE_REGISTER|c3d223593d26 -- three of fifteen candidates admissible in principle, one idea in three wrappers",
+      "DIRECTOR_INSTRUCTION|2026-10-03 -- test whether the variable generalizes within its mechanism, without touching it, under a rule requiring every member"
+    ]
+  },
+  "joint_rule": {
+    "name": "LINK_MUST_HOLD_IN_EVERY_MEMBER",
+    "requires": "every member",
+    "statement": "The monitor is admissible for any member only if its empirical link was reachable and met in every member of the family. One failing member makes the verdict DOES_NOT_GENERALIZE; an unmeasurable member makes it INSUFFICIENT_EVIDENCE, which is not a pass. The link thresholds are the engine own and are not set here."
+  },
+  "members": [
+    {
+      "symbol": "XYLD",
+      "name": "Global X S&P 500 Covered Call ETF",
+      "hypothesis_id": "HYPOTHESIS|27314537-88d0-4f0e-8d39-29047bf7d6cb",
+      "implied_series": "VIXCLS",
+      "implied_label": "VIX",
+      "implied_publisher": "CBOE publishes VIX daily and FRED distributes it",
+      "underlying": "SPY",
+      "underlying_label": "S&P 500",
+      "index_label": "S&P 500",
+      "period": {
+        "start_utc": "2016-01-06T00:00:00Z",
+        "end_exclusive_utc": "2026-10-01T00:00:00Z"
+      },
+      "expected_annual_yield": [
+        "0.04",
+        "0.16"
+      ],
+      "cost_source": "commission-free US ETF; half spread and slippage DECLARED, wider than SPY's because a covered-call fund's book is thinner, and not measured",
+      "half_spread": "0.0002",
+      "slippage": "0.00005",
+      "adverse_threshold": "-0.015",
+      "crossings_per_year": "0.19",
+      "pre_declaration": {
+        "plausible_low": "0.35",
+        "plausible_high": "0.80",
+        "plausibility_source": "published studies of the buy-write index find a Sharpe roughly equal to or modestly above the underlying over long samples; the range is recalled, wide, and sits below the S&P 500 own at the low end for the fund fee and the capped upside, and the conservative end is below the bar",
+        "window_years": "10.71",
+        "available_window_years": "10.72",
+        "why_shorter_than_available": "the dataset contract needs two warmup rows and one forward row, so three of the 2702 bars the feed serves cannot be evaluated",
+        "adverse_episode_in_window": "February 2018, when VIX more than doubled in a day, March 2020, and the 2022 drawdown"
+      },
+      "notes": "Everything below was declared BEFORE any XYLD bar was captured. The adverse threshold of -1.5% rather than SPY's -2% reflects an equity beta recalled at 0.6 to 0.8, so a day that is a stress day for the S&P 500 moves this fund less; it was chosen on that reasoning and not from any XYLD return."
+    },
+    {
+      "symbol": "QYLD",
+      "name": "Global X NASDAQ 100 Covered Call ETF",
+      "implied_series": "VXNCLS",
+      "implied_label": "VXN",
+      "implied_publisher": "CBOE publishes VXN daily and FRED distributes it",
+      "underlying": "QQQ",
+      "underlying_label": "Nasdaq-100",
+      "index_label": "Nasdaq-100",
+      "period": {
+        "start_utc": "2016-01-06T00:00:00Z",
+        "end_exclusive_utc": "2026-10-01T00:00:00Z"
+      },
+      "expected_annual_yield": [
+        "0.07",
+        "0.20"
+      ],
+      "cost_source": "commission-free US ETF; half spread and slippage DECLARED at the same rates as XYLD because both are large covered-call funds, and not measured",
+      "half_spread": "0.0002",
+      "slippage": "0.00005",
+      "adverse_threshold": "-0.02",
+      "crossings_per_year": "0.19",
+      "pre_declaration": {
+        "plausible_low": "0.30",
+        "plausible_high": "0.75",
+        "plausibility_source": "published studies of the Nasdaq-100 buy-write index find a Sharpe below the index own over long samples, because the call overlay caps a strongly trending upside; the range is recalled and wide, and its conservative end is below the bar of 0.500",
+        "window_years": "10.71",
+        "available_window_years": "10.72",
+        "why_shorter_than_available": "the dataset contract needs two warmup rows and one forward row, so three of the 2702 bars the feed serves cannot be evaluated",
+        "adverse_episode_in_window": "March 2020, and the 2022 drawdown, which was deeper for the Nasdaq-100 than for the S&P 500"
+      },
+      "notes": "Declared before any QYLD bar was captured, as the SECOND member of a mechanism family whose monitor was fixed by XYLD before this fund was declared. Nothing in the monitor is changed for this fund: the same 21-day window, floor, confirmation and re-entry, with the Nasdaq-100 volatility index and its tradable proxy in place of the S&P 500 ones. The adverse threshold of -2.0% reflects an equity beta recalled at 0.6 to 0.8 against an index whose stress day is about -3%, and was chosen on that reasoning and not from any QYLD return.",
+      "caveats": [
+        "THE TRIGGER FREQUENCY WAS NOT MEASURED ON VXN. The crossings per year of 0.19 is the value measured for the S&P 500 analog and is carried over unmeasured, which is weaker provenance than XYLD had; measuring VXN needs a FRED fetch that is made at run time, after declaration.",
+        "QQQ STANDS IN FOR THE NASDAQ-100. The fund writes options on the index and QQQ tracks it, so realised volatility is computed from QQQ closes; the difference is not measured."
+      ],
+      "hypothesis_id": "HYPOTHESIS|1a96622a-4bcd-497d-b308-62707795c4f1"
+    }
+  ]
+}

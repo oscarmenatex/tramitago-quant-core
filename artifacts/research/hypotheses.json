@@ -2224,6 +2224,46 @@
       "system_version": "0.1.0",
       "target_metric": "net_sharpe(XYLD held continuously, net of execution cost)",
       "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "GE",
+        "expected_direction": "INCREASE",
+        "metric": "net_sharpe(QYLD held continuously, net of execution cost)",
+        "threshold": "0.50"
+      },
+      "code_revision": "27457ac23e6f18bf5bcaeb536b78a9b9dd773dc7",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2026-10-01T00:00:00Z",
+          "start_utc": "2016-01-06T00:00:00Z"
+        },
+        "universe": [
+          "QYLD"
+        ],
+        "variables": [
+          "close",
+          "forward_return_1d",
+          "sma_close_3"
+        ]
+      },
+      "creation_context": {
+        "created_by": "Oscar Carmenate Rodriguez",
+        "provenance": [
+          "ADMISSION|81bdb90c6f9f34025f6de1e2dabd58dc7e29ddc754a38ae113386f47a6a7fdb6 -- XYLD denied on R3 alone, the link met in 4 of 6 folds",
+          "CANDIDATE_REGISTER|c3d223593d26 -- three of fifteen candidates admissible in principle, one idea in three wrappers",
+          "DIRECTOR_INSTRUCTION|2026-10-03 -- test whether the variable generalizes within its mechanism, without touching it, under a rule requiring every member"
+        ]
+      },
+      "creation_timestamp": "2026-10-03T18:46:39.203526Z",
+      "description": "LEVEL CLAIM, one leg, zero turnover by construction.\n\nQYLD (Global X NASDAQ 100 Covered Call ETF) held CONTINUOUSLY from 2016-01-06 to 2026-10-01: one entry, one exit, no signal, no rebalancing and no shorting. The net return of that position, after execution costs, is POSITIVE and its figures clear the admission thresholds of DOC-011 section 8.\n\nMECHANISM: variance risk premium through covered-call funds on an equity index. It is the second or later member of the family 'covered-call-equity-index', whose monitor was fixed before this member was declared and is judged jointly under the rule: The monitor is admissible for any member only if its empirical link was reachable and met in every member of the family. One failing member makes the verdict DOES_NOT_GENERALIZE; an unmeasurable member makes it INSUFFICIENT_EVIDENCE, which is not a pass. The link thresholds are the engine own and are not set here.\n\nDeclared before any QYLD bar was captured, as the SECOND member of a mechanism family whose monitor was fixed by XYLD before this fund was declared. Nothing in the monitor is changed for this fund: the same 21-day window, floor, confirmation and re-entry, with the Nasdaq-100 volatility index and its tradable proxy in place of the S&P 500 ones. The adverse threshold of -2.0% reflects an equity beta recalled at 0.6 to 0.8 against an index whose stress day is about -3%, and was chosen on that reasoning and not from any QYLD return.\n\nPre-declared caveats:\n- XYLD WAS MEASURED BEFORE THIS FAMILY EXISTED, AND ITS LINK IS KNOWN. The same monitor met its empirical link in 4 of 6 usable folds on XYLD (ratio 0.667 against 0.70), which is why every member is required and not most of them. The monitor was fixed by XYLD before any other member was declared and is not changed for any member.\n- THIS IS ONE IDEA IN SEVERAL WRAPPERS. Members sell calls on equity indices whose returns are highly correlated, so their links are correlated draws and not independent ones. Agreement among members is weaker evidence than the count suggests, and the multiplicity ledger must count them as one search.\n- A FAILURE IN ANY MEMBER IS THE VERDICT. DOES_NOT_GENERALIZE admits no member by this route and does not rescue XYLD. INSUFFICIENT_EVIDENCE is not a pass. Adding a member later requires a new sealed definition and can only make the rule harder.\n- THE VOLATILITY INDEX AND THE UNDERLYING ARE PROXIES FOR WHAT THE FUND ACTUALLY WRITES. A fund may write options on an index that is not itself tradable, and the realised volatility is computed from the nearest tradable fund. The proxy error is not measured here.\n- THE DISTRIBUTION ADJUSTMENT IS THE LARGEST DATA RISK, AND A FUND IN THIS FAMILY CAN CLOSE. A failed distribution check voids the measurement, and a closure forces an exit at a time not chosen by the platform; neither is in any return series.\n- THE TRIGGER FREQUENCY WAS NOT MEASURED ON VXN. The crossings per year of 0.19 is the value measured for the S&P 500 analog and is carried over unmeasured, which is weaker provenance than XYLD had; measuring VXN needs a FRED fetch that is made at run time, after declaration.\n- QQQ STANDS IN FOR THE NASDAQ-100. The fund writes options on the index and QQQ tracks it, so realised volatility is computed from QQQ closes; the difference is not measured.",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|1a96622a-4bcd-497d-b308-62707795c4f1",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|1a96622a-4bcd-497d-b308-62707795c4f1|1|ed3c07bf96e5f48220b9ec2520e0c93cc9bcd9ae41c8bc7e95ae0b10656c12cd",
+      "status": "PROPOSED",
+      "system_version": "0.1.0",
+      "target_metric": "net_sharpe(QYLD held continuously, net of execution cost)",
+      "version": 1
     }
   ],
   "schema_version": "2"
