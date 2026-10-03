@@ -51,7 +51,7 @@ from tramitago_quant_core.data.fred_series import (
     capture_fred_series, verified_fred_series_capture, ENDPOINT_API)
 from tramitago_quant_core.governance.evidence_host import require_evidence_host
 from tramitago_quant_core.governance.admission import (
-    adverse_bound, constitute_admission, SURVIVAL_P2)
+    adverse_bound, constitute_admission, SURVIVAL_P2, MONITOR_LINK_M2)
 from tramitago_quant_core.research.historical_dataset import create_hypothesis_dataset
 from tramitago_quant_core.research.level_claim import (
     level_claim, evaluate_fold, level_claim_outcome, level_claim_gate_report,
@@ -264,10 +264,11 @@ def main():
     print(f"      declared floor {MONITOR_FLOOR}%; the trigger state occurred on "
           f"{triggering} of {len(observed)} days")
     if not link_is_establishable:
-        print(f"      §11.1: with no triggering observation the inferential link cannot")
-        print(f"      reach VALIDATED, so the monitor is NOT ADMITTED. §11.3 states this")
-        print(f"      excludes SYSTEMATICALLY the monitors risk premia need, because a")
-        print(f"      premium's adverse state is rare BY DESIGN -- that is why it is paid.")
+        print(f"      M1 (empirical) is unavailable: with no triggering observation no")
+        print(f"      walk-forward can establish the link. Declaring M2 instead, the")
+        print(f"      IDENTITY form admitted by §11.1 as revised 2026-10-03 -- the carry")
+        print(f"      IS the spread, so a spread below the loss absorbed is a shortfall by")
+        print(f"      subtraction, with nothing estimated in between.")
 
     # If the premium dies, the spread goes to nothing and the position stops
     # earning it. The daily loss is the premium itself, MEASURED.
@@ -380,6 +381,27 @@ def main():
             "expected_daily_loss_if_dead": f"{loss_if_dead:.8f}",
             "is_pnl_only": False,
             "observes_adverse_state_representatively": link_is_establishable,
+            # M2, admitted by §11.1 as revised under MONITOR_FORM_REVISION|5bc199a4.
+            # The empirical form is unavailable here and the measurement above
+            # shows why: the trigger state occurs on zero days, so no walk-forward
+            # can establish the link. The implication is instead an IDENTITY.
+            "link_form": MONITOR_LINK_M2,
+            "identity": (
+                "The position's gross carry IS the spread. If the spread falls below the "
+                "credit loss the position must absorb, the carry is less than the losses "
+                "by subtraction -- the premium has stopped compensating for the risk being "
+                "borne. No estimation stands between the observed condition and the "
+                "degradation: it is the same quantity compared against itself."),
+            "parameter": MONITOR_FLOOR,
+            "parameter_source": (
+                "Moody's long-run annual credit loss on Baa-rated corporates, about 0.30%; "
+                "the floor is set at 0.50% to leave headroom above it"),
+            "holds_for_range": (
+                "ANY value of the expected loss, because the threshold is DEFINED as that "
+                "loss. Estimating it wrongly moves where the monitor fires; it cannot make "
+                "the implication false. That independence is what makes this an identity "
+                "rather than a mechanism, and it is why M2 admits it where R2's P2 would "
+                "have admitted a narrative instead."),
         },
         "capacity": capacity,
         "decision_cost": {
