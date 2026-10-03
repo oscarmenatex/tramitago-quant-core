@@ -33,8 +33,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
-from tramitago_quant_core.data.alpaca_equity_series import (
-    capture_alpaca_equity_bars, ALPACA_FEED_SIP)
+from tramitago_quant_core.data.alpaca_equity_series import capture_alpaca_equity_bars
 from tramitago_quant_core.governance.evidence_host import require_evidence_host
 from tramitago_quant_core.research.premium_runner import run_spec
 
@@ -70,11 +69,12 @@ class RealIO:
     def __init__(self):
         self._injector = _credential_injector()
 
-    def capture_bars(self, *, symbol, start, end, warmup, horizon, acquired_at, adjustment):
+    def capture_bars(self, *, symbol, start, end, warmup, horizon, acquired_at, adjustment,
+                     feed):
         return capture_alpaca_equity_bars(
             symbol=symbol, evaluable_start_utc=start, evaluable_end_exclusive_utc=end,
             warmup_periods=warmup, horizon=horizon, acquired_at=acquired_at,
-            credential_injector=self._injector, feed=ALPACA_FEED_SIP, adjustment=adjustment)
+            credential_injector=self._injector, feed=feed, adjustment=adjustment)
 
     def relay_fred(self, series_id, start, end):
         import base64
