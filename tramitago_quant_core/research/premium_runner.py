@@ -35,12 +35,14 @@ from tramitago_quant_core.governance.admission import constitute_admission
 from tramitago_quant_core.research.historical_dataset import create_hypothesis_dataset
 from tramitago_quant_core.research.level_claim import constitute_level_claim_validation
 from tramitago_quant_core.research.monitors import monitor_series_names, needs_underlying
-from tramitago_quant_core.research.premium_engine import judge, validate_spec
+from tramitago_quant_core.research.premium_engine import (
+    judge, validate_spec, forward_column)
 from tramitago_quant_core.research.pre_declaration import (
     load_pre_declaration, require_pre_declaration,
 )
 from tramitago_quant_core.shared.util import _atomic_write, encoded
-from tramitago_quant_core.strategy_contract.strategy import sma_crossover_strategy
+from tramitago_quant_core.strategy_contract.strategy import (
+    sma_crossover_strategy, pair_ratio_reversion_strategy)
 
 MINIMUM_TRADING_DAYS = 756          # three years: below it a lower bound means little
 HORIZON = 1
@@ -51,6 +53,10 @@ HORIZON = 1
 # signal and never reads it; the warmup it asks for is nonetheless real.
 STRATEGY = sma_crossover_strategy(3)
 WARMUP = STRATEGY["required_inputs"]["warmup_periods"]
+# A PAIR needs the strategy that declares the second leg among its inputs: without it
+# the dataset contract never merges that leg at all. Its signal is never read here
+# either -- the position is held -- but its column and its warmup are real.
+PAIR_STRATEGY = pair_ratio_reversion_strategy(3)
 
 
 def _latest(hypotheses_path, hypothesis_id):
@@ -113,39 +119,65 @@ def run_spec(spec, *, io, paths, now, code_revision, seal=True):
     """Capture, judge and seal. Returns the engine result plus what was sealed."""
     validate_spec(spec)
     hypothesis = _latest(paths["hypotheses"], spec["hypothesis_id"])
+    instrument = spec["instrument"]
+    slug_dir = spec["slug"].replace("-", "_")
+    dataset_dir = Path(paths["datasets"]) / slug_dir
+    sealed = (dataset_dir / "manifest.json").exists()
     # REFUSED BEFORE ANY NETWORK CALL, so a Hypothesis that has not answered its seven
     # questions costs nothing instead of a capture that the dataset contract would
     # reject afterwards.
-    answers = require_pre_declaration(hypothesis, paths["pre_declarations"])
-    if answers is None:
+    #
+    # ENFORCED WHERE THE CONTRACT ENFORCES IT: at capture. A dataset that is ALREADY
+    # SEALED was captured under whatever rules stood when it was, and demanding a
+    # pre-declaration of it now would be stricter than the contract itself. This
+    # mattered the first time an old Hypothesis was migrated: the credit premium was
+    # declared and captured between 03:33 and 04:16 UTC on 2026-10-03, before the
+    # contract existed (05:32 UTC), but the contract's in-force instant was set to
+    # MIDNIGHT of that day and so reaches back over it. The guard on a fresh capture
+    # is unchanged and has its own test.
+    if sealed:
         answers = load_pre_declaration(paths["pre_declarations"], spec["hypothesis_id"])
+    else:
+        answers = require_pre_declaration(hypothesis, paths["pre_declarations"])
+        if answers is None:
+            answers = load_pre_declaration(paths["pre_declarations"], spec["hypothesis_id"])
     period = hypothesis["constraints"]["period"]
     start, end = period["start_utc"], period["end_exclusive_utc"]
-    instrument = spec["instrument"]
     feed = instrument.get("feed", "sip")
-    slug_dir = spec["slug"].replace("-", "_")
-    dataset_dir = Path(paths["datasets"]) / slug_dir
     checks_dir = Path(paths["checks"]) / slug_dir
 
-    if (dataset_dir / "manifest.json").exists():
+    if sealed:
         resumed = True
     else:
         resumed = False
+        second = instrument.get("second_leg")
+        strategy = PAIR_STRATEGY if second else STRATEGY
+        warmup = strategy["required_inputs"]["warmup_periods"]
         rows, capture, raw = io.capture_bars(
-            symbol=instrument["symbol"], start=start, end=end, warmup=WARMUP,
+            symbol=instrument["symbol"], start=start, end=end, warmup=warmup,
             horizon=HORIZON, acquired_at=now, adjustment="all", feed=feed)
         if len(rows) < MINIMUM_TRADING_DAYS:
             raise ValueError(
                 f"REFUSED: {len(rows)} trading days against a declared minimum of "
                 f"{MINIMUM_TRADING_DAYS}. Judging a shorter window would answer a question "
                 f"nobody declared. Nothing has been sealed.")
+        auxiliary = None
+        if second:
+            rows2, capture2, raw2 = io.capture_bars(
+                symbol=second["symbol"], start=start, end=end, warmup=warmup,
+                horizon=HORIZON, acquired_at=now, adjustment="all", feed=feed)
+            auxiliary = {"pair_close": {
+                "series": {row["timestamp"]: row["close"] for row in rows2},
+                "capture": capture2, "raw": raw2}}
         create_hypothesis_dataset(
             paths["hypotheses"], spec["hypothesis_id"], hypothesis["version"], dataset_dir,
-            strategy=STRATEGY, horizon=HORIZON, acquired_at=now,
-            primary_source={"rows": rows, "capture": capture, "raw": raw})
+            strategy=strategy, horizon=HORIZON, acquired_at=now,
+            primary_source={"rows": rows, "capture": capture, "raw": raw},
+            auxiliary_sources=auxiliary)
 
+    column = forward_column(spec)
     rows = [row for row in csv.DictReader((dataset_dir / "dataset.csv").open(encoding="utf-8"))
-            if row.get("forward_return_1d")]
+            if row.get(column)]
 
     # --- auxiliary captures the spec asks for ---------------------------------------
     raw_closes = underlying = None

@@ -1,0 +1,54 @@
+{
+  "slug": "credit-premium-lqd-ief",
+  "hypothesis_id": "HYPOTHESIS|cf55e397-75ab-49d9-8f69-1e155e312a2c",
+  "notes": "Migrated from run_credit_premium.py. A PAIR: long LQD, short IEF at equal notional, judged on the spread return. The monitor floor of 0.50 was declared from Baa expected credit loss before the trigger frequency was measured, and the trigger never occurs, so only the identity form is available.",
+  "instrument": {
+    "provider": "alpaca_equity",
+    "symbol": "LQD",
+    "feed": "sip",
+    "second_leg": {
+      "symbol": "IEF"
+    }
+  },
+  "cost": {
+    "commission": "0",
+    "half_spread": "0.0001",
+    "slippage": "0.00002",
+    "legs": 2,
+    "source": "commission-free US ETFs; half spread and slippage DECLARED, not measured"
+  },
+  "sizing": {
+    "drawdown_limit": "0.15"
+  },
+  "level_claim": {
+    "folds": 7,
+    "consistency_threshold": "0.70",
+    "adverse_threshold": "-0.01",
+    "minimum_adverse_episodes": 5
+  },
+  "monitor": {
+    "kind": "level_below",
+    "variable": "BAA10Y",
+    "series": "BAA10Y",
+    "floor": "0.50",
+    "confirmation_periods": 3,
+    "re_entry_threshold": "1.00",
+    "source": "Moody's Baa yield relative to the 10-year Treasury, published daily; floor DECLARED from Baa expected credit loss, not from this window",
+    "identity": {
+      "identity": "The position's gross carry IS the spread. If the spread falls below the credit loss the position must absorb, the carry is less than the losses by subtraction -- the premium has stopped compensating for the risk being borne. No estimation stands between the observed condition and the degradation: it is the same quantity compared against itself.",
+      "parameter": "0.50",
+      "parameter_source": "Moody's long-run annual credit loss on Baa-rated corporates, about 0.30%; the floor is set at 0.50% to leave headroom above it",
+      "holds_for_range": "ANY value of the expected loss, because the threshold is DEFINED as that loss. Estimating it wrongly moves where the monitor fires; it cannot make the implication false. That independence is what makes this an identity rather than a mechanism, and it is why M2 admits it where R2's P2 would have admitted a narrative instead."
+    }
+  },
+  "survival": {
+    "counterparty": "investors who must hold Treasuries or the highest grades for reasons unrelated to expected return: mandates, capital treatment, collateral eligibility and liability matching",
+    "why_they_accept_losing": "they are not losing; they are buying permission and certainty. The spread is the price of bearing default and illiquidity risk they are constrained or unwilling to bear",
+    "what_would_end_it": "corporate default risk ceasing to be priced, mandates disappearing, or enough capital crowding the trade to compress the spread below the losses it compensates -- which is exactly what the declared monitor watches for"
+  },
+  "decision": {
+    "build_cost": "0",
+    "life_years": "3",
+    "tranche": "1000"
+  }
+}

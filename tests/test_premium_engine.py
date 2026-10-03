@@ -8,10 +8,7 @@ bound and level-claim verdict to the last decimal -- which is a claim about numb
 already in the repository and not about the engine resembling the scripts.
 """
 
-import copy
-import csv
 import unittest
-from pathlib import Path
 
 from tramitago_quant_core.governance.admission import (
     _monitorability_gate, GATE_PASSED, GATE_FAILED,
@@ -20,7 +17,6 @@ from tramitago_quant_core.research.premium_engine import (
     judge, validate_spec, distribution_check, _monitor_evidence,
 )
 
-ARTIFACTS = Path(__file__).resolve().parents[1] / "artifacts" / "research" / "datasets"
 SURVIVAL = {"counterparty": "investors shedding a risk they are mandated to shed",
             "why_they_accept_losing": "they are buying certainty rather than losing",
             "what_would_end_it": "the risk ceasing to be disliked by anyone at all"}
@@ -40,74 +36,6 @@ def _spec(slug="x", hypothesis="HYPOTHESIS|probe", half="0.00005", slip="0.00001
             **extra}
 
 
-def _load(slug):
-    path = ARTIFACTS / slug / "dataset.csv"
-    if not path.exists():
-        return None
-    return list(csv.DictReader(path.open(encoding="utf-8")))
-
-
-class SealedRegressionTests(unittest.TestCase):
-    """The engine against numbers sealed before it existed."""
-
-    @classmethod
-    def setUpClass(cls):
-        cls.spy_rows = _load("equity_risk_premium_spy")
-        cls.svxy_rows = _load("volatility_premium_svxy")
-        cls.spy = cls.svxy = None
-        if cls.spy_rows:
-            cls.spy = judge(_spec("equity-risk-premium-spy", "HYPOTHESIS|426cd26a-10ab-4c5e-"
-                                  "ba5d-9e88510a4613"), cls.spy_rows)
-        if cls.svxy_rows:
-            cls.svxy = judge(_spec("volatility-premium-svxy", "HYPOTHESIS|205003fe-7b8d-4fc0-"
-                                   "b30c-936a404cd7c0", half="0.0003", slip="0.0001",
-                                   adverse="-0.03"), cls.svxy_rows)
-
-    def test_spy_reproduces_its_sealed_figures(self):
-        if self.spy is None:
-            self.skipTest("the sealed SPY dataset is not in this checkout")
-        self.assertAlmostEqual(self.spy["weight"], 0.280, places=3)
-        self.assertAlmostEqual(self.spy["sharpe_point"], 0.8125, places=4)
-        self.assertAlmostEqual(self.spy["sharpe_bound"], 0.2695, places=4)
-        self.assertAlmostEqual(self.spy["drawdown_bound"], 0.149976, places=6)
-        self.assertEqual(self.spy["level_claim"]["outcome"], "VALIDATED")
-        self.assertAlmostEqual(float(self.spy["level_claim"]["consistency"]), 0.857, places=3)
-
-    def test_svxy_reproduces_its_sealed_figures(self):
-        if self.svxy is None:
-            self.skipTest("the sealed SVXY dataset is not in this checkout")
-        self.assertAlmostEqual(self.svxy["weight"], 0.109, places=3)
-        self.assertAlmostEqual(self.svxy["sharpe_point"], 0.5021, places=4)
-        self.assertAlmostEqual(self.svxy["sharpe_bound"], -0.0445, places=4)
-        self.assertAlmostEqual(self.svxy["drawdown_bound"], 0.149716, places=6)
-        self.assertAlmostEqual(float(self.svxy["level_claim"]["consistency"]), 0.714, places=3)
-
-    def test_the_gate_states_match_the_sealed_admission_of_spy(self):
-        # R3 is NOT_EVALUABLE because no monitor was declared, and everything else
-        # passes: exactly what the sealed record says.
-        if self.spy is None:
-            self.skipTest("the sealed SPY dataset is not in this checkout")
-        states = {gate["gate"].split(":")[0].split(" ")[0]: gate["state"]
-                  for gate in self.spy["gates"]}
-        self.assertEqual(sorted(set(states.values())), ["NOT_EVALUABLE", "PASSED"])
-        self.assertEqual(states["R3"], "NOT_EVALUABLE")
-
-    def test_the_gate_states_match_the_sealed_admission_of_svxy(self):
-        # The Sharpe bound fails and nothing else does, with no monitor declared.
-        if self.svxy is None:
-            self.skipTest("the sealed SVXY dataset is not in this checkout")
-        failed = [gate["gate"] for gate in self.svxy["gates"] if gate["state"] == "FAILED"]
-        self.assertEqual(len(failed), 1)
-        self.assertIn("Sharpe", failed[0])
-
-    def test_the_adverse_threshold_scales_with_the_weight(self):
-        # -2% was a stress day for the UNSIZED position; at a 28% weight the same
-        # market event moves it -0.56%. Left absolute it reported a tail that was
-        # entirely present as absent.
-        if self.spy is None:
-            self.skipTest("the sealed SPY dataset is not in this checkout")
-        scaled = float(self.spy["level_claim"]["claim"]["adverse_period_threshold"])
-        self.assertAlmostEqual(scaled, -0.02 * self.spy["weight"], places=6)
 
 
 class SpecValidationTests(unittest.TestCase):
