@@ -118,6 +118,10 @@ from tramitago_quant_core.risk.portfolio import (
     PORTFOLIO_ALLOCATION_SCHEMA_VERSION, portfolio_allocation, verified_portfolio_allocation,
     portfolio_returns, portfolio_drawdown, maximum_admissible_weight, allocation_summary,
 )
+from tramitago_quant_core.risk.statistic_bounds import (
+    BOUND_LOWER, BOUND_UPPER, ANNUALISATION_DAILY, sharpe_ratio, max_drawdown,
+    bootstrap_bound, net_sharpe_lower_bound, drawdown_upper_bound,
+)
 from tramitago_quant_core.risk.execution_cost import (
     EXECUTION_MEASUREMENT_SCHEMA_VERSION, SIDE_BUY, SIDE_SELL,
     FILL_PAPER, FILL_LIVE, FILL_BOOK,

@@ -213,6 +213,99 @@
       "schema_version": "1",
       "status": "ISSUED",
       "validation_id": "STATISTICAL_VALIDATION|2e34161347182cd1b60daa9ca32d04a01f9c2a8fe61ed6c793d29d536cce23cf"
+    },
+    {
+      "admission_id": "ADMISSION|8c45ac7286b6e8088c5c17b49084130dd81897e8b789a2d449c7bf1b7572301e",
+      "evidence": {
+        "capacity": {
+          "current_tranche": "1000",
+          "model_refusal": "Net Sharpe is not positive at the reference capital; there is no capacity to size"
+        },
+        "decision_cost": {
+          "build_cost": "600",
+          "expected_annual_net_return": "-58.34",
+          "minimum_declared_life_years": "3",
+          "recurring_cost_per_year": "0",
+          "surveillance_is_automatable": true
+        },
+        "monitor": {
+          "action": "SUSPEND",
+          "degradation_threshold": "0",
+          "detection_latency_days": "1.000000",
+          "expected_daily_loss_if_dead": "0.00018518",
+          "frequency_seconds": 28800,
+          "is_pnl_only": false,
+          "observes_adverse_state_representatively": true,
+          "variable": "funding_rate"
+        },
+        "net_sharpe": {
+          "is_adverse_bound": true,
+          "source": "moving-block bootstrap, {\"block_periods\": 5, \"confidence\": \"0.95\", \"resamples\": 2000, \"seed\": 0}, on 589 net held days of carry-exit-bitmex-holdout",
+          "value": "-2.633663"
+        },
+        "survival": {
+          "counterparty": "levered long holders of the perpetual, who pay funding to maintain leverage",
+          "form": "P2_DECLARED_MECHANISM",
+          "what_would_end_it": "sustained negative funding (shorts paying longs), a venue fee or funding-formula change, or enough capital on the short side to flatten the basis",
+          "why_they_accept_losing": "they are buying directional exposure, not yield; the funding is the price of leverage and is small against the move they are positioned for"
+        },
+        "worst_fold_drawdown": {
+          "is_adverse_bound": true,
+          "source": "moving-block bootstrap, same parameters, on the WHOLE net series rather than the worst fold. A drawdown measured over the full window is at least as large as any contiguous fold's -- every peak-to-trough pair inside a fold is also one in the whole -- so this DOMINATES the quantity R1 asks for. It is reported in its place because it is the stricter of the two, and it is said here rather than left to be noticed later",
+          "value": "0.173506"
+        }
+      },
+      "gates": [
+        {
+          "detail": "-2.633663 >= 0.50 is false (source: moving-block bootstrap, {\"block_periods\": 5, \"confidence\": \"0.95\", \"resamples\": 2000, \"seed\": 0}, on 589 net held days of carry-exit-bitmex-holdout)",
+          "gate": "maximando: net Sharpe, lower 95% bound >= 0.50",
+          "state": "FAILED"
+        },
+        {
+          "detail": "0.173506 <= 0.15 is false (source: moving-block bootstrap, same parameters, on the WHOLE net series rather than the worst fold. A drawdown measured over the full window is at least as large as any contiguous fold's -- every peak-to-trough pair inside a fold is also one in the whole -- so this DOMINATES the quantity R1 asks for. It is reported in its place because it is the stricter of the two, and it is said here rather than left to be noticed later)",
+          "gate": "R1 drawdown: worst fold, upper 95% bound <= 0.15",
+          "state": "FAILED"
+        },
+        {
+          "detail": "P2: mechanism declared in writing",
+          "gate": "R2 survival: P1 (>=2 out-of-sample periods) or P2 (declared mechanism)",
+          "state": "PASSED"
+        },
+        {
+          "detail": "latency 1.000000 days against a budget of 810.02 days (0.15 / 0.00018518)",
+          "gate": "R3 monitorability: latency < drawdown / daily loss if dead",
+          "state": "PASSED"
+        },
+        {
+          "detail": "the ceiling C must be declared before admitting, not discovered after",
+          "gate": "R4 capacity: declared ceiling C >= the current tranche",
+          "state": "NOT_EVALUABLE"
+        },
+        {
+          "detail": "the declared life and the expected annual net return must be positive",
+          "gate": "R5 decision cost: < 25% of expected annual net return",
+          "state": "NOT_EVALUABLE"
+        }
+      ],
+      "gates_failed": [
+        "maximando: net Sharpe, lower 95% bound >= 0.50",
+        "R1 drawdown: worst fold, upper 95% bound <= 0.15"
+      ],
+      "gates_not_evaluable": [
+        "R4 capacity: declared ceiling C >= the current tranche",
+        "R5 decision cost: < 25% of expected annual net return"
+      ],
+      "hypothesis_id": "VALIDATION_SLUG|carry-exit-bitmex-holdout",
+      "materialization": {
+        "code_revision": "47637e5a3e8f6fd6b700578580b4ca6e4c5a305e",
+        "decided_at": "2026-10-03T00:58:10.950237Z",
+        "pipeline_sha256": "5cb675e833120efff3ae4386caa46a4521da47411bfb94a34828ab36a7b54c20"
+      },
+      "outcome": "ADMISION_DENEGADA",
+      "record_id": "ADMISSION_RECORD|20af668270012512674bf8be4f7b2de431440b8a72d395c427c1bced55f74024",
+      "schema_version": "1",
+      "status": "ISSUED",
+      "validation_id": "STATISTICAL_VALIDATION|96545cd1aee924fd4c64ea1aeaf68f895f9ba55870fb4566294102d9a32bbf43"
     }
   ],
   "schema_version": "1"
