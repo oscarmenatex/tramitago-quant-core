@@ -471,6 +471,103 @@
       "schema_version": "2",
       "status": "ISSUED",
       "validation_id": "LEVEL_CLAIM_VALIDATION|ba2a87c13d61098ec99ff0e3a09fe9c1db57e061fdeb4155a84bdcce4c59903a"
+    },
+    {
+      "admission_id": "ADMISSION|68f53870628d8a6c50572604e077f1be5f411cf4a9773d1a1040d99b75254db2",
+      "evidence": {
+        "capacity": {
+          "ceiling": "2000000.00",
+          "current_tranche": "1000",
+          "is_lower_bound_not_the_ceiling": true,
+          "source": "NONE_FOUND: nothing binds below $2,000,000, so this is a FLOOR on the ceiling and never an estimate of it"
+        },
+        "decision_cost": {
+          "build_cost": "0",
+          "expected_annual_net_return": "5.23",
+          "minimum_declared_life_years": "3",
+          "recurring_cost_per_year": "0",
+          "surveillance_is_automatable": true
+        },
+        "monitor": {
+          "action": "SUSPEND",
+          "degradation_threshold": "0.50",
+          "detection_latency_days": "3.000000",
+          "expected_daily_loss_if_dead": "0.00002077",
+          "frequency_seconds": 86400,
+          "holds_for_range": "ANY value of the expected loss, because the threshold is DEFINED as that loss. Estimating it wrongly moves where the monitor fires; it cannot make the implication false. That independence is what makes this an identity rather than a mechanism, and it is why M2 admits it where R2's P2 would have admitted a narrative instead.",
+          "identity": "The position's gross carry IS the spread. If the spread falls below the credit loss the position must absorb, the carry is less than the losses by subtraction -- the premium has stopped compensating for the risk being borne. No estimation stands between the observed condition and the degradation: it is the same quantity compared against itself.",
+          "is_pnl_only": false,
+          "link_form": "M2_IDENTITY",
+          "observes_adverse_state_representatively": false,
+          "parameter": "0.50",
+          "parameter_source": "Moody's long-run annual credit loss on Baa-rated corporates, about 0.30%; the floor is set at 0.50% to leave headroom above it",
+          "variable": "BAA10Y"
+        },
+        "net_sharpe": {
+          "is_adverse_bound": true,
+          "point_estimate": "0.187543",
+          "source": "moving-block bootstrap, {\"block_periods\": 5, \"confidence\": \"0.95\", \"resamples\": 2000, \"seed\": 0}, on 2198 net days of credit-premium-lqd-ief at a 0.3965 weight",
+          "value": "-0.337363"
+        },
+        "survival": {
+          "counterparty": "investors who must hold Treasuries or the highest grades for reasons unrelated to expected return: mandates, capital treatment, collateral eligibility and liability matching",
+          "form": "P2_DECLARED_MECHANISM",
+          "what_would_end_it": "corporate default risk ceasing to be priced, mandates disappearing, or enough capital crowding the trade to compress the spread below the losses it compensates -- which is exactly what the declared monitor watches for",
+          "why_they_accept_losing": "they are not losing; they are buying permission and certainty. The spread is the price of bearing default and illiquidity risk they are constrained or unwilling to bear"
+        },
+        "worst_fold_drawdown": {
+          "is_adverse_bound": true,
+          "source": "moving-block bootstrap, same parameters, on the WHOLE net series, which dominates any fold and is therefore the stricter reading of R1",
+          "value": "0.149982"
+        }
+      },
+      "gates": [
+        {
+          "detail": "point 0.187543 >= 0.50 is false, and bound -0.337363 > 0 is false (source: moving-block bootstrap, {\"block_periods\": 5, \"confidence\": \"0.95\", \"resamples\": 2000, \"seed\": 0}, on 2198 net days of credit-premium-lqd-ief at a 0.3965 weight)",
+          "gate": "maximando: net Sharpe >= 0.50 AND its lower 95% bound > 0",
+          "state": "FAILED"
+        },
+        {
+          "detail": "0.149982 <= 0.15 is true (source: moving-block bootstrap, same parameters, on the WHOLE net series, which dominates any fold and is therefore the stricter reading of R1)",
+          "gate": "R1 drawdown: worst fold, upper 95% bound <= 0.15",
+          "state": "PASSED"
+        },
+        {
+          "detail": "P2: mechanism declared in writing",
+          "gate": "R2 survival: P1 (>=2 out-of-sample periods) or P2 (declared mechanism)",
+          "state": "PASSED"
+        },
+        {
+          "detail": "[M2_IDENTITY] latency 3.000000 days against a budget of 7221.95 days (0.15 / 0.00002077) -- a REASONED stop, not a demonstrated one",
+          "gate": "R3 monitorability: latency < drawdown / daily loss if dead",
+          "state": "PASSED"
+        },
+        {
+          "detail": "ceiling 2000000.00 against a tranche of 1000",
+          "gate": "R4 capacity: declared ceiling C >= the current tranche",
+          "state": "PASSED"
+        },
+        {
+          "detail": "0.0000 of the expected annual net return, against 0.25",
+          "gate": "R5 decision cost: < 25% of expected annual net return",
+          "state": "PASSED"
+        }
+      ],
+      "gates_failed": [
+        "maximando: net Sharpe >= 0.50 AND its lower 95% bound > 0"
+      ],
+      "gates_not_evaluable": [],
+      "hypothesis_id": "HYPOTHESIS|cf55e397-75ab-49d9-8f69-1e155e312a2c",
+      "materialization": {
+        "code_revision": "632eec5fefcf7e1a9bb6bbe34685a8bff8de66c6",
+        "decided_at": "2026-10-03T04:52:16.541069Z",
+        "pipeline_sha256": "add34d15bcf67ed91720680290df70b96a25c7d3d890d5b14e2e87e15c5d612c"
+      },
+      "outcome": "ADMISION_DENEGADA",
+      "record_id": "ADMISSION_RECORD|4245debd1acf84e3e89e90487fa35b318a5dd41a1d9f1b66ebe2f6928a3c1d18",
+      "schema_version": "3",
+      "status": "ISSUED",
+      "validation_id": "LEVEL_CLAIM_VALIDATION|fdd086232a72b44f438e832be9b9c691af4e21e082df25bbe961e2406ccb258a"
     }
   ],
   "schema_version": "1"
