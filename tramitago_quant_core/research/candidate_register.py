@@ -79,19 +79,27 @@ VERDICT_UNOPERABLE = "UNOPERABLE_AT_TRANCHE"
 # candidate's smallest expressible position is measured against.
 FASE_1_TRANCHE_USD = Decimal("1000")
 
-# WHAT THE EXECUTOR CAN DO, stated once and guarded by a test. MEASURED
-# 2026-10-03: pipeline.py accepts only (ENTER, BUY) and (EXIT, SELL), at two
-# places, so an ENTER with side SELL is rejected as an invalid proposal -- the
-# platform cannot open a short. DOC-011's catalogue says the same ("requiere
-# vender en corto ... Etapa 4.5 completa, sin construir") and the capability
-# memory says "no short, no perpetual". Nothing here may be trusted to stay true
-# by being written down: tests/test_candidate_register.py reads pipeline.py and
-# FAILS if an ENTER/SELL pair ever appears, forcing this line to be revisited in
-# the same change that builds the capability. DOC-011 section 6 went stale for
-# a week by being prose; this is the same fact held to a test.
+# WHAT THE EXECUTOR CAN DO, stated once and guarded by tests. TWO facts, because they
+# differ since 2026-10-03:
+#
+#   EXECUTOR_CAN_OPEN_SHORTS        REAL CAPITAL. False. The operating chain can prepare,
+#                                   validate and execute a LIVE order only for BTC-USD, and
+#                                   Alpaca cannot short crypto. This is the fact a candidate is
+#                                   measured against at the Fase 1 tranche.
+#   EXECUTOR_CAN_OPEN_SHORTS_PAPER  PAPER. True, for the instruments declared in
+#                                   config/instrument_contracts.json that allow a short. A
+#                                   candidate can be paper-traded short; it cannot be operated
+#                                   short with real money.
+#
+# Both are held to BEHAVIOUR, not to the text of pipeline.py: the tests drive the chain's own
+# validators and fail if either statement stops being true. The first version of this guard
+# searched the source for an ENTER/SELL literal; it was right while the executor could not
+# short and would have gone on saying so after it could, which is how prose goes stale.
 EXECUTOR_CAN_OPEN_SHORTS = False
-EXECUTOR_SHORT_SOURCE = ("pipeline.py accepts only (ENTER, BUY) and (EXIT, SELL); "
-                         "ENTER with SELL is rejected as an invalid proposal")
+EXECUTOR_CAN_OPEN_SHORTS_PAPER = True
+EXECUTOR_SHORT_SOURCE = ("the operating chain can open a short only in PAPER, for instruments "
+                         "declared in config/instrument_contracts.json; a LIVE order is "
+                         "possible only for BTC-USD, which cannot be shorted")
 
 # WHAT IS KNOWN ABOUT A CANDIDATE'S MONITOR -- the second thing the first two
 # registers did not carry. Of six Hypotheses measured to a point Sharpe, one died

@@ -1,0 +1,24 @@
+{
+  "instruments": {
+    "XYLD": {
+      "max_capital_usd": "1000",
+      "max_exposure_usd": "250",
+      "risk_budget_usd": "25",
+      "can_short": false
+    },
+    "QYLD": {
+      "max_capital_usd": "1000",
+      "max_exposure_usd": "250",
+      "risk_budget_usd": "25",
+      "can_short": false
+    },
+    "VIXM": {
+      "max_capital_usd": "1000",
+      "max_exposure_usd": "250",
+      "risk_budget_usd": "25",
+      "can_short": true,
+      "max_adverse_move": "0.10",
+      "max_loss_per_position_usd": "25"
+    }
+  }
+}

@@ -152,6 +152,27 @@ class NoFlipPropertyTests(unittest.TestCase):
                 self.assertLessEqual(loss, Decimal(budget))
 
 
+class BrokerTickTests(unittest.TestCase):
+    def test_a_sub_penny_limit_price_is_refused(self):
+        result = _order(ENTER, LONG, "5", price="20.005")
+        self.assertFalse(result["ok"])
+        self.assertTrue(any("whole number of cents" in r for r in result["reasons"]))
+        self.assertTrue(_order(ENTER, LONG, "5", price="20.01")["ok"])
+
+    def test_the_protective_stop_is_rounded_down_so_it_can_only_shrink_the_loss(self):
+        result = _order(ENTER, SHORT, "10", price="20.07")
+        self.assertTrue(result["ok"], result["reasons"])
+        stop = Decimal(result["proposal"]["protective_cover"]["stop_price"])
+        self.assertEqual(stop, Decimal("22.07"))                 # 22.077 floored, not 22.08
+        self.assertLessEqual(stop, Decimal("20.07") * Decimal("1.10"))
+
+    def test_a_stop_that_rounds_onto_the_entry_price_is_refused(self):
+        risk = {**RISK, "max_adverse_move": "0.001"}
+        result = _order(ENTER, SHORT, "5", price="1.00", risk=risk)
+        self.assertFalse(result["ok"])
+        self.assertTrue(any("rounds to the entry price" in r for r in result["reasons"]))
+
+
 class PayloadTests(unittest.TestCase):
     def test_a_short_entry_goes_to_the_paper_host_as_an_oto_order_with_its_stop(self):
         payload = alpaca_paper_payload(_order(ENTER, SHORT, "30")["proposal"])

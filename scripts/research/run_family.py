@@ -45,8 +45,9 @@ def _outcome(result, underlying):
             "control": (result.get("controls") or {}).get(underlying)}
 
 
-def main(path):
+def main():
     require_evidence_host(REPO)
+    path = sys.argv[1]
     family = validate_family(json.loads(Path(path).read_text(encoding="utf-8")))
     record = sealed_family(FAMILIES, family)
     if any(not member.get("hypothesis_id") for member in family["members"]):
@@ -82,4 +83,4 @@ def main(path):
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1]))
+    sys.exit(main())

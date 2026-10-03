@@ -93,6 +93,7 @@ from tramitago_quant_core.data.bitmex_funding_rate import (
     BITMEX_FUNDING_PAYMENTS_PER_DAY,
     capture_bitmex_funding_rate, verified_bitmex_funding_rate_capture,
 )
+from tramitago_quant_core.execution import equity_order, instrument_contract
 from tramitago_quant_core.governance.admission import (
     ADMISSION_SCHEMA_VERSION, ADMITTED, ADMISSION_DENIED,
     GATE_PASSED, GATE_FAILED, GATE_NOT_EVALUABLE, SURVIVAL_P1, SURVIVAL_P2,
@@ -4447,6 +4448,57 @@ def phase4_risk_contract_identity(config):
     return f"PHASE4_RISK_CONTRACT|{digest(encoded(content))}"
 
 
+# THE INSTRUMENT CONTRACT (execution/instrument_contract.py). The terms this chain judges an
+# order against used to be literals for one instrument. They are now read per instrument:
+# BTC-USD keeps its exact old values in code and both environments, every other instrument
+# is PAPER only and comes from a validated file. A path a test can point elsewhere.
+INSTRUMENT_CONTRACT_PATH = instrument_contract.DEFAULT_CONFIG
+
+
+def _instrument_terms(instrument):
+    return instrument_contract.terms_for(instrument, INSTRUMENT_CONTRACT_PATH)
+
+
+def _proposal_action_side_valid(proposal):
+    """Whether the action and side of a proposal are a pair this chain may carry.
+
+    A proposal made before the instrument contract has no direction and is long only. One
+    that names a direction must be for an instrument whose contract allows it, and its side
+    must be the one DERIVED from action and direction, never one typed beside them.
+    """
+    pair = (proposal.get("action"), proposal.get("side"))
+    direction = proposal.get("direction")
+    if direction is None:
+        return pair in (("ENTER", "BUY"), ("EXIT", "SELL"))
+    terms = _instrument_terms(proposal.get("instrument"))
+    if terms is None or proposal.get("action") not in ("ENTER", "EXIT") \
+            or direction not in (equity_order.LONG, equity_order.SHORT) \
+            or direction == equity_order.SHORT and not terms["can_short"]:
+        return False
+    return pair == (proposal["action"], equity_order.order_side(proposal["action"], direction))
+
+
+def _request_instrument_allowed(request):
+    """The instrument has a contract that allows the environment the request targets."""
+    terms = _instrument_terms(request.get("instrument"))
+    return instrument_contract.allows_environment(terms, request.get("target_environment"))
+
+
+def _proposal_caps(proposal):
+    """(terms, exposure cap, capital, risk budget) for a proposal; all fail closed."""
+    terms = _instrument_terms(proposal.get("instrument"))
+    return (terms, instrument_contract.exposure_cap(terms, proposal.get("action")),
+            Decimal(terms["max_capital_usd"]) if terms else Decimal(-1),
+            Decimal(terms["risk_budget_usd"]) if terms else Decimal(-1))
+
+
+def _proposal_contract_current(proposal, terms):
+    """A proposal made under a contract is only valid under that same contract."""
+    bound = proposal.get("instrument_contract_identity")
+    return bound is None or (
+        terms is not None and instrument_contract.contract_identity(terms) == bound)
+
+
 def _proposal_identity(proposal):
     mutable = {"proposal_identity", "status", "approval_record"}
     content = {key: value for key, value in proposal.items() if key not in mutable}
@@ -4888,11 +4940,11 @@ def revalidate_approved_proposal(state_path, output, proposal_id,
         approval = proposal.get("approval_record")
         if isinstance(approval, dict):
             approval_identity = approval.get("identity")
-        checks["instrument"] = proposal.get("instrument") == "BTC-USD"
-        checks["action"] = (
-            (proposal.get("action"), proposal.get("side"))
-            in (("ENTER", "BUY"), ("EXIT", "SELL"))
-        )
+        terms, cap_exposure, cap_capital, cap_budget = _proposal_caps(proposal)
+        checks["instrument"] = terms is not None
+        checks["action"] = _proposal_action_side_valid(proposal)
+        if proposal.get("instrument_contract_identity") is not None:
+            checks["instrument_contract"] = _proposal_contract_current(proposal, terms)
         quantity = _revalidation_decimal(proposal.get("quantity"))
         price = _revalidation_decimal(proposal.get("limit_price"))
         exposure = _revalidation_decimal(proposal.get("exposure_usd"))
@@ -4903,7 +4955,7 @@ def revalidate_approved_proposal(state_path, output, proposal_id,
         )
         checks["exposure"] = (
             exposure is not None and notional is not None
-            and exposure > 0 and exposure <= Decimal("50")
+            and exposure > 0 and exposure <= cap_exposure
             and exposure == notional
             and quantity is not None and price is not None
             and quantity * price == exposure
@@ -4920,19 +4972,19 @@ def revalidate_approved_proposal(state_path, output, proposal_id,
             current_operational_risk = _revalidation_decimal(
                 risk_config.get("operational_risk_usd"))
             checks["capital"] = (
-                capital == Decimal("200") and current_capital == Decimal("200")
+                capital == cap_capital and current_capital == cap_capital
             )
             checks["exposure"] = checks["exposure"] and (
                 max_exposure is not None and current_max_exposure is not None
-                and Decimal(0) < max_exposure <= Decimal("50")
-                and Decimal(0) < current_max_exposure <= Decimal("50")
+                and Decimal(0) < max_exposure <= cap_exposure
+                and Decimal(0) < current_max_exposure <= cap_exposure
                 and exposure <= max_exposure and exposure <= current_max_exposure
             )
             checks["risk_budget_threshold"] = (
-                budget == Decimal("5")
+                budget == cap_budget
                 and operational_risk is not None
                 and Decimal(0) <= operational_risk <= budget
-                and current_budget == Decimal("5")
+                and current_budget == cap_budget
                 and current_operational_risk is not None
                 and Decimal(0) <= current_operational_risk <= current_budget
                 and proposal_risk.get("risk_budget_is_guaranteed_maximum_loss") is False
@@ -5061,7 +5113,11 @@ def prepared_alpaca_request_is_valid(state, request):
         and request.get("risk_contract_version")
         == revalidation.get("risk_contract_version")
         and request.get("decision_identity") == proposal.get("decision_identity")
-        and request.get("instrument") == payload.get("instrument") == "BTC-USD"
+        and request.get("instrument") == payload.get("instrument")
+        and _request_instrument_allowed(request)
+        and _proposal_action_side_valid(proposal)
+        and payload.get("direction") == proposal.get("direction")
+        and payload.get("protective_stop") == proposal.get("protective_stop")
         and request.get("action") == payload.get("action")
         and request.get("side") == payload.get("side")
         and request.get("quantity") == payload.get("quantity")
@@ -5138,19 +5194,21 @@ def prepare_alpaca_request(state_path, output, proposal_id, proposal_identity,
             maximum = _revalidation_decimal(proposal_risk.get("max_exposure_usd"))
             budget = _revalidation_decimal(proposal_risk.get("risk_budget_usd"))
             operational_risk = _revalidation_decimal(proposal_risk.get("operational_risk_usd"))
+        terms, cap_exposure, cap_capital, cap_budget = _proposal_caps(proposal)
         valid_terms = (
-            proposal.get("instrument") == risk_config.get("instrument") == "BTC-USD"
-            and (proposal.get("action"), proposal.get("side"))
-            in (("ENTER", "BUY"), ("EXIT", "SELL"))
+            terms is not None
+            and proposal.get("instrument") == risk_config.get("instrument")
+            and _proposal_action_side_valid(proposal)
+            and _proposal_contract_current(proposal, terms)
             and quantity is not None and quantity > 0
             and price is not None and price > 0
             and proposal.get("order_type") == "LIMIT"
-            and exposure is not None and Decimal(0) < exposure <= Decimal("50")
+            and exposure is not None and Decimal(0) < exposure <= cap_exposure
             and quantity * price == exposure
-            and capital == Decimal("200")
-            and maximum is not None and Decimal(0) < maximum <= Decimal("50")
+            and capital == cap_capital
+            and maximum is not None and Decimal(0) < maximum <= cap_exposure
             and exposure <= maximum
-            and budget == Decimal("5")
+            and budget == cap_budget
             and operational_risk is not None and Decimal(0) <= operational_risk <= budget
             and proposal_risk.get("risk_budget_is_guaranteed_maximum_loss") is False
             and proposal_risk.get("risk_contract_identity") == contract_identity
@@ -5180,6 +5238,10 @@ def prepare_alpaca_request(state_path, output, proposal_id, proposal_identity,
 
     environment_valid = target_environment in ("PAPER", "LIVE")
     environment_reasons = [] if environment_valid else ["target environment must be explicit PAPER or LIVE"]
+    if environment_valid and proposal is not None and not instrument_contract.allows_environment(
+            _instrument_terms(proposal.get("instrument")), target_environment):
+        # An instrument other than BTC-USD is PAPER only: a LIVE request for it is never prepared.
+        environment_reasons.append("the instrument contract does not allow this environment")
     previous_requests = state.get("alpaca_prepared_requests", [])
     if not isinstance(previous_requests, list):
         raise ValueError("Persisted Alpaca prepared requests must be a list")
@@ -5222,6 +5284,12 @@ def prepare_alpaca_request(state_path, output, proposal_id, proposal_identity,
             "order_type": "LIMIT",
             "exposure_usd": proposal["exposure_usd"],
         }
+        # Additive: a proposal made before the contract has neither, so its payload and
+        # therefore its hash are byte-for-byte what they were.
+        if proposal.get("direction") is not None:
+            payload["direction"] = proposal["direction"]
+        if proposal.get("protective_stop") is not None:
+            payload["protective_stop"] = proposal["protective_stop"]
         payload_hash = digest(encoded(payload))
         identity_content = {
             "proposal_identity": proposal_identity,
@@ -5567,8 +5635,33 @@ ALPACA_PAPER_HOST = "paper-api.alpaca.markets"
 ALPACA_PAPER_BASE_ENDPOINT = f"https://{ALPACA_PAPER_HOST}/v2"
 
 
+def _equity_paper_order_body(request):
+    """The PAPER order for a contracted equity. A short entry carries its protective cover as
+    an OTO stop, so the loss is bounded at the broker and not only in a document."""
+    terms = _instrument_terms(request.get("instrument"))
+    payload = request.get("payload", {})
+    body = {
+        "symbol": terms["symbol"],
+        "qty": request["quantity"],
+        "side": request["side"],
+        "type": "limit",
+        "time_in_force": terms["time_in_force"],
+        "limit_price": request["limit_price"],
+        "client_order_id": "tg-p4-" + digest(request["identity"].encode("utf-8"))[:40],
+    }
+    if request["action"] == "ENTER" and payload.get("direction") == equity_order.SHORT:
+        if not payload.get("protective_stop"):
+            raise ValueError("a short entry cannot be sent without its protective stop")
+        body["order_class"] = "oto"
+        body["stop_loss"] = {"stop_price": payload["protective_stop"]}
+    return body
+
+
 def _paper_order_body(request):
     """Build the only broker order shape authorized by the Phase 4 contract."""
+    if request.get("instrument") != "BTC-USD" and request.get("order_type") == "LIMIT" \
+            and _instrument_terms(request.get("instrument")) is not None:
+        return _equity_paper_order_body(request)
     if request.get("instrument") != "BTC-USD" or request.get("order_type") != "LIMIT":
         raise ValueError("Only a BTC-USD limit order is allowed")
     return {
@@ -5582,6 +5675,15 @@ def _paper_order_body(request):
     }
 
 
+def _paper_contract_resource(path):
+    """A position or asset lookup for an instrument that has a contract, and nothing else."""
+    for prefix in ("/v2/positions/", "/v2/assets/"):
+        if path.startswith(prefix) and path[len(prefix):] in instrument_contract.contract_symbols(
+                INSTRUMENT_CONTRACT_PATH):
+            return True
+    return False
+
+
 def alpaca_paper_https_request(method, host, path, body, timeout_seconds,
                                credential_injector):
     """Perform one allowlisted PAPER order API request with in-memory credentials."""
@@ -5592,6 +5694,7 @@ def alpaca_paper_https_request(method, host, path, body, timeout_seconds,
             "/v2/orders:by_client_order_id?client_order_id=tg-p4-") and body is None
         or method == "DELETE" and path.startswith("/v2/orders/") and body is None
         or method == "GET" and path == "/v2/positions/BTC%2FUSD" and body is None
+        or method == "GET" and body is None and _paper_contract_resource(path)
     )
     if host != ALPACA_PAPER_HOST or not allowed or not callable(credential_injector):
         raise ValueError("PAPER order transport received a forbidden target")
@@ -5654,7 +5757,28 @@ def _paper_resource_path(value):
     return quote(value, safe="")
 
 
-def _paper_order_snapshot(payload, expected_client_id=None):
+def _paper_symbols(request):
+    """The broker symbols an order for this request may report back."""
+    if request.get("instrument") == "BTC-USD":
+        return ("BTC/USD", "BTCUSD")
+    terms = _instrument_terms(request.get("instrument"))
+    return (terms["symbol"],) if terms else ()
+
+
+def _request_for_attempt(state, attempt):
+    requests = state.get("alpaca_prepared_requests", [])
+    matching = [item for item in requests if isinstance(item, dict)
+                and item.get("identity") == attempt.get("request_id")] \
+        if isinstance(requests, list) else []
+    return matching[0] if len(matching) == 1 else None
+
+
+def _paper_symbols_for_attempt(state, attempt):
+    request = _request_for_attempt(state, attempt)
+    return _paper_symbols(request) if request else ("BTC/USD", "BTCUSD")
+
+
+def _paper_order_snapshot(payload, expected_client_id=None, symbols=("BTC/USD", "BTCUSD")):
     if not isinstance(payload, dict):
         raise ValueError("missing order response")
     order_id = _safe_broker_text(payload.get("id"))
@@ -5664,7 +5788,7 @@ def _paper_order_snapshot(payload, expected_client_id=None):
             or expected_client_id is not None and client_id != expected_client_id:
         raise ValueError("incomplete order response")
     symbol = payload.get("symbol")
-    if symbol not in (None, "BTC/USD", "BTCUSD"):
+    if symbol is not None and symbol not in symbols:
         raise ValueError("order response instrument mismatch")
     return {
         "broker_order_id": order_id,
@@ -5766,7 +5890,7 @@ def execute_alpaca_paper_order(state_path, output, request_id, attempted_at,
         attempt["http_status"] = code
         if code in (200, 201):
             attempt["order"] = _paper_order_snapshot(
-                payload, order_body["client_order_id"])
+                payload, order_body["client_order_id"], symbols=_paper_symbols(request))
             attempt["status"] = "ACCEPTED"
         elif 400 <= code < 500:
             attempt["status"] = "REJECTED"
@@ -5827,7 +5951,9 @@ def observe_alpaca_paper_order(state_path, output, attempt_id, observed_at,
                              timeout_seconds, injector)
         try:
             code, payload = _paper_json_response(response)
-            snapshot = _paper_order_snapshot(payload) if code == 200 else None
+            snapshot = (_paper_order_snapshot(
+                payload, symbols=_paper_symbols_for_attempt(state, attempt))
+                if code == 200 else None)
             status = "OBSERVED" if snapshot else "UNAVAILABLE"
             error = None if snapshot else "ORDER_NOT_AVAILABLE"
         except BaseException as exc:
@@ -5905,9 +6031,12 @@ def observe_alpaca_paper_position(state_path, output, attempt_id, observed_at,
     """Query and persist a sanitized BTC/USD PAPER position snapshot."""
     state_path = Path(state_path)
     state = json.loads(state_path.read_bytes())
-    _paper_existing_attempt(state, attempt_id)
+    attempt = _paper_existing_attempt(state, attempt_id)
     if not _explicit_utc(observed_at):
         raise ValueError("An explicit UTC timestamp is required")
+    position_symbols = _paper_symbols_for_attempt(state, attempt)
+    position_path = ("/v2/positions/BTC%2FUSD" if position_symbols[0] == "BTC/USD"
+                     else "/v2/positions/" + position_symbols[0])
     positions = state.get("alpaca_paper_position_observations", [])
     identity = "ALPACA_PAPER_POSITION|" + digest(encoded(
         {"attempt_id": attempt_id, "observed_at": observed_at}))
@@ -5918,15 +6047,15 @@ def observe_alpaca_paper_position(state_path, output, attempt_id, observed_at,
         injector = credential_provider()
         if not callable(injector):
             raise ValueError("PAPER credentials are absent")
-        response = transport("GET", ALPACA_PAPER_HOST, "/v2/positions/BTC%2FUSD",
+        response = transport("GET", ALPACA_PAPER_HOST, position_path,
                              None, timeout_seconds, injector)
         try:
             code, payload = _paper_json_response(response)
             if code == 404:
                 status, snapshot, error = "UNAVAILABLE", None, "NO_OPEN_POSITION"
             elif code == 200 and isinstance(payload, dict) \
-                    and payload.get("symbol") in ("BTC/USD", "BTCUSD"):
-                snapshot = {"symbol": "BTC/USD",
+                    and payload.get("symbol") in position_symbols:
+                snapshot = {"symbol": position_symbols[0],
                             "qty": _safe_broker_text(payload.get("qty"), 64),
                             "side": _safe_broker_text(payload.get("side"), 16),
                             "market_value": _safe_broker_text(payload.get("market_value"), 64),
@@ -5951,12 +6080,241 @@ def observe_alpaca_paper_position(state_path, output, attempt_id, observed_at,
     return result
 
 
+def observe_alpaca_paper_instrument(state_path, output, instrument, observed_at,
+                                    timeout_seconds, credential_provider, transport):
+    """Persist what the broker says about one contracted instrument: whether it can be traded
+    and shorted, and what is held. The facts an order is judged against are OBSERVED here and
+    never typed by the caller, so a short cannot be proposed on a hand-written shortable flag."""
+    terms = _instrument_terms(instrument)
+    if instrument == "BTC-USD" or not instrument_contract.allows_environment(terms, "PAPER"):
+        raise ValueError("The instrument has no PAPER equity contract")
+    if not _explicit_utc(observed_at):
+        raise ValueError("An explicit UTC timestamp is required")
+    state_path = Path(state_path)
+    state = json.loads(state_path.read_bytes())
+    observations = state.get("alpaca_paper_instrument_observations", [])
+    if not isinstance(observations, list):
+        raise ValueError("Persisted instrument observations must be a list")
+    identity = "ALPACA_PAPER_INSTRUMENT|" + digest(encoded(
+        {"instrument": instrument, "observed_at": observed_at}))
+    existing = [item for item in observations if item.get("identity") == identity]
+    if existing:
+        observation = existing[0]
+    else:
+        injector = credential_provider()
+        if not callable(injector):
+            raise ValueError("PAPER credentials are absent")
+        symbol = terms["symbol"]
+        asset = quantity = None
+        error = None
+        try:
+            code, payload = _paper_json_response(transport(
+                "GET", ALPACA_PAPER_HOST, "/v2/assets/" + symbol, None, timeout_seconds,
+                injector))
+            if code == 200 and isinstance(payload, dict) and payload.get("symbol") == symbol:
+                # Only a literal true counts: anything else is treated as not allowed.
+                asset = {"symbol": symbol,
+                         "tradable": payload.get("tradable") is True,
+                         "shortable": payload.get("shortable") is True,
+                         "easy_to_borrow": payload.get("easy_to_borrow") is True,
+                         "fractionable": payload.get("fractionable") is True,
+                         "status": _safe_broker_text(payload.get("status"), 32)}
+            else:
+                error = "ASSET_NOT_DETERMINABLE"
+            code, payload = _paper_json_response(transport(
+                "GET", ALPACA_PAPER_HOST, "/v2/positions/" + symbol, None, timeout_seconds,
+                injector))
+            if code == 404:
+                quantity = Decimal(0)
+            elif code == 200 and isinstance(payload, dict) and payload.get("symbol") == symbol:
+                held = _proposal_decimal(payload.get("qty"), "position qty")
+                quantity = -abs(held) if payload.get("side") == "short" else abs(held)
+            else:
+                error = error or "POSITION_NOT_DETERMINABLE"
+        except BaseException as exc:
+            error = error or type(exc).__name__
+        determinable = asset is not None and quantity is not None
+        observation = {
+            "identity": identity, "instrument": instrument, "observed_at": observed_at,
+            "status": "OBSERVED" if determinable else "UNKNOWN",
+            "asset": asset,
+            "position_quantity": _proposal_number(quantity) if quantity is not None else None,
+            "error_category": None if determinable else error,
+            "credentials_persisted": False,
+        }
+        observations.append(observation)
+        state["alpaca_paper_instrument_observations"] = observations
+        _atomic_write(state_path, encoded(state))
+    result = {"status": observation["status"], "observation": observation,
+              "orders_sent": 0, "live_orders_sent": 0,
+              "state_sha256": digest(state_path.read_bytes())}
+    publish(output, {"paper-instrument-observation.json": encoded(result)})
+    return result
+
+
+def instrument_risk_config(instrument, action, quantity, limit_price, operational_risk_usd):
+    """The 13-field risk contract for one order, derived from the instrument contract.
+
+    Derived and not typed, because the chain compares these strings for exact equality at the
+    proposal, the revalidation and the request, and a caller who writes 600 where the proposal
+    says 600.00 would be blocked by a formatting difference and not by risk.
+    """
+    terms = _instrument_terms(instrument)
+    if terms is None:
+        raise ValueError("The instrument has no contract")
+    price = _proposal_decimal(limit_price, "limit_price")
+    notional = _proposal_decimal(quantity, "quantity") * price
+    config = {
+        "broker": "Alpaca", "account_target": "real/live", "instrument": instrument,
+        "max_capital_usd": _proposal_number(Decimal(terms["max_capital_usd"])),
+        "max_exposure_usd": _proposal_number(instrument_contract.exposure_cap(terms, action)),
+        "risk_budget_usd": _proposal_number(Decimal(terms["risk_budget_usd"])),
+        "proposed_notional_usd": _proposal_number(notional),
+        "operational_risk_usd": _proposal_number(
+            _proposal_decimal(operational_risk_usd, "operational_risk_usd")),
+        "order_type": "limit", "limit_price": _proposal_number(price),
+        "manual_approval_required": True,
+        "risk_contract_version": PHASE4_RISK_CONTRACT_VERSION,
+    }
+    config["risk_contract_identity"] = phase4_risk_contract_identity(config)
+    return config
+
+
+def prepare_instrument_order_proposal(state_path, output, observation_identity, action,
+                                      direction, quantity, limit_price, risk_config,
+                                      created_at, hypothesis_id=None):
+    """Persist one bounded PAPER proposal for a contracted instrument, long or short.
+
+    It is judged against what the broker was OBSERVED to say (`observe_alpaca_paper_instrument`)
+    and against the instrument contract, and carries no committee, so it cannot reach LIVE:
+    `execute_alpaca_live_order` requires a sealed capital committee on the proposal.
+    """
+    state_path = Path(state_path)
+    state = json.loads(state_path.read_bytes())
+    observations = state.get("alpaca_paper_instrument_observations", [])
+    observation = next((item for item in observations if isinstance(item, dict)
+                        and item.get("identity") == observation_identity), None)
+    if observation is None:
+        raise ValueError("Exactly one persisted instrument observation is required")
+    instrument = observation["instrument"]
+    terms = _instrument_terms(instrument)
+    if terms is None or not instrument_contract.allows_environment(terms, "PAPER") \
+            or instrument == "BTC-USD":
+        raise ValueError("The instrument has no PAPER equity contract")
+    if not _explicit_utc(created_at):
+        raise ValueError("An explicit UTC timestamp is required")
+
+    decision_identity = "INSTRUMENT_DECISION|" + digest(encoded({
+        "observation": observation_identity, "action": action, "direction": direction,
+        "quantity": str(quantity), "limit_price": str(limit_price), "created_at": created_at,
+        "hypothesis_id": hypothesis_id}))
+    existing = list(state.get("real_order_proposals", []))
+    matching = [item for item in existing if item.get("decision_identity") == decision_identity]
+    if matching:
+        result = {"proposal_created": False, "proposal": matching[0],
+                  "proposal_count": len(existing), "broker_request_sent": False,
+                  "real_market_effect": "NONE", "state_sha256": digest(state_path.read_bytes())}
+        publish(output, {"order-proposal.json": encoded(result)})
+        return result
+
+    reasons = []
+    try:
+        quantity_value = _proposal_decimal(quantity, "quantity")
+        price_value = _proposal_decimal(limit_price, "limit_price")
+    except ValueError as error:
+        reasons.append(str(error))
+        quantity_value = price_value = Decimal(0)
+    notional = quantity_value * price_value
+
+    if observation.get("status") != "OBSERVED":
+        reasons.append("the instrument observation is not determinable")
+    elif not (0 <= epoch(created_at) - epoch(observation["observed_at"])
+              <= terms["observation_max_age_seconds"]):
+        reasons.append("the instrument observation is stale or from the future")
+    if action not in ("ENTER", "EXIT"):
+        reasons.append("action must be ENTER or EXIT")
+    if direction not in (equity_order.LONG, equity_order.SHORT):
+        reasons.append("direction must be LONG or SHORT")
+    elif direction == equity_order.SHORT and not terms["can_short"]:
+        reasons.append("the instrument contract does not allow a short")
+    if not isinstance(risk_config, dict) or risk_config != instrument_risk_config(
+            instrument, action, quantity_value, price_value,
+            (risk_config or {}).get("operational_risk_usd", "0")):
+        reasons.append("the risk contract is not the one the instrument contract derives")
+    elif _proposal_decimal(risk_config["operational_risk_usd"], "operational_risk_usd") \
+            > Decimal(terms["risk_budget_usd"]):
+        reasons.append("operational risk exceeds the instrument risk budget")
+    if action == "EXIT" and notional > instrument_contract.exposure_cap(terms, "EXIT"):
+        reasons.append("an exit exceeds the exit cap of the instrument contract")
+
+    proposed = None
+    if not reasons:
+        check = equity_order.prepare_equity_order(
+            symbol=instrument, action=action, direction=direction, quantity=quantity_value,
+            limit_price=price_value, asset=observation["asset"],
+            position_quantity=observation["position_quantity"],
+            risk={"max_total_exposure_usd": terms["max_exposure_usd"],
+                  "max_loss_per_position_usd": terms.get("max_loss_per_position_usd"),
+                  "max_adverse_move": terms.get("max_adverse_move")})
+        reasons.extend(check["reasons"])
+        proposed = check["proposal"]
+
+    side = (equity_order.order_side(action, direction)
+            if action in ("ENTER", "EXIT") and direction in (equity_order.LONG, equity_order.SHORT)
+            else None)
+    risk_block = {
+        "broker": "Alpaca", "account_target": "real/live",
+        "max_capital_usd": _proposal_number(Decimal(terms["max_capital_usd"])),
+        "max_exposure_usd": _proposal_number(instrument_contract.exposure_cap(terms, action)),
+        "risk_budget_usd": _proposal_number(Decimal(terms["risk_budget_usd"])),
+        "operational_risk_usd": (risk_config or {}).get("operational_risk_usd")
+        if isinstance(risk_config, dict) else None,
+        "risk_budget_is_guaranteed_maximum_loss": False,
+        "risk_contract_identity": (risk_config or {}).get("risk_contract_identity")
+        if isinstance(risk_config, dict) else None,
+        "risk_contract_version": PHASE4_RISK_CONTRACT_VERSION,
+    }
+    proposal = {
+        "identity": f"INSTRUMENT_ORDER_PROPOSAL|{decision_identity}",
+        "decision_identity": decision_identity,
+        "observation_identity": observation_identity,
+        "decision_timestamp": created_at, "created_at": created_at,
+        "action": action, "instrument": instrument, "side": side, "direction": direction,
+        "order_type": "LIMIT",
+        "notional_usd": _proposal_number(notional),
+        "quantity": _proposal_number(quantity_value),
+        "limit_price": _proposal_number(price_value) if price_value > 0 else None,
+        "exposure_usd": _proposal_number(notional),
+        "instrument_contract_identity": instrument_contract.contract_identity(terms),
+        "risk": risk_block,
+        "status": "REJECTED" if reasons else "PENDING_MANUAL_APPROVAL",
+        "transmission_status": "NOT_SENT",
+        "rejection_reasons": reasons,
+    }
+    if hypothesis_id is not None:
+        proposal["hypothesis_id"] = hypothesis_id
+    if proposed and proposed.get("protective_cover"):
+        proposal["protective_stop"] = proposed["protective_cover"]["stop_price"]
+    proposal["proposal_identity"] = _proposal_identity(proposal)
+    existing.append(proposal)
+    state["real_order_proposals"] = existing
+    state_bytes = encoded(state)
+    _atomic_write(state_path, state_bytes)
+    result = {"proposal_created": True, "proposal": proposal,
+              "proposal_count": len(existing), "broker_request_sent": False,
+              "real_market_effect": "NONE", "state_sha256": digest(state_bytes)}
+    publish(output, {"order-proposal.json": encoded(result)})
+    return result
+
+
 ALPACA_LIVE_HOST = "api.alpaca.markets"
 ALPACA_LIVE_BASE_ENDPOINT = f"https://{ALPACA_LIVE_HOST}/v2"
 LIVE_REQUEST_MAX_AGE_SECONDS = 900
 
 
 def _live_order_body(request):
+    if request.get("instrument") != "BTC-USD":
+        raise ValueError("Only a BTC-USD limit order is allowed")
     body = _paper_order_body(request)
     body["client_order_id"] = (
         "tg-p4-live-" + digest(request["identity"].encode("utf-8"))[:36])
@@ -6111,7 +6469,7 @@ def execute_alpaca_live_order(state_path, output, request_id, attempted_at,
         attempt["http_status"] = code
         if code in (200, 201):
             attempt["order"] = _paper_order_snapshot(
-                payload, order_body["client_order_id"])
+                payload, order_body["client_order_id"], symbols=_paper_symbols(request))
             attempt["state"] = attempt["result"] = "ACCEPTED"
             attempt["reconciliation_status"] = "ORDER_OBSERVATION_REQUIRED"
         elif 400 <= code < 500:
