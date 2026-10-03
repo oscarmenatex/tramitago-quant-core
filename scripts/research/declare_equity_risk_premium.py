@@ -29,7 +29,7 @@ it, and the inference is DECLARED HERE IN ADVANCE so it cannot be invented
 afterwards if the result disappoints.
 
 Nothing in this file reads market data. The Hypothesis is sealed first and
-captured second, by `run_equity_risk_premium.py`, which needs credentials this
+captured second, by `run_premium.py (specs/spy.json)`, which needs credentials this
 process does not have.
 
     python3.11 -B scripts/research/declare_equity_risk_premium.py
@@ -203,7 +203,7 @@ def main():
     print(f"            {ACCEPTANCE['comparison']} {ACCEPTANCE['threshold']}")
     print(f"  version   {record['version']}")
     print(f"  caveats   {len(CAVEATS)} pre-declared")
-    print(f"\n  Next: run_equity_risk_premium.py, which needs ALPACA_PAPER_API_KEY_ID")
+    print(f"\n  Next: run_premium.py (specs/spy.json), which needs ALPACA_PAPER_API_KEY_ID")
     print(f"        and ALPACA_PAPER_API_SECRET_KEY in the environment.")
     print("=" * 78)
     return 0

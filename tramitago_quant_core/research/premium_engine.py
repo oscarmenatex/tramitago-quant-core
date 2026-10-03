@@ -57,6 +57,13 @@ from tramitago_quant_core.risk.statistic_bounds import (
 SUPPORTED_PROVIDERS = ("alpaca_equity",)
 SUPPORTED_FEEDS = ("sip", "iex")
 
+# The dataset column a Hypothesis is judged on. A single instrument is judged on the
+# close-to-close return; a PAIR held long one leg and short the other at equal
+# notional on the SPREAD return, which is a difference of two real returns and not
+# one instrument's.
+FORWARD_COLUMN = "forward_return_1d"
+FORWARD_COLUMN_PAIR = "forward_spread_return_1d"
+
 TRADING_DAYS = 252
 TRANSITIONS = 2                     # one entry, one exit: the only position form here
 LINK_MINIMUM_USABLE_FOLDS = 5
@@ -76,6 +83,10 @@ def _decimal(value, name):
     if not number.is_finite():
         raise ValueError(f"{name} must be finite")
     return number
+
+
+def forward_column(spec):
+    return FORWARD_COLUMN_PAIR if spec["instrument"].get("second_leg") else FORWARD_COLUMN
 
 
 def validate_spec(spec):
@@ -106,6 +117,16 @@ def validate_spec(spec):
             f"anything else from it would be silent")
     if spec["instrument"].get("feed", "sip") not in SUPPORTED_FEEDS:
         raise ValueError(f"instrument.feed must be one of {', '.join(SUPPORTED_FEEDS)}")
+    second = spec["instrument"].get("second_leg")
+    if second is not None and not second.get("symbol"):
+        raise ValueError("instrument.second_leg needs a symbol")
+    # THE NUMBER OF LEGS IS NOT FREE. It decides how many sides of cost every
+    # transition pays, and a pair priced as one leg would understate its cost by
+    # half while reading as a perfectly ordinary spec.
+    expected_legs = 2 if second is not None else 1
+    if spec["cost"].get("legs") != expected_legs:
+        raise ValueError(f"cost.legs must be {expected_legs} for "
+                         f"{'a pair' if second else 'a single instrument'}")
     cost = spec["cost"]
     for key in ("commission", "half_spread", "slippage"):
         if _decimal(cost[key], f"cost.{key}") < 0:
@@ -253,11 +274,12 @@ def judge(spec, rows, *, monitor_inputs=None, raw_closes=None, controls=None,
     for series the same link is tested on beside the primary.
     """
     validate_spec(spec)
-    rows = [row for row in rows if row.get("forward_return_1d")]
+    column = forward_column(spec)
+    rows = [row for row in rows if row.get(column)]
     if len(rows) < 2 * int(spec["level_claim"]["folds"]):
         raise ValueError(f"{len(rows)} rows cannot support {spec['level_claim']['folds']} folds")
     dates = [row["timestamp"][:10] for row in rows]
-    gross = [float(row["forward_return_1d"]) for row in rows]
+    gross = [float(row[column]) for row in rows]
     positions = [1] * len(gross)
     years = len(rows) / TRADING_DAYS
     bootstrap = {**DEFAULT_BOOTSTRAP, **spec.get("bootstrap", {})}

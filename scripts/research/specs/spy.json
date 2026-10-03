@@ -1,0 +1,36 @@
+{
+  "slug": "equity-risk-premium-spy",
+  "hypothesis_id": "HYPOTHESIS|426cd26a-10ab-4c5e-ba5d-9e88510a4613",
+  "notes": "Migrated from run_equity_risk_premium.py. No monitor is declared, deliberately: the only observable that reports an unconditional premium dying is the premium not paying, which is P&L, and the monitor contract refuses P&L surveillance. R3 is NOT_EVALUABLE and that is the finding.",
+  "instrument": {
+    "provider": "alpaca_equity",
+    "symbol": "SPY",
+    "feed": "sip"
+  },
+  "cost": {
+    "commission": "0",
+    "half_spread": "0.00005",
+    "slippage": "0.00001",
+    "legs": 1,
+    "source": "Alpaca charges no US equity commission; half spread and slippage on SPY DECLARED, not measured on a book"
+  },
+  "sizing": {
+    "drawdown_limit": "0.15"
+  },
+  "level_claim": {
+    "folds": 7,
+    "consistency_threshold": "0.70",
+    "adverse_threshold": "-0.02",
+    "minimum_adverse_episodes": 5
+  },
+  "survival": {
+    "counterparty": "every investor who must reduce equity exposure for reasons unrelated to expected return: liability matching, mandates, liquidity needs, risk limits and horizon",
+    "why_they_accept_losing": "they are not losing; they are buying certainty. The premium is the price of bearing a risk they are paying to shed, which is why it is a premium and not a mispricing to be competed away",
+    "what_would_end_it": "a world in which equity risk is no longer undiversifiable or no longer disliked. Neither has a plausible route, which is the strongest survival case in this project and also the reason this Hypothesis tests the GATES"
+  },
+  "decision": {
+    "build_cost": "0",
+    "life_years": "3",
+    "tranche": "1000"
+  }
+}

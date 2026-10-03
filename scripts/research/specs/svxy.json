@@ -1,0 +1,52 @@
+{
+  "slug": "volatility-premium-svxy",
+  "hypothesis_id": "HYPOTHESIS|205003fe-7b8d-4fc0-b30c-936a404cd7c0",
+  "notes": "Migrated from run_volatility_premium.py. Under M2_AVAILABILITY|04a35abd the identity below is never used when the empirical link was reachable and failed, which is exactly what happened: 2 of 5 folds.",
+  "instrument": {
+    "provider": "alpaca_equity",
+    "symbol": "SVXY",
+    "feed": "sip"
+  },
+  "cost": {
+    "commission": "0",
+    "half_spread": "0.0003",
+    "slippage": "0.0001",
+    "legs": 1,
+    "source": "commission-free US ETP; half spread and slippage DECLARED, wider than SPY because a volatility ETP book is thinner, and not measured"
+  },
+  "sizing": {
+    "drawdown_limit": "0.15"
+  },
+  "level_claim": {
+    "folds": 7,
+    "consistency_threshold": "0.70",
+    "adverse_threshold": "-0.03",
+    "minimum_adverse_episodes": 5
+  },
+  "monitor": {
+    "kind": "difference_below",
+    "variable": "VXVCLS-VIXCLS",
+    "far": "VXVCLS",
+    "near": "VIXCLS",
+    "floor": "0",
+    "confirmation_periods": 3,
+    "re_entry_threshold": "1.0",
+    "source": "CBOE VIX and VIX3M, published daily and distributed through FRED",
+    "identity": {
+      "identity": "The position's return is the roll down the VIX futures curve. When the curve inverts the roll is UP it, so the compensation reverses by subtraction rather than by estimation.",
+      "parameter": "0",
+      "parameter_source": "the sign change itself, not a level anyone chose",
+      "holds_for_range": "any curve shape, because the threshold is the sign of the slope and the implication is the sign of the roll"
+    }
+  },
+  "survival": {
+    "counterparty": "buyers of VIX futures and index options: portfolio managers and dealers purchasing protection against equity drawdowns",
+    "why_they_accept_losing": "they are buying insurance against losses they are mandated or unwilling to bear, and insurance not priced above its expected cost would be written by nobody",
+    "what_would_end_it": "equity drawdown risk ceasing to be disliked, or enough capital selling volatility to compress the curve below the losses it compensates -- which is what the declared monitor watches for"
+  },
+  "decision": {
+    "build_cost": "0",
+    "life_years": "3",
+    "tranche": "1000"
+  }
+}
