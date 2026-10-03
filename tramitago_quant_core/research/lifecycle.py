@@ -68,7 +68,34 @@ def load_config(path):
     months = config.get("remeasure_every_months")
     if not isinstance(months, int) or isinstance(months, bool) or months < 1:
         raise ValueError("remeasure_every_months must be a positive whole number of months")
-    return {"remeasure_every_months": months, "source": str(path)}
+    return {"remeasure_every_months": months, "source": str(path),
+            "triggers": _trigger_settings(config.get("triggers", {}))}
+
+
+# Windows and tolerances the triggers read. Editable in config/lifecycle.json like the
+# cadence, because none of them is a fact about the world: each is a judgement about how
+# early to be told, and the Director may want it earlier or later.
+TRIGGER_DEFAULTS = {"remeasure_warn_days": 30, "life_warn_days": 90,
+                    "instrument_max_gap_days": 7, "drift_tolerance": "0.25"}
+
+
+def _trigger_settings(given):
+    unknown = set(given) - set(TRIGGER_DEFAULTS)
+    if unknown:
+        raise ValueError(f"unknown trigger settings: {', '.join(sorted(unknown))}")
+    settings = {**TRIGGER_DEFAULTS, **given}
+    for key in ("remeasure_warn_days", "life_warn_days", "instrument_max_gap_days"):
+        value = settings[key]
+        if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+            raise ValueError(f"{key} must be a whole number of days, zero or more")
+    try:
+        tolerance = float(settings["drift_tolerance"])
+    except (TypeError, ValueError):
+        raise ValueError("drift_tolerance must be a number") from None
+    if not tolerance > 0:
+        raise ValueError("drift_tolerance must be greater than zero")
+    settings["drift_tolerance"] = str(settings["drift_tolerance"])
+    return settings
 
 
 def add_months(day, months):
