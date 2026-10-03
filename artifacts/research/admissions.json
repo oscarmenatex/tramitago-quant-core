@@ -1,0 +1,219 @@
+{
+  "admissions": [
+    {
+      "admission_id": "ADMISSION|659d9de30ff65969716cee87245cd472f47e36f6295bf2c1037688a4b32db8f8",
+      "evidence": {
+        "survival": {
+          "form": "P1_OUT_OF_SAMPLE",
+          "out_of_sample_periods": [
+            {
+              "criterion_declared_before": true,
+              "period": "2021-07..2024-01",
+              "sign_held": true
+            }
+          ]
+        },
+        "worst_fold_drawdown": {
+          "is_adverse_bound": false,
+          "source": "worst of 8 realised fold drawdowns, carry-exit-bitmex-holdout; a point estimate, not an upper bound",
+          "value": "0.012357"
+        }
+      },
+      "gates": [
+        {
+          "detail": "no figure has been measured",
+          "gate": "maximando: net Sharpe, lower 95% bound >= 0.50",
+          "state": "NOT_EVALUABLE"
+        },
+        {
+          "detail": "0.012357 is a point estimate, and \u00a78.1 requires the adverse 95% bound; spy-mom10-2024 cleared every threshold on point estimates and was refuted out of sample",
+          "gate": "R1 drawdown: worst fold, upper 95% bound <= 0.15",
+          "state": "FAILED"
+        },
+        {
+          "detail": "1 out-of-sample period(s), 2 required",
+          "gate": "R2 survival: P1 (>=2 out-of-sample periods) or P2 (declared mechanism)",
+          "state": "NOT_EVALUABLE"
+        },
+        {
+          "detail": "no monitor declared",
+          "gate": "R3 monitorability: latency < drawdown / daily loss if dead",
+          "state": "NOT_EVALUABLE"
+        },
+        {
+          "detail": "no capacity ceiling declared",
+          "gate": "R4 capacity: declared ceiling C >= the current tranche",
+          "state": "NOT_EVALUABLE"
+        },
+        {
+          "detail": "no decision cost declared",
+          "gate": "R5 decision cost: < 25% of expected annual net return",
+          "state": "NOT_EVALUABLE"
+        }
+      ],
+      "gates_failed": [
+        "R1 drawdown: worst fold, upper 95% bound <= 0.15"
+      ],
+      "gates_not_evaluable": [
+        "maximando: net Sharpe, lower 95% bound >= 0.50",
+        "R2 survival: P1 (>=2 out-of-sample periods) or P2 (declared mechanism)",
+        "R3 monitorability: latency < drawdown / daily loss if dead",
+        "R4 capacity: declared ceiling C >= the current tranche",
+        "R5 decision cost: < 25% of expected annual net return"
+      ],
+      "hypothesis_id": "VALIDATION_SLUG|carry-exit-bitmex-holdout",
+      "materialization": {
+        "code_revision": "f2c8cd98b02364e64c931146f96e4c8244350bc6",
+        "decided_at": "2026-10-03T00:35:54.345266Z",
+        "pipeline_sha256": "56a6ddb92a421cd0d95177ec1828bdcfc0c91c0091c7bcc68f4a9fa3deac81bc"
+      },
+      "outcome": "ADMISION_DENEGADA",
+      "record_id": "ADMISSION_RECORD|866e48b5e289295c8c05c3555057e0fd893bf1468aee23d8a6e6454b51dda330",
+      "schema_version": "1",
+      "status": "ISSUED",
+      "validation_id": "STATISTICAL_VALIDATION|96545cd1aee924fd4c64ea1aeaf68f895f9ba55870fb4566294102d9a32bbf43"
+    },
+    {
+      "admission_id": "ADMISSION|f803d8145173da7834c03b6eaa2408b3b37ba3c266551004d9839dcb84f5d658",
+      "evidence": {
+        "worst_fold_drawdown": {
+          "is_adverse_bound": false,
+          "source": "worst of 5 realised fold drawdowns, eth; a point estimate, not an upper bound",
+          "value": "0.468328"
+        }
+      },
+      "gates": [
+        {
+          "detail": "no figure has been measured",
+          "gate": "maximando: net Sharpe, lower 95% bound >= 0.50",
+          "state": "NOT_EVALUABLE"
+        },
+        {
+          "detail": "0.468328 is a point estimate, and \u00a78.1 requires the adverse 95% bound; spy-mom10-2024 cleared every threshold on point estimates and was refuted out of sample",
+          "gate": "R1 drawdown: worst fold, upper 95% bound <= 0.15",
+          "state": "FAILED"
+        },
+        {
+          "detail": "no survival evidence declared",
+          "gate": "R2 survival: P1 (>=2 out-of-sample periods) or P2 (declared mechanism)",
+          "state": "NOT_EVALUABLE"
+        },
+        {
+          "detail": "no monitor declared",
+          "gate": "R3 monitorability: latency < drawdown / daily loss if dead",
+          "state": "NOT_EVALUABLE"
+        },
+        {
+          "detail": "no capacity ceiling declared",
+          "gate": "R4 capacity: declared ceiling C >= the current tranche",
+          "state": "NOT_EVALUABLE"
+        },
+        {
+          "detail": "no decision cost declared",
+          "gate": "R5 decision cost: < 25% of expected annual net return",
+          "state": "NOT_EVALUABLE"
+        }
+      ],
+      "gates_failed": [
+        "R1 drawdown: worst fold, upper 95% bound <= 0.15"
+      ],
+      "gates_not_evaluable": [
+        "maximando: net Sharpe, lower 95% bound >= 0.50",
+        "R2 survival: P1 (>=2 out-of-sample periods) or P2 (declared mechanism)",
+        "R3 monitorability: latency < drawdown / daily loss if dead",
+        "R4 capacity: declared ceiling C >= the current tranche",
+        "R5 decision cost: < 25% of expected annual net return"
+      ],
+      "hypothesis_id": "VALIDATION_SLUG|eth",
+      "materialization": {
+        "code_revision": "f2c8cd98b02364e64c931146f96e4c8244350bc6",
+        "decided_at": "2026-10-03T00:35:54.348038Z",
+        "pipeline_sha256": "56a6ddb92a421cd0d95177ec1828bdcfc0c91c0091c7bcc68f4a9fa3deac81bc"
+      },
+      "outcome": "ADMISION_DENEGADA",
+      "record_id": "ADMISSION_RECORD|42366f769768fa50003677347b3f741888dafc34a7ac1bf4f67bd2315ba4b136",
+      "schema_version": "1",
+      "status": "ISSUED",
+      "validation_id": "STATISTICAL_VALIDATION|d5d2f12463f58d2e99a2eef5f3045544be22a63be5c02e998cdeb03041963ad1"
+    },
+    {
+      "admission_id": "ADMISSION|cf49d0e8a34f44ed16fcb6f744639da545d9099ca540b17e786fb5dc5dd22a20",
+      "evidence": {
+        "survival": {
+          "form": "P1_OUT_OF_SAMPLE",
+          "out_of_sample_periods": [
+            {
+              "criterion_declared_before": true,
+              "period": "2022",
+              "sign_held": false
+            },
+            {
+              "criterion_declared_before": true,
+              "period": "2023",
+              "sign_held": false
+            }
+          ]
+        },
+        "worst_fold_drawdown": {
+          "is_adverse_bound": false,
+          "source": "worst of 6 realised fold drawdowns, spy-mom10-2024; a point estimate, not an upper bound",
+          "value": "0.067165"
+        }
+      },
+      "gates": [
+        {
+          "detail": "no figure has been measured",
+          "gate": "maximando: net Sharpe, lower 95% bound >= 0.50",
+          "state": "NOT_EVALUABLE"
+        },
+        {
+          "detail": "0.067165 is a point estimate, and \u00a78.1 requires the adverse 95% bound; spy-mom10-2024 cleared every threshold on point estimates and was refuted out of sample",
+          "gate": "R1 drawdown: worst fold, upper 95% bound <= 0.15",
+          "state": "FAILED"
+        },
+        {
+          "detail": "the sign broke in 2 of 2 periods; one contrary sign refutes",
+          "gate": "R2 survival: P1 (>=2 out-of-sample periods) or P2 (declared mechanism)",
+          "state": "FAILED"
+        },
+        {
+          "detail": "no monitor declared",
+          "gate": "R3 monitorability: latency < drawdown / daily loss if dead",
+          "state": "NOT_EVALUABLE"
+        },
+        {
+          "detail": "no capacity ceiling declared",
+          "gate": "R4 capacity: declared ceiling C >= the current tranche",
+          "state": "NOT_EVALUABLE"
+        },
+        {
+          "detail": "no decision cost declared",
+          "gate": "R5 decision cost: < 25% of expected annual net return",
+          "state": "NOT_EVALUABLE"
+        }
+      ],
+      "gates_failed": [
+        "R1 drawdown: worst fold, upper 95% bound <= 0.15",
+        "R2 survival: P1 (>=2 out-of-sample periods) or P2 (declared mechanism)"
+      ],
+      "gates_not_evaluable": [
+        "maximando: net Sharpe, lower 95% bound >= 0.50",
+        "R3 monitorability: latency < drawdown / daily loss if dead",
+        "R4 capacity: declared ceiling C >= the current tranche",
+        "R5 decision cost: < 25% of expected annual net return"
+      ],
+      "hypothesis_id": "VALIDATION_SLUG|spy-mom10-2024",
+      "materialization": {
+        "code_revision": "f2c8cd98b02364e64c931146f96e4c8244350bc6",
+        "decided_at": "2026-10-03T00:35:54.355602Z",
+        "pipeline_sha256": "56a6ddb92a421cd0d95177ec1828bdcfc0c91c0091c7bcc68f4a9fa3deac81bc"
+      },
+      "outcome": "ADMISION_DENEGADA",
+      "record_id": "ADMISSION_RECORD|827c37bbc6499bc3d6594dc0f6e923d37694b5a9c587b70e4c5b6f4f13a2a563",
+      "schema_version": "1",
+      "status": "ISSUED",
+      "validation_id": "STATISTICAL_VALIDATION|2e34161347182cd1b60daa9ca32d04a01f9c2a8fe61ed6c793d29d536cce23cf"
+    }
+  ],
+  "schema_version": "1"
+}

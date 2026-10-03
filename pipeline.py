@@ -93,6 +93,13 @@ from tramitago_quant_core.data.bitmex_funding_rate import (
     BITMEX_FUNDING_PAYMENTS_PER_DAY,
     capture_bitmex_funding_rate, verified_bitmex_funding_rate_capture,
 )
+from tramitago_quant_core.governance.admission import (
+    ADMISSION_SCHEMA_VERSION, ADMITTED, ADMISSION_DENIED,
+    GATE_PASSED, GATE_FAILED, GATE_NOT_EVALUABLE, SURVIVAL_P1, SURVIVAL_P2,
+    GATE_SHARPE, GATE_DRAWDOWN, GATE_SURVIVAL, GATE_MONITORABILITY, GATE_CAPACITY,
+    GATE_DECISION_COST, adverse_bound, evaluate_admission_gates, admission_outcome,
+    constitute_admission, load_admission, query_admissions,
+)
 from tramitago_quant_core.governance.stopping_rule import (
     STOPPING_RULE_SCHEMA_VERSION, STOPPING_RULE_MINIMUM_HYPOTHESES, STOPPING_RULE_THRESHOLD,
     STOPPING_RULE_CONFIDENCE, REASON_BELOW_MINIMUM, REASON_BOUND_REACHES_THRESHOLD,
