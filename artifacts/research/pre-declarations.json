@@ -1,0 +1,39 @@
+{
+  "pre_declarations": [
+    {
+      "claim_class": "PREMIUM",
+      "hypothesis_id": "HYPOTHESIS|205003fe-7b8d-4fc0-b30c-936a404cd7c0",
+      "materialization": {
+        "code_revision": "cd285020627c85dfcdf081a2367199f4f29e8f47",
+        "declared_at": "2026-10-03T05:40:47.531747Z"
+      },
+      "monitor": {
+        "published_by": "CBOE, published daily and distributed through FRED as VXVCLS and VIXCLS",
+        "variable": "VIX3M minus VIX, the term structure slope"
+      },
+      "net_level": {
+        "claimed": "the net return of holding SVXY continuously over the window, after execution costs, rather than a difference between two groups of days"
+      },
+      "payer": {
+        "who": "buyers of VIX futures and index options -- portfolio managers and dealers purchasing protection against equity drawdowns",
+        "why_they_keep_paying": "they are buying insurance against losses they are mandated or unwilling to bear, and insurance that is not priced above its expected cost would not be written by anyone; the premium is the price of that transfer rather than a mistake being made"
+      },
+      "pre_declaration_id": "PRE_DECLARATION|b06dee7cd90bb2798c3b4bb7607efba1401fc94c36352fc4ff668808d2bd0052",
+      "required_effect": {
+        "plausibility_source": "published estimates of the roll-yield harvest on short VIX futures run roughly 0.5 to 1.0 before catastrophic tail events; 0.60 is the CONSERVATIVE end of that range and not its midpoint, and the -0.5x structure dilutes leverage without changing a ratio, though its daily rebalancing drag is not in the estimate",
+        "plausible_point_sharpe": "0.60",
+        "required_point_sharpe": "0.54"
+      },
+      "schema_version": "1",
+      "source": "answered in writing before any bar of SVXY was captured; the monitor's availability and inversion frequency were measured first, which is a fact about the monitor and never about the position's returns",
+      "turnover": {
+        "crossings_per_year": "0.23"
+      },
+      "window": {
+        "adverse_episode": "March 2020, when VIX reached 82 and the term structure inverted on 53 days of that year, plus the 2025 spike with 29 inverted days",
+        "years": "8.57"
+      }
+    }
+  ],
+  "schema_version": "1"
+}
