@@ -306,6 +306,171 @@
       "schema_version": "1",
       "status": "ISSUED",
       "validation_id": "STATISTICAL_VALIDATION|96545cd1aee924fd4c64ea1aeaf68f895f9ba55870fb4566294102d9a32bbf43"
+    },
+    {
+      "admission_id": "ADMISSION|3165ad647e2cc710260eaf4f3a3223767dd3457df2811819ed6f0fa089f9b97c",
+      "evidence": {
+        "capacity": {
+          "ceiling": "2000000.00",
+          "current_tranche": "1000",
+          "is_lower_bound_not_the_ceiling": true,
+          "source": "capacity_ceiling returned NONE_FOUND: no constraint binds between $200 and $2,000,000, so the true ceiling is ABOVE $2,000,000 and this figure is a floor on it, never an estimate of it. A position crossing the market twice in 8.7 years barely touches a book whose ADV is $31,837,786,512."
+        },
+        "decision_cost": {
+          "build_cost": "0",
+          "expected_annual_net_return": "42.62",
+          "minimum_declared_life_years": "3",
+          "recurring_cost_per_year": "0",
+          "surveillance_is_automatable": true
+        },
+        "net_sharpe": {
+          "is_adverse_bound": true,
+          "point_estimate": "0.812475",
+          "source": "moving-block bootstrap, {\"block_periods\": 5, \"confidence\": \"0.95\", \"resamples\": 2000, \"seed\": 0}, on 2198 net days of equity-risk-premium-spy",
+          "value": "0.269505"
+        },
+        "survival": {
+          "counterparty": "every investor who must reduce equity exposure for reasons unrelated to expected return: liability matching, mandates, liquidity needs, risk limits and horizon",
+          "form": "P2",
+          "what_would_end_it": "a world in which equity risk is no longer undiversifiable or no longer disliked. Neither has a plausible route, which is the strongest survival case in this project and also the reason this Hypothesis tests the GATES",
+          "why_they_accept_losing": "they are not losing; they are buying certainty. The premium is the price of bearing a risk they are paying to shed, which is why it is a premium and not a mispricing to be competed away"
+        },
+        "worst_fold_drawdown": {
+          "is_adverse_bound": true,
+          "source": "moving-block bootstrap, same parameters, on the WHOLE net series. The full window dominates any fold -- every peak-to-trough pair inside one is also one in the whole -- so this is the stricter reading of R1, stated rather than left to be noticed",
+          "value": "0.149976"
+        }
+      },
+      "gates": [
+        {
+          "detail": "point 0.812475 >= 0.50 is true, and bound 0.269505 > 0 is true (source: moving-block bootstrap, {\"block_periods\": 5, \"confidence\": \"0.95\", \"resamples\": 2000, \"seed\": 0}, on 2198 net days of equity-risk-premium-spy)",
+          "gate": "maximando: net Sharpe >= 0.50 AND its lower 95% bound > 0",
+          "state": "PASSED"
+        },
+        {
+          "detail": "0.149976 <= 0.15 is true (source: moving-block bootstrap, same parameters, on the WHOLE net series. The full window dominates any fold -- every peak-to-trough pair inside one is also one in the whole -- so this is the stricter reading of R1, stated rather than left to be noticed)",
+          "gate": "R1 drawdown: worst fold, upper 95% bound <= 0.15",
+          "state": "PASSED"
+        },
+        {
+          "detail": "survival form must be P1_OUT_OF_SAMPLE or P2_DECLARED_MECHANISM",
+          "gate": "R2 survival: P1 (>=2 out-of-sample periods) or P2 (declared mechanism)",
+          "state": "NOT_EVALUABLE"
+        },
+        {
+          "detail": "no monitor declared",
+          "gate": "R3 monitorability: latency < drawdown / daily loss if dead",
+          "state": "NOT_EVALUABLE"
+        },
+        {
+          "detail": "ceiling 2000000.00 against a tranche of 1000",
+          "gate": "R4 capacity: declared ceiling C >= the current tranche",
+          "state": "PASSED"
+        },
+        {
+          "detail": "0.0000 of the expected annual net return, against 0.25",
+          "gate": "R5 decision cost: < 25% of expected annual net return",
+          "state": "PASSED"
+        }
+      ],
+      "gates_failed": [],
+      "gates_not_evaluable": [
+        "R2 survival: P1 (>=2 out-of-sample periods) or P2 (declared mechanism)",
+        "R3 monitorability: latency < drawdown / daily loss if dead"
+      ],
+      "hypothesis_id": "HYPOTHESIS|426cd26a-10ab-4c5e-ba5d-9e88510a4613",
+      "materialization": {
+        "code_revision": "81172df3cbe3bf3d677cf19ed180fbcb52ccb8c8",
+        "decided_at": "2026-10-03T03:12:59.366087Z",
+        "pipeline_sha256": "add34d15bcf67ed91720680290df70b96a25c7d3d890d5b14e2e87e15c5d612c"
+      },
+      "outcome": "ADMISION_DENEGADA",
+      "record_id": "ADMISSION_RECORD|8dae0c5bb220555deb41f44a79b2cd9eddae039e6c21f28685816b3a6fc162e1",
+      "schema_version": "2",
+      "status": "ISSUED",
+      "validation_id": "LEVEL_CLAIM_VALIDATION|ba2a87c13d61098ec99ff0e3a09fe9c1db57e061fdeb4155a84bdcce4c59903a"
+    },
+    {
+      "admission_id": "ADMISSION|6d61c78276ecf615a6ed77b13c559a395768e2731572ceac354a58c6e2eb1007",
+      "evidence": {
+        "capacity": {
+          "ceiling": "2000000.00",
+          "current_tranche": "1000",
+          "is_lower_bound_not_the_ceiling": true,
+          "source": "capacity_ceiling returned NONE_FOUND: no constraint binds between $200 and $2,000,000, so the true ceiling is ABOVE $2,000,000 and this figure is a floor on it, never an estimate of it. A position crossing the market twice in 8.7 years barely touches a book whose ADV is $31,837,786,512."
+        },
+        "decision_cost": {
+          "build_cost": "0",
+          "expected_annual_net_return": "42.62",
+          "minimum_declared_life_years": "3",
+          "recurring_cost_per_year": "0",
+          "surveillance_is_automatable": true
+        },
+        "net_sharpe": {
+          "is_adverse_bound": true,
+          "point_estimate": "0.812475",
+          "source": "moving-block bootstrap, {\"block_periods\": 5, \"confidence\": \"0.95\", \"resamples\": 2000, \"seed\": 0}, on 2198 net days of equity-risk-premium-spy",
+          "value": "0.269505"
+        },
+        "survival": {
+          "counterparty": "every investor who must reduce equity exposure for reasons unrelated to expected return: liability matching, mandates, liquidity needs, risk limits and horizon",
+          "form": "P2_DECLARED_MECHANISM",
+          "what_would_end_it": "a world in which equity risk is no longer undiversifiable or no longer disliked. Neither has a plausible route, which is the strongest survival case in this project and also the reason this Hypothesis tests the GATES",
+          "why_they_accept_losing": "they are not losing; they are buying certainty. The premium is the price of bearing a risk they are paying to shed, which is why it is a premium and not a mispricing to be competed away"
+        },
+        "worst_fold_drawdown": {
+          "is_adverse_bound": true,
+          "source": "moving-block bootstrap, same parameters, on the WHOLE net series. The full window dominates any fold -- every peak-to-trough pair inside one is also one in the whole -- so this is the stricter reading of R1, stated rather than left to be noticed",
+          "value": "0.149976"
+        }
+      },
+      "gates": [
+        {
+          "detail": "point 0.812475 >= 0.50 is true, and bound 0.269505 > 0 is true (source: moving-block bootstrap, {\"block_periods\": 5, \"confidence\": \"0.95\", \"resamples\": 2000, \"seed\": 0}, on 2198 net days of equity-risk-premium-spy)",
+          "gate": "maximando: net Sharpe >= 0.50 AND its lower 95% bound > 0",
+          "state": "PASSED"
+        },
+        {
+          "detail": "0.149976 <= 0.15 is true (source: moving-block bootstrap, same parameters, on the WHOLE net series. The full window dominates any fold -- every peak-to-trough pair inside one is also one in the whole -- so this is the stricter reading of R1, stated rather than left to be noticed)",
+          "gate": "R1 drawdown: worst fold, upper 95% bound <= 0.15",
+          "state": "PASSED"
+        },
+        {
+          "detail": "P2: mechanism declared in writing",
+          "gate": "R2 survival: P1 (>=2 out-of-sample periods) or P2 (declared mechanism)",
+          "state": "PASSED"
+        },
+        {
+          "detail": "no monitor declared",
+          "gate": "R3 monitorability: latency < drawdown / daily loss if dead",
+          "state": "NOT_EVALUABLE"
+        },
+        {
+          "detail": "ceiling 2000000.00 against a tranche of 1000",
+          "gate": "R4 capacity: declared ceiling C >= the current tranche",
+          "state": "PASSED"
+        },
+        {
+          "detail": "0.0000 of the expected annual net return, against 0.25",
+          "gate": "R5 decision cost: < 25% of expected annual net return",
+          "state": "PASSED"
+        }
+      ],
+      "gates_failed": [],
+      "gates_not_evaluable": [
+        "R3 monitorability: latency < drawdown / daily loss if dead"
+      ],
+      "hypothesis_id": "HYPOTHESIS|426cd26a-10ab-4c5e-ba5d-9e88510a4613",
+      "materialization": {
+        "code_revision": "81172df3cbe3bf3d677cf19ed180fbcb52ccb8c8",
+        "decided_at": "2026-10-03T03:13:33.802811Z",
+        "pipeline_sha256": "add34d15bcf67ed91720680290df70b96a25c7d3d890d5b14e2e87e15c5d612c"
+      },
+      "outcome": "ADMISION_DENEGADA",
+      "record_id": "ADMISSION_RECORD|9c26889dfe4bf6510a548e2782fa898efdff2da7e02a731027f13a0f27504858",
+      "schema_version": "2",
+      "status": "ISSUED",
+      "validation_id": "LEVEL_CLAIM_VALIDATION|ba2a87c13d61098ec99ff0e3a09fe9c1db57e061fdeb4155a84bdcce4c59903a"
     }
   ],
   "schema_version": "1"

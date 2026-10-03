@@ -18,7 +18,8 @@ from tramitago_quant_core.governance.admission import (
     GATE_PASSED, GATE_FAILED, GATE_NOT_EVALUABLE, SURVIVAL_P1, SURVIVAL_P2,
     GATE_SHARPE, GATE_DRAWDOWN, GATE_SURVIVAL, GATE_MONITORABILITY,
     GATE_CAPACITY, GATE_DECISION_COST,
-)
+
+    _sharpe_gate, _admission_record_is_valid, GATE_SHARPE_V1,)
 
 REVISION = "a" * 40
 AT = "2026-10-02T00:00:00Z"
@@ -334,3 +335,38 @@ class CorrectedSharpeGateTests(unittest.TestCase):
     def test_an_unparseable_point_estimate_is_refused_at_construction(self):
         with self.assertRaises(ValueError):
             adverse_bound("0.61", is_adverse_bound=True, source="x", point_estimate="big")
+
+
+class SchemaCompatibilityTests(unittest.TestCase):
+    """A record is judged by the rule it was SEALED under.
+
+    _admission_record_is_valid RE-DERIVES the verdict from the stored evidence
+    rather than trusting it, which is a real integrity property: a sealed record
+    cannot be tampered with. Its price is that any change to a gate would
+    invalidate every record ever issued unless the old rule stays reachable.
+    Correcting §8.2 on 2026-10-02 did exactly that -- four sealed records failed
+    to load -- and this is what keeps it from happening silently again.
+    """
+
+    def test_the_old_rule_still_judges_old_records(self):
+        figure = adverse_bound("0.61", is_adverse_bound=True, source="x")
+        # No point estimate: NOT_EVALUABLE under schema 2, PASSED under schema 1,
+        # where the bound alone was the whole test.
+        self.assertEqual(_sharpe_gate(figure, "1")["state"], GATE_PASSED)
+        self.assertEqual(_sharpe_gate(figure, "2")["state"], GATE_NOT_EVALUABLE)
+
+    def test_the_old_rule_keeps_its_own_gate_name(self):
+        # The name is part of the record's content and therefore of its digest.
+        self.assertEqual(_sharpe_gate(
+            adverse_bound("0.61", is_adverse_bound=True, source="x"), "1")["gate"],
+            GATE_SHARPE_V1)
+
+    def test_every_record_already_sealed_still_verifies(self):
+        # The regression this class exists for: the live registry must load.
+        path = Path(__file__).resolve().parents[1] / "artifacts/research/admissions.json"
+        if not path.exists():
+            self.skipTest("no sealed admissions in this checkout")
+        registry = json.loads(path.read_bytes())
+        for record in registry["admissions"]:
+            self.assertTrue(_admission_record_is_valid(record),
+                            f"{record['admission_id'][:30]} no longer verifies")
