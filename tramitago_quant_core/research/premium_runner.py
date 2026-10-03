@@ -8,7 +8,7 @@ spec asks for, hand all of it to the engine, and seal what comes back.
 
 THE I/O IS INJECTED. `io` supplies two callables and nothing else:
 
-  capture_bars(symbol, start, end, warmup, horizon, acquired_at, adjustment)
+  capture_bars(symbol, start, end, warmup, horizon, acquired_at, adjustment, feed)
                     -> (rows, capture, raw)      bars from a venue
   relay_fred(series_id, start, end) -> bytes     a FRED response fetched elsewhere
 
@@ -65,7 +65,8 @@ def _closes(rows):
     return {row["timestamp"][:10]: float(row["close"]) for row in rows}
 
 
-def _sealed_closes(directory, name, capture_bars, symbol, start, end, warmup, now, adjustment):
+def _sealed_closes(directory, name, capture_bars, symbol, start, end, warmup, now,
+                   adjustment, feed):
     """Bars captured once, sealed beside the dataset, and re-read on every later run.
 
     The parsed closes are stored with the capture so a resume never re-fetches: the
@@ -78,7 +79,7 @@ def _sealed_closes(directory, name, capture_bars, symbol, start, end, warmup, no
                 json.loads(closes_path.read_bytes())["closes"].items()}
     rows, capture, raw = capture_bars(
         symbol=symbol, start=start, end=end, warmup=warmup, horizon=HORIZON,
-        acquired_at=now, adjustment=adjustment)
+        acquired_at=now, adjustment=adjustment, feed=feed)
     directory.mkdir(parents=True, exist_ok=True)
     (directory / f"{name}.capture.json").write_bytes(encoded(capture))
     (directory / f"{name}.raw.json").write_bytes(raw)
@@ -121,6 +122,7 @@ def run_spec(spec, *, io, paths, now, code_revision, seal=True):
     period = hypothesis["constraints"]["period"]
     start, end = period["start_utc"], period["end_exclusive_utc"]
     instrument = spec["instrument"]
+    feed = instrument.get("feed", "sip")
     slug_dir = spec["slug"].replace("-", "_")
     dataset_dir = Path(paths["datasets"]) / slug_dir
     checks_dir = Path(paths["checks"]) / slug_dir
@@ -131,7 +133,7 @@ def run_spec(spec, *, io, paths, now, code_revision, seal=True):
         resumed = False
         rows, capture, raw = io.capture_bars(
             symbol=instrument["symbol"], start=start, end=end, warmup=WARMUP,
-            horizon=HORIZON, acquired_at=now, adjustment="all")
+            horizon=HORIZON, acquired_at=now, adjustment="all", feed=feed)
         if len(rows) < MINIMUM_TRADING_DAYS:
             raise ValueError(
                 f"REFUSED: {len(rows)} trading days against a declared minimum of "
@@ -149,11 +151,11 @@ def run_spec(spec, *, io, paths, now, code_revision, seal=True):
     raw_closes = underlying = None
     if any(check["kind"] == "distribution_adjustment" for check in spec.get("checks", [])):
         raw_closes = _sealed_closes(checks_dir, "raw_bars", io.capture_bars,
-                                    instrument["symbol"], start, end, 0, now, "raw")
+                                    instrument["symbol"], start, end, 0, now, "raw", feed)
     monitor = spec.get("monitor", {"kind": "none"})
     if needs_underlying(monitor):
         underlying = _sealed_closes(checks_dir, "underlying_bars", io.capture_bars,
-                                    monitor["underlying"], start, end, 0, now, "all")
+                                    monitor["underlying"], start, end, 0, now, "all", feed)
     series = {sid: _sealed_fred(checks_dir, sid, io.relay_fred, start[:10], end[:10], now)
               for sid in monitor_series_names(monitor)}
 

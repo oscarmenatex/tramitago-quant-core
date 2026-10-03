@@ -39,7 +39,7 @@ class FakeIO:
         self.days = _weekdays()
         self.yield_ = annual_distribution_yield
         self.leak_key = leak_key
-        self.bar_calls, self.fred_calls = [], []
+        self.bar_calls, self.fred_calls, self.feeds = [], [], []
         self._raw = {}
 
     def _raw_closes(self, symbol):
@@ -51,8 +51,10 @@ class FakeIO:
             self._raw[symbol] = closes
         return self._raw[symbol]
 
-    def capture_bars(self, *, symbol, start, end, warmup, horizon, acquired_at, adjustment):
+    def capture_bars(self, *, symbol, start, end, warmup, horizon, acquired_at, adjustment,
+                     feed):
         self.bar_calls.append((symbol, adjustment))
+        self.feeds.append(feed)
         stamps = [day.isoformat().replace("+00:00", "Z") for day in self.days]
         first = next(i for i, s in enumerate(stamps) if s[:10] >= start[:10])
         last = max(i for i, s in enumerate(stamps) if s[:10] < end[:10])
@@ -227,6 +229,23 @@ class RunnerTests(unittest.TestCase):
         self.assertEqual(io.fred_calls, [])
         self.assertEqual([call[0] for call in io.bar_calls], ["TEST"])
         self.assertNotIn("monitor", result)
+
+    def test_the_feed_in_the_spec_reaches_every_capture_not_just_the_first(self):
+        # The first version of the CLI hardcoded the SIP feed and never read the one
+        # the spec named, so a spec saying iex would have been silently ignored.
+        hid, io = self._hypothesis(), FakeIO()
+        spec = _spec(hid)
+        spec["instrument"]["feed"] = "iex"
+        run_spec(spec, io=io, paths=self.paths, now=NOW, code_revision=CODE, seal=False)
+        self.assertEqual(len(io.feeds), 3)               # primary, raw bars, underlying
+        self.assertEqual(set(io.feeds), {"iex"})
+
+    def test_the_default_feed_is_sip_when_the_spec_says_nothing(self):
+        hid, io = self._hypothesis(), FakeIO()
+        spec = _spec(hid)
+        spec["instrument"].pop("feed", None)
+        run_spec(spec, io=io, paths=self.paths, now=NOW, code_revision=CODE, seal=False)
+        self.assertEqual(set(io.feeds), {"sip"})
 
     def test_the_dataset_contract_warmup_and_horizon_are_the_ones_the_runner_asks_for(self):
         self.assertEqual((WARMUP, HORIZON), (2, 1))

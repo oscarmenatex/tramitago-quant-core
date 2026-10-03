@@ -49,6 +49,14 @@ from tramitago_quant_core.risk.statistic_bounds import (
     weight_within_drawdown_bound,
 )
 
+# THE ONLY PROVIDER THE ENGINE CAN FETCH FROM, and the feeds that provider serves.
+# A spec naming anything else is REFUSED, because the first version only checked
+# that a provider was NAMED: a spec saying bitmex would have silently fetched
+# Alpaca bars for that symbol, which is the class of defect this engine exists to
+# end. A field that is accepted and not honoured is worse than one that is absent.
+SUPPORTED_PROVIDERS = ("alpaca_equity",)
+SUPPORTED_FEEDS = ("sip", "iex")
+
 TRADING_DAYS = 252
 TRANSITIONS = 2                     # one entry, one exit: the only position form here
 LINK_MINIMUM_USABLE_FOLDS = 5
@@ -91,6 +99,13 @@ def validate_spec(spec):
     for key in ("symbol", "provider"):
         if not spec["instrument"].get(key):
             raise ValueError(f"instrument.{key} is required")
+    if spec["instrument"]["provider"] not in SUPPORTED_PROVIDERS:
+        raise ValueError(
+            f"instrument.provider {spec['instrument']['provider']!r} is not supported; this "
+            f"engine can fetch from {', '.join(SUPPORTED_PROVIDERS)} only, and fetching "
+            f"anything else from it would be silent")
+    if spec["instrument"].get("feed", "sip") not in SUPPORTED_FEEDS:
+        raise ValueError(f"instrument.feed must be one of {', '.join(SUPPORTED_FEEDS)}")
     cost = spec["cost"]
     for key in ("commission", "half_spread", "slippage"):
         if _decimal(cost[key], f"cost.{key}") < 0:

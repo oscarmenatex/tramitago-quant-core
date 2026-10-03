@@ -154,6 +154,26 @@ class SpecValidationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate_spec(_spec(monitor={"kind": "vibes", "floor": "0"}))
 
+    def test_a_provider_the_engine_cannot_fetch_from_is_refused_not_silently_swapped(self):
+        # The first version only checked that a provider was NAMED. A spec saying
+        # bitmex would have fetched Alpaca bars for that symbol without a word,
+        # which is the class of defect the engine exists to end.
+        for provider in ("bitmex", "hyperliquid", "coinbase", "made_up"):
+            spec = _spec()
+            spec["instrument"]["provider"] = provider
+            with self.assertRaises(ValueError) as caught:
+                validate_spec(spec)
+            self.assertIn("not supported", str(caught.exception))
+
+    def test_a_feed_the_provider_does_not_serve_is_refused(self):
+        spec = _spec()
+        spec["instrument"]["feed"] = "nasdaq"
+        with self.assertRaises(ValueError):
+            validate_spec(spec)
+        for feed in ("sip", "iex"):
+            spec["instrument"]["feed"] = feed
+            self.assertTrue(validate_spec(spec))
+
     def test_the_hypothesis_must_be_referenced(self):
         with self.assertRaises(ValueError):
             validate_spec(_spec(hypothesis="the premium"))
