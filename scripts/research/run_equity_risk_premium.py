@@ -40,7 +40,8 @@ sys.path.insert(0, str(REPO))
 
 import pipeline as p
 from tramitago_quant_core.strategy_contract.strategy import sma_crossover_strategy
-from tramitago_quant_core.data.alpaca_equity_series import capture_alpaca_equity_bars
+from tramitago_quant_core.data.alpaca_equity_series import (
+    capture_alpaca_equity_bars, ALPACA_FEED_SIP)
 from tramitago_quant_core.governance.evidence_host import require_evidence_host
 from tramitago_quant_core.governance.admission import adverse_bound, constitute_admission
 from tramitago_quant_core.research.historical_dataset import create_hypothesis_dataset
@@ -124,11 +125,12 @@ def main():
     start, end = period["start_utc"], period["end_exclusive_utc"]
 
     print(f"{'=' * 78}\n{SLUG}   {start[:10]} -> {end[:10]}\n{'=' * 78}")
-    print(f"[1/5] capturing {SYMBOL} daily bars, dividend and split adjusted...")
+    print(f"[1/5] capturing {SYMBOL} daily bars on the {ALPACA_FEED_SIP.upper()} "
+          f"feed, dividend and split adjusted...")
     rows, capture, raw = capture_alpaca_equity_bars(
         symbol=SYMBOL, evaluable_start_utc=start, evaluable_end_exclusive_utc=end,
         warmup_periods=WARMUP, horizon=HORIZON, acquired_at=now,
-        credential_injector=_credential_injector())
+        credential_injector=_credential_injector(), feed=ALPACA_FEED_SIP)
     print(f"      {len(rows)} bars ({rows[0]['timestamp'][:10]} -> {rows[-1]['timestamp'][:10]})")
 
     # The declaration rests on a window long enough for a LOWER bound to mean

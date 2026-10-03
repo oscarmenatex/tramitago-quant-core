@@ -128,10 +128,17 @@ CAVEATS = [
     "5 per population before its bound is applicable. This OPENS a population; "
     "it cannot resolve one, and no exhaustion verdict may be drawn from it.",
 
-    "Alpaca's free tier serves the IEX feed, which covers a small share of "
-    "consolidated volume. Daily bars should be robust to that; they are still "
-    "not the consolidated tape, and the capture seals the raw response so the "
-    "question stays answerable later.",
+    "THE FEED IS SIP, THE CONSOLIDATED TAPE, AND THE FREE ONE WOULD HAVE "
+    "QUIETLY CORRUPTED THIS. Version 2's capture refused, and the probe said "
+    "why: over this window IEX is missing 644 of 2198 NYSE sessions and its "
+    "earliest bar is 2018-11-01, so its first fully covered window starts "
+    "2020-07-24 -- four months AFTER the March 2020 crash. Adopting it would "
+    "have removed the worst tail of the equity risk premium and kept the "
+    "entire recovery, inflating the very quantity being measured, and it "
+    "would have passed the three-year floor while doing so. SIP covers all "
+    "2198 sessions from 2016-01-04. The window is UNCHANGED; only the feed "
+    "moved, and the request URL is sealed into the capture's own identity so "
+    "which one was used is not a matter of anyone's memory.",
 
     "SURVIVORSHIP IS NOT AT ISSUE for a single index ETF, but the ETF's own "
     "expense ratio (0.0945%/yr) is already inside the total return, so the "

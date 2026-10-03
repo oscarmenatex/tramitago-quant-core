@@ -31,6 +31,17 @@ ALPACA_EQUITY_BARS_CAPTURE_KIND = "alpaca-equity-bars"
 ALPACA_EQUITY_BARS_SOURCE = "Alpaca Data API v2 (daily equity bars, split-adjusted)"
 ALPACA_CALENDAR_HOST = "paper-api.alpaca.markets"
 ALPACA_DATA_HOST = "data.alpaca.markets"
+# The free tier serves IEX, a few percent of consolidated volume. MEASURED on
+# SPY 2026-10-02: over 2018-01-02..2026-10-01, IEX is missing 644 of 2198 NYSE
+# sessions and its earliest bar is 2018-11-01, while SIP -- the consolidated
+# tape -- covers all 2198 from 2016-01-04. The default stays IEX so every
+# already-sealed capture reproduces byte for byte; the feed is carried into the
+# sealed capture_id anyway, because the request URL is part of the capture's
+# own content.
+ALPACA_FEED_IEX = "iex"
+ALPACA_FEED_SIP = "sip"
+ALPACA_FEEDS = (ALPACA_FEED_IEX, ALPACA_FEED_SIP)
+ALPACA_DEFAULT_FEED = ALPACA_FEED_IEX
 ALPACA_BARS_MAX_LIMIT = 10000
 
 
@@ -94,13 +105,21 @@ def _dates_in_range(trading_dates, start_utc, end_exclusive_utc):
 
 # ── bars API ───────────────────────────────────────────────────────────────────
 
-def _alpaca_bars_url(symbol, start_date, end_date, page_token=None):
+def _alpaca_bars_url(symbol, start_date, end_date, page_token=None,
+                     feed=ALPACA_DEFAULT_FEED):
+    if feed not in ALPACA_FEEDS:
+        # Validated rather than passed through, because an unrecognised feed is
+        # the dangerous case: the API may ignore the parameter and serve its
+        # default, and the capture would then record SIP in nobody's mind while
+        # holding IEX bars. A typo must fail here, not silently downgrade.
+        raise ValueError(f"Unknown Alpaca feed {feed!r}; expected one of "
+                         + ", ".join(ALPACA_FEEDS))
     params = {
         "timeframe": "1Day",
         "start": start_date,
         "end": end_date,
         "adjustment": "all",
-        "feed": "iex",
+        "feed": feed,
         "limit": ALPACA_BARS_MAX_LIMIT,
     }
     if page_token:
@@ -193,7 +212,8 @@ def _alpaca_equity_raw_content(calendar_stored, bar_stored):
 
 def capture_alpaca_equity_bars(symbol, evaluable_start_utc, evaluable_end_exclusive_utc,
                                warmup_periods, horizon, acquired_at, *,
-                               credential_injector, transport=None):
+                               credential_injector, transport=None,
+                               feed=ALPACA_DEFAULT_FEED):
     """Capture and seal equity OHLCV bars from Alpaca, with calendar verification.
 
     Arguments
@@ -257,7 +277,8 @@ def capture_alpaca_equity_bars(symbol, evaluable_start_utc, evaluable_end_exclus
     all_rows = []
     sequence, page_token = 1, None
     while True:
-        url = _alpaca_bars_url(symbol, capture_start_date, capture_end_date_inclusive, page_token)
+        url = _alpaca_bars_url(symbol, capture_start_date, capture_end_date_inclusive,
+                               page_token, feed)
         bar_raw, bar_headers = _alpaca_get(url, credential_injector, transport)
         bar_sha = digest(bar_raw)
         bar_response_metas.append({
