@@ -71,6 +71,44 @@
         "why_shorter_than_available": "the dataset contract needs two warmup rows and one forward row, so three of the 2702 bars the feed serves cannot be evaluated",
         "years": "10.71"
       }
+    },
+    {
+      "claim_class": "PREMIUM",
+      "hypothesis_id": "HYPOTHESIS|1a96622a-4bcd-497d-b308-62707795c4f1",
+      "materialization": {
+        "code_revision": "27457ac23e6f18bf5bcaeb536b78a9b9dd773dc7",
+        "declared_at": "2026-10-03T18:46:39.203526Z"
+      },
+      "monitor": {
+        "published_by": "CBOE publishes VXN daily and FRED distributes it as VXNCLS, while realised volatility is computed from index prices",
+        "variable": "VXN minus the 21-day realised volatility of the Nasdaq-100"
+      },
+      "net_level": {
+        "claimed": "the net return of holding QYLD continuously over the window, after execution costs and with its expense ratio already inside its price, rather than a difference between two groups of days"
+      },
+      "payer": {
+        "who": "buyers of Nasdaq-100 call options, who pay for upside exposure that the fund sells them inside the wrapper",
+        "why_they_keep_paying": "they want convex upside at limited cost, and structured product issuers hedge by buying calls, so demand for upside is not sensitive to price; the premium is what the sellers earn for taking the other side of that demand and for bearing the crash risk it implies"
+      },
+      "pre_declaration_id": "PRE_DECLARATION|3f5b3676c0214544d5a3be23cd595fbf9266cdedc800888b930f50a35c8d84b7",
+      "required_effect": {
+        "plausibility_source": "published studies of the Nasdaq-100 buy-write index find a Sharpe below the index own over long samples, because the call overlay caps a strongly trending upside; the range is recalled and wide, and its conservative end is below the bar of 0.500",
+        "plausible_high": "0.75",
+        "plausible_low": "0.30",
+        "position_against_bar": "STRADDLES",
+        "required_point_sharpe": "0.500"
+      },
+      "schema_version": "2",
+      "source": "answered in writing before any bar of QYLD was captured, from a monitor fixed by the family and not by this fund",
+      "turnover": {
+        "crossings_per_year": "0.19"
+      },
+      "window": {
+        "adverse_episode": "March 2020, and the 2022 drawdown, which was deeper for the Nasdaq-100 than for the S&P 500",
+        "available_years": "10.72",
+        "why_shorter_than_available": "the dataset contract needs two warmup rows and one forward row, so three of the 2702 bars the feed serves cannot be evaluated",
+        "years": "10.71"
+      }
     }
   ],
   "schema_version": "1"

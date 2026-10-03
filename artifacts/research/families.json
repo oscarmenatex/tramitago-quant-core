@@ -1,0 +1,34 @@
+{
+  "families": [
+    {
+      "authorised_by": "Oscar Carmenate Rodriguez, Director del Proyecto",
+      "code_revision": "27457ac23e6f18bf5bcaeb536b78a9b9dd773dc7",
+      "definition_digest": "de0a805ec029ca1b5385271098c6ae2892e9fa0fd108e99660868327221a44eb",
+      "family_id": "MECHANISM_FAMILY|8c8b1c76ebc94c791864859a276f3ae8320a79b384684421ecb8d2a7fb06283a",
+      "ground": {
+        "name": "THE VARIABLE MUST WORK WHEREVER ITS MECHANISM DOES, OR IT DOES NOT WORK",
+        "provenance": "Proposed by Claude as a replication, corrected by the Director, who observed that changing the stock until the monitor passes fits the asset to the function, and that tuning the function to the asset is the same fault from the other side. The weakness is that XYLD was measured first and its result is known, so the rule was written knowing one member failed; it is sealed before any other member is measured.",
+        "statement": "A monitor derived from a mechanism has no reason to pass in one market and fail in another that shares the mechanism. Testing it in a second market with the monitor FIXED, and requiring it to hold in every member, makes the test harder with each member added. Passing in one member after failing in another is what chance produces, and the rule refuses to read it as evidence.",
+        "why_it_is_independent": "It is a statement about how evidence accumulates, true whichever member passes. It was reached after XYLD failed R3, but it binds QYLD no more kindly than XYLD: a pass in QYLD alone does not clear either."
+      },
+      "joint_rule": {
+        "name": "LINK_MUST_HOLD_IN_EVERY_MEMBER",
+        "requires": "every member",
+        "statement": "The monitor is admissible for any member only if its empirical link was reachable and met in every member of the family. One failing member makes the verdict DOES_NOT_GENERALIZE; an unmeasurable member makes it INSUFFICIENT_EVIDENCE, which is not a pass. The link thresholds are the engine own and are not set here."
+      },
+      "kind": "mechanism-family",
+      "member_hypotheses": {
+        "QYLD": "HYPOTHESIS|1a96622a-4bcd-497d-b308-62707795c4f1",
+        "XYLD": "HYPOTHESIS|27314537-88d0-4f0e-8d39-29047bf7d6cb"
+      },
+      "members": [
+        "XYLD",
+        "QYLD"
+      ],
+      "schema_version": "1",
+      "sealed_at": "2026-10-03T18:46:39.203526Z",
+      "slug": "covered-call-equity-index"
+    }
+  ],
+  "schema_version": "1"
+}
