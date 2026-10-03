@@ -102,8 +102,15 @@ MONITOR_LINK_MET = "EMPIRICAL_LINK_MET"                  # M1 reachable and clea
 MONITOR_LINK_REFUTED = "EMPIRICAL_LINK_REFUTED"          # M1 reachable and FAILED
 MONITOR_IDENTITY_ONLY = "IDENTITY_ONLY"                  # trigger never occurs; M2 only
 MONITOR_UNEXAMINED = "UNEXAMINED"                        # nobody has looked
+# BETWEEN UNEXAMINED AND TESTED: the trigger state was MEASURED to occur in enough
+# folds for the empirical link to be testable (the VIX slope's was 5 of 7 and the
+# implied-minus-realised spread's 6 of 7), but whether the link holds has not been
+# tested. Without it a candidate whose monitor is reachable reads the same as one
+# nobody has looked at, and the difference is exactly what separates a premium
+# worth declaring from one that will fail R3 for want of a testable trigger.
+MONITOR_LINK_TESTABLE = "EMPIRICAL_LINK_TESTABLE"
 MONITOR_STATUSES = (MONITOR_NONE_POSSIBLE, MONITOR_LINK_MET, MONITOR_LINK_REFUTED,
-                    MONITOR_IDENTITY_ONLY, MONITOR_UNEXAMINED)
+                    MONITOR_IDENTITY_ONLY, MONITOR_LINK_TESTABLE, MONITOR_UNEXAMINED)
 
 # A refuted or met link is either MEASURED on this very instrument or INFERRED
 # from a sibling. The distinction decides whether it eliminates a candidate or
@@ -163,7 +170,7 @@ def monitor_status(*, variable, status, evidence, certainty=None, measured_on=No
 
 def candidate(*, name, claim_class, payer, effect_low, effect_high, effect_source,
               available_years, data_source, status, requires_short, monitor,
-              reachable_today=True, minimum_position_usd=None):
+              reachable_today=True, minimum_position_usd=None, unreachable_reason=None):
     """One entry. The conservative end of the effect range is what will be tested.
 
     `available_years` is how much history the SOURCE serves for THIS instrument,
@@ -208,6 +215,14 @@ def candidate(*, name, claim_class, payer, effect_low, effect_high, effect_sourc
         "reachable_today": reachable_today,
         "requires_short": requires_short,
         "monitor": monitor,
+        # Why it cannot be reached, when it cannot. Present only then, so every
+        # entry sealed before this existed hashes as it always did. PUTW showed
+        # why it matters: the feed served bars to 2025-04-03 and the asset
+        # endpoint returned 404 -- the fund was liquidated, so the DATA is
+        # reachable and the INSTRUMENT is not, which "no source serves it" would
+        # have described wrongly.
+        **({"unreachable_reason": unreachable_reason}
+           if unreachable_reason is not None else {}),
         # Present only when the wrapper has a lot size worth stating. An ETF
         # share is not one; a futures contract is.
         **({"minimum_position_usd": minimum_position_usd}
@@ -284,7 +299,8 @@ def _effect_verdict(entry):
     bar = required_point_sharpe_for(entry["available_years"])
     if not entry["reachable_today"]:
         return {"verdict": VERDICT_UNREACHABLE_DATA, "required": str(bar),
-                "detail": "no source this project can reach serves it"}
+                "detail": entry.get("unreachable_reason",
+                                    "no source this project can reach serves it")}
     lot = entry.get("minimum_position_usd")
     if lot is not None:
         smallest = _decimal(lot, "Minimum position")

@@ -301,3 +301,53 @@ class RecordSchemaTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestableLinkTests(unittest.TestCase):
+    """Between unexamined and tested: the trigger state was MEASURED to occur in
+    enough folds for the empirical link to be testable, but nobody has tested it.
+    Without this a reachable monitor reads the same as one nobody has looked at."""
+
+    def _testable(self):
+        from tramitago_quant_core.research.candidate_register import MONITOR_LINK_TESTABLE
+        return monitor_status(
+            variable="implied minus realised volatility", status=MONITOR_LINK_TESTABLE,
+            evidence="the spread was negative on 15 percent of days and in 6 of 7 folds")
+
+    def test_a_testable_link_blocks_nothing(self):
+        blockers = candidate_blockers(_with(monitor=self._testable()))
+        self.assertEqual(blockers["hard_blockers"] + blockers["probable_blockers"], [])
+
+    def test_a_testable_link_carries_no_certainty_because_nothing_was_tested(self):
+        from tramitago_quant_core.research.candidate_register import MONITOR_LINK_TESTABLE
+        with self.assertRaises(ValueError):
+            monitor_status(variable="a variable", status=MONITOR_LINK_TESTABLE,
+                           certainty=CERTAINTY_MEASURED,
+                           evidence="the spread was negative on 15 percent of days")
+
+    def test_a_candidate_with_a_testable_link_is_admissible_in_principle(self):
+        entry = _with(monitor=self._testable())
+        self.assertTrue(admissible_in_principle({**entry, **candidate_verdict(entry)}))
+
+
+class UnreachableReasonTests(unittest.TestCase):
+    """PUTW showed why this matters: the feed served bars to 2025-04-03 and the
+    asset endpoint returned 404. The DATA is reachable and the INSTRUMENT is not,
+    which the generic no-source-serves-it wording would have described wrongly."""
+
+    def test_the_reason_is_what_the_verdict_says(self):
+        entry = _with(reachable_today=False,
+                      unreachable_reason="the fund was liquidated and its asset endpoint "
+                                         "returns 404 although the data is served")
+        verdict = candidate_verdict(entry)
+        self.assertEqual(verdict["verdict"], "UNREACHABLE_DATA")
+        self.assertIn("liquidated", verdict["detail"])
+
+    def test_without_a_reason_the_generic_wording_stands(self):
+        verdict = candidate_verdict(_with(reachable_today=False))
+        self.assertIn("no source this project can reach", verdict["detail"])
+
+    def test_an_entry_without_one_does_not_carry_the_field(self):
+        # Additive field presence, so every entry sealed before this hashes as
+        # it always did.
+        self.assertNotIn("unreachable_reason", _with())
