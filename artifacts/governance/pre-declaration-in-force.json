@@ -1,0 +1,57 @@
+{
+  "corrections": [
+    {
+      "authorised_by": "Oscar Carmenate Rodriguez, Director del Proyecto",
+      "code_revision": "84dd759929618a65e4914cb2b51978fc3c895d0b",
+      "correction_id": "PRE_DECLARATION_IN_FORCE|c147dade3c5dfb1aefeeef18d3dd9e73b570d920b9f0333684bd3f8356648a4c",
+      "corrects": "PRE_DECLARATION_IN_FORCE_SINCE in research/pre_declaration.py",
+      "ground": {
+        "name": "A RULE CANNOT BIND WHAT PREDATES IT",
+        "provenance": "FOUND while migrating the credit premium to the spec engine, which refused to reload it, and not while seeking an outcome for any live candidate. The weakness is that it is my own carelessness, a round number chosen without checking the commit time, discovered in the same session it was made. The first account of it named one Hypothesis; measuring the registry showed two.",
+        "statement": "The contract was introduced by commit 99d930f at 2026-10-03T05:32:10Z and merged at 2026-10-03T05:36:32Z. Its in-force instant was set to 2026-10-03T00:00:00Z, midnight UTC of that day, as a round number. The rule therefore reached back over 5.54 hours, and demanded seven answers of Hypotheses declared before the question existed.",
+        "why_it_is_independent": "It is a fact about two timestamps, checkable against git and the registry by a reader who knows no result and no candidate. It would be the same defect whichever Hypotheses fell inside the window."
+      },
+      "integrity_check": {
+        "does_it_rescue_what_was_observed": "NO. Both Hypotheses it exempts were already measured and DENIED: SPY died on monitorability and the credit premium on a net Sharpe of 0.1875. Neither is a candidate and neither can be admitted by this change. The live candidate, XYLD, was created at 15:13 UTC, after both instants, and is unaffected.",
+        "harder_or_easier": "EASIER, the direction that carries the heavier burden: fewer Hypotheses fall under the rule. The burden is met by the ground being a fact about two timestamps, by its effect being measured below, and by the change touching only Hypotheses that predate the rule.",
+        "measured": {
+          "created_between_the_commit_and_the_merge": [],
+          "hypotheses_affected": [
+            "HYPOTHESIS|426cd26a",
+            "HYPOTHESIS|cf55e397"
+          ],
+          "moved_out_of_scope": [
+            "HYPOTHESIS|426cd26a v1 (2026-10-03T01:15:15.943101Z)",
+            "HYPOTHESIS|426cd26a v2 (2026-10-03T01:19:57.029101Z)",
+            "HYPOTHESIS|426cd26a v3 (2026-10-03T01:41:31.632703Z)",
+            "HYPOTHESIS|cf55e397 v1 (2026-10-03T03:33:52.851199Z)",
+            "HYPOTHESIS|cf55e397 v2 (2026-10-03T04:07:34.396271Z)",
+            "HYPOTHESIS|cf55e397 v3 (2026-10-03T04:16:23.435857Z)"
+          ],
+          "versions_created_on_the_day": 8,
+          "versions_still_in_scope": [
+            "HYPOTHESIS|205003fe v1",
+            "HYPOTHESIS|27314537 v1"
+          ]
+        },
+        "question": "section 11.0's own test: harder or easier, and what does it rescue?",
+        "why_the_commit_and_not_the_merge": "The Director authorised the commit instant. It is immaterial to the record: no Hypothesis was created between the commit and the merge, so the two instants exempt exactly the same versions."
+      },
+      "kind": "pre-declaration-in-force-correction",
+      "revision": {
+        "after": "in force from 2026-10-03T05:32:10Z, the instant the introducing commit was made",
+        "also_changed": "The comparison parses both instants instead of comparing strings. A second-precision constant against microsecond timestamps misorders within the same second, because the character that separates the fraction sorts before the one that ends the string.",
+        "before": "in force from 2026-10-03T00:00:00Z",
+        "what_is_untouched": [
+          "The seven questions and the prose floor on each.",
+          "The refusal at capture of a Hypothesis lacking them.",
+          "Every Hypothesis created from the new instant on, which stays in scope.",
+          "The bar derived from the window and the range rule aligned on 2026-10-03."
+        ]
+      },
+      "schema_version": "1",
+      "sealed_at": "2026-10-03T16:55:56.240180Z"
+    }
+  ],
+  "schema_version": "1"
+}

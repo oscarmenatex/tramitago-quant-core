@@ -170,8 +170,11 @@ class GuardTests(unittest.TestCase):
         self.assertEqual(
             len(json.loads(self.registry.read_bytes())["pre_declarations"]), 1)
 
-    def test_the_contract_came_into_force_on_a_declared_date(self):
-        self.assertEqual(PRE_DECLARATION_IN_FORCE_SINCE, "2026-10-03T00:00:00Z")
+    def test_the_contract_came_into_force_when_it_was_committed_not_at_midnight(self):
+        # It was first set to midnight UTC of the day it was written, which reached
+        # back over Hypotheses declared before the rule existed. The introducing
+        # commit was made at 05:32:10 UTC (PRE_DECLARATION_IN_FORCE|c147dade).
+        self.assertEqual(PRE_DECLARATION_IN_FORCE_SINCE, "2026-10-03T05:32:10Z")
 
 
 if __name__ == "__main__":
