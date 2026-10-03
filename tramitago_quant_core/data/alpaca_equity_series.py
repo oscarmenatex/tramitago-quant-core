@@ -42,6 +42,17 @@ ALPACA_FEED_IEX = "iex"
 ALPACA_FEED_SIP = "sip"
 ALPACA_FEEDS = (ALPACA_FEED_IEX, ALPACA_FEED_SIP)
 ALPACA_DEFAULT_FEED = ALPACA_FEED_IEX
+
+# Total return is the default and the only adjustment any sealed capture used, so
+# the request URL -- part of a capture own identity -- is unchanged for all of
+# them. RAW exists for one purpose: inferring what a distribution adjustment did
+# by comparing adjusted closes against unadjusted ones. A fund that pays large
+# monthly distributions can be mis-adjusted in either direction and nothing in the
+# adjusted series alone reveals it.
+ALPACA_ADJUSTMENT_ALL = "all"
+ALPACA_ADJUSTMENT_RAW = "raw"
+ALPACA_ADJUSTMENTS = (ALPACA_ADJUSTMENT_ALL, ALPACA_ADJUSTMENT_RAW, "split", "dividend")
+ALPACA_DEFAULT_ADJUSTMENT = ALPACA_ADJUSTMENT_ALL
 ALPACA_BARS_MAX_LIMIT = 10000
 
 
@@ -106,7 +117,7 @@ def _dates_in_range(trading_dates, start_utc, end_exclusive_utc):
 # ── bars API ───────────────────────────────────────────────────────────────────
 
 def _alpaca_bars_url(symbol, start_date, end_date, page_token=None,
-                     feed=ALPACA_DEFAULT_FEED):
+                     feed=ALPACA_DEFAULT_FEED, adjustment=ALPACA_DEFAULT_ADJUSTMENT):
     if feed not in ALPACA_FEEDS:
         # Validated rather than passed through, because an unrecognised feed is
         # the dangerous case: the API may ignore the parameter and serve its
@@ -114,11 +125,17 @@ def _alpaca_bars_url(symbol, start_date, end_date, page_token=None,
         # holding IEX bars. A typo must fail here, not silently downgrade.
         raise ValueError(f"Unknown Alpaca feed {feed!r}; expected one of "
                          + ", ".join(ALPACA_FEEDS))
+    if adjustment not in ALPACA_ADJUSTMENTS:
+        # Refused for the same reason an unknown feed is: an unrecognised value may
+        # be ignored by the API, leaving a capture whose URL says one adjustment and
+        # whose bars carry another.
+        raise ValueError(f"Unknown Alpaca adjustment {adjustment!r}; expected one of "
+                         + ", ".join(ALPACA_ADJUSTMENTS))
     params = {
         "timeframe": "1Day",
         "start": start_date,
         "end": end_date,
-        "adjustment": "all",
+        "adjustment": adjustment,
         "feed": feed,
         "limit": ALPACA_BARS_MAX_LIMIT,
     }
@@ -213,7 +230,8 @@ def _alpaca_equity_raw_content(calendar_stored, bar_stored):
 def capture_alpaca_equity_bars(symbol, evaluable_start_utc, evaluable_end_exclusive_utc,
                                warmup_periods, horizon, acquired_at, *,
                                credential_injector, transport=None,
-                               feed=ALPACA_DEFAULT_FEED):
+                               feed=ALPACA_DEFAULT_FEED,
+                               adjustment=ALPACA_DEFAULT_ADJUSTMENT):
     """Capture and seal equity OHLCV bars from Alpaca, with calendar verification.
 
     Arguments
@@ -278,7 +296,7 @@ def capture_alpaca_equity_bars(symbol, evaluable_start_utc, evaluable_end_exclus
     sequence, page_token = 1, None
     while True:
         url = _alpaca_bars_url(symbol, capture_start_date, capture_end_date_inclusive,
-                               page_token, feed)
+                               page_token, feed, adjustment)
         bar_raw, bar_headers = _alpaca_get(url, credential_injector, transport)
         bar_sha = digest(bar_raw)
         bar_response_metas.append({
