@@ -61,6 +61,18 @@ VERDICT_FEASIBLE = "FEASIBLE"
 VERDICT_UNCERTAIN = "UNCERTAIN"
 VERDICT_BELOW_BAR = "BELOW_BAR"
 VERDICT_UNREACHABLE_DATA = "UNREACHABLE_DATA"
+# A FIFTH ANSWER, ADDED AFTER THE ARITHMETIC OF 2026-10-03. R4 asks whether the
+# capacity CEILING clears the tranche and never whether the LOT fits inside it.
+# Measured: at a $1,000 tranche and the 10.9% weight the drawdown limit derived,
+# the position is $109 of notional, while one mini VIX future at VIX 18 is
+# $1,800 -- sixteen times too large, and one FULL contract is a hundred and
+# sixty-five times. Such a Hypothesis would pass R4 and be unoperable anyway,
+# and no premium is large enough to fix an indivisible wrapper.
+VERDICT_UNOPERABLE = "UNOPERABLE_AT_TRANCHE"
+
+# DOC-001 Fase 1: microcapital $200-$1000. The ceiling of that range is what a
+# candidate's smallest expressible position is measured against.
+FASE_1_TRANCHE_USD = Decimal("1000")
 
 
 def _decimal(value, name):
@@ -80,7 +92,8 @@ def _prose(value, name, minimum_words=6):
 
 
 def candidate(*, name, claim_class, payer, effect_low, effect_high, effect_source,
-              available_years, data_source, status, reachable_today=True):
+              available_years, data_source, status, reachable_today=True,
+              minimum_position_usd=None):
     """One entry. The conservative end of the effect range is what will be tested.
 
     `available_years` is how much history the SOURCE serves for THIS instrument,
@@ -114,6 +127,10 @@ def candidate(*, name, claim_class, payer, effect_low, effect_high, effect_sourc
                         else _prose(data_source, "The data source")),
         "status": status,
         "reachable_today": reachable_today,
+        # Present only when the wrapper has a lot size worth stating. An ETF
+        # share is not one; a futures contract is.
+        **({"minimum_position_usd": minimum_position_usd}
+           if minimum_position_usd is not None else {}),
     }
 
 
@@ -129,6 +146,17 @@ def candidate_verdict(entry):
     if not entry["reachable_today"]:
         return {"verdict": VERDICT_UNREACHABLE_DATA, "required": str(bar),
                 "detail": "no source this project can reach serves it"}
+    lot = entry.get("minimum_position_usd")
+    if lot is not None:
+        smallest = _decimal(lot, "Minimum position")
+        # Checked against the WHOLE tranche, not against the weight the drawdown
+        # limit would derive: a lot that does not fit the whole account cannot
+        # fit a tenth of it, and the weight is not known before measuring.
+        if smallest > FASE_1_TRANCHE_USD:
+            return {"verdict": VERDICT_UNOPERABLE, "required": str(bar),
+                    "detail": (f"the smallest expressible position is ${smallest:,.0f} "
+                               f"against a ${FASE_1_TRANCHE_USD:,.0f} tranche: it cannot "
+                               f"be held whatever the premium measures")}
     low = _decimal(entry["effect"]["low"], "Effect low")
     high = _decimal(entry["effect"]["high"], "Effect high")
     if low >= bar:
@@ -160,8 +188,8 @@ def rank_candidates(register):
         margin = (_decimal(entry["effect"]["high"], "Effect high")
                   - _decimal(verdict["required"], "Required"))
         scored.append({**entry, **verdict, "margin": str(margin)})
-    order = {VERDICT_FEASIBLE: 0, VERDICT_UNCERTAIN: 1,
-             VERDICT_BELOW_BAR: 2, VERDICT_UNREACHABLE_DATA: 3}
+    order = {VERDICT_FEASIBLE: 0, VERDICT_UNCERTAIN: 1, VERDICT_BELOW_BAR: 2,
+             VERDICT_UNOPERABLE: 3, VERDICT_UNREACHABLE_DATA: 4}
     return sorted(scored, key=lambda item: (order[item["verdict"]],
                                             -_decimal(item["margin"], "Margin")))
 

@@ -101,17 +101,46 @@
           "status": "UNTRIED"
         },
         {
-          "available_years": "21.00",
+          "available_years": "13.75",
           "claim_class": "PREMIUM",
-          "data_source": "CBOE; NO SOURCE THIS PROJECT REACHES SERVES IT, which is the only thing stopping it",
+          "data_source": "CBOE settlement archive, free, from 2013-01-02",
           "effect": {
             "high": "1.00",
             "low": "0.50",
-            "source": "the same literature as the SVXY entry; what differs is the window, because CBOE's VIX futures date from 2004 and the ETP does not"
+            "source": "the same literature as the ETP entries; what differs is the window"
           },
-          "name": "variance risk premium, via VIX futures directly",
+          "minimum_position_usd": "1800",
+          "name": "variance risk premium, via CBOE VIX futures directly",
           "payer": "the same buyers of protection, without an ETP wrapper between the premium and the position",
-          "reachable_today": false,
+          "reachable_today": true,
+          "status": "UNTRIED"
+        },
+        {
+          "available_years": "10.75",
+          "claim_class": "PREMIUM",
+          "data_source": "Alpaca SIP from 2016-01-04; MEASURED shortable, easy to borrow and fractionable, so a $109 position is exactly expressible",
+          "effect": {
+            "high": "1.00",
+            "low": "0.50",
+            "source": "the same literature as the SVXY entry; this is the same premium without the inverse ETP's daily rebalancing drag, and without its structure change, so the window is the feed's rather than the wrapper's"
+          },
+          "name": "variance risk premium, via VIXY held SHORT",
+          "payer": "buyers of VIX futures and index options purchasing protection against equity drawdowns they are mandated or unwilling to bear",
+          "reachable_today": true,
+          "status": "UNTRIED"
+        },
+        {
+          "available_years": "10.75",
+          "claim_class": "PREMIUM",
+          "data_source": "Alpaca SIP from 2016-01-04; MEASURED shortable, easy to borrow and fractionable",
+          "effect": {
+            "high": "0.70",
+            "low": "0.30",
+            "source": "mid-term VIX futures carry a flatter curve, so the roll harvest is smaller than the short-term one by roughly a third in published comparisons; the range is recalled and wide because the comparison is less studied than the front"
+          },
+          "name": "variance risk premium, via VIXM held SHORT",
+          "payer": "the same buyers of protection, further out the curve where they hedge horizon rather than event risk",
+          "reachable_today": true,
           "status": "UNTRIED"
         },
         {
@@ -129,10 +158,10 @@
           "status": "UNTRIED"
         }
       ],
-      "declared_at": "2026-10-03T06:22:51.866131Z",
-      "declared_by": "Oscar Carmenate Rodriguez, at dec4bd09bc5a",
+      "declared_at": "2026-10-03T06:47:50.961003Z",
+      "declared_by": "Oscar Carmenate Rodriguez, at ceefbe236646",
       "justification": "The set of harvestable premia this project can express with the data sources it actually reaches, declared BEFORE the next one is picked. It exists because the previous six were sourced from recollection and ranked by monitorability -- the failure mode that killed one of six, while size or returns killed four. What is passed over is now visible, and the bar each candidate must clear is derived from the history available for it rather than assumed to be the same for all.",
-      "register_id": "CANDIDATE_REGISTER|e1954e67b35585f61f20e274248348bcbf8f1863253c4f890aa2e96df9c5c201",
+      "register_id": "CANDIDATE_REGISTER|5688a4b7344eebb70d7f758f0d3093c363b6892169c20b74461ce7d8aa9f136f",
       "schema_version": "1"
     }
   ],

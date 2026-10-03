@@ -109,16 +109,49 @@ CANDIDATES = [
         available_years="10.75", data_source="Alpaca SIP from 2016-01-04",
         status=STATUS_UNTRIED),
     candidate(
-        name="variance risk premium, via VIX futures directly",
+        name="variance risk premium, via CBOE VIX futures directly",
         claim_class=CLAIM_PREMIUM,
         payer="the same buyers of protection, without an ETP wrapper between the premium "
               "and the position",
         effect_low="0.50", effect_high="1.00",
-        effect_source="the same literature as the SVXY entry; what differs is the window, "
-                      "because CBOE's VIX futures date from 2004 and the ETP does not",
-        available_years="21.00", data_source="CBOE; NO SOURCE THIS PROJECT REACHES SERVES "
-                                             "IT, which is the only thing stopping it",
-        status=STATUS_UNTRIED, reachable_today=False),
+        effect_source="the same literature as the ETP entries; what differs is the window",
+        # CORRECTED 2026-10-03: the previous entry called this UNREACHABLE. It is
+        # not. CBOE's own public page links a settlement archive at
+        # cdn.cboe.com/data/us/futures/market_statistics/historical_data/VX/ which
+        # returns 200 without authentication, one file per expiry, from
+        # 2013-01-02. Guessing a CDN path had returned 403 and I recorded the
+        # guess as a fact. What stops it is the LOT, not the data.
+        available_years="13.75", data_source="CBOE settlement archive, free, from 2013-01-02",
+        status=STATUS_UNTRIED,
+        minimum_position_usd="1800"),
+    candidate(
+        name="variance risk premium, via VIXY held SHORT",
+        claim_class=CLAIM_PREMIUM,
+        payer="buyers of VIX futures and index options purchasing protection against "
+              "equity drawdowns they are mandated or unwilling to bear",
+        effect_low="0.50", effect_high="1.00",
+        effect_source="the same literature as the SVXY entry; this is the same premium "
+                      "without the inverse ETP's daily rebalancing drag, and without its "
+                      "structure change, so the window is the feed's rather than the "
+                      "wrapper's",
+        available_years="10.75",
+        data_source="Alpaca SIP from 2016-01-04; MEASURED shortable, easy to borrow and "
+                    "fractionable, so a $109 position is exactly expressible",
+        status=STATUS_UNTRIED),
+    candidate(
+        name="variance risk premium, via VIXM held SHORT",
+        claim_class=CLAIM_PREMIUM,
+        payer="the same buyers of protection, further out the curve where they hedge "
+              "horizon rather than event risk",
+        effect_low="0.30", effect_high="0.70",
+        effect_source="mid-term VIX futures carry a flatter curve, so the roll harvest is "
+                      "smaller than the short-term one by roughly a third in published "
+                      "comparisons; the range is recalled and wide because the comparison "
+                      "is less studied than the front",
+        available_years="10.75",
+        data_source="Alpaca SIP from 2016-01-04; MEASURED shortable, easy to borrow and "
+                    "fractionable",
+        status=STATUS_UNTRIED),
     candidate(
         name="crypto relative value, via pair ratio reversion",
         claim_class=CLAIM_MISPRICING,
