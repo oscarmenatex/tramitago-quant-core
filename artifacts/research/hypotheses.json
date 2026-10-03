@@ -2182,6 +2182,48 @@
       "system_version": "0.1.0",
       "target_metric": "net_sharpe(SVXY held continuously, net of execution cost)",
       "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "GE",
+        "expected_direction": "INCREASE",
+        "metric": "net_sharpe(XYLD held continuously, net of execution cost)",
+        "threshold": "0.50"
+      },
+      "code_revision": "e49cfc1cfafc4880f4cc7103795119aa70453b84",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2026-10-01T00:00:00Z",
+          "start_utc": "2016-01-06T00:00:00Z"
+        },
+        "universe": [
+          "XYLD"
+        ],
+        "variables": [
+          "close",
+          "forward_return_1d",
+          "sma_close_3"
+        ]
+      },
+      "creation_context": {
+        "created_by": "Oscar Carmenate Rodriguez",
+        "provenance": [
+          "CANDIDATE_REGISTER|c3d223593d26 -- 3 of 15 admissible in principle after the expansion",
+          "PRE_DECLARATION_ALIGNMENT|0a659627 -- the contract aligned with the register, sealed before the code changed",
+          "MEASURED|XYLD served 2702 bars from 2016-01-04, tradable and fractionable",
+          "MEASURED|VIX minus 21-day realised volatility was at or below zero on 330 of 2159 days and on at least ten days in 6 of 7 folds",
+          "ADMISSION|b1fbbaf88a5a687bf63619d95bb1b394c2e3 -- the same premium on SVXY, denied on the Sharpe bound"
+        ]
+      },
+      "creation_timestamp": "2026-10-03T15:13:48.480026Z",
+      "description": "LEVEL CLAIM, one leg, zero turnover by construction.\n\nXYLD (the Global X S&P 500 Covered Call ETF) held CONTINUOUSLY from 2016-01-06 to\n2026-10-01: one entry, one exit, no signal, no rebalancing and no shorting. The net\nreturn of that position, after execution costs, is POSITIVE and its figures clear\nthe admission thresholds of DOC-011 section 8.\n\nTHIS IS THE VARIANCE RISK PREMIUM in a wrapper the platform can hold. The fund\nwrites call options on the S&P 500 inside itself, so the position is bought with\nBUY and held in fractional shares, and the executor, which cannot open a short,\nnever needs to. It is the same premium that SVXY expressed, measured at a point\nSharpe of 0.5021 with a lower bound of -0.0445 over 8.57 years, here over the\n10.71 the feed serves for this instrument.\n\nWHAT IS NEW IN HOW IT WAS CHOSEN. It is the second Hypothesis to answer seven\nquestions before spending, and its effect range STRADDLES its bar rather than\nclearing it. That is declared, not hidden: the recalled conservative end is 0.35\nagainst a bar of 0.500. The declaration is accepted only under the contract as\naligned with the candidate register on 2026-10-03.\n\nTHE DECLARED MONITOR AND WHAT IT CLAIMS. Variable: VIX minus the 21-day realised\nvolatility of the S&P 500. Degradation: that spread at or below zero, meaning\nrealised volatility has caught up with what the market charged for it. Action:\nsuspend. It is not the position's P&L. The link claimed is that such days degrade\nthe fund's return, to be tested fold by fold. IT DOES NOT CLAIM to separate the\npremium dying from the market falling: realised volatility exceeds implied mostly\non down days for the underlying, so a link that holds may be detecting equity\ndrawdowns. That is a legitimate stop and a different claim, and the runner is\ndeclared to test the same link on SPY as a control beside it.\n\nPre-declared caveats:\n- THE EFFECT RANGE STRADDLES ITS BAR, AND THE CONTRACT ACCEPTED IT ONLY BECAUSE IT WAS CHANGED THE SAME DAY. The recalled range is 0.35 to 0.80 against a derived bar of 0.500. The earlier contract refused any declaration whose conservative end fell below the bar. PRE_DECLARATION_ALIGNMENT|0a659627 aligned it with the register, and records itself as partly weak provenance because the inconsistency was noticed while trying to declare this Hypothesis. Its own measurement is the warning: the class of straddling candidates has produced no admission, four of four measured members died.\n- THIS IS ONE IDEA IN THREE WRAPPERS, AND ONLY ONE IS DECLARED. DIVO and QYLD sit in the register undeclared. They write options on overlapping indices, so their returns are highly correlated and the effective breadth of the three is close to one. Declaring a second would be a correlated draw that paid the multiplicity tax as though independent, and would have to say so.\n- THE CHOICE OF THIS FAMILY FOLLOWED A MEASUREMENT OF THE SAME PREMIUM. The variance risk premium was measured on SVXY at 0.5021 with a bound of -0.0445, and the search for a wrapper over a longer window began there. That is selection on a neighbouring outcome. The multiplicity ledger should count this and the SVXY Hypothesis as correlated draws and not as independent ones.\n- IT MIXES THE EQUITY PREMIUM WITH THE VOLATILITY PREMIUM. A covered-call fund carries an equity beta recalled at 0.6 to 0.8, so most of what is measured is the market. Admitting it would be beta with a decoration, which the equity premium own declaration marked as not evidence that this platform can find anything, and that applies here at least as strongly.\n- THE MONITOR CAN PASS FOR THE WRONG REASON, AND THE RUNNER IS DECLARED TO CONTROL FOR IT. Realised volatility exceeds implied mostly on days the underlying falls, which are bad days for any equity position. The same link is to be reported on SPY beside the fund. If it holds equally on SPY, the monitor detects drawdowns and not this premium, and the claim stays the narrower one of a stop. Under M2_AVAILABILITY|04a35abd, if the empirical link was reachable and fails, R3 FAILS and the identity form is not available as a fallback.\n- THE DISTRIBUTION ADJUSTMENT IS UNCHECKED AND IS THE LARGEST DATA RISK. The fund pays large monthly distributions, partly return of capital. If the adjusted bars omit them the measured Sharpe is understated, and if they double count it is overstated. Before judging anything the runner must compare adjusted against raw closes, infer the distributions the adjustment implies, and check their size is of the order the fund publishes. A failure of that check voids the measurement.\n- A FUND IN THIS FAMILY HAS ALREADY CLOSED. PUTW, a put-write fund, returned 404 from the asset endpoint with its bars ending 2025-04-03. XYLD could close too, forcing an exit at a time not of the platform choosing. That risk is not in any return series and is not priced here.\n- THE WINDOW IS THE FEED'S, AND IT CONTAINS THE TAILS. 2016-01-06 to 2026-10-01 is the whole span served for this instrument less three bars the dataset contract cannot evaluate. It contains February 2018, March 2020 and 2022. Expect the drawdown gate to bind and the derived weight to sit well below one, as it did for SPY and for SVXY.\n- POPULATION AND MULTIPLICITY. It is declared into 'US equities, daily, risk premium', which holds one measured Hypothesis, and it counts in the multiplicity ledger as draw 49 from the same search. One Hypothesis cannot resolve a population that needs five.",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|27314537-88d0-4f0e-8d39-29047bf7d6cb",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|27314537-88d0-4f0e-8d39-29047bf7d6cb|1|1c4e42c5c19ea5f6ae9a1a84d7b407d3697634f62cafa3e78935dbc4815dbc0c",
+      "status": "PROPOSED",
+      "system_version": "0.1.0",
+      "target_metric": "net_sharpe(XYLD held continuously, net of execution cost)",
+      "version": 1
     }
   ],
   "schema_version": "2"

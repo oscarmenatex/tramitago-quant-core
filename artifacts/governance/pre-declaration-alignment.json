@@ -1,0 +1,69 @@
+{
+  "alignments": [
+    {
+      "alignment_id": "PRE_DECLARATION_ALIGNMENT|0a659627f22fd7edfe6f860288d9a28aabd0ee4a30cb9b04f70004f00f5420cf",
+      "aligns": "research/pre_declaration.py with the candidate register's three verdicts",
+      "authorised_by": "Oscar Carmenate Rodriguez, Director del Proyecto",
+      "code_revision": "e49cfc1cfafc4880f4cc7103795119aa70453b84",
+      "ground": {
+        "name": "THE REGISTER CORRECTED THIS FLAW BEFORE XYLD WAS A CANDIDATE, AND THE CONTRACT WAS NOT",
+        "provenance": "PARTLY WEAK, AND RECORDED AS SUCH. The ground predates the candidate it benefits. But the inconsistency BETWEEN the contract and the register was NOTICED while trying to declare XYLD, which is the order the proposal warns against: the apparatus is being changed at the moment a change would help. What stands in its favour is that the rule being aligned TO was already sealed, and the change removes an inconsistency rather than introducing a new constant.",
+        "statement": "A recalled effect range has two ends and neither is right alone. The conservative end refuses a premium that then clears its gate: the S&P 500 was recalled at 0.40 to 0.80 against a bar of 0.500 and MEASURED 0.81. The optimistic end admits one that then fails: the investment-grade credit premium was recalled at 0.20 to 0.50 and MEASURED 0.19. The candidate register therefore holds three verdicts and refuses only when even the optimistic end falls short. The pre-declaration contract was written the same day with a single declared value, the conservative end, and applied the rule the register had already shown to be wrong.",
+        "why_it_is_independent": "Both measurements -- SPY at 0.81 and credit at 0.19 -- were sealed before XYLD existed in this project's candidate list, and the three-verdict rule was sealed in the register in PR 123 while the list held no covered-call fund; XYLD entered in PR 125. A reader can check the ordering in the git record, and can check the ground against two sealed measurements without knowing any covered-call result."
+      },
+      "integrity_check": {
+        "harder_or_easier": "EASIER, the direction that carries the heavier burden. It makes a class of candidates declarable that the contract refused, which is why the ground is stated before the change, the provenance is recorded per ground, and the effect is measured from the register rather than argued.",
+        "measured": {
+          "candidates": 15,
+          "declarable_under_the_aligned_rule": 12,
+          "declarable_under_the_strict_rule": 2,
+          "newly_declarable": [
+            "variance risk premium, via SVXY",
+            "US equity risk premium, via SPY",
+            "crypto perpetual funding carry",
+            "investment-grade credit premium, via LQD against IEF",
+            "variance risk premium, via VIXM held SHORT",
+            "currency carry, via developed-market FX ETFs",
+            "variance risk premium, via XYLD held long (S&P 500 covered calls)",
+            "variance risk premium, via DIVO held long (active covered calls)",
+            "variance risk premium, via QYLD held long (Nasdaq-100 covered calls)",
+            "variance risk premium, via PUTW (S&P 500 put-write)"
+          ],
+          "newly_declarable_that_are_already_measured": [
+            "variance risk premium, via SVXY",
+            "US equity risk premium, via SPY",
+            "crypto perpetual funding carry",
+            "investment-grade credit premium, via LQD against IEF"
+          ],
+          "of_those_measured_how_many_were_admitted": 0,
+          "register_id": "CANDIDATE_REGISTER|c3d223593d26d12eb8e567cc86b655f857c3259b08f28e09fb4f8a8e0c94f3d5",
+          "still_refused_under_the_aligned_rule": [
+            "crypto relative value, via pair ratio reversion",
+            "term premium, via TLT against SHY",
+            "commodity roll premium, via broad commodity ETFs"
+          ]
+        },
+        "question": "section 11.0's own test: harder or easier, and what does it rescue?",
+        "the_cost_stated_plainly": "The class this opens -- candidates whose range straddles their bar -- has produced NO admission in this project. Every measured member of it died: the S&P 500 on monitorability, the volatility premium on a Sharpe bound of -0.0445 and a refuted monitor link, the funding carry on returns, and the credit premium on size. Aligning the contract makes the class declarable and says nothing about how it will resolve. Four of four is a small sample and a poor omen, and both are true."
+      },
+      "kind": "pre-declaration-alignment",
+      "revision": {
+        "after": "The recalled range is declared as TWO ends. The declaration is refused only when even the OPTIMISTIC end falls below the bar, matching the register. A declaration whose conservative end falls below the bar but whose optimistic end clears it is ACCEPTED and RECORDED AS STRADDLING, so the position against the bar travels with the declaration and is never inferred later.",
+        "before": "A single plausible point Sharpe is declared, the conservative end of the recalled range, and the declaration is refused when it falls below the bar derived from the window.",
+        "clause": "the feasibility refusal in research/pre_declaration.py",
+        "what_is_untouched": [
+          "The bar itself, derived from the window length, with no new constant.",
+          "The floor of 0.50 below which no bar may fall.",
+          "The refusal of a declared bar that disagrees with the derived one.",
+          "The requirement to explain a window shorter than the source serves.",
+          "The seven answers and the prose floor on each.",
+          "Every record already sealed: schema 1 reproduces byte for byte."
+        ],
+        "what_it_adds": "Two fields, plausible_low and plausible_high, and a derived position against the bar (CLEARS or STRADDLES). Schema 2; schema 1 records are unchanged."
+      },
+      "schema_version": "1",
+      "sealed_at": "2026-10-03T15:11:47.204021Z"
+    }
+  ],
+  "schema_version": "1"
+}
