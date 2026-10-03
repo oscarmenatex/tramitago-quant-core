@@ -1,3 +1,9 @@
 {
-  "remeasure_every_months": 12
+  "remeasure_every_months": 12,
+  "triggers": {
+    "remeasure_warn_days": 30,
+    "life_warn_days": 90,
+    "instrument_max_gap_days": 7,
+    "drift_tolerance": "0.25"
+  }
 }

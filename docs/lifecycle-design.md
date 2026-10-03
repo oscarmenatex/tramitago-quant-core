@@ -135,7 +135,7 @@ gratis.
 1. **CONSTRUIDO.** `lifecycle_status()`: informe **de solo lectura** que deriva el estado de cada
    miembro de los registros existentes. Sin almacén nuevo, sin cambiar nada sellado.
    Es útil hoy, aunque todos estén denegados.
-2. Disparadores como funciones puras con sus tests, sin canal todavía.
+2. **CONSTRUIDO.** Disparadores como funciones puras con sus tests, sin canal todavía (`research/lifecycle_triggers.py`).
 3. Notificador, una vez elegido el canal.
 4. Filtro de universo y cuota de pruebas.
 
