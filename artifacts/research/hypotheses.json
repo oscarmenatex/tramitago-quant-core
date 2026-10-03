@@ -2096,6 +2096,50 @@
       "system_version": "0.1.0",
       "target_metric": "net_sharpe(long LQD, short IEF at equal notional, held continuously, net of execution cost on both legs)",
       "version": 2
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "GE",
+        "expected_direction": "INCREASE",
+        "metric": "net_sharpe(long LQD, short IEF at equal notional, held continuously, net of execution cost on both legs)",
+        "threshold": "0.50"
+      },
+      "code_revision": "fcc669a54e5a67b90e0e2cb40c1d7f9e19ace12d",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2026-10-01T00:00:00Z",
+          "start_utc": "2018-01-02T00:00:00Z"
+        },
+        "universe": [
+          "LQD"
+        ],
+        "variables": [
+          "close",
+          "pair_close",
+          "forward_spread_return_1d",
+          "pair_ratio_avg_3"
+        ]
+      },
+      "creation_context": {
+        "created_by": "Oscar Carmenate Rodriguez",
+        "provenance": [
+          "ADMISSION|6d61c78276ecf615a6ed77b13c559a395768",
+          "ANALYSIS|equity-risk-premium denied on R3 alone, 5 of 6 gates cleared",
+          "CRITERION|a premium is monitorable when its compensation is QUOTED, separately from the position's own P&L",
+          "MEASURED|FRED holds 794 observations of BAMLH0A0HYM2 from 2023-10-03 (ICE restricts history) against 9589 of BAA10Y from 1990",
+          "THRESHOLD_CORRECTION|efdfe375c4b670b9cd5c041005fef5054",
+          "STOPPING_RULE|7c65a5829295a01d100ddcd4c63e18dad7065d657fc468ffa1670fddfd131954"
+        ]
+      },
+      "creation_timestamp": "2026-10-03T04:16:23.435857Z",
+      "description": "LEVEL CLAIM, two legs, zero turnover by construction.\n\nLong LQD (investment-grade corporate bonds) and short IEF (7-10 year Treasuries)\nat EQUAL NOTIONAL, both total return, held CONTINUOUSLY from 2018-01-02 to\n2026-10-01: one entry, one exit, no signal, no rebalancing. The net return of\nthat position, after execution costs on both legs, is POSITIVE and its figures\nclear the admission thresholds of DOC-011 section 8.\n\nTHIS IS THE CREDIT RISK PREMIUM: the compensation an investor receives for\nbearing default and illiquidity risk that a Treasury holder does not.\n\nWHY IT IS DECLARED NOW. The equity risk premium cleared five of six gates on\n2026-10-02 and was denied on R3 alone, because the only observable that reports\nan unconditional premium dying is it not paying -- which is P&L, which the\nmonitor contract refuses. That is structural and unfixable. The criterion that\nfollowed is MONITORABILITY FIRST: a premium is monitorable when its\ncompensation is QUOTED somewhere, separately from the position's own P&L.\n\nWHY VERSION 2 CHANGED BOTH LEGS' CREDIT QUALITY. Version 1 declared HYG, high\nyield, monitored by the ICE BofA High Yield OAS. MEASURED 2026-10-02 with a key\nOscar obtained for the purpose: FRED holds only 794 observations of that series,\n2023-10-03 onward -- ICE restricts historical redistribution, so the free CSV\nand the keyed API return the same rolling three-year window and neither can be\npaginated past it. A monitor whose history begins in late 2023 HAS NEVER\nOBSERVED A CREDIT CRISIS, and the representativeness gate would have been right\nto refuse it. The same probe found Moody's Baa spread, BAA10Y, with 9,589 daily\nobservations reaching back at least to 1990 and through every crisis since.\n\nSo the position moved to the credit quality the monitor can actually see. That\nalso repaired an impurity version 1 had to declare rather than fix: HYG's\nduration is about 3.5 years against IEF's 7.5, leaving the spread NET SHORT\nDURATION, so part of it was a rates bet that 2022 flattered. LQD's duration is\nabout 8.3 years, close enough to IEF's that what remains is credit.\n\nTHE DECLARED MONITOR. Variable: BAA10Y, Moody's Seasoned Baa Corporate Bond\nYield relative to the 10-Year Treasury, published daily by a third party.\nDegradation: the spread falling to or below a declared floor, meaning the market\nhas stopped paying for default risk and the mechanism this position rests on has\nstopped operating. Action: suspend. It is not the position's P&L, it is not\nderived from LQD or IEF prices, and it would keep being published if this\nposition were never opened.\n\nPre-declared caveats:\n- ONE GATE CARRIES ALL THE RISK: the net Sharpe. If the point estimate lands below 0.50 it is MEASURED AND BAD, which DOC-011 holds to be an ABSOLUTE VETO that no size converts -- unlike a drawdown, which size resolves. Claude did not compute it before this was sealed, in either version, although the SIP feed that serves both legs is already paid for and the measurement would have taken a minute. Looking first would have selected the Hypothesis on its own outcome.\n- THE MONITOR IS NOT THE SAME INSTRUMENT AS THE POSITION, AND CANNOT BE. BAA10Y is Moody's Baa yield against a 10-year Treasury; the position is an ETF holding investment-grade corporates across A and Baa against a 7-10 year Treasury ETF. They are the same premium at close but not identical credit quality, so LQD's own spread runs tighter than pure Baa. The monitor detects the premium DYING -- compensation for default risk collapsing -- which is a move that cannot happen in Baa without having happened in LQD. It is a weaker instrument for detecting a DIVERGENCE between the two, and that limitation is declared rather than discovered.\n- VERSION 2 CHANGED THE INSTRUMENT AFTER VERSION 1 WAS SEALED, and the reason must be weighed by whoever reads this. It was NOT because anything was measured about HYG's returns -- nothing was, in either version. It was because the monitor HYG required does not exist with history, which is a fact about a data vendor and not about the market. Still, revising an instrument after declaring it is the shape of a free retry, and the only thing distinguishing this from one is that no outcome was observed between the versions.\n- SHORTING IEF IS ASSUMED TO COST ONLY THE DECLARED RATES. Borrow cost and borrow availability are real, vary over time, and are absent from daily bar data. A Treasury ETF is about as easy to borrow as anything gets, which makes the assumption reasonable and still an assumption.\n- THE TAIL IS IN THE WINDOW. LQD fell about 22% peak to trough in March 2020 as investment-grade credit seized, which is GOOD for the tail-coverage gate and is what the drawdown gate will have to be sized against. Expect the derived weight to be well below one, as it was for SPY.\n- POPULATION: 'US fixed income ETFs, daily, risk premium', in which ZERO Hypotheses have been measured. It is neither of the two sealed EXHAUSTED BY MEASUREMENT on 2026-10-02. That is honest and it is also how any stopping rule gets escaped, so the split is named exactly as it was for the equity premium, and one Hypothesis cannot resolve a population that needs five.\n- IT COUNTS IN THE MULTIPLICITY LEDGER, once, as one Hypothesis across both versions. It is not a free shot because the equity premium was denied on a technicality; it is the next draw from the same search.",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|cf55e397-75ab-49d9-8f69-1e155e312a2c",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|cf55e397-75ab-49d9-8f69-1e155e312a2c|3|2083ed50f4ebdb56b1d104a6e389dbbcbc484f81aff7b5aaa590d4c57bcbbb02",
+      "status": "PROPOSED",
+      "system_version": "0.1.0",
+      "target_metric": "net_sharpe(long LQD, short IEF at equal notional, held continuously, net of execution cost on both legs)",
+      "version": 3
     }
   ],
   "schema_version": "2"

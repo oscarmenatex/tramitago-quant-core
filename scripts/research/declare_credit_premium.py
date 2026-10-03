@@ -169,13 +169,17 @@ def main():
         expected_direction="INCREASE",
         constraints={"period": {"start_utc": PERIOD_START, "end_exclusive_utc": PERIOD_END},
                      "universe": [PRIMARY],
-                     # pair_close is the IEF leg, sealed as an auxiliary source;
-                     # sma_close_3 is declared and NEVER USED, because the dataset
-                     # contract imposes the default Strategy's column on every
-                     # Hypothesis -- a position that is merely HELD has no signal
-                     # and the data layer still cannot express that.
+                     # pair_close is the IEF leg, sealed as an auxiliary source.
+                     # pair_ratio_avg_3 is declared and NEVER USED: the dataset
+                     # contract requires the Strategy's own column among a
+                     # Hypothesis's variables, and only a PAIR Strategy declares
+                     # pair_close among its inputs -- without which the second leg
+                     # is never merged at all. Version 2 named sma_close_3, the
+                     # single-instrument default, which would have left this
+                     # Hypothesis with no second leg. A position that is merely
+                     # HELD has no signal and the data layer still cannot say so.
                      "variables": ["close", "pair_close", "forward_spread_return_1d",
-                                   "sma_close_3"]},
+                                   "pair_ratio_avg_3"]},
         acceptance_criterion=ACCEPTANCE,
         creation_timestamp=now,
         status="PROPOSED",
