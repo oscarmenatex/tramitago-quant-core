@@ -117,6 +117,12 @@ def _print(result):
               f"(declared {check['expected_annual_yield']}) -> {check['status']}")
     print(f"  GROSS {result['gross_total']:+.4f}   COST {result['cost_total']:.6f}   "
           f"NET {result['net_total']:+.4f}   weight {result['weight']:.1%}")
+    short = result.get("short")
+    if short:
+        print(f"  SHORT       borrow {short['borrow_annual']} a year; worst day against "
+              f"{short['worst_day_against']:+.2%}; {short['days_beyond_adverse_move']} days "
+              f"beyond the {short['max_adverse_move']} adverse move, on which a stop "
+              f"would fill past its price")
     print(f"  net Sharpe  point {result['sharpe_point']:+.4f}   LOWER bound "
           f"{result['sharpe_bound']:+.4f}   MEASURED against the declared range above")
     print(f"  drawdown    point {result['drawdown_point']:.2%}   UPPER bound "
