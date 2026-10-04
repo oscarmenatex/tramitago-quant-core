@@ -61,8 +61,10 @@ El holdout se abre una sola vez, y solo para C14.
 | Coste | Gasta el holdout, y esos tres años dejan de ser vírgenes para cualquier cribado futuro | Ninguno |
 | Probabilidad de que sea real | Baja: un aprobado de 14 con 3,2 esperados por azar y sin mecanismo fuerte | |
 
-**Recomendación: no abrirlo.** Es una recomendación, no una decisión mía, y se puede revertir a cambio de
-nada porque `confirm` no ha corrido.
+**Recomendación: no abrirlo.**
+
+> **DECISIÓN DEL DIRECTOR, 2026-10-03: el holdout NO se abre.** `confirm` no se ha ejecutado y el
+> holdout sigue virgen. Abrirlo más adelante exigiría una decisión expresa y distinta.
 
 ## 5. Lo que queda por decidir
 
