@@ -77,18 +77,27 @@ class RealIO:
             credential_injector=self._injector, feed=feed, adjustment=adjustment)
 
     def relay_fred(self, series_id, start, end):
-        import base64
-        command = (
-            f'curl -sS -G "https://api.stlouisfed.org/fred/series/observations" '
-            f'-d series_id={series_id} -d observation_start={start} -d observation_end={end} '
-            f'-d file_type=json --data-urlencode "api_key@$HOME/.fredkey" | base64 -w0')
-        result = subprocess.run(
-            ["ssh", "-o", "ConnectTimeout=20", "-o", "BatchMode=yes", VM_HOST, command],
-            capture_output=True, text=True, timeout=240)
-        if result.returncode != 0 or not result.stdout.strip():
-            raise SystemExit(f"Could not fetch {series_id} on {VM_HOST}: "
-                             f"{result.stderr.strip()[:200]}")
-        return base64.b64decode(result.stdout.strip())
+        return relay_fred_over_ssh(series_id, start, end)
+
+
+def relay_fred_over_ssh(series_id, start, end):
+    """Fetch one FRED series on the VM and return the bytes. The key never leaves the VM.
+
+    A module function and not only a method of RealIO, because RealIO needs Alpaca credentials
+    to be built and a caller that only wants FRED, the monitor screen, has none to give.
+    """
+    import base64
+    command = (
+        f'curl -sS -G "https://api.stlouisfed.org/fred/series/observations" '
+        f'-d series_id={series_id} -d observation_start={start} -d observation_end={end} '
+        f'-d file_type=json --data-urlencode "api_key@$HOME/.fredkey" | base64 -w0')
+    result = subprocess.run(
+        ["ssh", "-o", "ConnectTimeout=20", "-o", "BatchMode=yes", VM_HOST, command],
+        capture_output=True, text=True, timeout=240)
+    if result.returncode != 0 or not result.stdout.strip():
+        raise SystemExit(f"Could not fetch {series_id} on {VM_HOST}: "
+                         f"{result.stderr.strip()[:200]}")
+    return base64.b64decode(result.stdout.strip())
 
 
 def _print(result):
