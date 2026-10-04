@@ -1,0 +1,1024 @@
+{
+  "scans": [
+    {
+      "code_revision": "9dcdda22db3456c7798eb75c17c47a0abbb79741",
+      "inputs_digest": "018d5768021d8ef281344eb58389705ce65fa10e360b9b3099986d6cbc74c85e",
+      "kind": "monitor-screen-scan",
+      "observations": [
+        {
+          "candidate": "C01",
+          "days": 1406,
+          "exposure": "SPY",
+          "folds": [
+            {
+              "days": 200,
+              "mean_off": -4.9083666108482585e-05,
+              "mean_on": null,
+              "met": false,
+              "on_days": 0,
+              "usable": false
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0005599635808523005,
+              "mean_on": 0.0034805070056326826,
+              "met": false,
+              "on_days": 6,
+              "usable": false
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0008996226123548983,
+              "mean_on": null,
+              "met": false,
+              "on_days": 0,
+              "usable": false
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0013488468905386724,
+              "mean_on": null,
+              "met": false,
+              "on_days": 0,
+              "usable": false
+            },
+            {
+              "days": 200,
+              "mean_off": 0.00033819625325103074,
+              "mean_on": null,
+              "met": false,
+              "on_days": 0,
+              "usable": false
+            },
+            {
+              "days": 200,
+              "mean_off": -0.0013432555024099496,
+              "mean_on": 0.0006748362879152037,
+              "met": false,
+              "on_days": 107,
+              "usable": true
+            },
+            {
+              "days": 206,
+              "mean_off": null,
+              "mean_on": 0.00043965530777703954,
+              "met": false,
+              "on_days": 206,
+              "usable": false
+            }
+          ],
+          "form": "SIGN_AT_OR_BELOW_ZERO",
+          "met": 0,
+          "on_days": 319,
+          "outcome": "UNREACHABLE",
+          "ratio": 0.0,
+          "unknown_days": 10,
+          "usable": 1,
+          "variable": "T10Y2Y"
+        },
+        {
+          "candidate": "C02",
+          "days": 1406,
+          "exposure": "SPY",
+          "folds": [
+            {
+              "days": 200,
+              "mean_off": -4.9083666108482585e-05,
+              "mean_on": null,
+              "met": false,
+              "on_days": 0,
+              "usable": false
+            },
+            {
+              "days": 200,
+              "mean_off": 0.000837959964797121,
+              "mean_on": 0.00045335374014780983,
+              "met": true,
+              "on_days": 99,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0014338510526431332,
+              "mean_on": -0.0036540388548638647,
+              "met": true,
+              "on_days": 21,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0013488468905386724,
+              "mean_on": null,
+              "met": false,
+              "on_days": 0,
+              "usable": false
+            },
+            {
+              "days": 200,
+              "mean_off": 0.00033819625325103074,
+              "mean_on": null,
+              "met": false,
+              "on_days": 0,
+              "usable": false
+            },
+            {
+              "days": 200,
+              "mean_off": -0.0005532977787475862,
+              "mean_on": 0.001516140679549511,
+              "met": false,
+              "on_days": 28,
+              "usable": true
+            },
+            {
+              "days": 206,
+              "mean_off": null,
+              "mean_on": 0.00043965530777703954,
+              "met": false,
+              "on_days": 206,
+              "usable": false
+            }
+          ],
+          "form": "SIGN_AT_OR_BELOW_ZERO",
+          "met": 2,
+          "on_days": 354,
+          "outcome": "UNREACHABLE",
+          "ratio": 0.6666666666666666,
+          "unknown_days": 10,
+          "usable": 3,
+          "variable": "T10Y3M"
+        },
+        {
+          "candidate": "C03",
+          "days": 1406,
+          "exposure": "SPY",
+          "folds": [
+            {
+              "days": 200,
+              "mean_off": -0.0009522189193251745,
+              "mean_on": 0.00038575923358844313,
+              "met": false,
+              "on_days": 135,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": -0.00020014665984978907,
+              "mean_on": 0.001704856808567067,
+              "met": false,
+              "on_days": 89,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0019484794978196639,
+              "mean_on": -0.0010060469401092533,
+              "met": true,
+              "on_days": 71,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0015932367358993025,
+              "mean_on": 0.0006532757922045713,
+              "met": true,
+              "on_days": 52,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.00021705397187126758,
+              "mean_on": 0.00048040675747944837,
+              "met": false,
+              "on_days": 92,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": -0.002038590861607679,
+              "mean_on": 0.0016212327817360047,
+              "met": false,
+              "on_days": 97,
+              "usable": true
+            },
+            {
+              "days": 206,
+              "mean_off": -3.326501789369832e-05,
+              "mean_on": 0.0013994053804617722,
+              "met": false,
+              "on_days": 68,
+              "usable": true
+            }
+          ],
+          "form": "CHANGE_21D_ABOVE_ZERO",
+          "met": 2,
+          "on_days": 604,
+          "outcome": "REACHABLE_AND_FAILED",
+          "ratio": 0.2857142857142857,
+          "unknown_days": 11,
+          "usable": 7,
+          "variable": "BAA10Y"
+        },
+        {
+          "candidate": "C04",
+          "days": 1406,
+          "exposure": "SPY",
+          "folds": [
+            {
+              "days": 200,
+              "mean_off": -0.00021095262453197142,
+              "mean_on": 0.00011939218857718949,
+              "met": false,
+              "on_days": 98,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": -0.002600672021635001,
+              "mean_on": 0.0012662945322110858,
+              "met": false,
+              "on_days": 168,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.00014139328298010774,
+              "mean_on": 0.001572014659158958,
+              "met": false,
+              "on_days": 106,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0013385741797931228,
+              "mean_on": 0.0013722551986309903,
+              "met": false,
+              "on_days": 61,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0003424489466280882,
+              "mean_on": 0.00017234121154579006,
+              "met": false,
+              "on_days": 5,
+              "usable": false
+            },
+            {
+              "days": 200,
+              "mean_off": -0.0026825320611857046,
+              "mean_on": 5.07511779100152e-05,
+              "met": false,
+              "on_days": 177,
+              "usable": true
+            },
+            {
+              "days": 206,
+              "mean_off": -3.986222044481301e-05,
+              "mean_on": 0.0032528248066785743,
+              "met": false,
+              "on_days": 30,
+              "usable": true
+            }
+          ],
+          "form": "ABOVE_TRAILING_MEDIAN_252",
+          "met": 0,
+          "on_days": 645,
+          "outcome": "REACHABLE_AND_FAILED",
+          "ratio": 0.0,
+          "unknown_days": 11,
+          "usable": 6,
+          "variable": "BAA10Y"
+        },
+        {
+          "candidate": "C05",
+          "days": 1406,
+          "exposure": "SPY",
+          "folds": [
+            {
+              "days": 200,
+              "mean_off": -0.000266201249285066,
+              "mean_on": 0.00018612704899948276,
+              "met": false,
+              "on_days": 96,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0011290696732742427,
+              "mean_on": -0.00020840196472167604,
+              "met": true,
+              "on_days": 72,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.002321163343867904,
+              "mean_on": -0.00046617142380465584,
+              "met": true,
+              "on_days": 102,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0013877801490156257,
+              "mean_on": 0.0012853242056552223,
+              "met": true,
+              "on_days": 76,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 2.5903382710191865e-05,
+              "mean_on": 0.000604223513341375,
+              "met": false,
+              "on_days": 108,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.00020456555548291686,
+              "mean_on": -0.0007914811467913585,
+              "met": true,
+              "on_days": 94,
+              "usable": true
+            },
+            {
+              "days": 206,
+              "mean_off": 0.00041172765363686726,
+              "mean_on": 0.0004827535394748362,
+              "met": false,
+              "on_days": 81,
+              "usable": true
+            }
+          ],
+          "form": "CHANGE_21D_ABOVE_ZERO",
+          "met": 4,
+          "on_days": 629,
+          "outcome": "REACHABLE_AND_FAILED",
+          "ratio": 0.5714285714285714,
+          "unknown_days": 0,
+          "usable": 7,
+          "variable": "VIXCLS"
+        },
+        {
+          "candidate": "C06",
+          "days": 1406,
+          "exposure": "SPY",
+          "folds": [
+            {
+              "days": 200,
+              "mean_off": -0.00039430025142379914,
+              "mean_on": 0.00022771161400920366,
+              "met": false,
+              "on_days": 111,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0009836528650473708,
+              "mean_on": -0.0013340918346192423,
+              "met": true,
+              "on_days": 29,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": -3.36855169320477e-05,
+              "mean_on": 0.0029291974331852413,
+              "met": false,
+              "on_days": 63,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0009803978983337314,
+              "mean_on": 0.0017479999654273586,
+              "met": false,
+              "on_days": 96,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0015029980944508442,
+              "mean_on": -0.0007809270843723195,
+              "met": true,
+              "on_days": 102,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0010536467707238663,
+              "mean_on": -0.0009573809625736281,
+              "met": true,
+              "on_days": 131,
+              "usable": true
+            },
+            {
+              "days": 206,
+              "mean_off": 0.0011595021926651733,
+              "mean_on": 9.98612298333014e-07,
+              "met": true,
+              "on_days": 128,
+              "usable": true
+            }
+          ],
+          "form": "CHANGE_21D_ABOVE_ZERO",
+          "met": 4,
+          "on_days": 660,
+          "outcome": "REACHABLE_AND_FAILED",
+          "ratio": 0.5714285714285714,
+          "unknown_days": 10,
+          "usable": 7,
+          "variable": "DFII10"
+        },
+        {
+          "candidate": "C07",
+          "days": 1406,
+          "exposure": "SPY",
+          "folds": [
+            {
+              "days": 200,
+              "mean_off": -0.0006919029681941897,
+              "mean_on": 0.00020090161803595907,
+              "met": false,
+              "on_days": 144,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0014067193442005436,
+              "mean_on": -2.561926071423301e-05,
+              "met": true,
+              "on_days": 106,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.001982873847171471,
+              "mean_on": -0.00029765506823183963,
+              "met": true,
+              "on_days": 95,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0009532033577281495,
+              "mean_on": 0.002272015133763226,
+              "met": false,
+              "on_days": 60,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": -0.0004147097704718422,
+              "mean_on": 0.0009925912084494156,
+              "met": false,
+              "on_days": 107,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0004379190259760517,
+              "mean_on": -0.0006090890644150592,
+              "met": true,
+              "on_days": 134,
+              "usable": true
+            },
+            {
+              "days": 206,
+              "mean_off": 0.0012237875838602464,
+              "mean_on": -0.0005911702686469515,
+              "met": true,
+              "on_days": 89,
+              "usable": true
+            }
+          ],
+          "form": "CHANGE_21D_ABOVE_ZERO",
+          "met": 4,
+          "on_days": 735,
+          "outcome": "REACHABLE_AND_FAILED",
+          "ratio": 0.5714285714285714,
+          "unknown_days": 20,
+          "usable": 7,
+          "variable": "DTWEXBGS"
+        },
+        {
+          "candidate": "C08",
+          "days": 1406,
+          "exposure": "CREDIT",
+          "folds": [
+            {
+              "days": 200,
+              "mean_off": -0.0003264367938316517,
+              "mean_on": -3.0560486079292504e-05,
+              "met": false,
+              "on_days": 135,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": -1.1222332121414375e-05,
+              "mean_on": 0.0004023987848488892,
+              "met": false,
+              "on_days": 89,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.000381094771548175,
+              "mean_on": -0.00033342618937038765,
+              "met": true,
+              "on_days": 71,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.00021138145649921602,
+              "mean_on": 4.2755789637922445e-05,
+              "met": true,
+              "on_days": 52,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": -0.00014270047814771353,
+              "mean_on": -6.433087644029606e-05,
+              "met": false,
+              "on_days": 92,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": -0.0002676850608565062,
+              "mean_on": 0.00039368351493412375,
+              "met": false,
+              "on_days": 97,
+              "usable": true
+            },
+            {
+              "days": 206,
+              "mean_off": 4.538803395717088e-06,
+              "mean_on": 0.00015499161854900425,
+              "met": false,
+              "on_days": 68,
+              "usable": true
+            }
+          ],
+          "form": "CHANGE_21D_ABOVE_ZERO",
+          "met": 2,
+          "on_days": 604,
+          "outcome": "REACHABLE_AND_FAILED",
+          "ratio": 0.2857142857142857,
+          "unknown_days": 11,
+          "usable": 7,
+          "variable": "BAA10Y"
+        },
+        {
+          "candidate": "C09",
+          "days": 1406,
+          "exposure": "CREDIT",
+          "folds": [
+            {
+              "days": 200,
+              "mean_off": -0.00018304300242946332,
+              "mean_on": -6.809868338731215e-05,
+              "met": false,
+              "on_days": 98,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": -0.0004245248652525527,
+              "mean_on": 0.00028662267067949897,
+              "met": false,
+              "on_days": 168,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 1.3639540583821484e-05,
+              "mean_on": 0.00022835706858054564,
+              "met": false,
+              "on_days": 106,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0002589927017260856,
+              "mean_on": -4.085621175196646e-05,
+              "met": true,
+              "on_days": 61,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": -5.983215270820774e-05,
+              "mean_on": -0.0019325644988719582,
+              "met": false,
+              "on_days": 5,
+              "usable": false
+            },
+            {
+              "days": 200,
+              "mean_off": -0.001183709327447742,
+              "mean_on": 0.00021379126673270018,
+              "met": false,
+              "on_days": 177,
+              "usable": true
+            },
+            {
+              "days": 206,
+              "mean_off": -8.810987924412925e-05,
+              "mean_on": 0.0008891041225635998,
+              "met": false,
+              "on_days": 30,
+              "usable": true
+            }
+          ],
+          "form": "ABOVE_TRAILING_MEDIAN_252",
+          "met": 1,
+          "on_days": 645,
+          "outcome": "REACHABLE_AND_FAILED",
+          "ratio": 0.16666666666666666,
+          "unknown_days": 11,
+          "usable": 6,
+          "variable": "BAA10Y"
+        },
+        {
+          "candidate": "C10",
+          "days": 1406,
+          "exposure": "CREDIT",
+          "folds": [
+            {
+              "days": 200,
+              "mean_off": -0.00012672028609880925,
+              "mean_on": null,
+              "met": false,
+              "on_days": 0,
+              "usable": false
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0001929786973793015,
+              "mean_on": -0.000478342384251725,
+              "met": false,
+              "on_days": 6,
+              "usable": false
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0001274398304220853,
+              "mean_on": null,
+              "met": false,
+              "on_days": 0,
+              "usable": false
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0001675387831152797,
+              "mean_on": null,
+              "met": false,
+              "on_days": 0,
+              "usable": false
+            },
+            {
+              "days": 200,
+              "mean_off": -0.0001066504613623015,
+              "mean_on": null,
+              "met": false,
+              "on_days": 0,
+              "usable": false
+            },
+            {
+              "days": 200,
+              "mean_off": -0.0003982459338049195,
+              "mean_on": 0.0004453515095724054,
+              "met": false,
+              "on_days": 107,
+              "usable": true
+            },
+            {
+              "days": 206,
+              "mean_off": null,
+              "mean_on": 5.420283946573421e-05,
+              "met": false,
+              "on_days": 206,
+              "usable": false
+            }
+          ],
+          "form": "SIGN_AT_OR_BELOW_ZERO",
+          "met": 0,
+          "on_days": 319,
+          "outcome": "UNREACHABLE",
+          "ratio": 0.0,
+          "unknown_days": 10,
+          "usable": 1,
+          "variable": "T10Y2Y"
+        },
+        {
+          "candidate": "C11",
+          "days": 1406,
+          "exposure": "CREDIT",
+          "folds": [
+            {
+              "days": 200,
+              "mean_off": -0.0005454712090377714,
+              "mean_on": 0.00032692654708506644,
+              "met": false,
+              "on_days": 96,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0003267485975926151,
+              "mean_on": -0.00010077788202473046,
+              "met": true,
+              "on_days": 72,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.000877162098877784,
+              "mean_on": -0.0005928815647608409,
+              "met": true,
+              "on_days": 102,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 8.206464594062802e-05,
+              "mean_on": 0.00030699658587392194,
+              "met": false,
+              "on_days": 76,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": -0.00012908160746493533,
+              "mean_on": -8.754244801561341e-05,
+              "met": false,
+              "on_days": 108,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.00025022566063853565,
+              "mean_on": -0.00016923596114143521,
+              "met": true,
+              "on_days": 94,
+              "usable": true
+            },
+            {
+              "days": 206,
+              "mean_off": 0.00010837516340787978,
+              "mean_on": -2.9396425877083034e-05,
+              "met": true,
+              "on_days": 81,
+              "usable": true
+            }
+          ],
+          "form": "CHANGE_21D_ABOVE_ZERO",
+          "met": 4,
+          "on_days": 629,
+          "outcome": "REACHABLE_AND_FAILED",
+          "ratio": 0.5714285714285714,
+          "unknown_days": 0,
+          "usable": 7,
+          "variable": "VIXCLS"
+        },
+        {
+          "candidate": "C12",
+          "days": 1406,
+          "exposure": "SVXY",
+          "folds": [
+            {
+              "days": 200,
+              "mean_off": -0.0008325345965877292,
+              "mean_on": 0.0010603238362529553,
+              "met": false,
+              "on_days": 96,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0014766536494461623,
+              "mean_on": -0.0007685247267472446,
+              "met": true,
+              "on_days": 72,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.001708106193552628,
+              "mean_on": -0.004275328739534849,
+              "met": true,
+              "on_days": 102,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0007221645300872869,
+              "mean_on": 0.004705129137317956,
+              "met": false,
+              "on_days": 76,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": -0.00034745931486371767,
+              "mean_on": 0.0013602947090799312,
+              "met": false,
+              "on_days": 108,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0005868604470517273,
+              "mean_on": 0.000776140120888951,
+              "met": false,
+              "on_days": 94,
+              "usable": true
+            },
+            {
+              "days": 206,
+              "mean_off": 0.0014462973251589402,
+              "mean_on": 0.00306612887843156,
+              "met": false,
+              "on_days": 81,
+              "usable": true
+            }
+          ],
+          "form": "CHANGE_21D_ABOVE_ZERO",
+          "met": 2,
+          "on_days": 629,
+          "outcome": "REACHABLE_AND_FAILED",
+          "ratio": 0.2857142857142857,
+          "unknown_days": 0,
+          "usable": 7,
+          "variable": "VIXCLS"
+        },
+        {
+          "candidate": "C13",
+          "days": 1406,
+          "exposure": "SVXY",
+          "folds": [
+            {
+              "days": 200,
+              "mean_off": -0.0014584432648894828,
+              "mean_on": 0.0008148614996516761,
+              "met": false,
+              "on_days": 135,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": -0.0009519849714118352,
+              "mean_on": 0.0026893058273036053,
+              "met": false,
+              "on_days": 89,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0021573977366573095,
+              "mean_on": -0.007704132852016761,
+              "met": true,
+              "on_days": 71,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0024305693376245456,
+              "mean_on": 0.0016810375807414513,
+              "met": true,
+              "on_days": 52,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": -0.00048604986146691604,
+              "mean_on": 0.0018199886592564943,
+              "met": false,
+              "on_days": 92,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": -0.00015406451802646868,
+              "mean_on": 0.0015570414856471212,
+              "met": false,
+              "on_days": 97,
+              "usable": true
+            },
+            {
+              "days": 206,
+              "mean_off": 0.001631650405276458,
+              "mean_on": 0.0029996448363187158,
+              "met": false,
+              "on_days": 68,
+              "usable": true
+            }
+          ],
+          "form": "CHANGE_21D_ABOVE_ZERO",
+          "met": 2,
+          "on_days": 604,
+          "outcome": "REACHABLE_AND_FAILED",
+          "ratio": 0.2857142857142857,
+          "unknown_days": 11,
+          "usable": 7,
+          "variable": "BAA10Y"
+        },
+        {
+          "candidate": "C14",
+          "days": 1406,
+          "exposure": "SVXY",
+          "folds": [
+            {
+              "days": 200,
+              "mean_off": -0.0004662807802972727,
+              "mean_on": 0.0002869389856375497,
+              "met": false,
+              "on_days": 144,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0027992526021133144,
+              "mean_on": -0.0012212439414655133,
+              "met": true,
+              "on_days": 106,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0030580949181960794,
+              "mean_on": -0.006208306219736689,
+              "met": true,
+              "on_days": 95,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0019655162612570655,
+              "mean_on": 0.0028660989931833174,
+              "met": false,
+              "on_days": 60,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.001161535292704259,
+              "mean_on": 6.469896627733135e-05,
+              "met": true,
+              "on_days": 107,
+              "usable": true
+            },
+            {
+              "days": 200,
+              "mean_off": 0.0029246520333080827,
+              "mean_on": -0.0004318108615469326,
+              "met": true,
+              "on_days": 134,
+              "usable": true
+            },
+            {
+              "days": 206,
+              "mean_off": 0.0031722854450896057,
+              "mean_on": 0.0006515304238465166,
+              "met": true,
+              "on_days": 89,
+              "usable": true
+            }
+          ],
+          "form": "CHANGE_21D_ABOVE_ZERO",
+          "met": 5,
+          "on_days": 735,
+          "outcome": "REACHABLE_AND_MET",
+          "ratio": 0.7142857142857143,
+          "unknown_days": 20,
+          "usable": 7,
+          "variable": "DTWEXBGS"
+        }
+      ],
+      "scan_id": "MONITOR_SCREEN_SCAN|9afe9691d9a18891cd88c9eafbed8f20534c1842b9fba4a331060105354f5d83",
+      "scanned_at": "2026-10-04T01:51:44.387359Z",
+      "schema_version": "1",
+      "space_id": "MONITOR_SCREEN_SPACE|875e6329010da2a8d6a29d8231d02c90bd715c4872fd1dafbb3d36c5d164bcf9",
+      "summary": {
+        "by_outcome": {
+          "REACHABLE_AND_FAILED": 10,
+          "REACHABLE_AND_MET": 1,
+          "UNREACHABLE": 3
+        },
+        "examined": 14,
+        "expected_false_passes_by_chance": 3.172,
+        "passes": [
+          "C14"
+        ],
+        "reading": "A pass here is NOT evidence: about one in four candidates with no relation to the returns passes this rule. Only the holdout claim confirms anything.",
+        "total_tested_on_this_question": 19
+      }
+    }
+  ],
+  "schema_version": "1"
+}
