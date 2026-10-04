@@ -37,7 +37,9 @@
   "fixed_parameters": {
     "change_horizon_days": 21,
     "median_window_days": 252,
-    "why_fixed": "declared here, not searched: tuning either would multiply the candidates and turn a screen into a fit"
+    "why_fixed": "declared here, not searched: tuning either would multiply the candidates and turn a screen into a fit",
+    "series_history_start": "2016-01-01",
+    "why_history": "the 21 day change needs 22 observations and the 252 day median needs 253 before a state can be read, so each series is loaded from this date; history before the window is a level and never a return"
   },
   "variables": [
     {
@@ -64,7 +66,8 @@
         "completeness": 0.959,
         "longest_gap_days": 4,
         "series_starts": "1976-06-01"
-      }
+      },
+      "lag_days": 0
     },
     {
       "id": "T10Y3M",
@@ -90,7 +93,8 @@
         "completeness": 0.959,
         "longest_gap_days": 4,
         "series_starts": "1982-01-04"
-      }
+      },
+      "lag_days": 0
     },
     {
       "id": "BAA10Y",
@@ -103,7 +107,8 @@
         "known_at_decision_time": "published the same evening",
         "quote_based": true
       },
-      "availability": "CAPTURED_FOR_CREDIT_PREMIUM"
+      "availability": "CAPTURED_FOR_CREDIT_PREMIUM",
+      "lag_days": 0
     },
     {
       "id": "VIXCLS",
@@ -116,7 +121,8 @@
         "known_at_decision_time": "published the same evening",
         "quote_based": true
       },
-      "availability": "CAPTURED_FOR_VARIANCE_PREMIUM"
+      "availability": "CAPTURED_FOR_VARIANCE_PREMIUM",
+      "lag_days": 0
     },
     {
       "id": "DFII10",
@@ -142,7 +148,8 @@
         "completeness": 0.959,
         "longest_gap_days": 4,
         "series_starts": "2003-01-02"
-      }
+      },
+      "lag_days": 0
     },
     {
       "id": "DTWEXBGS",
@@ -169,7 +176,8 @@
         "longest_gap_days": 5,
         "series_starts": "2006-01-02",
         "note": "the series ends six days before the holdout does, so its last week of the holdout has no state; a missing day is never a trigger"
-      }
+      },
+      "lag_days": 1
     }
   ],
   "exposures": [
@@ -178,21 +186,24 @@
       "name": "US equity risk premium",
       "instrument": "SPY held long",
       "sealed_dataset": "equity_risk_premium_spy",
-      "available_from": "2018-01-02"
+      "available_from": "2018-01-02",
+      "return_column": "forward_return_1d"
     },
     {
       "id": "CREDIT",
       "name": "investment grade credit premium",
       "instrument": "LQD long against IEF short",
       "sealed_dataset": "credit_premium_lqd_ief",
-      "available_from": "2018-01-02"
+      "available_from": "2018-01-02",
+      "return_column": "forward_spread_return_1d"
     },
     {
       "id": "SVXY",
       "name": "variance risk premium via the VIX futures roll",
       "instrument": "SVXY held long",
       "sealed_dataset": "volatility_premium_svxy",
-      "available_from": "2018-03-01"
+      "available_from": "2018-03-01",
+      "return_column": "forward_return_1d"
     }
   ],
   "candidates": [

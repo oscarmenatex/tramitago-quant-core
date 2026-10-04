@@ -92,5 +92,5 @@ Ninguna. Las cuatro decisiones del Director están registradas arriba.
 ## 10. Lo que NO se ha hecho
 
 - No se leyó ninguna serie ni ningún retorno.
-- No se selló el espacio: se sella tras tu revisión y tras la sonda de disponibilidad.
-- No existe todavía el escáner: Discovery solo reconoce Strategies de precio, volumen y funding.
+- No se selló el espacio: se sella con `run_monitor_screen.py seal`, justo antes de escanear.
+- El escáner existe (`tramitago_quant_core/research/monitor_screen.py`, módulo aparte) y **no se ha ejecutado**.

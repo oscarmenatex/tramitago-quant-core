@@ -38,6 +38,7 @@ MINIMUM_MECHANISM_WORDS = 12
 MINIMUM_FOLDS = 5
 MINIMUM_COMPLETENESS = 0.90
 MAXIMUM_GAP_DAYS = 10
+MINIMUM_HISTORY_DAYS = 380
 
 TOP_LEVEL = {"slug", "status", "purpose", "justification", "windows", "folds", "pass_rule",
              "holdout_rule", "return_definition", "state_forms", "fixed_parameters",
@@ -130,8 +131,20 @@ def validate_space(space):
                 raise ValueError(f"{variable['id']}: {key} must be written")
         variables[variable["id"]] = variable
 
+    for variable in space["variables"]:
+        if variable.get("lag_days") not in (0, 1):
+            raise ValueError(f"{variable['id']}: lag_days must be 0 or 1, the publication lag "
+                             f"the state is read with")
+    history = space["fixed_parameters"].get("series_history_start")
+    if not history or (_instant(windows["discovery"]["start_utc"]) - _instant(
+            history + "T00:00:00Z")).days < MINIMUM_HISTORY_DAYS:
+        raise ValueError(f"series_history_start must lie at least {MINIMUM_HISTORY_DAYS} days "
+                         f"before the discovery window: the 252 day median needs it")
+
     exposures = {}
     for exposure in space["exposures"]:
+        if not str(exposure.get("return_column", "")).strip():
+            raise ValueError(f"{exposure['id']}: return_column must name the sealed column")
         if exposure["id"] in exposures:
             raise ValueError(f"exposure {exposure['id']} appears twice")
         exposures[exposure["id"]] = exposure
