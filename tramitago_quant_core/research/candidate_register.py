@@ -95,8 +95,21 @@ FASE_1_TRANCHE_USD = Decimal("1000")
 # validators and fail if either statement stops being true. The first version of this guard
 # searched the source for an ENTER/SELL literal; it was right while the executor could not
 # short and would have gone on saying so after it could, which is how prose goes stale.
-EXECUTOR_CAN_OPEN_SHORTS = False
-EXECUTOR_CAN_OPEN_SHORTS_PAPER = True
+# Read from config/execution_capabilities.json, never written here: the Director sets them. A
+# missing or unreadable file fails CLOSED (False). Setting short_real_capital to true is a
+# statement about the chain, and the behaviour test fails until the LIVE chain really accepts a
+# short, so the flag cannot get ahead of the executor.
+def _capabilities():
+    path = Path(__file__).resolve().parents[2] / "config" / "execution_capabilities.json"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+EXECUTOR_CAN_OPEN_SHORTS = _capabilities().get("short_real_capital") is True
+EXECUTOR_CAN_OPEN_SHORTS_PAPER = _capabilities().get("short_paper") is True
 EXECUTOR_SHORT_SOURCE = ("the operating chain can open a short only in PAPER, for instruments "
                          "declared in config/instrument_contracts.json; a LIVE order is "
                          "possible only for BTC-USD, which cannot be shorted")
