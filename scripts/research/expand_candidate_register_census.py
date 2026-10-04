@@ -262,8 +262,16 @@ def build(previous, rows):
 
 
 def _latest_schema_2():
-    registers = json.loads(REGISTER.read_bytes())["registers"]
-    return [r for r in registers if r["schema_version"] == "2"][-1]["candidates"]
+    """The candidates this expansion starts from: the latest schema 2 register that does NOT already
+    hold what it adds. Once the expansion is sealed the latest register DOES, and starting from it
+    would add the same seven again and repeat their names; starting from its predecessor makes the
+    script idempotent, so running it after sealing rebuilds the sealed register and nothing else."""
+    added = {c["name"] for c in additions(_census_rows()[0])}
+    registers = [r for r in json.loads(REGISTER.read_bytes())["registers"] if r["schema_version"] == "2"]
+    for register in reversed(registers):
+        if not added & {c["name"] for c in register["candidates"]}:
+            return register["candidates"]
+    raise SystemExit("There is no schema 2 register that predates this expansion.")
 
 
 def _blockers(item):
