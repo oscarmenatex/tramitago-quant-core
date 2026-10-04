@@ -78,14 +78,17 @@ Prior tests are counted, not rescanned: a screen that forgot the four it already
 
 Con 7 folds, una variable **sin ninguna relación** con los retornos supera la regla de descubrimiento el 22.7% de las veces. Con 14 candidatos eso son **3.2 aprobados falsos esperados**. Por eso superar el descubrimiento no es evidencia: solo lo es confirmar en el holdout un único reclamo declarado antes.
 
-## 8. Decisiones abiertas
+## 8. Decisiones del Director registradas
 
-1. Whether a link confirmed on the holdout may stand as the validated link R3 asks for, or whether every premium must still pass the fold rule on its own measurement window. Until decided, a pass here only raises the prior and replaces nothing in the gate.
-2. How to execute the scan: extend Discovery with a new candidate kind, which touches the sealed experiment machinery, or a separate module that reuses the monitor evaluation and the sealing pattern. The recommendation is the separate module.
-3. Which variables to add or remove after the availability probe, which reads only start dates and observation counts and never a return.
-4. Whether the catalogue should grow with rate differentials and commodity curve shapes, which the carry and roll premia would need, before the space is sealed.
+- **Decisión 2** (2026-10-03): The scan is executed by a SEPARATE module that reuses the monitor evaluation and the sealing pattern. Discovery is not extended. The sealed experiment machinery is untouched, and the scan owns its own space, scan and holdout records.
+- **Decisión 3** (2026-10-03): The six variables stay exactly as drafted until changing them is needed to unblock something or the project changes phase. The probe asks only about the four still to probe, and no variable is added or removed to improve a result.
+- **Decisión 4** (2026-10-03): The catalogue may grow to raise the chance of finding a valid hypothesis, but only toward economic families that form an investigable space AND are justified by the next deliverable. Any addition must name its economic family and the deliverable that needs it before it is added, and is a new sealed space, not an edit.
 
-## 9. Lo que NO se ha hecho
+## 9. Decisión abierta
+
+1. Whether a link confirmed on the holdout may stand as the validated link R3 asks for, or whether every premium must still pass the fold rule on its own measurement window. It must be decided and sealed BEFORE the scan is run, because deciding after seeing who passes is the pattern section 11.5 forbids. The options, risks and benefits are in docs/monitor-screen-r3-decision.md.
+
+## 10. Lo que NO se ha hecho
 
 - No se leyó ninguna serie ni ningún retorno.
 - No se selló el espacio: se sella tras tu revisión y tras la sonda de disponibilidad.

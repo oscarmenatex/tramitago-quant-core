@@ -112,13 +112,20 @@ def main():
         f"**{expected_false_passes(space):.1f} aprobados falsos esperados**. Por eso superar el "
         "descubrimiento no es evidencia: solo lo es confirmar en el holdout un único reclamo declarado antes.",
         "",
-        "## 8. Decisiones abiertas",
+        "## 8. Decisiones del Director registradas",
+        "",
+    ]
+    lines += [f"- **Decisión {d['n']}** ({d['date']}): {d['decision']} {d['consequence']}"
+              for d in space["decisions"]]
+    lines += [
+        "",
+        "## 9. Decisión abierta",
         "",
     ]
     lines += [f"{i}. {text}" for i, text in enumerate(space["open_decisions"], start=1)]
     lines += [
         "",
-        "## 9. Lo que NO se ha hecho",
+        "## 10. Lo que NO se ha hecho",
         "",
         "- No se leyó ninguna serie ni ningún retorno.",
         "- No se selló el espacio: se sella tras tu revisión y tras la sonda de disponibilidad.",

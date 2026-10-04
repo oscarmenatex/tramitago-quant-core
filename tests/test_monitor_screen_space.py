@@ -116,6 +116,16 @@ class RefusalTests(unittest.TestCase):
         self._refuse(lambda s: s.update(extra="x"), "unknown")
         self._refuse(lambda s: s.pop("ledger_prior"), "missing")
 
+    def test_a_recorded_decision_must_carry_its_author_date_and_consequence(self):
+        self._refuse(lambda s: s["decisions"][0].update(by=""), "recorded decision")
+        self._refuse(lambda s: s["decisions"][0].pop("consequence"), "recorded decision")
+
+    def test_the_directors_decisions_are_recorded_and_only_one_is_still_open(self):
+        space = _space()
+        self.assertEqual([d["n"] for d in space["decisions"]], [2, 3, 4])
+        self.assertEqual(len(space["open_decisions"]), 1)
+        self.assertIn("BEFORE the scan", space["open_decisions"][0])
+
     def test_the_forms_are_exactly_the_declared_ones(self):
         space = _space()
         self.assertEqual(set(space["state_forms"]), set(FORMS))

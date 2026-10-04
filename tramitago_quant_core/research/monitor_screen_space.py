@@ -40,7 +40,7 @@ MINIMUM_FOLDS = 5
 TOP_LEVEL = {"slug", "status", "purpose", "justification", "windows", "folds", "pass_rule",
              "holdout_rule", "return_definition", "state_forms", "fixed_parameters",
              "variables", "exposures", "candidates", "adverse_direction", "ledger_prior",
-             "multiplicity", "open_decisions"}
+             "multiplicity", "decisions", "open_decisions"}
 
 
 def _instant(value):
@@ -153,6 +153,10 @@ def validate_space(space):
             space["adverse_direction"]:
         raise ValueError("the adverse direction must be declared once and never searched both ways")
 
+    for decision in space["decisions"]:
+        if set(decision) != {"n", "date", "by", "decision", "consequence"}                 or not all(str(decision[k]).strip() for k in decision):
+            raise ValueError("a recorded decision needs its number, date, author, text and "
+                             "consequence")
     count = space["multiplicity"]
     if count["scanned"] != len(space["candidates"]) \
             or count["also_counted_from_the_ledger"] != len(space["ledger_prior"]) \
