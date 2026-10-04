@@ -68,7 +68,11 @@ def main():
         "|---|---|---|---|",
     ]
     for v in space["variables"]:
-        lines.append(f"| `{v['series']}` | {v['measures']} | {v['mechanism_family']} | {v['availability']} |")
+        probe = v.get("probe")
+        status = (f"{v['availability']}: {probe['observations_in_window']} observaciones, "
+                  f"completitud {probe['completeness']}, hueco máximo {probe['longest_gap_days']} días"
+                  if probe else v["availability"])
+        lines.append(f"| `{v['series']}` | {v['measures']} | {v['mechanism_family']} | {status} |")
     lines += [
         "",
         "Todas son diarias, cotizadas, sin revisiones y conocidas al decidir. Una variable que se "
@@ -122,7 +126,8 @@ def main():
         "## 9. Decisión abierta",
         "",
     ]
-    lines += [f"{i}. {text}" for i, text in enumerate(space["open_decisions"], start=1)]
+    lines += ([f"{i}. {text}" for i, text in enumerate(space["open_decisions"], start=1)]
+              or ["Ninguna. Las cuatro decisiones del Director están registradas arriba."])
     lines += [
         "",
         "## 10. Lo que NO se ha hecho",

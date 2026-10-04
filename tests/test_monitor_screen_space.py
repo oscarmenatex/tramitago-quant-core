@@ -122,9 +122,32 @@ class RefusalTests(unittest.TestCase):
 
     def test_the_directors_decisions_are_recorded_and_only_one_is_still_open(self):
         space = _space()
-        self.assertEqual([d["n"] for d in space["decisions"]], [2, 3, 4])
-        self.assertEqual(len(space["open_decisions"]), 1)
-        self.assertIn("BEFORE the scan", space["open_decisions"][0])
+        self.assertEqual([d["n"] for d in space["decisions"]], [1, 2, 3, 4])
+        self.assertEqual(space["open_decisions"], [])
+        self.assertIn("OPTION C", space["decisions"][0]["decision"])
+        self.assertIn("never replaces M1", space["decisions"][0]["decision"])
+
+    def test_every_probed_variable_carries_the_facts_that_justify_it(self):
+        probed = [v for v in _space()["variables"] if v["availability"] == "PROBED_AVAILABLE"]
+        self.assertEqual({v["series"] for v in probed}, {"T10Y2Y", "T10Y3M", "DFII10", "DTWEXBGS"})
+        for variable in probed:
+            self.assertGreaterEqual(variable["probe"]["completeness"], 0.90)
+            self.assertLessEqual(variable["probe"]["longest_gap_days"], 10)
+
+    def test_a_probed_variable_without_adequate_facts_is_refused(self):
+        def weak(space):
+            for v in space["variables"]:
+                if v["availability"] == "PROBED_AVAILABLE":
+                    v["probe"]["completeness"] = 0.50
+                    return
+        self._refuse(weak, "probe facts")
+
+        def none(space):
+            for v in space["variables"]:
+                if v["availability"] == "PROBED_AVAILABLE":
+                    del v["probe"]
+                    return
+        self._refuse(none, "probe facts")
 
     def test_the_forms_are_exactly_the_declared_ones(self):
         space = _space()

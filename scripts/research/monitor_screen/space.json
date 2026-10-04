@@ -51,7 +51,20 @@
         "known_at_decision_time": "published the same evening",
         "quote_based": true
       },
-      "availability": "TO_PROBE"
+      "availability": "PROBED_AVAILABLE",
+      "probe": {
+        "run_on": "core-oracle (the VM)",
+        "run_by": "Oscar Carmenate Rodriguez",
+        "date": "2026-10-03",
+        "what_it_read": "dates and counts only; no value, level or return",
+        "first_in_window": "2018-03-01",
+        "last_in_window": "2026-10-01",
+        "observations_in_window": 2148,
+        "missing_in_window": 93,
+        "completeness": 0.959,
+        "longest_gap_days": 4,
+        "series_starts": "1976-06-01"
+      }
     },
     {
       "id": "T10Y3M",
@@ -64,7 +77,20 @@
         "known_at_decision_time": "published the same evening",
         "quote_based": true
       },
-      "availability": "TO_PROBE"
+      "availability": "PROBED_AVAILABLE",
+      "probe": {
+        "run_on": "core-oracle (the VM)",
+        "run_by": "Oscar Carmenate Rodriguez",
+        "date": "2026-10-03",
+        "what_it_read": "dates and counts only; no value, level or return",
+        "first_in_window": "2018-03-01",
+        "last_in_window": "2026-10-01",
+        "observations_in_window": 2148,
+        "missing_in_window": 93,
+        "completeness": 0.959,
+        "longest_gap_days": 4,
+        "series_starts": "1982-01-04"
+      }
     },
     {
       "id": "BAA10Y",
@@ -103,7 +129,20 @@
         "known_at_decision_time": "published the same evening",
         "quote_based": true
       },
-      "availability": "TO_PROBE"
+      "availability": "PROBED_AVAILABLE",
+      "probe": {
+        "run_on": "core-oracle (the VM)",
+        "run_by": "Oscar Carmenate Rodriguez",
+        "date": "2026-10-03",
+        "what_it_read": "dates and counts only; no value, level or return",
+        "first_in_window": "2018-03-01",
+        "last_in_window": "2026-10-01",
+        "observations_in_window": 2148,
+        "missing_in_window": 93,
+        "completeness": 0.959,
+        "longest_gap_days": 4,
+        "series_starts": "2003-01-02"
+      }
     },
     {
       "id": "DTWEXBGS",
@@ -116,7 +155,21 @@
         "known_at_decision_time": "published with a one day lag, applied as such",
         "quote_based": true
       },
-      "availability": "TO_PROBE"
+      "availability": "PROBED_AVAILABLE",
+      "probe": {
+        "run_on": "core-oracle (the VM)",
+        "run_by": "Oscar Carmenate Rodriguez",
+        "date": "2026-10-03",
+        "what_it_read": "dates and counts only; no value, level or return",
+        "first_in_window": "2018-03-01",
+        "last_in_window": "2026-09-25",
+        "observations_in_window": 2140,
+        "missing_in_window": 97,
+        "completeness": 0.955,
+        "longest_gap_days": 5,
+        "series_starts": "2006-01-02",
+        "note": "the series ends six days before the holdout does, so its last week of the holdout has no state; a missing day is never a trigger"
+      }
     }
   ],
   "exposures": [
@@ -281,10 +334,15 @@
     "total_tested_on_this_question": 19,
     "note": "Prior tests are counted, not rescanned: a screen that forgot the four it already ran would be reporting one candidate in nineteen as one in fourteen."
   },
-  "open_decisions": [
-    "Whether a link confirmed on the holdout may stand as the validated link R3 asks for, or whether every premium must still pass the fold rule on its own measurement window. It must be decided and sealed BEFORE the scan is run, because deciding after seeing who passes is the pattern section 11.5 forbids. The options, risks and benefits are in docs/monitor-screen-r3-decision.md."
-  ],
+  "open_decisions": [],
   "decisions": [
+    {
+      "n": 1,
+      "date": "2026-10-03",
+      "by": "Oscar Carmenate Rodriguez, Director del Proyecto",
+      "decision": "OPTION C. A link confirmed by the screen is an ADDITIONAL requirement for a premium that relies on it: the premium must pass R3 under M1 on its own measurement window AND the screen link. The screen link never replaces M1.",
+      "consequence": "The rule can only be harder, so it rescues no denied hypothesis and loosens no gate. The cost is that it unblocks nothing on its own: the screen serves to choose better monitors. Sealed as a governance record before any scan; see artifacts/governance/monitor-screen-link-rule.json."
+    },
     {
       "n": 2,
       "date": "2026-10-03",

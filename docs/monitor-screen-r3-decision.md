@@ -1,4 +1,11 @@
-# Decisión abierta: ¿puede un vínculo confirmado en el holdout valer como el que pide R3?
+# Decisión: ¿puede un vínculo confirmado en el holdout valer como el que pide R3?
+
+> **DECIDIDO el 2026-10-03: opción C.** El vínculo del cribado es un requisito *adicional*: la prima debe
+> pasar M1 propio **y** el vínculo del cribado, y este nunca sustituye a M1 ni abre la identidad M2.
+> Sellado como `MONITOR_SCREEN_LINK_RULE|cfaf7091…` antes de ejecutar el escaneo: más estricto, no
+> rescata a nadie (medido: 0 de 11 admisiones citan un vínculo del cribado). **La aplicación en el
+> código aún no existe**: se cablea con el escaneo, como un esquema de admisión nuevo y sin editar
+> los sellados 1 a 4. El resto del documento conserva las opciones tal como se presentaron.
 
 Documento para la decisión del Director. **No decide nada**: expone opciones, riesgos y beneficios,
 y dice a quién afectaría. Es una decisión de gobernanza y lleva la carga del §11.0, porque la

@@ -115,10 +115,17 @@ class NothingLeaksTests(unittest.TestCase):
 
 
 class DefaultsAgreeWithTheSpaceTests(unittest.TestCase):
-    def test_the_default_series_are_exactly_the_ones_still_to_probe(self):
+    def test_the_default_series_are_exactly_the_ones_that_were_not_already_captured(self):
         space = json.loads(SPACE.read_text(encoding="utf-8"))
-        to_probe = {v["series"] for v in space["variables"] if v["availability"] == "TO_PROBE"}
-        self.assertEqual(set(probe_module.DEFAULT_SERIES), to_probe)
+        probed = {v["series"] for v in space["variables"]
+                  if not v["availability"].startswith("CAPTURED")}
+        self.assertEqual(set(probe_module.DEFAULT_SERIES), probed)
+
+    def test_the_space_records_what_the_probe_found_for_each_of_them(self):
+        space = json.loads(SPACE.read_text(encoding="utf-8"))
+        for variable in space["variables"]:
+            if variable["series"] in probe_module.DEFAULT_SERIES:
+                self.assertEqual(variable["availability"], "PROBED_AVAILABLE")
 
     def test_the_default_window_is_the_whole_span_the_screen_will_use(self):
         space = json.loads(SPACE.read_text(encoding="utf-8"))
