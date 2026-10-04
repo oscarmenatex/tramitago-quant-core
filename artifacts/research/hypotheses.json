@@ -2264,6 +2264,46 @@
       "system_version": "0.1.0",
       "target_metric": "net_sharpe(QYLD held continuously, net of execution cost)",
       "version": 1
+    },
+    {
+      "acceptance_criterion": {
+        "comparison": "GE",
+        "expected_direction": "INCREASE",
+        "metric": "net_sharpe(VIXM held short continuously, net of execution cost and borrow)",
+        "threshold": "0.50"
+      },
+      "code_revision": "591d781b2ec5ab49058f23aa001260d4b12d0d92",
+      "constraints": {
+        "period": {
+          "end_exclusive_utc": "2026-10-01T00:00:00Z",
+          "start_utc": "2016-01-06T00:00:00Z"
+        },
+        "universe": [
+          "VIXM"
+        ],
+        "variables": [
+          "close",
+          "forward_return_1d",
+          "sma_close_3"
+        ]
+      },
+      "creation_context": {
+        "created_by": "Oscar Carmenate Rodriguez",
+        "provenance": [
+          "CANDIDATE_REGISTER|e4efb06c -- VIXM held SHORT, the one short candidate whose monitor link was unexamined",
+          "DIRECTOR_INSTRUCTION|2026-10-04 -- measure VIXM short in PAPER first",
+          "MEASURED|VIXM shortable, easy to borrow and fractionable on Alpaca, served from 2016-01-04"
+        ]
+      },
+      "creation_timestamp": "2026-10-04T04:28:37.910449Z",
+      "description": "LEVEL CLAIM, one leg, zero turnover by construction, held SHORT.\n\nVIXM (a long position in months four to seven of the VIX futures curve) held SHORT\nCONTINUOUSLY from 2016-01-06 to 2026-10-01: one entry, one exit, no signal and no rebalancing.\nThe net return of that short, after execution costs and a declared borrow fee, is POSITIVE\nand its figures clear the admission thresholds of DOC-011 section 8.\n\nMECHANISM: the variance risk premium. Buyers of volatility protection pay a roll cost that a\nholder of VIXM bears every month the curve is in contango; the short collects it. It is the\nsame premium measured on SVXY, taken from the other side and further out the curve.\n\nTHE DECLARED MONITOR, FIXED BEFORE ANY VIXM BAR IS CAPTURED: VIX3M minus VIX, the same series\nand the same rule as the SVXY Hypothesis (inversion at or below zero, confirmed over three\nperiods, re-entry at 1.0). It is NOT changed for this instrument. It was refuted on SVXY (2 of 5\nfolds) and nobody has examined it on a product that sits further out the curve; that is what\nthis measurement tests.\n\nPAPER ONLY. Operating this short with real capital is not possible and nothing here changes\nthat.\n\nPre-declared caveats:\n- A SHORT LOSES WITHOUT BOUND, AND THE HISTORY MAY HOLD FEW SQUEEZES. VIXM decays, so its sample contains few days when it rose sharply, and the short loses exactly there. The engine reports the worst day against and the days beyond the declared adverse move of 10 percent; those figures, not the Sharpe, are the ones to read first.\n- THE BORROW FEE IS DECLARED, NOT MEASURED. It is set at 3 percent a year, above what an easy-to-borrow ETF usually costs, as the conservative side. A broker rate card was not read, and a recall or a hard-to-borrow spell is not in any return series.\n- THE EFFECT RANGE STRADDLES ITS BAR. The recalled range is 0.30 to 0.70 against a bar near 0.52. Of the straddling candidates measured so far, none has been admitted.\n- THE MONITOR IS CARRIED OVER FROM A PRODUCT WHERE IT FAILED. The slope compares months one and three and VIXM tracks months four to seven, so the link may weaken or hold. The crossings per year, 0.23, is the value measured for the SVXY window and is carried over unmeasured. Under M2_AVAILABILITY|04a35abd no identity fallback is declared: if the empirical link is reachable and fails, R3 fails.\n- THE WINDOW IS THE FEED, AND IT CONTAINS THE TAILS. 2016-01-06 to 2026-10-01 includes February 2018 and March 2020, when VIX products rose sharply. Expect the drawdown gate to bind and the derived weight to be small.\n- THIS COUNTS AS A CORRELATED DRAW. It is the third measurement of one premium (SVXY, XYLD, and this), and the multiplicity ledger should count it as draw 51, correlated with them, not independent.",
+      "expected_direction": "INCREASE",
+      "hypothesis_id": "HYPOTHESIS|d8324696-5b9f-45b4-b06d-3e7bfba6be06",
+      "record_id": "HYPOTHESIS_VERSION|HYPOTHESIS|d8324696-5b9f-45b4-b06d-3e7bfba6be06|1|8eff61d42bfd1aad859321eb5b2946946841d04744a3e823ef7281be38451fbd",
+      "status": "PROPOSED",
+      "system_version": "0.1.0",
+      "target_metric": "net_sharpe(VIXM held short continuously, net of execution cost and borrow)",
+      "version": 1
     }
   ],
   "schema_version": "2"
