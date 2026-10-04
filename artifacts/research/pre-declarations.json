@@ -109,6 +109,44 @@
         "why_shorter_than_available": "the dataset contract needs two warmup rows and one forward row, so three of the 2702 bars the feed serves cannot be evaluated",
         "years": "10.71"
       }
+    },
+    {
+      "claim_class": "PREMIUM",
+      "hypothesis_id": "HYPOTHESIS|d8324696-5b9f-45b4-b06d-3e7bfba6be06",
+      "materialization": {
+        "code_revision": "591d781b2ec5ab49058f23aa001260d4b12d0d92",
+        "declared_at": "2026-10-04T04:28:37.910449Z"
+      },
+      "monitor": {
+        "published_by": "CBOE, published daily and distributed through FRED as VXVCLS and VIXCLS",
+        "variable": "VIX3M minus VIX, the term structure slope"
+      },
+      "net_level": {
+        "claimed": "the net return of holding VIXM SHORT continuously over the window, after execution costs and a declared borrow fee, rather than a difference between two groups of days"
+      },
+      "payer": {
+        "who": "buyers of VIX futures and index options purchasing protection against equity drawdowns they are mandated or unwilling to bear, further out the curve where they hedge horizon rather than event risk",
+        "why_they_keep_paying": "they are buying insurance against losses they are mandated or unwilling to bear, and insurance not priced above its expected cost would be written by nobody; the roll cost of holding VIXM is the price of that transfer"
+      },
+      "pre_declaration_id": "PRE_DECLARATION|faca05c1c0ad2aceae744cc8b351bfa1d4f1cca9350a21eec3f5dea32bcccc28",
+      "required_effect": {
+        "plausibility_source": "mid-term VIX futures carry a flatter curve, so the roll harvest is smaller than the short-term one by roughly a third in published comparisons; the range is recalled and wide because the comparison is less studied than the front, and its conservative end is below the bar",
+        "plausible_high": "0.70",
+        "plausible_low": "0.30",
+        "position_against_bar": "STRADDLES",
+        "required_point_sharpe": "0.500"
+      },
+      "schema_version": "2",
+      "source": "answered in writing before any bar of VIXM was captured; the monitor frequency was measured on SVXY, which is a fact about the monitor and never about VIXM",
+      "turnover": {
+        "crossings_per_year": "0.23"
+      },
+      "window": {
+        "adverse_episode": "February 2018 and March 2020, when VIX products rose sharply in days and a short in them lost most",
+        "available_years": "10.75",
+        "why_shorter_than_available": "the dataset contract needs two warmup rows and one forward row, and the window starts two sessions after the first bar",
+        "years": "10.71"
+      }
     }
   ],
   "schema_version": "1"

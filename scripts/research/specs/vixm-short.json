@@ -1,0 +1,49 @@
+{
+  "slug": "variance-premium-vixm-short",
+  "hypothesis_id": "HYPOTHESIS|d8324696-5b9f-45b4-b06d-3e7bfba6be06",
+  "notes": "VIXM held SHORT, PAPER only. Declared before any VIXM bar was captured. No identity fallback: the SVXY identity describes the front-month roll, not months four to seven.",
+  "instrument": {
+    "provider": "alpaca_equity",
+    "symbol": "VIXM",
+    "feed": "sip",
+    "direction": "SHORT",
+    "max_adverse_move": "0.10"
+  },
+  "cost": {
+    "commission": "0",
+    "half_spread": "0.0004",
+    "slippage": "0.0001",
+    "legs": 1,
+    "borrow_annual": "0.03",
+    "source": "commission-free US ETP; half spread and slippage DECLARED, wider than SVXY because VIXM is thinner, and borrow fee DECLARED at 3 percent a year as the conservative side; none measured"
+  },
+  "sizing": {
+    "drawdown_limit": "0.15"
+  },
+  "level_claim": {
+    "folds": 7,
+    "consistency_threshold": "0.70",
+    "adverse_threshold": "-0.03",
+    "minimum_adverse_episodes": 5
+  },
+  "monitor": {
+    "kind": "difference_below",
+    "variable": "VXVCLS-VIXCLS",
+    "far": "VXVCLS",
+    "near": "VIXCLS",
+    "floor": "0",
+    "confirmation_periods": 3,
+    "re_entry_threshold": "1.0",
+    "source": "CBOE VIX and VIX3M, published daily and distributed through FRED"
+  },
+  "survival": {
+    "counterparty": "buyers of VIX futures and index options: portfolio managers and dealers purchasing protection against equity drawdowns",
+    "why_they_accept_losing": "they are buying insurance against losses they are mandated or unwilling to bear, and insurance not priced above its expected cost would be written by nobody",
+    "what_would_end_it": "equity drawdown risk ceasing to be disliked, or enough capital selling volatility to compress the curve below the losses it compensates -- which is what the declared monitor watches for"
+  },
+  "decision": {
+    "build_cost": "0",
+    "life_years": "3",
+    "tranche": "1000"
+  }
+}
