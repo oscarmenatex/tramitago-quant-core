@@ -16,9 +16,10 @@ fine. Never put them in a file. Run it on the evidence host (your local machine)
 
 WHAT IT DOES. One request lists the active assets. The ones that are fund-like and fall in a
 mechanism class are probed with two requests each, to learn the DATE of the first monthly bar and
-the recent monthly dollar volume. About a thousand instruments make about two thousand requests at
-the throttled rate, which is some ten minutes. It resumes from a cache, so an interruption costs
-nothing, and a symbol that fails is recorded as an error and retried next time.
+the recent monthly dollar volume. MEASURED on a trial: about 1.2 seconds per instrument. Definition 1
+named 1,828 instruments (some 36 minutes); definition 2 is narrower and names fewer. It resumes from a
+cache, so an interruption costs nothing, and a symbol that fails is recorded as an error and retried
+next time.
 
 WHAT IT NEVER DOES. It reads no daily bars, computes no return and keeps no price. The census
 definition (classes, keywords, tiers, liquidity floor) is fixed in
@@ -133,7 +134,9 @@ def main():
 
     def progress(done, total, symbol):
         if done % 25 == 0 or done == total:
-            print(f"  probed {done}/{total}  ({time.time() - started:5.0f}s)  last {symbol}", flush=True)
+            elapsed = time.time() - started
+            remaining = elapsed / done * (total - done) if done else 0
+            print(f"  probed {done}/{total}  ({elapsed:5.0f}s, about {remaining / 60:4.1f} min left)  last {symbol}", flush=True)
             CACHE.parent.mkdir(parents=True, exist_ok=True)
             _atomic_write(CACHE, encoded(cache))
 

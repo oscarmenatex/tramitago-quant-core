@@ -62,8 +62,29 @@ class ClassificationTests(unittest.TestCase):
             self.assertFalse(is_leveraged_or_inverse(name), name)
 
     def test_a_fund_marker_is_required_for_any_class(self):
-        self.assertTrue(is_fund_like("Some Gold Trust"))
+        self.assertTrue(is_fund_like("Some Gold ETF"))
         self.assertFalse(is_fund_like("Some Gold Company"))
+
+    def test_the_words_that_name_a_security_as_often_as_a_fund_are_not_a_mark(self):
+        # THE FIRST TRIAL. These passed as funds in definition 1 and were single-company securities.
+        for name in ("AGNC Investment Corp. Depositary Shares each representing 1/1000th Interest in a "
+                     "Share of 7.00% Series D Fixed-to-Floating Cumulative Redeemable Preferred Stock",
+                     "Alamos Gold Inc. Class A Common Shares", "Americold Realty Trust, Inc.",
+                     "Some Mortgage Investment Trust Common Shares"):
+            self.assertFalse(is_fund_like(name), name)
+            self.assertEqual(classify(name), [], name)
+
+    def test_real_funds_still_classify_after_the_narrowing(self):
+        self.assertIn("PREFERRED", classify("iShares Preferred and Income Securities ETF"))
+        self.assertIn("CRYPTO", classify("Grayscale Bitcoin Trust"))
+        self.assertIn("PRECIOUS_METALS", classify("abrdn Physical Gold Shares ETF"))
+        self.assertIn("MUNICIPAL", classify("AllianceBernstein National Municipal Income Fund"))
+
+    def test_a_preferred_stock_line_is_not_a_preferred_fund_even_with_a_fund_word(self):
+        self.assertNotIn("PREFERRED", classify("Some Capital Fund 7% Series A Cumulative Preferred"))
+
+    def test_the_definition_names_its_version(self):
+        self.assertEqual(census.definition()["definition_version"], "2")
 
 
 class CandidatesTests(unittest.TestCase):

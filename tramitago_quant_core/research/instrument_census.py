@@ -35,6 +35,7 @@ from datetime import date
 from tramitago_quant_core.shared.util import digest, encoded
 
 SCHEMA_VERSION = "1"
+DEFINITION_VERSION = "2"
 
 # History tiers, by the date of the first monthly bar. A reaches back as far as the monitor screen
 # window, which is the longest window the platform has used; B is five years.
@@ -48,11 +49,20 @@ LIQUIDITY_MONTHS = 4
 
 EXCHANGES = ("NYSE", "NASDAQ", "ARCA", "AMEX", "BATS")
 
+# DEFINITION VERSION 2. The first version also accepted "shares", "trust", "portfolio", "index" and
+# "futures" as marks of a fund. A trial of 30 names showed the cost: preferred stock of single
+# companies ("Depositary Shares ... Series D Cumulative Redeemable Preferred Stock") and a mining
+# company ("Alamos Gold Inc. Class A Common Shares") passed as funds. Those words name a SECURITY as
+# often as a fund, so they are no longer a mark; issuers of funds and the words that only funds
+# carry (ETF, ETN, fund) are. The change only REMOVES false positives, was made after a trial of
+# 30 names and before any census was sealed or any class count was read, and the digest changes
+# with it, so the first definition cannot be mistaken for this one.
 FUND_MARKERS = (
-    r"etf", r"etn", r"fund", r"trust", r"shares", r"portfolio", r"index", r"futures",
+    r"etf", r"etn", r"fund", r"etfs",
     r"ishares", r"spdr", r"vanguard", r"invesco", r"proshares", r"global x", r"wisdomtree",
     r"vaneck", r"direxion", r"first trust", r"schwab", r"pimco", r"ark ", r"graniteshares",
     r"amplify", r"roundhill", r"simplify", r"jpmorgan", r"fidelity", r"flexshares",
+    r"grayscale", r"bitwise", r"sprott", r"abrdn",
 )
 
 # class -> (keywords that put an instrument in it, keywords that take it out again).
@@ -71,7 +81,8 @@ CLASSES = {
                        "emerging markets local"), ()),
     "MUNICIPAL": (("municipal", "muni"), ()),
     "MORTGAGE": (("mortgage", "mbs"), ()),
-    "PREFERRED": (("preferred",), ()),
+    "PREFERRED": (("preferred",), ("series", "cumulative", "depositary", "redeemable",
+                                   "perpetual", "fixed rate", "floating rate")),
     "CURRENCY": (("currencyshares", "currency", "euro trust", "japanese yen", "swiss franc",
                   "british pound", "canadian dollar", "australian dollar", "dollar index",
                   "bullish dollar", "bearish dollar"), ()),
@@ -92,7 +103,8 @@ LEVERAGED_OR_INVERSE = (r"inverse", r"\bbear\b", r"ultra", r"\b2x\b", r"\b3x\b",
 
 
 def definition():
-    return {"schema_version": SCHEMA_VERSION, "tiers": {"A": TIER_A_ON_OR_BEFORE,
+    return {"schema_version": SCHEMA_VERSION, "definition_version": DEFINITION_VERSION,
+            "tiers": {"A": TIER_A_ON_OR_BEFORE,
                                                        "B": TIER_B_ON_OR_BEFORE},
             "liquidity_floor_monthly_dollar_volume": LIQUIDITY_FLOOR_MONTHLY_DOLLAR_VOLUME,
             "liquidity_months": LIQUIDITY_MONTHS, "exchanges": list(EXCHANGES),

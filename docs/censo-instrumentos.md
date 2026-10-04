@@ -38,6 +38,19 @@ que no se puede ensanchar una clase ni mover un umbral después de ver que el re
   suelo contra lo imposible de operar, no un modelo de capacidad.
 - **Productos apalancados e inversos** se cuentan aparte, porque su retorno es un múltiplo de otro.
 
+### Historia de la definición (se registra porque cambió una vez)
+
+| Versión | Qué pasó |
+|---|---|
+| 1 | Aceptaba «shares», «trust», «portfolio», «index» y «futures» como marca de fondo |
+| 2 | Tras una **prueba de 30 nombres** (ver abajo) esas palabras dejan de ser marca de fondo y se excluyen de las preferentes las líneas de una sola empresa (serie, acumulativa, depositario…) |
+
+La prueba de 30 nombres mostró que la versión 1 clasificaba como fondos acciones preferentes de empresas
+(«Depositary Shares… Series D Cumulative Redeemable Preferred Stock») y a una minera (Alamos Gold). La
+versión 1 nombraba **1.828** instrumentos, muchos de ellos así. El cambio **solo elimina falsos positivos**,
+se hizo antes de sellar ningún censo y antes de leer ningún recuento por clase, y la huella digital cambia
+con él, de modo que la versión 1 no se puede confundir con la 2.
+
 ## 4. Cómo se leerá, declarado antes
 
 Para cada clase **no medida todavía** (se excluyen covered calls, volatilidad y crédito de grado de inversión,
@@ -79,7 +92,8 @@ Una prueba con 30 instrumentos (no se sella, solo comprueba claves y ritmo):
 python3.11 -B scripts\research\census_instruments.py --limit-symbols 30
 ```
 
-Y el censo completo, unos diez minutos, reanudable:
+Y el censo completo, reanudable. La prueba dio **unos 1,2 segundos por instrumento**; la versión 2 nombra menos
+que los 1.828 de la versión 1, así que serán entre 15 y 35 minutos, y el script muestra el tiempo que queda:
 
 ```powershell
 python3.11 -B scripts\research\census_instruments.py
