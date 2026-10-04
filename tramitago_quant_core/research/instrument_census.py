@@ -275,3 +275,18 @@ def run_census(assets, fetch_bars, *, asof, cache=None, limit=None, on_progress=
         if on_progress is not None:
             on_progress(index + 1, len(rows), row["symbol"])
     return census_rows(rows, facts), facts
+
+
+# --- the reading rule, declared in docs/censo-instrumentos.md BEFORE any count was seen ------------
+
+READING_FAMILY_SIZED, READING_THIN, READING_SINGLE = "FAMILY_SIZED", "THIN", "SINGLE_INSTRUMENT"
+FAMILY_SIZED_AT_LEAST = 5
+THIN_AT_LEAST = 2
+
+
+def reading(plain_tier_a_liquid):
+    """What a count of plain, tier A, liquid instruments means. Five or more can be a family; two
+    to four is thin; one or none cannot be a family, because the joint rule needs two members."""
+    if plain_tier_a_liquid >= FAMILY_SIZED_AT_LEAST:
+        return READING_FAMILY_SIZED
+    return READING_THIN if plain_tier_a_liquid >= THIN_AT_LEAST else READING_SINGLE
