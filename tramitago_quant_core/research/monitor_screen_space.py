@@ -36,11 +36,13 @@ AVAILABILITY = ("TO_PROBE", "CAPTURED_FOR_CREDIT_PREMIUM", "CAPTURED_FOR_VARIANC
                 "PROBED_AVAILABLE")
 MINIMUM_MECHANISM_WORDS = 12
 MINIMUM_FOLDS = 5
+MINIMUM_COMPLETENESS = 0.90
+MAXIMUM_GAP_DAYS = 10
 
 TOP_LEVEL = {"slug", "status", "purpose", "justification", "windows", "folds", "pass_rule",
              "holdout_rule", "return_definition", "state_forms", "fixed_parameters",
              "variables", "exposures", "candidates", "adverse_direction", "ledger_prior",
-             "multiplicity", "open_decisions"}
+             "multiplicity", "decisions", "open_decisions"}
 
 
 def _instant(value):
@@ -115,6 +117,14 @@ def validate_space(space):
                 f"revised, and known at decision time, or it cannot be acted on")
         if variable.get("availability") not in AVAILABILITY:
             raise ValueError(f"{variable['id']}: availability must be one of {AVAILABILITY}")
+        if variable["availability"] == "PROBED_AVAILABLE":
+            facts = variable.get("probe") or {}
+            if facts.get("completeness", 0) < MINIMUM_COMPLETENESS \
+                    or facts.get("longest_gap_days") is None \
+                    or facts["longest_gap_days"] > MAXIMUM_GAP_DAYS \
+                    or "value" in " ".join(facts):
+                raise ValueError(f"{variable['id']}: a probed variable must carry probe facts "
+                                 f"that meet the probe bar and hold no value")
         for key in ("series", "measures", "mechanism_family"):
             if not str(variable.get(key, "")).strip():
                 raise ValueError(f"{variable['id']}: {key} must be written")
@@ -153,6 +163,10 @@ def validate_space(space):
             space["adverse_direction"]:
         raise ValueError("the adverse direction must be declared once and never searched both ways")
 
+    for decision in space["decisions"]:
+        if set(decision) != {"n", "date", "by", "decision", "consequence"}                 or not all(str(decision[k]).strip() for k in decision):
+            raise ValueError("a recorded decision needs its number, date, author, text and "
+                             "consequence")
     count = space["multiplicity"]
     if count["scanned"] != len(space["candidates"]) \
             or count["also_counted_from_the_ledger"] != len(space["ledger_prior"]) \

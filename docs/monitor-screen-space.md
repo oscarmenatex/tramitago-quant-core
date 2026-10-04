@@ -26,12 +26,12 @@ Four monitor links have been measured on this project and three were refuted (VI
 
 | Variable | Mide | Familia de mecanismo | Disponibilidad |
 |---|---|---|---|
-| `T10Y2Y` | slope of the Treasury curve, ten years minus two | growth and recession expectations | TO_PROBE |
-| `T10Y3M` | slope of the Treasury curve, ten years minus three months | growth and recession expectations | TO_PROBE |
+| `T10Y2Y` | slope of the Treasury curve, ten years minus two | growth and recession expectations | PROBED_AVAILABLE: 2148 observaciones, completitud 0.959, hueco máximo 4 días |
+| `T10Y3M` | slope of the Treasury curve, ten years minus three months | growth and recession expectations | PROBED_AVAILABLE: 2148 observaciones, completitud 0.959, hueco máximo 4 días |
 | `BAA10Y` | Moody Baa yield minus the ten year Treasury, the price of credit risk | price of credit risk | CAPTURED_FOR_CREDIT_PREMIUM |
 | `VIXCLS` | market implied volatility of the S&P 500 | price of volatility risk | CAPTURED_FOR_VARIANCE_PREMIUM |
-| `DFII10` | ten year Treasury real yield, the price of inflation protected money | discount rates | TO_PROBE |
-| `DTWEXBGS` | broad trade weighted US dollar index | global financial conditions | TO_PROBE |
+| `DFII10` | ten year Treasury real yield, the price of inflation protected money | discount rates | PROBED_AVAILABLE: 2148 observaciones, completitud 0.959, hueco máximo 4 días |
+| `DTWEXBGS` | broad trade weighted US dollar index | global financial conditions | PROBED_AVAILABLE: 2140 observaciones, completitud 0.955, hueco máximo 5 días |
 
 Todas son diarias, cotizadas, sin revisiones y conocidas al decidir. Una variable que se revisa o llega tarde no se puede usar para actuar, aunque correlacione.
 
@@ -78,14 +78,18 @@ Prior tests are counted, not rescanned: a screen that forgot the four it already
 
 Con 7 folds, una variable **sin ninguna relación** con los retornos supera la regla de descubrimiento el 22.7% de las veces. Con 14 candidatos eso son **3.2 aprobados falsos esperados**. Por eso superar el descubrimiento no es evidencia: solo lo es confirmar en el holdout un único reclamo declarado antes.
 
-## 8. Decisiones abiertas
+## 8. Decisiones del Director registradas
 
-1. Whether a link confirmed on the holdout may stand as the validated link R3 asks for, or whether every premium must still pass the fold rule on its own measurement window. Until decided, a pass here only raises the prior and replaces nothing in the gate.
-2. How to execute the scan: extend Discovery with a new candidate kind, which touches the sealed experiment machinery, or a separate module that reuses the monitor evaluation and the sealing pattern. The recommendation is the separate module.
-3. Which variables to add or remove after the availability probe, which reads only start dates and observation counts and never a return.
-4. Whether the catalogue should grow with rate differentials and commodity curve shapes, which the carry and roll premia would need, before the space is sealed.
+- **Decisión 1** (2026-10-03): OPTION C. A link confirmed by the screen is an ADDITIONAL requirement for a premium that relies on it: the premium must pass R3 under M1 on its own measurement window AND the screen link. The screen link never replaces M1. The rule can only be harder, so it rescues no denied hypothesis and loosens no gate. The cost is that it unblocks nothing on its own: the screen serves to choose better monitors. Sealed as a governance record before any scan; see artifacts/governance/monitor-screen-link-rule.json.
+- **Decisión 2** (2026-10-03): The scan is executed by a SEPARATE module that reuses the monitor evaluation and the sealing pattern. Discovery is not extended. The sealed experiment machinery is untouched, and the scan owns its own space, scan and holdout records.
+- **Decisión 3** (2026-10-03): The six variables stay exactly as drafted until changing them is needed to unblock something or the project changes phase. The probe asks only about the four still to probe, and no variable is added or removed to improve a result.
+- **Decisión 4** (2026-10-03): The catalogue may grow to raise the chance of finding a valid hypothesis, but only toward economic families that form an investigable space AND are justified by the next deliverable. Any addition must name its economic family and the deliverable that needs it before it is added, and is a new sealed space, not an edit.
 
-## 9. Lo que NO se ha hecho
+## 9. Decisión abierta
+
+Ninguna. Las cuatro decisiones del Director están registradas arriba.
+
+## 10. Lo que NO se ha hecho
 
 - No se leyó ninguna serie ni ningún retorno.
 - No se selló el espacio: se sella tras tu revisión y tras la sonda de disponibilidad.

@@ -68,7 +68,11 @@ def main():
         "|---|---|---|---|",
     ]
     for v in space["variables"]:
-        lines.append(f"| `{v['series']}` | {v['measures']} | {v['mechanism_family']} | {v['availability']} |")
+        probe = v.get("probe")
+        status = (f"{v['availability']}: {probe['observations_in_window']} observaciones, "
+                  f"completitud {probe['completeness']}, hueco máximo {probe['longest_gap_days']} días"
+                  if probe else v["availability"])
+        lines.append(f"| `{v['series']}` | {v['measures']} | {v['mechanism_family']} | {status} |")
     lines += [
         "",
         "Todas son diarias, cotizadas, sin revisiones y conocidas al decidir. Una variable que se "
@@ -112,13 +116,21 @@ def main():
         f"**{expected_false_passes(space):.1f} aprobados falsos esperados**. Por eso superar el "
         "descubrimiento no es evidencia: solo lo es confirmar en el holdout un único reclamo declarado antes.",
         "",
-        "## 8. Decisiones abiertas",
+        "## 8. Decisiones del Director registradas",
         "",
     ]
-    lines += [f"{i}. {text}" for i, text in enumerate(space["open_decisions"], start=1)]
+    lines += [f"- **Decisión {d['n']}** ({d['date']}): {d['decision']} {d['consequence']}"
+              for d in space["decisions"]]
     lines += [
         "",
-        "## 9. Lo que NO se ha hecho",
+        "## 9. Decisión abierta",
+        "",
+    ]
+    lines += ([f"{i}. {text}" for i, text in enumerate(space["open_decisions"], start=1)]
+              or ["Ninguna. Las cuatro decisiones del Director están registradas arriba."])
+    lines += [
+        "",
+        "## 10. Lo que NO se ha hecho",
         "",
         "- No se leyó ninguna serie ni ningún retorno.",
         "- No se selló el espacio: se sella tras tu revisión y tras la sonda de disponibilidad.",

@@ -4,8 +4,14 @@
   "purpose": "Find which candidate monitor variables lead adverse returns of a premium exposure, BEFORE any premium is declared around them. Every premium measured so far was declared with its monitor and the monitor then failed R3; this inverts the order.",
   "justification": "Four monitor links have been measured on this project and three were refuted (VIX minus realised volatility on XYLD 4 of 6 and QYLD 3 of 7, the VIX term structure on SVXY 2 of 5). Each refutation cost a full declare, capture, measure and seal cycle. A scan over a sealed list costs minutes and counts every candidate, so a variable is only built around once it has led adverse returns on a window it was selected on AND on a holdout the scan could not read. Passing the scan is NOT evidence that a premium pays: it only says the variable is worth declaring a monitor on.",
   "windows": {
-    "discovery": {"start_utc": "2018-03-01T00:00:00Z", "end_exclusive_utc": "2023-10-01T00:00:00Z"},
-    "holdout": {"start_utc": "2023-10-01T00:00:00Z", "end_exclusive_utc": "2026-10-01T00:00:00Z"},
+    "discovery": {
+      "start_utc": "2018-03-01T00:00:00Z",
+      "end_exclusive_utc": "2023-10-01T00:00:00Z"
+    },
+    "holdout": {
+      "start_utc": "2023-10-01T00:00:00Z",
+      "end_exclusive_utc": "2026-10-01T00:00:00Z"
+    },
     "why_these": "The shortest sealed exposure (SVXY) begins on 2018-03-01 and all three end on 2026-10-01. About 65 percent of the span is for discovery and the last three years are the holdout. The split was fixed from the exposures' dates alone, before any return was read."
   },
   "folds": 7,
@@ -34,73 +40,293 @@
     "why_fixed": "declared here, not searched: tuning either would multiply the candidates and turn a screen into a fit"
   },
   "variables": [
-    {"id": "T10Y2Y", "series": "T10Y2Y", "measures": "slope of the Treasury curve, ten years minus two",
-     "mechanism_family": "growth and recession expectations",
-     "validity": {"frequency": "daily", "revisions": "none", "known_at_decision_time": "published the same evening", "quote_based": true},
-     "availability": "TO_PROBE"},
-    {"id": "T10Y3M", "series": "T10Y3M", "measures": "slope of the Treasury curve, ten years minus three months",
-     "mechanism_family": "growth and recession expectations",
-     "validity": {"frequency": "daily", "revisions": "none", "known_at_decision_time": "published the same evening", "quote_based": true},
-     "availability": "TO_PROBE"},
-    {"id": "BAA10Y", "series": "BAA10Y", "measures": "Moody Baa yield minus the ten year Treasury, the price of credit risk",
-     "mechanism_family": "price of credit risk",
-     "validity": {"frequency": "daily", "revisions": "none", "known_at_decision_time": "published the same evening", "quote_based": true},
-     "availability": "CAPTURED_FOR_CREDIT_PREMIUM"},
-    {"id": "VIXCLS", "series": "VIXCLS", "measures": "market implied volatility of the S&P 500",
-     "mechanism_family": "price of volatility risk",
-     "validity": {"frequency": "daily", "revisions": "none", "known_at_decision_time": "published the same evening", "quote_based": true},
-     "availability": "CAPTURED_FOR_VARIANCE_PREMIUM"},
-    {"id": "DFII10", "series": "DFII10", "measures": "ten year Treasury real yield, the price of inflation protected money",
-     "mechanism_family": "discount rates",
-     "validity": {"frequency": "daily", "revisions": "none", "known_at_decision_time": "published the same evening", "quote_based": true},
-     "availability": "TO_PROBE"},
-    {"id": "DTWEXBGS", "series": "DTWEXBGS", "measures": "broad trade weighted US dollar index",
-     "mechanism_family": "global financial conditions",
-     "validity": {"frequency": "daily", "revisions": "none", "known_at_decision_time": "published with a one day lag, applied as such", "quote_based": true},
-     "availability": "TO_PROBE"}
+    {
+      "id": "T10Y2Y",
+      "series": "T10Y2Y",
+      "measures": "slope of the Treasury curve, ten years minus two",
+      "mechanism_family": "growth and recession expectations",
+      "validity": {
+        "frequency": "daily",
+        "revisions": "none",
+        "known_at_decision_time": "published the same evening",
+        "quote_based": true
+      },
+      "availability": "PROBED_AVAILABLE",
+      "probe": {
+        "run_on": "core-oracle (the VM)",
+        "run_by": "Oscar Carmenate Rodriguez",
+        "date": "2026-10-03",
+        "what_it_read": "dates and counts only; no value, level or return",
+        "first_in_window": "2018-03-01",
+        "last_in_window": "2026-10-01",
+        "observations_in_window": 2148,
+        "missing_in_window": 93,
+        "completeness": 0.959,
+        "longest_gap_days": 4,
+        "series_starts": "1976-06-01"
+      }
+    },
+    {
+      "id": "T10Y3M",
+      "series": "T10Y3M",
+      "measures": "slope of the Treasury curve, ten years minus three months",
+      "mechanism_family": "growth and recession expectations",
+      "validity": {
+        "frequency": "daily",
+        "revisions": "none",
+        "known_at_decision_time": "published the same evening",
+        "quote_based": true
+      },
+      "availability": "PROBED_AVAILABLE",
+      "probe": {
+        "run_on": "core-oracle (the VM)",
+        "run_by": "Oscar Carmenate Rodriguez",
+        "date": "2026-10-03",
+        "what_it_read": "dates and counts only; no value, level or return",
+        "first_in_window": "2018-03-01",
+        "last_in_window": "2026-10-01",
+        "observations_in_window": 2148,
+        "missing_in_window": 93,
+        "completeness": 0.959,
+        "longest_gap_days": 4,
+        "series_starts": "1982-01-04"
+      }
+    },
+    {
+      "id": "BAA10Y",
+      "series": "BAA10Y",
+      "measures": "Moody Baa yield minus the ten year Treasury, the price of credit risk",
+      "mechanism_family": "price of credit risk",
+      "validity": {
+        "frequency": "daily",
+        "revisions": "none",
+        "known_at_decision_time": "published the same evening",
+        "quote_based": true
+      },
+      "availability": "CAPTURED_FOR_CREDIT_PREMIUM"
+    },
+    {
+      "id": "VIXCLS",
+      "series": "VIXCLS",
+      "measures": "market implied volatility of the S&P 500",
+      "mechanism_family": "price of volatility risk",
+      "validity": {
+        "frequency": "daily",
+        "revisions": "none",
+        "known_at_decision_time": "published the same evening",
+        "quote_based": true
+      },
+      "availability": "CAPTURED_FOR_VARIANCE_PREMIUM"
+    },
+    {
+      "id": "DFII10",
+      "series": "DFII10",
+      "measures": "ten year Treasury real yield, the price of inflation protected money",
+      "mechanism_family": "discount rates",
+      "validity": {
+        "frequency": "daily",
+        "revisions": "none",
+        "known_at_decision_time": "published the same evening",
+        "quote_based": true
+      },
+      "availability": "PROBED_AVAILABLE",
+      "probe": {
+        "run_on": "core-oracle (the VM)",
+        "run_by": "Oscar Carmenate Rodriguez",
+        "date": "2026-10-03",
+        "what_it_read": "dates and counts only; no value, level or return",
+        "first_in_window": "2018-03-01",
+        "last_in_window": "2026-10-01",
+        "observations_in_window": 2148,
+        "missing_in_window": 93,
+        "completeness": 0.959,
+        "longest_gap_days": 4,
+        "series_starts": "2003-01-02"
+      }
+    },
+    {
+      "id": "DTWEXBGS",
+      "series": "DTWEXBGS",
+      "measures": "broad trade weighted US dollar index",
+      "mechanism_family": "global financial conditions",
+      "validity": {
+        "frequency": "daily",
+        "revisions": "none",
+        "known_at_decision_time": "published with a one day lag, applied as such",
+        "quote_based": true
+      },
+      "availability": "PROBED_AVAILABLE",
+      "probe": {
+        "run_on": "core-oracle (the VM)",
+        "run_by": "Oscar Carmenate Rodriguez",
+        "date": "2026-10-03",
+        "what_it_read": "dates and counts only; no value, level or return",
+        "first_in_window": "2018-03-01",
+        "last_in_window": "2026-09-25",
+        "observations_in_window": 2140,
+        "missing_in_window": 97,
+        "completeness": 0.955,
+        "longest_gap_days": 5,
+        "series_starts": "2006-01-02",
+        "note": "the series ends six days before the holdout does, so its last week of the holdout has no state; a missing day is never a trigger"
+      }
+    }
   ],
   "exposures": [
-    {"id": "SPY", "name": "US equity risk premium", "instrument": "SPY held long", "sealed_dataset": "equity_risk_premium_spy", "available_from": "2018-01-02"},
-    {"id": "CREDIT", "name": "investment grade credit premium", "instrument": "LQD long against IEF short", "sealed_dataset": "credit_premium_lqd_ief", "available_from": "2018-01-02"},
-    {"id": "SVXY", "name": "variance risk premium via the VIX futures roll", "instrument": "SVXY held long", "sealed_dataset": "volatility_premium_svxy", "available_from": "2018-03-01"}
+    {
+      "id": "SPY",
+      "name": "US equity risk premium",
+      "instrument": "SPY held long",
+      "sealed_dataset": "equity_risk_premium_spy",
+      "available_from": "2018-01-02"
+    },
+    {
+      "id": "CREDIT",
+      "name": "investment grade credit premium",
+      "instrument": "LQD long against IEF short",
+      "sealed_dataset": "credit_premium_lqd_ief",
+      "available_from": "2018-01-02"
+    },
+    {
+      "id": "SVXY",
+      "name": "variance risk premium via the VIX futures roll",
+      "instrument": "SVXY held long",
+      "sealed_dataset": "volatility_premium_svxy",
+      "available_from": "2018-03-01"
+    }
   ],
   "candidates": [
-    {"id": "C01", "variable": "T10Y2Y", "form": "SIGN_AT_OR_BELOW_ZERO", "exposure": "SPY",
-     "mechanism": "An inverted curve has preceded recessions because short rates exceed long rates only when markets expect growth to fall, and equity earnings fall with growth."},
-    {"id": "C02", "variable": "T10Y3M", "form": "SIGN_AT_OR_BELOW_ZERO", "exposure": "SPY",
-     "mechanism": "The three month version of the inversion reads the policy stance more directly, and a restrictive stance lowers equity returns by tightening financing."},
-    {"id": "C03", "variable": "BAA10Y", "form": "CHANGE_21D_ABOVE_ZERO", "exposure": "SPY",
-     "mechanism": "A widening credit spread means lenders demand more for default risk, which has led falls in equities that depend on the same borrowers."},
-    {"id": "C04", "variable": "BAA10Y", "form": "ABOVE_TRAILING_MEDIAN_252", "exposure": "SPY",
-     "mechanism": "A credit spread above its own recent median marks a regime in which risk is being priced higher, and equities carry less cushion in it."},
-    {"id": "C05", "variable": "VIXCLS", "form": "CHANGE_21D_ABOVE_ZERO", "exposure": "SPY",
-     "mechanism": "Rising implied volatility marks rising demand for protection, and volatility clusters, so adverse days come in runs after a rise."},
-    {"id": "C06", "variable": "DFII10", "form": "CHANGE_21D_ABOVE_ZERO", "exposure": "SPY",
-     "mechanism": "A rising real yield raises the rate at which future earnings are discounted, which lowers equity valuations when it moves quickly."},
-    {"id": "C07", "variable": "DTWEXBGS", "form": "CHANGE_21D_ABOVE_ZERO", "exposure": "SPY",
-     "mechanism": "A strengthening dollar tightens global financial conditions and lowers the dollar value of foreign earnings of the companies in the index."},
-    {"id": "C08", "variable": "BAA10Y", "form": "CHANGE_21D_ABOVE_ZERO", "exposure": "CREDIT",
-     "mechanism": "The credit premium is the compensation for default risk, and a widening spread is the market repricing that risk against the position."},
-    {"id": "C09", "variable": "BAA10Y", "form": "ABOVE_TRAILING_MEDIAN_252", "exposure": "CREDIT",
-     "mechanism": "A spread above its own recent median means the compensation is being repriced upward, and the repricing hurts the long credit leg first."},
-    {"id": "C10", "variable": "T10Y2Y", "form": "SIGN_AT_OR_BELOW_ZERO", "exposure": "CREDIT",
-     "mechanism": "An inverted curve signals expected recession, in which default risk rises and corporate bonds underperform Treasuries of the same duration."},
-    {"id": "C11", "variable": "VIXCLS", "form": "CHANGE_21D_ABOVE_ZERO", "exposure": "CREDIT",
-     "mechanism": "Rising equity volatility marks risk aversion across markets, and investors sell corporate bonds against Treasuries during risk aversion."},
-    {"id": "C12", "variable": "VIXCLS", "form": "CHANGE_21D_ABOVE_ZERO", "exposure": "SVXY",
-     "mechanism": "The product is short volatility, so a rising volatility index is the adverse state itself and volatility clustering says it persists."},
-    {"id": "C13", "variable": "BAA10Y", "form": "CHANGE_21D_ABOVE_ZERO", "exposure": "SVXY",
-     "mechanism": "Credit stress usually precedes or accompanies volatility spikes, so widening spreads may warn before the short volatility position is hurt."},
-    {"id": "C14", "variable": "DTWEXBGS", "form": "CHANGE_21D_ABOVE_ZERO", "exposure": "SVXY",
-     "mechanism": "A rapidly strengthening dollar is a global funding stress channel, and funding stress is a recurring cause of volatility spikes."}
+    {
+      "id": "C01",
+      "variable": "T10Y2Y",
+      "form": "SIGN_AT_OR_BELOW_ZERO",
+      "exposure": "SPY",
+      "mechanism": "An inverted curve has preceded recessions because short rates exceed long rates only when markets expect growth to fall, and equity earnings fall with growth."
+    },
+    {
+      "id": "C02",
+      "variable": "T10Y3M",
+      "form": "SIGN_AT_OR_BELOW_ZERO",
+      "exposure": "SPY",
+      "mechanism": "The three month version of the inversion reads the policy stance more directly, and a restrictive stance lowers equity returns by tightening financing."
+    },
+    {
+      "id": "C03",
+      "variable": "BAA10Y",
+      "form": "CHANGE_21D_ABOVE_ZERO",
+      "exposure": "SPY",
+      "mechanism": "A widening credit spread means lenders demand more for default risk, which has led falls in equities that depend on the same borrowers."
+    },
+    {
+      "id": "C04",
+      "variable": "BAA10Y",
+      "form": "ABOVE_TRAILING_MEDIAN_252",
+      "exposure": "SPY",
+      "mechanism": "A credit spread above its own recent median marks a regime in which risk is being priced higher, and equities carry less cushion in it."
+    },
+    {
+      "id": "C05",
+      "variable": "VIXCLS",
+      "form": "CHANGE_21D_ABOVE_ZERO",
+      "exposure": "SPY",
+      "mechanism": "Rising implied volatility marks rising demand for protection, and volatility clusters, so adverse days come in runs after a rise."
+    },
+    {
+      "id": "C06",
+      "variable": "DFII10",
+      "form": "CHANGE_21D_ABOVE_ZERO",
+      "exposure": "SPY",
+      "mechanism": "A rising real yield raises the rate at which future earnings are discounted, which lowers equity valuations when it moves quickly."
+    },
+    {
+      "id": "C07",
+      "variable": "DTWEXBGS",
+      "form": "CHANGE_21D_ABOVE_ZERO",
+      "exposure": "SPY",
+      "mechanism": "A strengthening dollar tightens global financial conditions and lowers the dollar value of foreign earnings of the companies in the index."
+    },
+    {
+      "id": "C08",
+      "variable": "BAA10Y",
+      "form": "CHANGE_21D_ABOVE_ZERO",
+      "exposure": "CREDIT",
+      "mechanism": "The credit premium is the compensation for default risk, and a widening spread is the market repricing that risk against the position."
+    },
+    {
+      "id": "C09",
+      "variable": "BAA10Y",
+      "form": "ABOVE_TRAILING_MEDIAN_252",
+      "exposure": "CREDIT",
+      "mechanism": "A spread above its own recent median means the compensation is being repriced upward, and the repricing hurts the long credit leg first."
+    },
+    {
+      "id": "C10",
+      "variable": "T10Y2Y",
+      "form": "SIGN_AT_OR_BELOW_ZERO",
+      "exposure": "CREDIT",
+      "mechanism": "An inverted curve signals expected recession, in which default risk rises and corporate bonds underperform Treasuries of the same duration."
+    },
+    {
+      "id": "C11",
+      "variable": "VIXCLS",
+      "form": "CHANGE_21D_ABOVE_ZERO",
+      "exposure": "CREDIT",
+      "mechanism": "Rising equity volatility marks risk aversion across markets, and investors sell corporate bonds against Treasuries during risk aversion."
+    },
+    {
+      "id": "C12",
+      "variable": "VIXCLS",
+      "form": "CHANGE_21D_ABOVE_ZERO",
+      "exposure": "SVXY",
+      "mechanism": "The product is short volatility, so a rising volatility index is the adverse state itself and volatility clustering says it persists."
+    },
+    {
+      "id": "C13",
+      "variable": "BAA10Y",
+      "form": "CHANGE_21D_ABOVE_ZERO",
+      "exposure": "SVXY",
+      "mechanism": "Credit stress usually precedes or accompanies volatility spikes, so widening spreads may warn before the short volatility position is hurt."
+    },
+    {
+      "id": "C14",
+      "variable": "DTWEXBGS",
+      "form": "CHANGE_21D_ABOVE_ZERO",
+      "exposure": "SVXY",
+      "mechanism": "A rapidly strengthening dollar is a global funding stress channel, and funding stress is a recurring cause of volatility spikes."
+    }
   ],
   "adverse_direction": "ON means the exposure's next-day return is LOWER than on OFF days; the direction is part of each claim and is never searched both ways",
   "ledger_prior": [
-    {"variable": "VIX minus 21 day realised volatility, at or below zero", "exposure": "XYLD", "result": "link 4 of 6, refuted", "source": "ADMISSION|81bdb90c"},
-    {"variable": "VIX minus 21 day realised volatility, at or below zero", "exposure": "QYLD", "result": "link 3 of 7, refuted", "source": "FAMILY_VERDICT|84d929a2"},
-    {"variable": "VIX3M minus VIX, at or below zero", "exposure": "SVXY", "result": "link 2 of 5, refuted", "source": "ADMISSION for the volatility premium"},
-    {"variable": "BAA10Y relative to the credit loss", "exposure": "CREDIT", "result": "trigger on 0 of 2184 days, unreachable", "source": "ADMISSION for the credit premium"},
-    {"variable": "perpetual funding rate sign", "exposure": "crypto carry", "result": "exit rule met 8 of 8 on a holdout", "source": "the carry exit rule validation"}
+    {
+      "variable": "VIX minus 21 day realised volatility, at or below zero",
+      "exposure": "XYLD",
+      "result": "link 4 of 6, refuted",
+      "source": "ADMISSION|81bdb90c"
+    },
+    {
+      "variable": "VIX minus 21 day realised volatility, at or below zero",
+      "exposure": "QYLD",
+      "result": "link 3 of 7, refuted",
+      "source": "FAMILY_VERDICT|84d929a2"
+    },
+    {
+      "variable": "VIX3M minus VIX, at or below zero",
+      "exposure": "SVXY",
+      "result": "link 2 of 5, refuted",
+      "source": "ADMISSION for the volatility premium"
+    },
+    {
+      "variable": "BAA10Y relative to the credit loss",
+      "exposure": "CREDIT",
+      "result": "trigger on 0 of 2184 days, unreachable",
+      "source": "ADMISSION for the credit premium"
+    },
+    {
+      "variable": "perpetual funding rate sign",
+      "exposure": "crypto carry",
+      "result": "exit rule met 8 of 8 on a holdout",
+      "source": "the carry exit rule validation"
+    }
   ],
   "multiplicity": {
     "scanned": 14,
@@ -108,10 +334,35 @@
     "total_tested_on_this_question": 19,
     "note": "Prior tests are counted, not rescanned: a screen that forgot the four it already ran would be reporting one candidate in nineteen as one in fourteen."
   },
-  "open_decisions": [
-    "Whether a link confirmed on the holdout may stand as the validated link R3 asks for, or whether every premium must still pass the fold rule on its own measurement window. Until decided, a pass here only raises the prior and replaces nothing in the gate.",
-    "How to execute the scan: extend Discovery with a new candidate kind, which touches the sealed experiment machinery, or a separate module that reuses the monitor evaluation and the sealing pattern. The recommendation is the separate module.",
-    "Which variables to add or remove after the availability probe, which reads only start dates and observation counts and never a return.",
-    "Whether the catalogue should grow with rate differentials and commodity curve shapes, which the carry and roll premia would need, before the space is sealed."
+  "open_decisions": [],
+  "decisions": [
+    {
+      "n": 1,
+      "date": "2026-10-03",
+      "by": "Oscar Carmenate Rodriguez, Director del Proyecto",
+      "decision": "OPTION C. A link confirmed by the screen is an ADDITIONAL requirement for a premium that relies on it: the premium must pass R3 under M1 on its own measurement window AND the screen link. The screen link never replaces M1.",
+      "consequence": "The rule can only be harder, so it rescues no denied hypothesis and loosens no gate. The cost is that it unblocks nothing on its own: the screen serves to choose better monitors. Sealed as a governance record before any scan; see artifacts/governance/monitor-screen-link-rule.json."
+    },
+    {
+      "n": 2,
+      "date": "2026-10-03",
+      "by": "Oscar Carmenate Rodriguez, Director del Proyecto",
+      "decision": "The scan is executed by a SEPARATE module that reuses the monitor evaluation and the sealing pattern. Discovery is not extended.",
+      "consequence": "The sealed experiment machinery is untouched, and the scan owns its own space, scan and holdout records."
+    },
+    {
+      "n": 3,
+      "date": "2026-10-03",
+      "by": "Oscar Carmenate Rodriguez, Director del Proyecto",
+      "decision": "The six variables stay exactly as drafted until changing them is needed to unblock something or the project changes phase.",
+      "consequence": "The probe asks only about the four still to probe, and no variable is added or removed to improve a result."
+    },
+    {
+      "n": 4,
+      "date": "2026-10-03",
+      "by": "Oscar Carmenate Rodriguez, Director del Proyecto",
+      "decision": "The catalogue may grow to raise the chance of finding a valid hypothesis, but only toward economic families that form an investigable space AND are justified by the next deliverable.",
+      "consequence": "Any addition must name its economic family and the deliverable that needs it before it is added, and is a new sealed space, not an edit."
+    }
   ]
 }

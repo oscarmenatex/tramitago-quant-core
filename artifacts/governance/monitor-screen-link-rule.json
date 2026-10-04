@@ -1,0 +1,55 @@
+{
+  "rules": [
+    {
+      "applies_to": "R3 monitorability, for a premium whose monitor was chosen through the monitor screen monitor-screen-2026-10",
+      "authorised_by": "Oscar Carmenate Rodriguez, Director del Proyecto",
+      "code_revision": "ae55ab4e1a1d1d57db7f2fdc035bfccd5d45f93c",
+      "decision": "OPTION C",
+      "decisions_recorded_in_the_space": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "ground": {
+        "name": "A LINK CONFIRMED ELSEWHERE CANNOT STAND IN FOR THE LINK MEASURED ON THE PREMIUM'S OWN WINDOW",
+        "provenance": "Chosen by the Director from three options drafted by Claude (A no, B alternative route, C additional requirement). The weakness is that the options were drafted knowing XYLD, QYLD and SPY were denied on R3 alone, so the question was framed by a result; option C was chosen because it is the only one that cannot benefit any of them, which is the property that makes the choice credible.",
+        "statement": "R3 asks that a monitor rest on a validated inferential link. The screen can confirm that a variable led adverse returns of an exposure on a holdout it was not selected on. That is evidence about the variable and the exposure, in one regime, and it does not say the premium being measured has the same behaviour on its own window, with its own costs and its own wrapper. So it adds to the requirement and cannot replace the test the premium has to pass.",
+        "why_it_is_independent": "It does not depend on which candidate passes or on which hypothesis it would help. It would read the same if the scan found nothing, and it binds a candidate that passes exactly as it binds one that fails."
+      },
+      "integrity_check": {
+        "does_it_rescue_what_was_observed": "NO. SPY, XYLD and QYLD, denied on R3 alone, are not helped: under this rule a screen link would still leave them needing M1 on their own window, which they failed. Option B would have been the one that could.",
+        "harder_or_easier": "HARDER. It adds a requirement and removes none, so it cannot admit anything R3 refuses today.",
+        "measured": {
+          "admissions_citing_a_screen_link": 0,
+          "admissions_sealed": 11,
+          "ids": []
+        },
+        "question": "section 11.0's own test: harder or easier, and what does it rescue?",
+        "what_it_costs": "It unblocks nothing on its own. The screen serves to choose better monitors to declare, and a premium still has to pass M1."
+      },
+      "kind": "monitor-screen-link-rule",
+      "rule": {
+        "conditions_that_protect_the_screen": [
+          "the holdout is used once, for the single claim declared in the space",
+          "if k candidates pass discovery, each must clear the holdout at confidence 1 minus 0.05 divided by k (Bonferroni), declared before the scan",
+          "a link is valid only for the exposure it was confirmed on, exactly",
+          "a confirmed link is reconfirmed annually, as a calendar trigger"
+        ],
+        "enforcement": "NOT YET IN CODE. It binds by this record and by the pre-declaration of any premium that cites the screen. It is wired with the scan, as a NEW admission schema; admission schemas 1 to 4 are never edited.",
+        "never": "the screen link never replaces M1, and never opens the identity form M2, which stays closed after a failed M1 (M2_AVAILABILITY|04a35abd)",
+        "requirement": "a premium that relies on a screen link must pass R3 under M1 on its own measurement window AND the screen link"
+      },
+      "rule_id": "MONITOR_SCREEN_LINK_RULE|cfaf70910d5ca12023101dedb8e4de35695b5c0db0987cc2d959c1b678c2dee2",
+      "schema_version": "1",
+      "sealed_at": "2026-10-04T01:28:38.386909Z",
+      "what_is_untouched": [
+        "M1 and its constants (5 usable folds, 0.70, 10 trigger days).",
+        "M2 and its availability rule.",
+        "DOC-011 section 12 and the Sharpe, R1, R2, R4 and R5 gates.",
+        "Every sealed admission, level claim and family verdict."
+      ]
+    }
+  ],
+  "schema_version": "1"
+}
