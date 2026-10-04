@@ -139,6 +139,24 @@ class AdditionTests(Fixture):
             self.assertIn(reason, module.JUSTIFICATION.lower().replace("there is no payer", "no payer"))
 
 
+class AfterSealingTests(Fixture):
+    def test_the_starting_point_is_the_register_before_this_expansion_even_once_it_is_sealed(self):
+        added = {c["name"] for c in self.added}
+        self.assertFalse(added & {c["name"] for c in self.previous})
+        self.assertEqual(len(self.previous), 15)
+
+    def test_running_the_script_again_rebuilds_the_same_candidates(self):
+        again = module.build(module._latest_schema_2(), self.rows)
+        self.assertEqual(again, self.built)
+
+    def test_the_sealed_register_is_exactly_what_the_script_builds(self):
+        registers = [r for r in json.loads(REGISTER.read_bytes())["registers"] if r["schema_version"] == "2"]
+        sealed = [r for r in registers if len(r["candidates"]) == 22]
+        if not sealed:
+            self.skipTest("the expansion has not been sealed in this checkout")
+        self.assertEqual(sealed[-1]["candidates"], self.built)
+
+
 class SealingTests(Fixture):
     def test_the_expanded_register_seals_once_into_a_scratch_registry(self):
         path = Path(tempfile.mkdtemp()) / "r.json"
